@@ -19,14 +19,18 @@ public static class Program
     private static WebApplicationBuilder AddServices(this WebApplicationBuilder builder)
     {
         var services = builder.Services;
+        var configuration = builder.Configuration;
 
         services.AddControllers();
         
         services.AddMediatorService();
 
         // add database services
-        services.AddCosmosDbService(builder.Configuration);
+        services.AddCosmosDbService(configuration);
         services.AddRepositoryServices();
+
+        // game service
+        services.AddGameService(configuration);
 
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         services.AddEndpointsApiExplorer();

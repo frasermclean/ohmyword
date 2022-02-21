@@ -1,8 +1,18 @@
-﻿namespace WhatTheWord.Domain.Responses.Game;
+﻿using WhatTheWord.Data.Models;
+
+namespace WhatTheWord.Domain.Responses.Game;
 
 public class GetHintResponse
 {
-    public int Length { get; init; }
-    public string Definition { get; init; } = default!;
-    public DateTime Expiry { get; init; }
+    private readonly Word word;
+
+    public int Length => word.Value.Length;
+    public string Definition => word.Definition;
+    public DateTime Expiry { get; }
+
+    internal GetHintResponse(Word word, DateTime expiry)
+    {
+        this.word = word;
+        Expiry = expiry;
+    }
 }
