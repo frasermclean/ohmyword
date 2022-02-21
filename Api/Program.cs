@@ -24,6 +24,10 @@ public static class Program
         
         services.AddMediatorService();
 
+        // add database services
+        services.AddCosmosDbService(builder.Configuration);
+        services.AddRepositoryServices();
+
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();

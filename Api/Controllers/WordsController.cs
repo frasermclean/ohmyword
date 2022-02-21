@@ -6,19 +6,18 @@ namespace WhatTheWord.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class WordController : ControllerBase
+public class WordsController : ControllerBase
 {
     private readonly IMediator mediator;
 
-    public WordController(IMediator mediator)
+    public WordsController(IMediator mediator)
     {
         this.mediator = mediator;
     }
 
-    [HttpGet]
-    public async Task<IActionResult> GetCurrentWordAsync()
+    public async Task<IActionResult> GetAllWordsAsync()
     {
-        var response = await mediator.Send(new GetCurrentWordRequest());
+        var response = await mediator.Send(new GetAllWordsRequest());
         return Ok(response);
     }
 }
