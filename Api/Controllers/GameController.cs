@@ -28,4 +28,11 @@ public class GameController : ControllerBase
         var response = await mediator.Send(new GetHintRequest());
         return Ok(response);
     }
+
+    [HttpPost("guess")]
+    public async Task<IActionResult> TryGuessAsync(TryGuessRequest request)
+    {
+        var response = await mediator.Send(request);
+        return(Ok(response));
+    }
 }

@@ -2,12 +2,15 @@
 using Microsoft.Extensions.Options;
 using WhatTheWord.Data.Models;
 using WhatTheWord.Data.Repositories;
+using WhatTheWord.Domain.Requests.Game;
+using WhatTheWord.Domain.Responses.Game;
 
 namespace WhatTheWord.Domain.Services;
 
 public interface IGameService
 {
     Task<(Word, DateTime)> GetCurrentWord();
+    Task<TryGuessResponse> TryGuessAsync(TryGuessRequest request);
 }
 
 public class GameService : IGameService
@@ -61,5 +64,17 @@ public class GameService : IGameService
         }
 
         return (currentWord, currentWordExpiry);
+    }
+
+    public async Task<TryGuessResponse> TryGuessAsync(TryGuessRequest request)
+    {
+        var (currentWord, expiry) = await GetCurrentWord();
+
+        bool correct = request.Guess.ToLowerInvariant() == currentWord.Value.ToLowerInvariant();
+
+        return new TryGuessResponse()
+        {
+            Correct = correct,
+        };
     }
 }
