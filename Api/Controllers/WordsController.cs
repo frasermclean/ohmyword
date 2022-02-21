@@ -1,6 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using WhatTheWord.Domain.Processing.Words;
+using WhatTheWord.Domain.Requests.Words;
 
 namespace WhatTheWord.Api.Controllers;
 

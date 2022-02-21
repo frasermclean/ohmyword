@@ -1,4 +1,4 @@
-﻿namespace WhatTheWord.Domain.Processing.Clients;
+﻿namespace WhatTheWord.Domain.Responses.Game;
 
 public class RegisterClientResponse
 {

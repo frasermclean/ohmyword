@@ -1,6 +1,6 @@
-﻿namespace WhatTheWord.Domain.Processing.Words;
+﻿namespace WhatTheWord.Domain.Responses.Game;
 
-public class GetCurrentWordResponse
+public class GetHintResponse
 {
     public int Length { get; init; }
     public string Definition { get; init; } = default!;

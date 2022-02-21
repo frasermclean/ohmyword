@@ -1,7 +1,8 @@
 ﻿using MediatR;
 using System.ComponentModel.DataAnnotations;
+using WhatTheWord.Domain.Responses.Game;
 
-namespace WhatTheWord.Domain.Processing.Clients;
+namespace WhatTheWord.Domain.Requests.Game;
 
 public class RegisterClientRequest : IRequest<RegisterClientResponse>
 {

@@ -1,6 +1,8 @@
 ﻿using MediatR;
+using WhatTheWord.Domain.Requests.Game;
+using WhatTheWord.Domain.Responses.Game;
 
-namespace WhatTheWord.Domain.Processing.Clients;
+namespace WhatTheWord.Domain.Handlers.Game;
 
 public class RegisterClientHandler : IRequestHandler<RegisterClientRequest, RegisterClientResponse>
 {

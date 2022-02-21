@@ -1,5 +1,5 @@
 ﻿using MediatR;
-using WhatTheWord.Domain.Processing.Clients;
+using WhatTheWord.Domain.Handlers.Game;
 
 namespace WhatTheWord.Api.Services;
 

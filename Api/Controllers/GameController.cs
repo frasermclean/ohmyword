@@ -1,6 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using WhatTheWord.Domain.Processing.Words;
+using WhatTheWord.Domain.Requests.Game;
 
 namespace WhatTheWord.Api.Controllers;
 
@@ -15,10 +15,17 @@ public class GameController : ControllerBase
         this.mediator = mediator;
     }
 
-    [HttpGet("current-word")]
-    public async Task<IActionResult> GetCurrentWordAsync()
+    [HttpPost("register")]
+    public async Task<IActionResult> RegisterClientAsync(RegisterClientRequest request)
     {
-        var response = await mediator.Send(new GetCurrentWordRequest());
+        var response = await mediator.Send(request);
+        return Ok(response);
+    }
+
+    [HttpGet("hint")]
+    public async Task<IActionResult> GetHintAsync()
+    {
+        var response = await mediator.Send(new GetHintRequest());
         return Ok(response);
     }
 }
