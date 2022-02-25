@@ -23,7 +23,7 @@ public class GameController : ControllerBase
     }
 
     [HttpGet("hint")]
-    public async Task<IActionResult> GetHintAsync()
+    public async Task<IActionResult> GetHintAsync([FromHeader] string clientId)
     {
         var response = await mediator.Send(new GetHintRequest());
         return Ok(response);
