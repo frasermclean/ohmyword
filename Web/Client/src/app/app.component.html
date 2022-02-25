@@ -1,3 +1,9 @@
 <h1>What The Word!?</h1>
 <p>This is a game about guessing words.</p>
-<app-hint></app-hint>
+<ng-container *ngIf="isRegistered$ | async; else notRegistered">
+  <app-hint></app-hint>
+</ng-container>
+
+<ng-template #notRegistered>
+  <p>Could not register with game server.</p>
+</ng-template>

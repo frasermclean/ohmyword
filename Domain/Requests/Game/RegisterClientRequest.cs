@@ -7,5 +7,5 @@ namespace WhatTheWord.Domain.Requests.Game;
 public class RegisterClientRequest : IRequest<RegisterClientResponse>
 {
     [Required]
-    public string Fingerprint { get; init; } = default!;
+    public string VisitorId { get; init; } = default!;
 }
