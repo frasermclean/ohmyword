@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 
+import { GameModule } from './game/game.module';
 import { AppComponent } from './app.component';
 
 @NgModule({
@@ -13,6 +14,7 @@ import { AppComponent } from './app.component';
     HttpClientModule,
     FormsModule,
     RouterModule.forRoot([]),
+    GameModule,
   ],
   providers: [],
   bootstrap: [AppComponent],
