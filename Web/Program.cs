@@ -1,3 +1,4 @@
+using WhatTheWord.Api.Hubs;
 using WhatTheWord.Api.Services;
 
 namespace WhatTheWord.Api;
@@ -30,6 +31,9 @@ public static class Program
         services.AddCosmosDbService(configuration);
         services.AddRepositoryServices();
 
+        // signalR services
+        services.AddSignalR();
+
         // game service
         services.AddGameService(configuration);
 
@@ -51,7 +55,9 @@ public static class Program
         app.UseHttpsRedirection();
         app.UseStaticFiles();
         app.UseRouting();
+
         app.MapControllers();
+        app.MapHub<GameHub>("/game");
         app.MapFallbackToFile("index.html");
 
         return app;
