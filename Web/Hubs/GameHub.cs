@@ -7,6 +7,7 @@ namespace WhatTheWord.Api.Hubs;
 
 public interface IGameHub
 {
+    Task SendHint(HintResponse response);
 }
 
 public class GameHub : Hub<IGameHub>, IGameHub
@@ -27,7 +28,7 @@ public class GameHub : Hub<IGameHub>, IGameHub
         return response;
     }
 
-    public async Task<GetHintResponse> GetHint(GetHintRequest request)
+    public async Task<HintResponse> GetHint(GetHintRequest request)
     {
         var response = await mediator.Send(request);
         return response;
@@ -38,4 +39,6 @@ public class GameHub : Hub<IGameHub>, IGameHub
         var response = await mediator.Send(request);
         return response;
     }
+
+    public Task SendHint(HintResponse response) => Clients.All.SendHint(response);
 }

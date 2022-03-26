@@ -3,7 +3,7 @@ using WhatTheWord.Domain.Responses.Game;
 
 namespace WhatTheWord.Domain.Requests.Game;
 
-public class GetHintRequest : IRequest<GetHintResponse>
+public class GetHintRequest : IRequest<HintResponse>
 {
     public string ClientId { get; init; } = default!;
 }

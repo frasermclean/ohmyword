@@ -8,9 +8,11 @@ import { GameService } from 'src/app/services/game.service';
   styleUrls: ['./hint.component.scss'],
 })
 export class HintComponent implements OnInit {
-  public hint$ = this.gameService.getHint();
+  public hint$ = this.gameService.hint$;
 
   constructor(private gameService: GameService) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.gameService.getHint();
+  }
 }

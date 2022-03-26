@@ -11,6 +11,7 @@ import { HintResponse } from '../models/hint.response';
 import { RegisterResponse } from '../models/register.response';
 import { environment } from 'src/environments/environment';
 import { GuessResponse } from '../models/guess.response';
+import { Subject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -23,6 +24,9 @@ export class GameService {
       environment.production ? LogLevel.Error : LogLevel.Information
     )
     .build();
+
+  private hintSubject = new Subject<HintResponse>();
+  public hint$ = this.hintSubject.asObservable();
 
   constructor() {}
 
@@ -66,7 +70,10 @@ export class GameService {
       clientId: this.clientId,
       value,
     };
-    const response = await this.connection.invoke<GuessResponse>(this.guessWord.name, args);
+    const response = await this.connection.invoke<GuessResponse>(
+      this.guessWord.name,
+      args
+    );
     console.log(response);
     return response;
   }
@@ -76,6 +83,11 @@ export class GameService {
    */
   private async initialize() {
     if (this.connection.state === HubConnectionState.Disconnected) {
+      // server sends us a hint
+      this.connection.on('sendHint', (hint: HintResponse) => {
+        this.hintSubject.next(hint);
+      });
+
       await this.connection.start();
     }
   }

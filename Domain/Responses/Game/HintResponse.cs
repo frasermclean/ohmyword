@@ -2,7 +2,7 @@
 
 namespace WhatTheWord.Domain.Responses.Game;
 
-public class GetHintResponse
+public class HintResponse
 {
     private readonly Word word;
 
@@ -10,7 +10,7 @@ public class GetHintResponse
     public string Definition => word.Definition;
     public DateTime Expiry { get; }
 
-    internal GetHintResponse(Word word, DateTime expiry)
+    public HintResponse(Word word, DateTime expiry)
     {
         this.word = word;
         Expiry = expiry;

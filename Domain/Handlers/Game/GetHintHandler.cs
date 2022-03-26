@@ -5,7 +5,7 @@ using WhatTheWord.Domain.Services;
 
 namespace WhatTheWord.Domain.Handlers.Game;
 
-public class GetHintHandler : IRequestHandler<GetHintRequest, GetHintResponse>
+public class GetHintHandler : IRequestHandler<GetHintRequest, HintResponse>
 {
     private readonly IGameService gameService;
 
@@ -14,10 +14,10 @@ public class GetHintHandler : IRequestHandler<GetHintRequest, GetHintResponse>
         this.gameService = gameService;
     }
 
-    public async Task<GetHintResponse> Handle(GetHintRequest request, CancellationToken cancellationToken)
+    public async Task<HintResponse> Handle(GetHintRequest request, CancellationToken cancellationToken)
     {
         var (word, expiry) = await gameService.GetCurrentWord();
-        var response = new GetHintResponse(word, expiry);
+        var response = new HintResponse(word, expiry);
         return response;
     }
 }
