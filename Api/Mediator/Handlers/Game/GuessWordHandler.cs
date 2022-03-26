@@ -16,7 +16,7 @@ public class GuessWordHandler : IRequestHandler<GuessWordRequest, GuessWordRespo
 
     public async Task<GuessWordResponse> Handle(GuessWordRequest wordRequest, CancellationToken cancellationToken)
     {
-        var response = await gameService.GuessWordAsync(wordRequest);
+        var response = await gameService.TestGuessAsync(wordRequest);
         return response;
     }
 }

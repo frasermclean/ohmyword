@@ -20,4 +20,11 @@ public class WordsController : ControllerBase
         var response = await mediator.Send(new GetAllWordsRequest());
         return Ok(response);
     }
+
+    [HttpGet("current")]
+    public async Task<IActionResult> GetCurrentWordAsync()
+    {
+        var response = await mediator.Send(new GetCurrentWordRequest());
+        return Ok(response);
+    }
 }

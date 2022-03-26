@@ -16,8 +16,8 @@ public class GetHintHandler : IRequestHandler<GetHintRequest, HintResponse>
 
     public async Task<HintResponse> Handle(GetHintRequest request, CancellationToken cancellationToken)
     {
-        var (word, expiry) = await gameService.GetCurrentWord();
-        var response = new HintResponse(word, expiry);
-        return response;
+        var response = await gameService.GetCurrentWord();
+        return new HintResponse(response.Word, response.Expiry);
+        
     }
 }
