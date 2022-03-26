@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, ReplaySubject, Subject } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 import {
   HubConnectionBuilder,
   HubConnectionState,
@@ -11,7 +11,6 @@ import { HintResponse } from '../models/hint.response';
 import { RegisterResponse } from '../models/register.response';
 import { environment } from 'src/environments/environment';
 import { GuessResponse } from '../models/guess.response';
-
 
 @Injectable({
   providedIn: 'root',
@@ -28,7 +27,7 @@ export class GameService {
   private readonly hintSubject = new Subject<HintResponse>();
   public get hint$() {
     return this.hintSubject.asObservable();
-  } 
+  }
 
   private readonly isRegisteredSubject = new BehaviorSubject<boolean>(false);
   public get isRegistered$() {
@@ -45,9 +44,12 @@ export class GameService {
     try {
       await this.initialize();
       const visitorId = await this.getVisitorId();
-      const response = await this.hubConnection.invoke<RegisterResponse>('register', visitorId);
+      const response = await this.hubConnection.invoke<RegisterResponse>(
+        'register',
+        visitorId
+      );
       this.playerId = response.playerId;
-      this.isRegisteredSubject.next(response.successful)
+      this.isRegisteredSubject.next(response.successful);
       return response.successful;
     } catch (error) {
       console.error(error);
@@ -64,7 +66,10 @@ export class GameService {
     const args = {
       clientId: this.playerId,
     };
-    const response = await this.hubConnection.invoke<HintResponse>('getHint', args);
+    const response = await this.hubConnection.invoke<HintResponse>(
+      'getHint',
+      args
+    );
     this.hintSubject.next(response);
     return response;
   }
