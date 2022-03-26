@@ -10,11 +10,8 @@ public interface IWordsRepository
 
 public class WordsRepository : Repository<Word>, IWordsRepository
 {
-    protected override string ContainerId => "Words";
-    protected override string PartitionKeyPath => "/id";
-
     public WordsRepository(ICosmosDbService cosmosDbService, ILogger<WordsRepository> logger)
-        : base(cosmosDbService, logger)
+        : base(cosmosDbService, logger, "Words")
     {
     }
 

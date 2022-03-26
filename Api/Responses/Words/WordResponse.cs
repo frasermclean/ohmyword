@@ -6,7 +6,7 @@ public class WordResponse
 {
     private readonly Word word;
 
-    public Guid Id => word.Id;
+    public string Id => word.Id;
     public string Value => word.Value;
     public string Definition => word.Definition;
 

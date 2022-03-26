@@ -7,7 +7,7 @@ public static class MediatorServiceRegistration
 {
     public static IServiceCollection AddMediatorService(this IServiceCollection services)
     {
-        services.AddMediatR(typeof(RegisterClientHandler));
+        services.AddMediatR(typeof(RegisterPlayerHandler));
         return services;
     }
 }

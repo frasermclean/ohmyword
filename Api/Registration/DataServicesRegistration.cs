@@ -21,6 +21,7 @@ public static class DataServicesRegistration
     public static IServiceCollection AddRepositoryServices(this IServiceCollection services)
     {
         services.AddSingleton<IWordsRepository, WordsRepository>();
+        services.AddSingleton<IPlayerRepository, PlayerRepository>();
 
         return services;
     }

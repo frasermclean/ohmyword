@@ -17,7 +17,7 @@ import { GuessResponse } from '../models/guess.response';
   providedIn: 'root',
 })
 export class GameService {
-  private clientId = '';
+  private playerId = '';
   private hubConnection = new HubConnectionBuilder()
     .withUrl(environment.api.hubUrl)
     .configureLogging(
@@ -44,17 +44,11 @@ export class GameService {
   async register() {
     try {
       await this.initialize();
-      const args = {
-        visitorId: await this.getVisitorId(),
-      };
-      const response = await this.hubConnection.invoke<RegisterResponse>(
-        'register',
-        args
-      );
-      this.clientId = response.clientId;
-      const isRegistered =  this.clientId !== '';
-      this.isRegisteredSubject.next(isRegistered)
-      return isRegistered;
+      const visitorId = await this.getVisitorId();
+      const response = await this.hubConnection.invoke<RegisterResponse>('register', visitorId);
+      this.playerId = response.playerId;
+      this.isRegisteredSubject.next(response.successful)
+      return response.successful;
     } catch (error) {
       console.error(error);
       return false;
@@ -68,7 +62,7 @@ export class GameService {
   async getHint() {
     await this.initialize();
     const args = {
-      clientId: this.clientId,
+      clientId: this.playerId,
     };
     const response = await this.hubConnection.invoke<HintResponse>('getHint', args);
     this.hintSubject.next(response);
@@ -78,7 +72,7 @@ export class GameService {
   public async guessWord(value: string) {
     await this.initialize();
     const args = {
-      clientId: this.clientId,
+      clientId: this.playerId,
       value,
     };
     const response = await this.hubConnection.invoke<GuessResponse>(

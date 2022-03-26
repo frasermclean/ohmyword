@@ -2,5 +2,6 @@
 
 public abstract class Entity
 {
-    public Guid Id { get; init; } = Guid.NewGuid();
+    public string Id { get; init; } = Guid.NewGuid().ToString();
+    public DateTime LastUpdateTime { get; set; } = DateTime.UtcNow;
 }

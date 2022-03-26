@@ -1,3 +1,4 @@
 export interface RegisterResponse {
-  clientId: string;
+  successful: boolean;
+  playerId: string;
 }

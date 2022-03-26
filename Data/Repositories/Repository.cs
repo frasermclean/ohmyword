@@ -1,4 +1,5 @@
-﻿using Microsoft.Azure.Cosmos;
+﻿using Humanizer;
+using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using OhMyWord.Data.Models;
 
@@ -9,36 +10,55 @@ public abstract class Repository<TEntity> where TEntity : Entity
     private readonly Task<Container> containerTask;
     private readonly ILogger<Repository<TEntity>> logger;
 
-    protected abstract string ContainerId { get; }
-    protected abstract string PartitionKeyPath { get; }
+    private string EntityTypeName { get; }
 
-    public Repository(ICosmosDbService cosmosDbService, ILogger<Repository<TEntity>> logger)
+    protected Repository(ICosmosDbService cosmosDbService, ILogger<Repository<TEntity>> logger, string? containerId = null, string partitionKeyPath = "/id")
     {
-        containerTask = cosmosDbService.GetContainerAsync(ContainerId, PartitionKeyPath);
+        EntityTypeName = typeof(TEntity).Name;
+        containerId ??= EntityTypeName.Pluralize();
+        containerTask = cosmosDbService.GetContainerAsync(containerId, partitionKeyPath);
         this.logger = logger;
     }
 
-    protected async Task<Container> GetContainerAsync() => await containerTask;
+    private Task<Container> GetContainerAsync() => containerTask;
+
+    protected async Task<TEntity> CreateItemAsync(TEntity item)
+    {
+        var container = await GetContainerAsync();
+        var response = await container.CreateItemAsync(item);
+
+        logger.LogDebug("Created {typeName} with ID: {id}. Resource charge: {charge} RU.", EntityTypeName, item.Id, response.RequestCharge);
+
+        return response.Resource;
+    }
+
+    protected async Task DeleteItemAsync(string id, string? partition = null)
+    {
+        var container = await GetContainerAsync();
+        var partitionKey = new PartitionKey(partition ?? id);
+        var response = await container.DeleteItemAsync<TEntity>(id, partitionKey);
+
+        logger.LogDebug("Deleted {typeName} with ID: {id} on partition: {partition}. Resource charge: {charge} RU.", EntityTypeName, id, partitionKey, response.RequestCharge);
+    }
 
     #region Multiple item enumeration methods
 
     /// <summary>
     /// Read all items across all partitions. This is an expensive operation and should be avoided if possible.
     /// </summary>
-    /// <returns>An enumerable of <typeparamref name="T"/></returns>
     protected async Task<IEnumerable<TEntity>> ReadAllItemsAsync()
     {
         QueryDefinition queryDefinition = new("SELECT * FROM c");
         return await ExecuteQueryAsync<TEntity>(queryDefinition);
     }
 
-    private async Task<IEnumerable<TResponse>> ExecuteQueryAsync<TResponse>(
+    protected async Task<IEnumerable<TResponse>> ExecuteQueryAsync<TResponse>(
         QueryDefinition queryDefinition,
-        string partition = default!)
+        string? partition = null)
     {
-        Container container = await GetContainerAsync();
+        var container = await GetContainerAsync();
 
-        using FeedIterator<TResponse> iterator = container.GetItemQueryIterator<TResponse>(queryDefinition, requestOptions: new()
+        using var iterator = container.GetItemQueryIterator<TResponse>(queryDefinition, requestOptions: new QueryRequestOptions
         {
             PartitionKey = partition is not null ? new PartitionKey(partition) : null
         });
@@ -50,7 +70,7 @@ public abstract class Repository<TEntity> where TEntity : Entity
 
         while (iterator.HasMoreResults)
         {
-            FeedResponse<TResponse> response = await iterator.ReadNextAsync();
+            var response = await iterator.ReadNextAsync();
             logger.LogInformation("Read {count} items, charge was: {charge} RU.", response.Count, response.RequestCharge);
             totalCharge += response.RequestCharge;
             items.AddRange(response);

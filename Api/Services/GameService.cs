@@ -15,6 +15,8 @@ public interface IGameService
     Task<CurrentWordResponse> GetCurrentWord();
     Task<CurrentWordResponse> SelectNextWord();
     Task<GuessWordResponse> TestGuessAsync(GuessWordRequest request);
+    Task<RegisterPlayerResponse> RegisterPlayerAsync(RegisterPlayerRequest request);
+    Task UnregisterPlayerAsync(string connectionId);
 }
 
 public class GameService : IGameService
@@ -22,6 +24,7 @@ public class GameService : IGameService
     private readonly ILogger<GameService> logger;
     private readonly IWordsRepository wordsRepository;
     private readonly IHubContext<GameHub, IGameHub> gameHubContext;
+    private readonly IPlayerRepository playerRepository;
 
     private List<Word> allWords = new();
     private Word? currentWord;
@@ -33,11 +36,13 @@ public class GameService : IGameService
         IOptions<GameServiceOptions> options,
         ILogger<GameService> logger,
         IWordsRepository wordsRepository,
-        IHubContext<GameHub, IGameHub> gameHubContext)
+        IHubContext<GameHub, IGameHub> gameHubContext,
+        IPlayerRepository playerRepository)
     {
         this.logger = logger;
         this.wordsRepository = wordsRepository;
         this.gameHubContext = gameHubContext;
+        this.playerRepository = playerRepository;
         Options = options.Value;
     }
 
@@ -89,6 +94,37 @@ public class GameService : IGameService
             Value = request.Value.ToLowerInvariant(),
             Correct = correct,
         };
+    }
+
+    public async Task<RegisterPlayerResponse> RegisterPlayerAsync(RegisterPlayerRequest request)
+    {
+        var player = await playerRepository.FindPlayerByVisitorIdAsync(request.VisitorId);
+
+        // create new player if existing player not found
+        player ??= await playerRepository.CreatePlayerAsync(new Player
+        {
+            VisitorId = request.VisitorId,
+            ConnectionId = request.ConnectionId
+        });
+
+        return new RegisterPlayerResponse()
+        {
+            Successful = true,
+            PlayerId = player.Id
+        };
+    }
+
+    public async Task UnregisterPlayerAsync(string connectionId)
+    {
+        var player = await playerRepository.FindPlayerByConnectionIdAsync(connectionId);
+
+        if (player is null)
+        {
+            logger.LogWarning("Couldn't find a player with connection ID: {connectionId} to unregister.", connectionId);
+            return;
+        }
+
+        await playerRepository.DeletePlayerAsync(player.Id);
     }
 
     private async Task RefreshWordsFromRepository()
