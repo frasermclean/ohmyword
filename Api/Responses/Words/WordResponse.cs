@@ -1,6 +1,6 @@
-﻿using WhatTheWord.Data.Models;
+﻿using OhMyWord.Data.Models;
 
-namespace WhatTheWord.Api.Responses.Words;
+namespace OhMyWord.Api.Responses.Words;
 
 public class WordResponse
 {

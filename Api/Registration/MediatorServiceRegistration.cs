@@ -1,7 +1,7 @@
 ﻿using MediatR;
-using WhatTheWord.Api.Mediator.Handlers.Game;
+using OhMyWord.Api.Mediator.Handlers.Game;
 
-namespace WhatTheWord.Api.Registration;
+namespace OhMyWord.Api.Registration;
 
 public static class MediatorServiceRegistration
 {

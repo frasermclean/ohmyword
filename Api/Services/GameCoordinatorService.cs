@@ -1,4 +1,4 @@
-﻿namespace WhatTheWord.Api.Services;
+﻿namespace OhMyWord.Api.Services;
 
 public class GameCoordinatorService : BackgroundService
 {

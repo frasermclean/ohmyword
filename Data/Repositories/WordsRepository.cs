@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
-using WhatTheWord.Data.Models;
+using OhMyWord.Data.Models;
 
-namespace WhatTheWord.Data.Repositories;
+namespace OhMyWord.Data.Repositories;
 
 public interface IWordsRepository
 {

@@ -1,7 +1,7 @@
 ﻿using MediatR;
-using WhatTheWord.Api.Responses.Game;
+using OhMyWord.Api.Responses.Game;
 
-namespace WhatTheWord.Api.Mediator.Requests.Game;
+namespace OhMyWord.Api.Mediator.Requests.Game;
 
 public class GetHintRequest : IRequest<HintResponse>
 {

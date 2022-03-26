@@ -1,10 +1,10 @@
 ﻿using MediatR;
-using WhatTheWord.Api.Mediator.Requests.Words;
-using WhatTheWord.Api.Responses.Words;
-using WhatTheWord.Api.Services;
-using WhatTheWord.Data.Repositories;
+using OhMyWord.Api.Mediator.Requests.Words;
+using OhMyWord.Api.Responses.Words;
+using OhMyWord.Api.Services;
+using OhMyWord.Data.Repositories;
 
-namespace WhatTheWord.Api.Mediator.Handlers.Words;
+namespace OhMyWord.Api.Mediator.Handlers.Words;
 
 public class GetCurrentWordHandler : IRequestHandler<GetCurrentWordRequest, CurrentWordResponse>
 {

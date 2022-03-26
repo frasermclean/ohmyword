@@ -1,14 +1,14 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using WhatTheWord.Api.Hubs;
-using WhatTheWord.Api.Mediator.Requests.Game;
-using WhatTheWord.Api.Responses.Game;
-using WhatTheWord.Api.Responses.Words;
-using WhatTheWord.Data.Models;
-using WhatTheWord.Data.Repositories;
+using OhMyWord.Api.Hubs;
+using OhMyWord.Api.Mediator.Requests.Game;
+using OhMyWord.Api.Responses.Game;
+using OhMyWord.Api.Responses.Words;
+using OhMyWord.Data.Models;
+using OhMyWord.Data.Repositories;
 
-namespace WhatTheWord.Api.Services;
+namespace OhMyWord.Api.Services;
 
 public interface IGameService
 {

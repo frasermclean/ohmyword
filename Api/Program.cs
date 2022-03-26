@@ -1,8 +1,8 @@
-using WhatTheWord.Api.Hubs;
-using WhatTheWord.Api.Registration;
-using WhatTheWord.Api.Services;
+using OhMyWord.Api.Hubs;
+using OhMyWord.Api.Registration;
+using OhMyWord.Api.Services;
 
-namespace WhatTheWord.Api;
+namespace OhMyWord.Api;
 
 public static class Program
 {

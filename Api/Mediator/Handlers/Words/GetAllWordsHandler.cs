@@ -1,9 +1,9 @@
 ﻿using MediatR;
-using WhatTheWord.Api.Mediator.Requests.Words;
-using WhatTheWord.Api.Responses.Words;
-using WhatTheWord.Data.Repositories;
+using OhMyWord.Api.Mediator.Requests.Words;
+using OhMyWord.Api.Responses.Words;
+using OhMyWord.Data.Repositories;
 
-namespace WhatTheWord.Api.Handlers.Words;
+namespace OhMyWord.Api.Handlers.Words;
 
 public class GetAllWordsHandler : IRequestHandler<GetAllWordsRequest, IEnumerable<WordResponse>>
 {

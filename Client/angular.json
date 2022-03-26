@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "wtw-client": {
+    "ohmyword-client": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:application": {
@@ -64,10 +64,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "wtw-client:build:production"
+              "browserTarget": "ohmyword-client:build:production"
             },
             "development": {
-              "browserTarget": "wtw-client:build:development"
+              "browserTarget": "ohmyword-client:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -75,7 +75,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "wtw-client:build"
+            "browserTarget": "ohmyword-client:build"
           }
         },
         "test": {
@@ -119,7 +119,7 @@
       }
     }
   },
-  "defaultProject": "wtw-client",
+  "defaultProject": "ohmyword-client",
   "schematics": {
     "@schematics/angular:component": {
       "style": "scss"

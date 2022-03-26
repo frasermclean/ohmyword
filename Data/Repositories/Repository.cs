@@ -1,8 +1,8 @@
 ﻿using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
-using WhatTheWord.Data.Models;
+using OhMyWord.Data.Models;
 
-namespace WhatTheWord.Data.Repositories;
+namespace OhMyWord.Data.Repositories;
 
 public abstract class Repository<TEntity> where TEntity : Entity
 {

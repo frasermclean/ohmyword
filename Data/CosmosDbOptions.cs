@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace WhatTheWord.Data;
+namespace OhMyWord.Data;
 
 public class CosmosDbOptions
 {

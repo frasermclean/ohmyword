@@ -1,4 +1,4 @@
-﻿namespace WhatTheWord.Api.Registration;
+﻿namespace OhMyWord.Api.Registration;
 
 public static class CorsPolicyRegistration
 {

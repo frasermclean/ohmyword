@@ -1,9 +1,9 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.SignalR;
-using WhatTheWord.Api.Mediator.Requests.Game;
-using WhatTheWord.Api.Responses.Game;
+using OhMyWord.Api.Mediator.Requests.Game;
+using OhMyWord.Api.Responses.Game;
 
-namespace WhatTheWord.Api.Hubs;
+namespace OhMyWord.Api.Hubs;
 
 public interface IGameHub
 {

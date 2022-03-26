@@ -1,3 +1,3 @@
-# WhatTheWorld Client Application
+# OhMyWord Client Application
 
-This is an Angular application that serves as the front-end for WhatTheWord.
+This is an Angular application that serves as the front-end for OhMyWord.

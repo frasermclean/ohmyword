@@ -1,7 +1,7 @@
-﻿using WhatTheWord.Data;
-using WhatTheWord.Data.Repositories;
+﻿using OhMyWord.Data;
+using OhMyWord.Data.Repositories;
 
-namespace WhatTheWord.Api.Registration;
+namespace OhMyWord.Api.Registration;
 
 public static class DataServicesRegistration
 {

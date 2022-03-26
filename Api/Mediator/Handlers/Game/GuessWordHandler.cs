@@ -1,9 +1,9 @@
 ﻿using MediatR;
-using WhatTheWord.Api.Mediator.Requests.Game;
-using WhatTheWord.Api.Responses.Game;
-using WhatTheWord.Api.Services;
+using OhMyWord.Api.Mediator.Requests.Game;
+using OhMyWord.Api.Responses.Game;
+using OhMyWord.Api.Services;
 
-namespace WhatTheWord.Api.Mediator.Handlers.Game;
+namespace OhMyWord.Api.Mediator.Handlers.Game;
 
 public class GuessWordHandler : IRequestHandler<GuessWordRequest, GuessWordResponse>
 {

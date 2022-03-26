@@ -1,7 +1,7 @@
 ﻿using MediatR;
-using WhatTheWord.Api.Responses.Words;
+using OhMyWord.Api.Responses.Words;
 
-namespace WhatTheWord.Api.Mediator.Requests.Words;
+namespace OhMyWord.Api.Mediator.Requests.Words;
 
 public class GetAllWordsRequest : IRequest<IEnumerable<WordResponse>>
 {

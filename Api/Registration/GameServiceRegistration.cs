@@ -1,6 +1,6 @@
-﻿using WhatTheWord.Api.Services;
+﻿using OhMyWord.Api.Services;
 
-namespace WhatTheWord.Api.Registration;
+namespace OhMyWord.Api.Registration;
 
 public static class GameServiceRegistration
 {

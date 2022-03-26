@@ -1,8 +1,8 @@
 ﻿using MediatR;
-using WhatTheWord.Api.Mediator.Requests.Game;
-using WhatTheWord.Api.Responses.Game;
+using OhMyWord.Api.Mediator.Requests.Game;
+using OhMyWord.Api.Responses.Game;
 
-namespace WhatTheWord.Api.Mediator.Handlers.Game;
+namespace OhMyWord.Api.Mediator.Handlers.Game;
 
 public class RegisterClientHandler : IRequestHandler<RegisterClientRequest, RegisterClientResponse>
 {

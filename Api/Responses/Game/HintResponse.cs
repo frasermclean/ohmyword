@@ -1,6 +1,6 @@
-﻿using WhatTheWord.Data.Models;
+﻿using OhMyWord.Data.Models;
 
-namespace WhatTheWord.Api.Responses.Game;
+namespace OhMyWord.Api.Responses.Game;
 
 public class HintResponse
 {

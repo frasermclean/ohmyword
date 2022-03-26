@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace WhatTheWord.Api.Services;
+namespace OhMyWord.Api.Services;
 
 public class GameServiceOptions
 {

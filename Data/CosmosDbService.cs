@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Net;
 
-namespace WhatTheWord.Data;
+namespace OhMyWord.Data;
 
 public interface ICosmosDbService
 {

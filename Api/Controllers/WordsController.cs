@@ -1,8 +1,8 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using WhatTheWord.Api.Mediator.Requests.Words;
+using OhMyWord.Api.Mediator.Requests.Words;
 
-namespace WhatTheWord.Api.Controllers;
+namespace OhMyWord.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
