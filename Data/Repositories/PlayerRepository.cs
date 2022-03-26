@@ -7,7 +7,8 @@ namespace OhMyWord.Data.Repositories;
 public interface IPlayerRepository
 {
     Task<Player> CreatePlayerAsync(Player player);
-    Task DeletePlayerAsync(string playerId);
+    Task DeletePlayerAsync(Player player);
+    Task<Player?> FindPlayerByPlayerId(string playerId);
     Task<Player?> FindPlayerByVisitorIdAsync(string visitorId);
     Task<Player?> FindPlayerByConnectionIdAsync(string connectionId);
     Task<Player> UpdatePlayerConnectionIdAsync(Player player, string connectionId);
@@ -21,7 +22,8 @@ public class PlayerRepository : Repository<Player>, IPlayerRepository
     }
 
     public Task<Player> CreatePlayerAsync(Player player) => CreateItemAsync(player);
-    public Task DeletePlayerAsync(string playerId) => DeleteItemAsync(playerId);
+    public Task DeletePlayerAsync(Player player) => DeleteItemAsync(player);
+    public Task<Player?> FindPlayerByPlayerId(string playerId) => ReadItemAsync(playerId, playerId);
 
     public async Task<Player?> FindPlayerByVisitorIdAsync(string visitorId)
     {

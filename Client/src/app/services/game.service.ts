@@ -72,7 +72,7 @@ export class GameService {
   public async guessWord(value: string) {
     await this.initialize();
     const args = {
-      clientId: this.playerId,
+      playerId: this.playerId,
       value,
     };
     const response = await this.hubConnection.invoke<GuessResponse>(

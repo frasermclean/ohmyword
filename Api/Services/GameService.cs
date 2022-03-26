@@ -85,9 +85,13 @@ public class GameService : IGameService
     public async Task<GuessWordResponse> TestGuessAsync(GuessWordRequest request)
     {
         var response = await GetCurrentWord();
+        
         var correct = string.Equals(request.Value, response.Word.Value, StringComparison.InvariantCultureIgnoreCase);
 
-        if (correct) await SelectNextWord();
+        if (correct)
+        {
+            var player = await playerRepository.FindPlayerByPlayerId(request.PlayerId);
+        }
 
         return new GuessWordResponse()
         {
@@ -124,7 +128,7 @@ public class GameService : IGameService
             return;
         }
 
-        await playerRepository.DeletePlayerAsync(player.Id);
+        await playerRepository.DeletePlayerAsync(player);
     }
 
     private async Task RefreshWordsFromRepository()

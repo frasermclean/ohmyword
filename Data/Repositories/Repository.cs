@@ -2,6 +2,7 @@
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using OhMyWord.Data.Models;
+using System.Net;
 
 namespace OhMyWord.Data.Repositories;
 
@@ -32,10 +33,30 @@ public abstract class Repository<TEntity> where TEntity : Entity
         return response.Resource;
     }
 
-    protected async Task DeleteItemAsync(string id, string? partition = null)
+    protected async Task<TEntity?> ReadItemAsync(string id, string partition)
     {
         var container = await GetContainerAsync();
-        var partitionKey = new PartitionKey(partition ?? id);
+        var partitionKey = new PartitionKey(partition);
+
+        try
+        {
+            var response = await container.ReadItemAsync<TEntity>(id, partitionKey);
+            logger.LogDebug("Read {typeName} with ID: {id} on partition: {partition}. Resource charge: {charge} RU.", EntityTypeName, id, partitionKey, response.RequestCharge);
+            return response.Resource;
+        }
+        catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+        {
+            logger.LogWarning("Couldn't find a {typeName} with ID: {id} on partition: {partition}", EntityTypeName, id, partition);
+            return default;
+        }
+    }
+
+    protected Task DeleteItemAsync(TEntity item) => DeleteItemAsync(item.Id, item.GetPartition());
+
+    protected async Task DeleteItemAsync(string id, string partition)
+    {
+        var container = await GetContainerAsync();
+        var partitionKey = new PartitionKey(partition);
         var response = await container.DeleteItemAsync<TEntity>(id, partitionKey);
 
         logger.LogDebug("Deleted {typeName} with ID: {id} on partition: {partition}. Resource charge: {charge} RU.", EntityTypeName, id, partitionKey, response.RequestCharge);
