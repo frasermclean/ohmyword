@@ -5,12 +5,12 @@ import {
   HubConnectionState,
   LogLevel,
 } from '@microsoft/signalr';
-import FingerprintJS from '@fingerprintjs/fingerprintjs';
 
 import { HintResponse } from '../models/hint.response';
 import { RegisterResponse } from '../models/register.response';
 import { environment } from 'src/environments/environment';
 import { GuessResponse } from '../models/guess.response';
+import { FingerprintService } from './fingerprint.service';
 
 @Injectable({
   providedIn: 'root',
@@ -34,7 +34,7 @@ export class GameService {
     return this.isRegisteredSubject.asObservable();
   }
 
-  constructor() {}
+  constructor(private fingerprintService: FingerprintService) {}
 
   /**
    * Attempt to register with game service.
@@ -43,7 +43,7 @@ export class GameService {
   async register() {
     try {
       await this.initialize();
-      const visitorId = await this.getVisitorId();
+      const visitorId = await this.fingerprintService.getVisitorId();
       const response = await this.hubConnection.invoke<RegisterResponse>(
         'register',
         visitorId
@@ -100,15 +100,5 @@ export class GameService {
 
       await this.hubConnection.start();
     }
-  }
-
-  /**
-   * Get unique visitor ID from FingerprintJS
-   * @returns A string of the vistor ID.
-   */
-  private async getVisitorId() {
-    const agent = await FingerprintJS.load();
-    const result = await agent.get();
-    return result.visitorId;
   }
 }
