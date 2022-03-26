@@ -1,5 +1,6 @@
 using WhatTheWord.Api.Hubs;
 using WhatTheWord.Api.Services;
+using WhatTheWord.Domain.Services;
 
 namespace WhatTheWord.Api;
 
@@ -26,6 +27,8 @@ public static class Program
         services.AddControllersWithViews();
 
         services.AddCorsPolicy(environment);
+
+        services.AddHostedService<GameCoordinator>();
 
         // add mediatr service
         services.AddMediatorService();
