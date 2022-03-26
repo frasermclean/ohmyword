@@ -1,6 +1,6 @@
 ﻿using WhatTheWord.Domain.Services;
 
-namespace WhatTheWord.Api.Services;
+namespace WhatTheWord.Api.Configuration;
 
 public static class GameService
 {

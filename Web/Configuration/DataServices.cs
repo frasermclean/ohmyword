@@ -1,7 +1,7 @@
 ﻿using WhatTheWord.Data;
 using WhatTheWord.Data.Repositories;
 
-namespace WhatTheWord.Api.Services;
+namespace WhatTheWord.Api.Configuration;
 
 public static class DataServices
 {

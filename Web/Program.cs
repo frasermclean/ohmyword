@@ -1,5 +1,5 @@
 using WhatTheWord.Api.Hubs;
-using WhatTheWord.Api.Services;
+using WhatTheWord.Api.Configuration;
 using WhatTheWord.Domain.Services;
 
 namespace WhatTheWord.Api;
