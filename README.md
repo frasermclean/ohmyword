@@ -1,3 +1,4 @@
-# WhatTheWord
+# OhMyWord
 
-What the word is a game in which players need to guess a randomly selected word.
+OhMyWord is a game in which players compete with other players around the world
+to guess a randomly selected word.
