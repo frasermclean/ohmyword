@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-
+import { BehaviorSubject, ReplaySubject, Subject } from 'rxjs';
 import {
   HubConnectionBuilder,
   HubConnectionState,
@@ -11,22 +11,29 @@ import { HintResponse } from '../models/hint.response';
 import { RegisterResponse } from '../models/register.response';
 import { environment } from 'src/environments/environment';
 import { GuessResponse } from '../models/guess.response';
-import { Subject } from 'rxjs';
+
 
 @Injectable({
   providedIn: 'root',
 })
 export class GameService {
   private clientId = '';
-  private connection = new HubConnectionBuilder()
+  private hubConnection = new HubConnectionBuilder()
     .withUrl(environment.api.hubUrl)
     .configureLogging(
       environment.production ? LogLevel.Error : LogLevel.Information
     )
     .build();
 
-  private hintSubject = new Subject<HintResponse>();
-  public hint$ = this.hintSubject.asObservable();
+  private readonly hintSubject = new Subject<HintResponse>();
+  public get hint$() {
+    return this.hintSubject.asObservable();
+  } 
+
+  private readonly isRegisteredSubject = new BehaviorSubject<boolean>(false);
+  public get isRegistered$() {
+    return this.isRegisteredSubject.asObservable();
+  }
 
   constructor() {}
 
@@ -40,12 +47,14 @@ export class GameService {
       const args = {
         visitorId: await this.getVisitorId(),
       };
-      const response = await this.connection.invoke<RegisterResponse>(
+      const response = await this.hubConnection.invoke<RegisterResponse>(
         'register',
         args
       );
       this.clientId = response.clientId;
-      return this.clientId !== '';
+      const isRegistered =  this.clientId !== '';
+      this.isRegisteredSubject.next(isRegistered)
+      return isRegistered;
     } catch (error) {
       console.error(error);
       return false;
@@ -61,7 +70,9 @@ export class GameService {
     const args = {
       clientId: this.clientId,
     };
-    return await this.connection.invoke<HintResponse>('getHint', args);
+    const response = await this.hubConnection.invoke<HintResponse>('getHint', args);
+    this.hintSubject.next(response);
+    return response;
   }
 
   public async guessWord(value: string) {
@@ -70,7 +81,7 @@ export class GameService {
       clientId: this.clientId,
       value,
     };
-    const response = await this.connection.invoke<GuessResponse>(
+    const response = await this.hubConnection.invoke<GuessResponse>(
       this.guessWord.name,
       args
     );
@@ -82,13 +93,13 @@ export class GameService {
    * Initialize connection to game hub (if not already connected)
    */
   private async initialize() {
-    if (this.connection.state === HubConnectionState.Disconnected) {
+    if (this.hubConnection.state === HubConnectionState.Disconnected) {
       // server sends us a hint
-      this.connection.on('sendHint', (hint: HintResponse) => {
+      this.hubConnection.on('sendHint', (hint: HintResponse) => {
         this.hintSubject.next(hint);
       });
 
-      await this.connection.start();
+      await this.hubConnection.start();
     }
   }
 

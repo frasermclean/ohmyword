@@ -4,10 +4,11 @@ import { ReactiveFormsModule } from '@angular/forms';
 
 import { HintComponent } from './hint/hint.component';
 import { GuessComponent } from './guess/guess.component';
+import { GameComponent } from './game/game.component';
 
 @NgModule({
-  declarations: [HintComponent, GuessComponent],
+  declarations: [HintComponent, GuessComponent, GameComponent],
   imports: [CommonModule, ReactiveFormsModule],
-  exports: [HintComponent, GuessComponent],
+  exports: [GameComponent],
 })
 export class GameModule {}
