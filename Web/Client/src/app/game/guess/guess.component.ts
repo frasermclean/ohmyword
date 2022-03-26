@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
+import { GuessResponse } from 'src/app/models/guess.response';
+import { GameService } from 'src/app/services/game.service';
 
 @Component({
   selector: 'app-guess',
@@ -8,14 +10,15 @@ import { FormControl } from '@angular/forms';
 })
 export class GuessComponent implements OnInit {
   guess = new FormControl('');
+  response: GuessResponse | null = null;
 
-  constructor() {}
+  constructor(private gameService: GameService) {}
 
   ngOnInit(): void {
   }
 
-  onGuess(value: string) {
-    console.log(value);
+  async onGuess(value: string) {
+    this.response = await this.gameService.guessWord(value);
     this.guess.reset();
   }
 }

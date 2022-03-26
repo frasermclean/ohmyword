@@ -35,6 +35,12 @@ public class GameHub : Hub<IGameHub>, IGameHub
         return response;
     }
 
+    public async Task<GuessWordResponse> GuessWord(GuessWordRequest request)
+    {
+        var response = await mediator.Send(request);
+        return response;
+    }
+
     public override Task OnConnectedAsync()
     {
         logger.LogInformation("Client connected.");

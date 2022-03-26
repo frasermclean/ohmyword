@@ -10,7 +10,7 @@ namespace WhatTheWord.Domain.Services;
 public interface IGameService
 {
     Task<(Word, DateTime)> GetCurrentWord();
-    Task<TryGuessResponse> TryGuessAsync(TryGuessRequest request);
+    Task<GuessWordResponse> GuessWordAsync(GuessWordRequest request);
 }
 
 public class GameService : IGameService
@@ -66,14 +66,14 @@ public class GameService : IGameService
         return (currentWord, currentWordExpiry);
     }
 
-    public async Task<TryGuessResponse> TryGuessAsync(TryGuessRequest request)
+    public async Task<GuessWordResponse> GuessWordAsync(GuessWordRequest request)
     {
-        var (currentWord, expiry) = await GetCurrentWord();
+        var (currentWord, _) = await GetCurrentWord();
+        var correct = string.Equals(request.Value, currentWord.Value, StringComparison.InvariantCultureIgnoreCase);
 
-        bool correct = request.Guess.ToLowerInvariant() == currentWord.Value.ToLowerInvariant();
-
-        return new TryGuessResponse()
+        return new GuessWordResponse()
         {
+            Value = request.Value.ToLowerInvariant(),
             Correct = correct,
         };
     }

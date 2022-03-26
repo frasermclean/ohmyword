@@ -10,6 +10,7 @@ import FingerprintJS from '@fingerprintjs/fingerprintjs';
 import { HintResponse } from '../models/hint.response';
 import { RegisterResponse } from '../models/register.response';
 import { environment } from 'src/environments/environment';
+import { GuessResponse } from '../models/guess.response';
 
 @Injectable({
   providedIn: 'root',
@@ -57,6 +58,17 @@ export class GameService {
       clientId: this.clientId,
     };
     return await this.connection.invoke<HintResponse>('getHint', args);
+  }
+
+  public async guessWord(value: string) {
+    await this.initialize();
+    const args = {
+      clientId: this.clientId,
+      value,
+    };
+    const response = await this.connection.invoke<GuessResponse>(this.guessWord.name, args);
+    console.log(response);
+    return response;
   }
 
   /**

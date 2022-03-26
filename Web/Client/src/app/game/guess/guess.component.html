@@ -6,3 +6,10 @@
   [formControl]="guess"
   (keydown.enter)="onGuess(guess.value)"
 />
+
+<div *ngIf="response">
+  <p>
+    Your last guess of "{{ response.value }}" was
+    {{ response.correct ? "correct" : "incorrect" }}
+  </p>
+</div>
