@@ -21,9 +21,12 @@ public static class Program
     {
         var services = builder.Services;
         var configuration = builder.Configuration;
+        var environment = builder.Environment;
 
         services.AddControllersWithViews();
-        
+
+        services.AddCorsPolicy(environment);
+
         // add mediatr service
         services.AddMediatorService();
 
@@ -55,6 +58,7 @@ public static class Program
         app.UseHttpsRedirection();
         app.UseStaticFiles();
         app.UseRouting();
+        app.UseCorsPolicy(app.Environment);
 
         app.MapControllers();
         app.MapHub<GameHub>("/game");
