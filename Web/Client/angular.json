@@ -67,8 +67,7 @@
               "browserTarget": "wtw-client:build:production"
             },
             "development": {
-              "browserTarget": "wtw-client:build:development",
-              "proxyConfig": "proxy.conf.js"
+              "browserTarget": "wtw-client:build:development"
             }
           },
           "defaultConfiguration": "development"

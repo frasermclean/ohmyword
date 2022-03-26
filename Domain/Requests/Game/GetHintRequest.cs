@@ -5,4 +5,5 @@ namespace WhatTheWord.Domain.Requests.Game;
 
 public class GetHintRequest : IRequest<GetHintResponse>
 {
+    public string ClientId { get; init; } = default!;
 }

@@ -1,27 +1,29 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { HintResponse } from '../models/hint.response';
+
+import {
+  HubConnectionBuilder,
+  HubConnectionState,
+  LogLevel,
+} from '@microsoft/signalr';
 import FingerprintJS from '@fingerprintjs/fingerprintjs';
+
+import { HintResponse } from '../models/hint.response';
 import { RegisterResponse } from '../models/register.response';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class GameService {
-  private readonly baseUrl = 'api/game';
   private clientId = '';
+  private connection = new HubConnectionBuilder()
+    .withUrl(environment.api.hubUrl)
+    .configureLogging(
+      environment.production ? LogLevel.Error : LogLevel.Information
+    )
+    .build();
 
-  constructor(private httpClient: HttpClient) {}
-
-  getHint() {
-    const url = `${this.baseUrl}/hint`;
-
-    return this.httpClient.get<HintResponse>(url, {
-      headers: {
-        'ClientId': this.clientId,
-      },
-    });
-  }
+  constructor() {}
 
   /**
    * Attempt to register with game service.
@@ -29,20 +31,40 @@ export class GameService {
    */
   async register() {
     try {
-      // get visitor id
-      const visitorId = await this.getVisitorId();
-
-      // register with game server
-      const response = await this.sendRegisterRequest(visitorId).toPromise();
-
-      this.clientId = response.clientId;
-      console.log(
-        `Successfully registered with game server. Client ID: ${this.clientId}`
+      await this.initialize();
+      const args = {
+        visitorId: await this.getVisitorId(),
+      };
+      const response = await this.connection.invoke<RegisterResponse>(
+        'register',
+        args
       );
-      return true;
+      this.clientId = response.clientId;
+      return this.clientId !== '';
     } catch (error) {
       console.error(error);
       return false;
+    }
+  }
+
+  /**
+   * Get hint about the current word.
+   * @returns
+   */
+  async getHint() {
+    await this.initialize();
+    const args = {
+      clientId: this.clientId,
+    };
+    return await this.connection.invoke<HintResponse>('getHint', args);
+  }
+
+  /**
+   * Initialize connection to game hub (if not already connected)
+   */
+  private async initialize() {
+    if (this.connection.state === HubConnectionState.Disconnected) {
+      await this.connection.start();
     }
   }
 
@@ -54,18 +76,5 @@ export class GameService {
     const agent = await FingerprintJS.load();
     const result = await agent.get();
     return result.visitorId;
-  }
-
-  /**
-   * Send registration HTTP request to game server.
-   * @param visitorId The unique visitor ID.
-   * @returns A registration response.
-   */
-  private sendRegisterRequest(visitorId: string) {
-    const url = `${this.baseUrl}/register`;
-    const body = {
-      visitorId,
-    };
-    return this.httpClient.post<RegisterResponse>(url, body);
   }
 }

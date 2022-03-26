@@ -16,6 +16,7 @@ public static class CorsPolicy
         {
             builder
                 .WithOrigins("http://localhost:4200")
+                .AllowCredentials()
                 .AllowAnyHeader()
                 .AllowAnyMethod();
         }));
