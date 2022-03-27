@@ -14,11 +14,13 @@ export class GuessComponent implements OnInit {
 
   constructor(private gameService: GameService) {}
 
-  ngOnInit(): void {
-  }
+  ngOnInit(): void {}
 
   async onGuess(value: string) {
     this.response = await this.gameService.guessWord(value);
     this.guess.reset();
+    setTimeout(() => {
+      this.response = null;
+    }, 2000);
   }
 }
