@@ -1,0 +1,6 @@
+<p *ngIf="secondsRemaining > 0; else timeUp">
+  There are {{ secondsRemaining }} seconds remaining.
+</p>
+<ng-template #timeUp>
+  <p>Time is up!</p>
+</ng-template>
