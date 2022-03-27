@@ -1,4 +1,8 @@
-<div *ngIf="hint$ | async as hint">
+<ng-container *ngIf="hint$ | async as hint">
+  <div id="letters-container">
+    <app-letter *ngFor="let data of letters" [data]="data"></app-letter>
+  </div>
+  
   <p>Length: {{ hint.length }}</p>
   <p>Definition: {{ hint.definition }}</p>
-</div>
+</ng-container>
