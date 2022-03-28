@@ -21,11 +21,12 @@ public class GameService : IGameService
 {
     private readonly ILogger<GameService> logger;
     private readonly IWordsRepository wordsRepository;
-
     private readonly IPlayerRepository playerRepository;
+    private readonly List<Word> words = new();
 
-    private List<Word> allWords = new();
-
+    public Word CurrentWord { get; private set; } = Word.Default;
+    public Hint CurrentHint { get; private set; } = Hint.Default;
+    public DateTime CurrentExpiry { get; private set; }
 
     public GameService(
         ILogger<GameService> logger,
@@ -37,20 +38,16 @@ public class GameService : IGameService
         this.playerRepository = playerRepository;
     }
 
-    public Word CurrentWord { get; private set; } = Word.Default;
-    public Hint CurrentHint { get; private set; } = Hint.Default;
-    public DateTime CurrentExpiry { get; private set; }
-
 
     public async Task<Word> SelectNextWord(DateTime expiry)
     {
         // request new list of words from repository
-        if (allWords.Count == 0) await RefreshWordsFromRepository();
+        if (words.Count == 0) await RefreshWordsFromRepository();
 
         // set current word to randomly selected one
-        var index = Random.Shared.Next(0, allWords.Count);
-        CurrentWord = allWords[index];
-        var wasRemoved = allWords.Remove(CurrentWord);
+        var index = Random.Shared.Next(0, words.Count);
+        CurrentWord = words[index];
+        var wasRemoved = words.Remove(CurrentWord);
 
         if (!wasRemoved) logger.LogWarning("Word: {word} at index: {index} couldn't be removed from the list.", CurrentWord, index);
 
@@ -108,7 +105,7 @@ public class GameService : IGameService
 
     private async Task RefreshWordsFromRepository()
     {
-        allWords = new List<Word>(await wordsRepository.GetAllWordsAsync());
-        logger.LogInformation("All words now contains {count} words.", allWords.Count);
+        words.AddRange(await wordsRepository.GetAllWordsAsync()); 
+        logger.LogInformation("All words now contains {count} words.", words.Count);
     }
 }
