@@ -1,10 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using OhMyWord.Api.Hubs;
-using OhMyWord.Api.Mediator.Requests.Game;
+using OhMyWord.Api.Requests.Game;
 using OhMyWord.Api.Responses.Game;
-using OhMyWord.Api.Responses.Words;
 using OhMyWord.Data.Models;
 using OhMyWord.Data.Repositories;
 
@@ -12,10 +9,13 @@ namespace OhMyWord.Api.Services;
 
 public interface IGameService
 {
-    Task<CurrentWordResponse> GetCurrentWord();
-    Task<CurrentWordResponse> SelectNextWord();
-    Task<GuessWordResponse> TestGuessAsync(GuessWordRequest request);
-    Task<RegisterPlayerResponse> RegisterPlayerAsync(RegisterPlayerRequest request);
+    Word CurrentWord { get; }
+    Hint CurrentHint { get; }
+    DateTime CurrentExpiry { get; }
+
+    Task<Word> SelectNextWord(DateTime expiry);
+    Task<GuessWordResponse> TestPlayerGuess(GuessWordRequest request);
+    Task<Player> RegisterPlayerAsync(string visitorId, string connectionId);
     Task UnregisterPlayerAsync(string connectionId);
 }
 
@@ -23,99 +23,76 @@ public class GameService : IGameService
 {
     private readonly ILogger<GameService> logger;
     private readonly IWordsRepository wordsRepository;
-    private readonly IHubContext<GameHub, IGameHub> gameHubContext;
+    
     private readonly IPlayerRepository playerRepository;
 
     private List<Word> allWords = new();
-    private Word? currentWord;
-    private DateTime currentWordExpiry;
-
-    private GameServiceOptions Options { get; }
+    
 
     public GameService(
-        IOptions<GameServiceOptions> options,
         ILogger<GameService> logger,
         IWordsRepository wordsRepository,
-        IHubContext<GameHub, IGameHub> gameHubContext,
         IPlayerRepository playerRepository)
     {
         this.logger = logger;
         this.wordsRepository = wordsRepository;
-        this.gameHubContext = gameHubContext;
         this.playerRepository = playerRepository;
-        Options = options.Value;
     }
 
-    public async Task<CurrentWordResponse> GetCurrentWord()
-    {
-        var now = DateTime.UtcNow;
+    public Word CurrentWord { get; private set; } = Word.Default;
+    public Hint CurrentHint { get; private set; } = Hint.Default;
+    public DateTime CurrentExpiry { get; private set; }
 
-        // early exit if current word is still valid
-        if (currentWord is not null && now < currentWordExpiry)
-            return new CurrentWordResponse
-            {
-                Word = currentWord,
-                Expiry = currentWordExpiry,
-            };
 
-        return await SelectNextWord();
-    }
-
-    public async Task<CurrentWordResponse> SelectNextWord()
+    public async Task<Word> SelectNextWord(DateTime expiry)
     {
         // request new list of words from repository
         if (allWords.Count == 0) await RefreshWordsFromRepository();
 
         // set current word to randomly selected one
         var index = Random.Shared.Next(0, allWords.Count);
-        currentWord = allWords[index];
-        currentWordExpiry = DateTime.UtcNow.AddSeconds(Options.RoundLength);
-        allWords.Remove(currentWord);
+        CurrentWord = allWords[index];
+        var wasRemoved = allWords.Remove(CurrentWord);
 
-        logger.LogInformation("Current word selected as: {word}", currentWord);
-        await gameHubContext.Clients.All.SendHint(new HintResponse(currentWord, DateTime.UtcNow.AddSeconds(Options.RoundLength)));
+        if (!wasRemoved) logger.LogWarning("Word: {word} at index: {index} couldn't be removed from the list.", CurrentWord, index);
 
-        return new CurrentWordResponse
-        {
-            Word = currentWord,
-            Expiry = currentWordExpiry,
-        };
+        CurrentExpiry = expiry;
+        CurrentHint = new Hint(CurrentWord, expiry);
+
+        logger.LogInformation("Current word selected as: {word}", CurrentWord);
+
+        return CurrentWord;
     }
 
-    public async Task<GuessWordResponse> TestGuessAsync(GuessWordRequest request)
+    public async Task<GuessWordResponse> TestPlayerGuess(GuessWordRequest request)
     {
-        var response = await GetCurrentWord();
-        
-        var correct = string.Equals(request.Value, response.Word.Value, StringComparison.InvariantCultureIgnoreCase);
+        var correct = string.Equals(request.Value, CurrentWord.Value, StringComparison.InvariantCultureIgnoreCase);
 
         if (correct)
         {
             var player = await playerRepository.FindPlayerByPlayerId(request.PlayerId);
+            //TODO: Perform addition player actions on correct guess
         }
 
-        return new GuessWordResponse()
+        return new GuessWordResponse
         {
             Value = request.Value.ToLowerInvariant(),
             Correct = correct,
         };
-    }
+    } 
 
-    public async Task<RegisterPlayerResponse> RegisterPlayerAsync(RegisterPlayerRequest request)
+    public async Task<Player> RegisterPlayerAsync(string visitorId, string connectionId)
     {
-        var player = await playerRepository.FindPlayerByVisitorIdAsync(request.VisitorId);
+        var player = await playerRepository.FindPlayerByVisitorIdAsync(visitorId);
 
         // create new player if existing player not found
         player ??= await playerRepository.CreatePlayerAsync(new Player
         {
-            VisitorId = request.VisitorId,
-            ConnectionId = request.ConnectionId
+            VisitorId = visitorId,
+            ConnectionId = connectionId
         });
 
-        return new RegisterPlayerResponse()
-        {
-            Successful = true,
-            PlayerId = player.Id
-        };
+        return player;
     }
 
     public async Task UnregisterPlayerAsync(string connectionId)

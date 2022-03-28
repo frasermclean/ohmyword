@@ -1,6 +1,6 @@
-﻿using MediatR;
-using Microsoft.AspNetCore.Mvc;
-using OhMyWord.Api.Mediator.Requests.Words;
+﻿using Microsoft.AspNetCore.Mvc;
+using OhMyWord.Api.Services;
+using OhMyWord.Data.Repositories;
 
 namespace OhMyWord.Api.Controllers;
 
@@ -8,23 +8,25 @@ namespace OhMyWord.Api.Controllers;
 [ApiController]
 public class WordsController : ControllerBase
 {
-    private readonly IMediator mediator;
+    private readonly IWordsRepository wordsRepository;
+    private readonly IGameService gameService;
 
-    public WordsController(IMediator mediator)
+    public WordsController(IWordsRepository wordsRepository, IGameService gameService)
     {
-        this.mediator = mediator;
+        this.wordsRepository = wordsRepository;
+        this.gameService = gameService;
     }
 
     public async Task<IActionResult> GetAllWordsAsync()
     {
-        var response = await mediator.Send(new GetAllWordsRequest());
-        return Ok(response);
+        var words = await wordsRepository.GetAllWordsAsync();
+        return Ok(words);
     }
 
     [HttpGet("current")]
-    public async Task<IActionResult> GetCurrentWordAsync()
+    public IActionResult GetCurrentWord()
     {
-        var response = await mediator.Send(new GetCurrentWordRequest());
-        return Ok(response);
+        var currentWord = gameService.CurrentWord;
+        return Ok(currentWord);
     }
 }

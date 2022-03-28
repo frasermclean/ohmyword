@@ -1,6 +1,6 @@
-﻿using MediatR;
-using Microsoft.AspNetCore.SignalR;
-using OhMyWord.Api.Mediator.Requests.Game;
+﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.Azure.Cosmos.Linq;
+using OhMyWord.Api.Requests.Game;
 using OhMyWord.Api.Responses.Game;
 using OhMyWord.Api.Services;
 
@@ -8,19 +8,17 @@ namespace OhMyWord.Api.Hubs;
 
 public interface IGameHub
 {
-    Task SendHint(HintResponse response);
+    Task SendHint(Hint hint);
 }
 
 public class GameHub : Hub<IGameHub>, IGameHub
 {
     private readonly ILogger<GameHub> logger;
-    private readonly IMediator mediator;
     private readonly IGameService gameService;
 
-    public GameHub(ILogger<GameHub> logger, IMediator mediator, IGameService gameService)
+    public GameHub(ILogger<GameHub> logger, IGameService gameService)
     {
         this.logger = logger;
-        this.mediator = mediator;
         this.gameService = gameService;
     }
 
@@ -36,28 +34,23 @@ public class GameHub : Hub<IGameHub>, IGameHub
         await gameService.UnregisterPlayerAsync(Context.ConnectionId);
     }
 
-    public async Task<RegisterPlayerResponse> Register(string visitorId)
+    public async Task<RegisterPlayerResponse> RegisterPlayer(string visitorId)
     {
         logger.LogInformation("Attempting to register client with visitor ID: {visitorId}", visitorId);
-
-        return await gameService.RegisterPlayerAsync(new RegisterPlayerRequest
-        {
-            VisitorId = visitorId,
-            ConnectionId = Context.ConnectionId
-        });
+        var player = await gameService.RegisterPlayerAsync(visitorId, Context.ConnectionId);
+        return new RegisterPlayerResponse(player);
     }
 
-    public async Task<HintResponse> GetHint(GetHintRequest request)
+    public Hint GetHint(GetHintRequest request)
     {
-        var response = await mediator.Send(request);
-        return response;
+        return gameService.CurrentHint;
     }
 
     public async Task<GuessWordResponse> GuessWord(GuessWordRequest request)
     {
-        var response = await mediator.Send(request);
+        var response = await gameService.TestPlayerGuess(request);
         return response;
     }
 
-    public Task SendHint(HintResponse response) => Clients.All.SendHint(response);
+    public Task SendHint(Hint hint) => Clients.All.SendHint(hint);
 }

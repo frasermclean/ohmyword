@@ -1,7 +1,13 @@
-﻿namespace OhMyWord.Api.Responses.Game;
+﻿using OhMyWord.Data.Models;
+
+namespace OhMyWord.Api.Responses.Game;
 
 public class RegisterPlayerResponse
 {
-    public bool Successful { get; init; }
-    public string PlayerId { get; init; } = string.Empty;
+    public string PlayerId { get; }
+
+    public RegisterPlayerResponse(Player player)
+    {
+        PlayerId = player.Id;
+    }
 }

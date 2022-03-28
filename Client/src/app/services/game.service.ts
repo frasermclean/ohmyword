@@ -40,21 +40,15 @@ export class GameService {
    * Attempt to register with game service.
    * @returns
    */
-  async register() {
-    try {
-      await this.initialize();
-      const visitorId = await this.fingerprintService.getVisitorId();
-      const response = await this.hubConnection.invoke<RegisterResponse>(
-        'register',
-        visitorId
-      );
-      this.playerId = response.playerId;
-      this.isRegisteredSubject.next(response.successful);
-      return response.successful;
-    } catch (error) {
-      console.error(error);
-      return false;
-    }
+  async registerPlayer() {
+    await this.initialize();
+    const visitorId = await this.fingerprintService.getVisitorId();
+    const response = await this.hubConnection.invoke<RegisterResponse>(
+      'registerPlayer',
+      visitorId
+    );
+    this.playerId = response.playerId;
+    this.isRegisteredSubject.next(!!this.playerId);
   }
 
   /**
@@ -64,7 +58,7 @@ export class GameService {
   async getHint() {
     await this.initialize();
     const args = {
-      clientId: this.playerId,
+      playerId: this.playerId,
     };
     const response = await this.hubConnection.invoke<HintResponse>(
       'getHint',

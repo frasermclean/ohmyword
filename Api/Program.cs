@@ -1,6 +1,5 @@
 using OhMyWord.Api.Hubs;
 using OhMyWord.Api.Registration;
-using OhMyWord.Api.Services;
 
 namespace OhMyWord.Api;
 
@@ -28,20 +27,15 @@ public static class Program
 
         services.AddCorsPolicy(environment);
 
-        services.AddHostedService<GameCoordinatorService>();
-
-        // add mediatr service
-        services.AddMediatorService();
-
         // add database services
         services.AddCosmosDbService(configuration);
         services.AddRepositoryServices();
 
-        // game service
-        services.AddGameService(configuration);
-
         // signalR services
         services.AddSignalR();
+
+        // game services
+        services.AddGameServices(configuration);
 
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         services.AddEndpointsApiExplorer();
