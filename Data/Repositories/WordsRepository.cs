@@ -6,6 +6,9 @@ namespace OhMyWord.Data.Repositories;
 public interface IWordsRepository
 {
     Task<IEnumerable<Word>> GetAllWordsAsync();
+    Task<Word?> GetWordById(string wordId);
+    Task<Word> CreateWordAsync(Word word);
+    Task<bool> DeleteWordAsync(string wordId);
 }
 
 public class WordsRepository : Repository<Word>, IWordsRepository
@@ -15,8 +18,8 @@ public class WordsRepository : Repository<Word>, IWordsRepository
     {
     }
 
-    public async Task<IEnumerable<Word>> GetAllWordsAsync()
-    {
-        return await ReadAllItemsAsync();
-    }
+    public Task<IEnumerable<Word>> GetAllWordsAsync() => ReadAllItemsAsync();
+    public Task<Word?> GetWordById(string wordId) => ReadItemAsync(wordId, wordId);
+    public Task<Word> CreateWordAsync(Word word) => CreateItemAsync(word);
+    public Task<bool> DeleteWordAsync(string wordId) => DeleteItemAsync(wordId, wordId);
 }

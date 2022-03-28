@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Options;
 using OhMyWord.Api.Hubs;
 using OhMyWord.Api.Options;
-using OhMyWord.Api.Responses.Game;
 
 namespace OhMyWord.Api.Services;
 

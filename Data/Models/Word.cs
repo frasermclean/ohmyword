@@ -2,8 +2,8 @@
 
 public class Word : Entity
 {
-    public string Value { get; set; } = string.Empty;
-    public string Definition { get; set; } = string.Empty;
+    public string Value { get; init; } = string.Empty;
+    public string Definition { get; init; } = string.Empty;
 
     public override string ToString() => Value;
 

@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.SignalR;
-using OhMyWord.Api.Hubs;
-using OhMyWord.Api.Requests.Game;
+﻿using OhMyWord.Api.Requests.Game;
 using OhMyWord.Api.Responses.Game;
 using OhMyWord.Data.Models;
 using OhMyWord.Data.Repositories;
@@ -23,11 +21,11 @@ public class GameService : IGameService
 {
     private readonly ILogger<GameService> logger;
     private readonly IWordsRepository wordsRepository;
-    
+
     private readonly IPlayerRepository playerRepository;
 
     private List<Word> allWords = new();
-    
+
 
     public GameService(
         ILogger<GameService> logger,
@@ -79,7 +77,7 @@ public class GameService : IGameService
             Value = request.Value.ToLowerInvariant(),
             Correct = correct,
         };
-    } 
+    }
 
     public async Task<Player> RegisterPlayerAsync(string visitorId, string connectionId)
     {

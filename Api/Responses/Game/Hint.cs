@@ -16,5 +16,5 @@ public class Hint
         Expiry = expiry;
     }
 
-    public static readonly Hint Default = new (Word.Default, DateTime.MinValue);
+    public static readonly Hint Default = new(Word.Default, DateTime.MinValue);
 }

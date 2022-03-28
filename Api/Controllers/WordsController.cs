@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using OhMyWord.Api.Requests.Words;
 using OhMyWord.Api.Services;
 using OhMyWord.Data.Repositories;
 
@@ -17,16 +18,32 @@ public class WordsController : ControllerBase
         this.gameService = gameService;
     }
 
-    public async Task<IActionResult> GetAllWordsAsync()
+    [HttpGet]
+    public async Task<IActionResult> GetAllWordsAsync([FromQuery] bool current)
     {
-        var words = await wordsRepository.GetAllWordsAsync();
-        return Ok(words);
+        return current ?
+            Ok(gameService.CurrentWord) :
+            Ok(await wordsRepository.GetAllWordsAsync());
     }
 
-    [HttpGet("current")]
-    public IActionResult GetCurrentWord()
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetWordById(string id)
     {
-        var currentWord = gameService.CurrentWord;
-        return Ok(currentWord);
+        var word = await wordsRepository.GetWordById(id);
+        return word is not null ? Ok(word) : NotFound();
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> CreateWord(CreateWordRequest request)
+    {
+        var word = await wordsRepository.CreateWordAsync(request.ToWord());
+        return CreatedAtRoute(nameof(GetWordById), new { word.Id }, word);
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteWord(string id)
+    {
+        var wasDeleted = await wordsRepository.DeleteWordAsync(id);
+        return wasDeleted ? NoContent() : NotFound();
     }
 }

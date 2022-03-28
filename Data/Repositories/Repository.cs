@@ -53,13 +53,16 @@ public abstract class Repository<TEntity> where TEntity : Entity
 
     protected Task DeleteItemAsync(TEntity item) => DeleteItemAsync(item.Id, item.GetPartition());
 
-    protected async Task DeleteItemAsync(string id, string partition)
+    protected async Task<bool> DeleteItemAsync(string id, string partition)
     {
         var container = await GetContainerAsync();
         var partitionKey = new PartitionKey(partition);
-        var response = await container.DeleteItemAsync<TEntity>(id, partitionKey);
+        var response = await container.DeleteItemStreamAsync(id, partitionKey);
 
-        logger.LogDebug("Deleted {typeName} with ID: {id} on partition: {partition}. Resource charge: {charge} RU.", EntityTypeName, id, partitionKey, response.RequestCharge);
+        if (!response.IsSuccessStatusCode) return false;
+
+        logger.LogDebug("Deleted {typeName} with ID: {id} on partition: {partition}.", EntityTypeName, id, partitionKey);
+        return true;
     }
 
     #region Multiple item enumeration methods
