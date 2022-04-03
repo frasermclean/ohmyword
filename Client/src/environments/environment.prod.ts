@@ -1,4 +1,4 @@
-const server = 'https://ohmyword.live';
+const server = 'https://api.ohmyword.live';
 
 export const environment = {
   production: true,
