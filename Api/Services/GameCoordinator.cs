@@ -30,14 +30,21 @@ public class GameCoordinator : BackgroundService
     {
         while (!cancellationToken.IsCancellationRequested)
         {
-            var currentRoundExpiry = DateTime.UtcNow.AddSeconds(Options.RoundLength);
-            var currentWord = await gameService.SelectNextWord(currentRoundExpiry);
-            var roundDelay = TimeSpan.FromSeconds(Options.RoundLength);
+            try
+            {
+                var currentRoundExpiry = DateTime.UtcNow.AddSeconds(Options.RoundLength);
+                var currentWord = await gameService.SelectNextWord(currentRoundExpiry);
+                var roundDelay = TimeSpan.FromSeconds(Options.RoundLength);
 
-            await gameHubContext.Clients.All.SendHint(gameService.CurrentHint);
+                await gameHubContext.Clients.All.SendHint(gameService.CurrentHint);
 
-            logger.LogDebug("Round: {count} has begun. Current word is \"{value}\". Round will end at: {expiry}", ++RoundCount, currentWord.Value, currentRoundExpiry);
-            await Task.Delay(roundDelay, cancellationToken);
+                logger.LogDebug("Round: {count} has begun. Current word is \"{value}\". Round will end at: {expiry}", ++RoundCount, currentWord.Value, currentRoundExpiry);
+                await Task.Delay(roundDelay, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Exception occurred in game coordinator main loop. Round count: {RoundCount}", RoundCount);
+            }
         }
     }
 }

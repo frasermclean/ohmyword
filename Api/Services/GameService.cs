@@ -42,7 +42,7 @@ public class GameService : IGameService
     public async Task<Word> SelectNextWord(DateTime expiry)
     {
         // request new list of words from repository
-        if (words.Count == 0) await RefreshWordsFromRepository();
+        if (words.Count == 0) words.AddRange(await wordsRepository.GetAllWordsAsync());
 
         // set current word to randomly selected one
         var index = Random.Shared.Next(0, words.Count);
@@ -101,11 +101,5 @@ public class GameService : IGameService
         }
 
         await playerRepository.DeletePlayerAsync(player);
-    }
-
-    private async Task RefreshWordsFromRepository()
-    {
-        words.AddRange(await wordsRepository.GetAllWordsAsync()); 
-        logger.LogInformation("All words now contains {count} words.", words.Count);
     }
 }
