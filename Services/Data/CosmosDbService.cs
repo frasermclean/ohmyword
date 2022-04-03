@@ -15,7 +15,9 @@ public class CosmosDbService : ICosmosDbService
 {
     private readonly ILogger<CosmosDbService> logger;
     private readonly CosmosClient cosmosClient;
-    private readonly Task<Database> databaseTask;
+    private Database? database;
+
+    private string DatabaseId { get; }
 
     public CosmosDbService(IOptions<CosmosDbOptions> options, ILogger<CosmosDbService> logger, IHttpClientFactory httpClientFactory)
     {
@@ -28,20 +30,20 @@ public class CosmosDbService : ICosmosDbService
             Serializer = new EntitySerializer()
         });
 
-        databaseTask = CreateDatabaseAsync(options.Value.DatabaseId);
+        DatabaseId = options.Value.DatabaseId;
     }
 
-    private async Task<Database> CreateDatabaseAsync(string databaseId)
+    private async Task<Database> GetDatabaseAsync()
     {
-        var response = await cosmosClient.CreateDatabaseIfNotExistsAsync(databaseId);
+        var response = await cosmosClient.CreateDatabaseIfNotExistsAsync(DatabaseId);
 
         switch (response.StatusCode)
         {
             case HttpStatusCode.Created:
-                logger.LogInformation("Created new database with ID: {databaseId}", databaseId);
+                logger.LogInformation("Created new database with ID: {databaseId}", DatabaseId);
                 break;
             case HttpStatusCode.OK:
-                logger.LogInformation("Connected to existing database with ID: {databaseId}", databaseId);
+                logger.LogInformation("Connected to existing database with ID: {databaseId}", DatabaseId);
                 break;
         }
 
@@ -50,7 +52,7 @@ public class CosmosDbService : ICosmosDbService
 
     public async Task<Container> GetContainerAsync(string containerId, string partitionKeyPath)
     {
-        var database = await databaseTask;
+        database ??= await GetDatabaseAsync();
 
         var response = await database.CreateContainerIfNotExistsAsync(containerId, partitionKeyPath);
 
