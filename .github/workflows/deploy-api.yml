@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   build:
@@ -22,18 +23,14 @@ jobs:
         with: 
           dotnet-version: '6.0.x'
           include-prerelease: true
-      
-      # Restore packages
-      - name: Restore packages
-        run: dotnet restore
 
-      # Build API project
+      # Build solution
       - name: Build solution
-        run: dotnet build --no-restore --configuration Release ./Api/Api.csproj
+        run: dotnet build --configuration Release
 
       # Publish API project
       - name: Publish API project
-        run: dotnet publish --no-build --output ${{env.DOTNET_ROOT}}/api ./Api/Api.csproj
+        run: dotnet publish --configuration Release --output ${{env.DOTNET_ROOT}}/api Api
 
       # Upload API project artifact
       - name: Upload API project artifact
