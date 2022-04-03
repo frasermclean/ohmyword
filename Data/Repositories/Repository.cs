@@ -1,7 +1,7 @@
 ﻿using Humanizer;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
-using OhMyWord.Data.Models;
+using OhMyWord.Core.Models;
 using System.Net;
 
 namespace OhMyWord.Data.Repositories;

@@ -1,4 +1,4 @@
-﻿namespace OhMyWord.Data.Models;
+﻿namespace OhMyWord.Core.Models;
 
 public class Word : Entity
 {

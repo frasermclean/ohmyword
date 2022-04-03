@@ -1,4 +1,4 @@
-﻿using OhMyWord.Data.Models;
+﻿using OhMyWord.Core.Models;
 using System.ComponentModel.DataAnnotations;
 
 namespace OhMyWord.Api.Requests.Words;

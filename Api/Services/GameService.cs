@@ -1,6 +1,6 @@
 ﻿using OhMyWord.Api.Requests.Game;
 using OhMyWord.Api.Responses.Game;
-using OhMyWord.Data.Models;
+using OhMyWord.Core.Models;
 using OhMyWord.Data.Repositories;
 
 namespace OhMyWord.Api.Services;

@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using OhMyWord.Api.Responses.Words;
-using OhMyWord.Data.Models;
+using OhMyWord.Core.Models;
 
 namespace OhMyWord.Api.Responses;
 

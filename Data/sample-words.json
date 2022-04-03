@@ -2,16 +2,21 @@
   {
     "id": "d4de8474-030c-4615-a5ef-548223431a87",
     "value": "dog",
-    "definition": "A domesticated canid, Canis familiaris, bred in many varieties."
+    "definition": "A mammal, Canis familiaris or Canis lupus familiaris, that has been domesticated for thousands of years, of highly variable appearance due to human breeding."
   },
   {
     "id": "d3aac6ca-1a22-45d9-b12d-8edf65cf4ecb",
-    "value": "cat",
-    "definition": "A small domesticated carnivore, Felis domestica or F. catus, bred in a number of varieties."
+    "value": "tree",
+    "definition": "A perennial woody plant, not exactly defined, but differentiated from a shrub by its larger size (typically over a few meters in height) or growth habit, usually having a single (or few) main axis or trunk unbranched for some distance above the ground and a head of branches and foliage."
   },
   {
     "id": "c8bcc696-d84b-4dc1-a348-7777ed3d1a8c",
     "value": "house",
-    "definition": "a building in which people live; residence for human beings."
+    "definition": "A structure built or serving as an abode of human beings."
+  },
+  {
+    "id": "c8bcc696-d84b-4dc1-a348-7777ed3d2a7d",
+    "value": "number",
+    "definition": "An abstract entity used to describe quantity."
   }
 ]
