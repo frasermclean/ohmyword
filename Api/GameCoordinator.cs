@@ -2,8 +2,9 @@
 using Microsoft.Extensions.Options;
 using OhMyWord.Api.Hubs;
 using OhMyWord.Api.Options;
+using OhMyWord.Services.Game;
 
-namespace OhMyWord.Api.Services;
+namespace OhMyWord.Api;
 
 public class GameCoordinator : BackgroundService
 {

@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using OhMyWord.Core.Models;
 using System.Net;
 
-namespace OhMyWord.Data.Repositories;
+namespace OhMyWord.Services.Repositories;
 
 public abstract class Repository<TEntity> where TEntity : Entity
 {

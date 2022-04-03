@@ -2,8 +2,9 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Net;
+using OhMyWord.Services.Options;
 
-namespace OhMyWord.Data;
+namespace OhMyWord.Services;
 
 public interface ICosmosDbService
 {

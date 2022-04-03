@@ -2,7 +2,6 @@
 
 public static class CorsPolicyRegistration
 {
-
     /// <summary>
     /// Use CORS policy when running in development environment.
     /// </summary>

@@ -1,6 +1,4 @@
-﻿using OhMyWord.Core.Models;
-
-namespace OhMyWord.Api.Responses.Game;
+﻿namespace OhMyWord.Core.Models;
 
 public class Hint
 {

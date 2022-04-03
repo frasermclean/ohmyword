@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Logging;
 using OhMyWord.Core.Models;
 
-namespace OhMyWord.Data.Repositories;
+namespace OhMyWord.Services.Repositories;
 
 public interface IPlayerRepository
 {

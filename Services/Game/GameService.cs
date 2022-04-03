@@ -1,9 +1,8 @@
-﻿using OhMyWord.Api.Requests.Game;
-using OhMyWord.Api.Responses.Game;
+﻿using Microsoft.Extensions.Logging;
 using OhMyWord.Core.Models;
-using OhMyWord.Data.Repositories;
+using OhMyWord.Services.Repositories;
 
-namespace OhMyWord.Api.Services;
+namespace OhMyWord.Services.Game;
 
 public interface IGameService
 {
@@ -12,9 +11,10 @@ public interface IGameService
     DateTime CurrentExpiry { get; }
 
     Task<Word> SelectNextWord(DateTime expiry);
-    Task<GuessWordResponse> TestPlayerGuess(GuessWordRequest request);
+    bool IsCorrect(string value);
     Task<Player> RegisterPlayerAsync(string visitorId, string connectionId);
     Task UnregisterPlayerAsync(string connectionId);
+    
 }
 
 public class GameService : IGameService
@@ -59,22 +59,7 @@ public class GameService : IGameService
         return CurrentWord;
     }
 
-    public async Task<GuessWordResponse> TestPlayerGuess(GuessWordRequest request)
-    {
-        var correct = string.Equals(request.Value, CurrentWord.Id, StringComparison.InvariantCultureIgnoreCase);
-
-        if (correct)
-        {
-            var player = await playerRepository.FindPlayerByPlayerId(request.PlayerId);
-            //TODO: Perform addition player actions on correct guess
-        }
-
-        return new GuessWordResponse
-        {
-            Value = request.Value.ToLowerInvariant(),
-            Correct = correct,
-        };
-    }
+    public bool IsCorrect(string value) => string.Equals(value, CurrentWord.Id, StringComparison.InvariantCultureIgnoreCase);
 
     public async Task<Player> RegisterPlayerAsync(string visitorId, string connectionId)
     {
