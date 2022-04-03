@@ -8,13 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Mediator\**" />
-    <Content Remove="Mediator\**" />
-    <EmbeddedResource Remove="Mediator\**" />
-    <None Remove="Mediator\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
   </ItemGroup>
 
