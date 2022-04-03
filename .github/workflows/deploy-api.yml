@@ -28,6 +28,10 @@ jobs:
       - name: Build solution
         run: dotnet build --configuration Release
 
+      # Test solution
+      - name: Test solution
+        run: dotnet test --configuration Release --logger trx --results-directory TestResults
+
       # Publish API project
       - name: Publish API project
         run: dotnet publish --configuration Release --output ${{env.DOTNET_ROOT}}/api Api
