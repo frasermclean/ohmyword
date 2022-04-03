@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using OhMyWord.Core.Models;
-using OhMyWord.Services.Repositories;
+using OhMyWord.Services.Data.Repositories;
 
 namespace OhMyWord.Services.Game;
 

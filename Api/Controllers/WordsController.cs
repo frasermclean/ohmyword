@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using OhMyWord.Api.Requests.Words;
 using OhMyWord.Api.Responses.Words;
-using OhMyWord.Services.Repositories;
+using OhMyWord.Services.Data.Repositories;
 
 namespace OhMyWord.Api.Controllers;
 

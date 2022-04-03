@@ -4,7 +4,7 @@ using Microsoft.Extensions.Options;
 using OhMyWord.Services.Options;
 using System.Net;
 
-namespace OhMyWord.Services;
+namespace OhMyWord.Services.Data;
 
 public interface ICosmosDbService
 {

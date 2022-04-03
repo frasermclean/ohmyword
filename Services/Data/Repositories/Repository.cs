@@ -1,10 +1,10 @@
-﻿using Humanizer;
+﻿using System.Net;
+using Humanizer;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using OhMyWord.Core.Models;
-using System.Net;
 
-namespace OhMyWord.Services.Repositories;
+namespace OhMyWord.Services.Data.Repositories;
 
 public abstract class Repository<TEntity> where TEntity : Entity
 {

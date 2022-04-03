@@ -3,7 +3,7 @@ using Microsoft.Azure.Cosmos;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace OhMyWord.Services;
+namespace OhMyWord.Services.Data;
 
 internal class EntitySerializer : CosmosSerializer
 {
