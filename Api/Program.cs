@@ -1,3 +1,5 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using OhMyWord.Api.Hubs;
 using OhMyWord.Api.Registration;
 
@@ -22,7 +24,12 @@ public static class Program
         var services = builder.Services;
         var configuration = builder.Configuration;
 
-        services.AddControllers();
+        services.AddControllers()
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.Converters.Add(
+                    new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
+            });
 
         // add database services
         services.AddCosmosDbService(configuration);

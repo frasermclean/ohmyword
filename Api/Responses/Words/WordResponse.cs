@@ -7,7 +7,7 @@ public class WordResponse
     private readonly Word word;
 
     public string Id => word.Id;
-    public string Value => word.Value;
+    public PartOfSpeech PartOfSpeech => word.PartOfSpeech;
     public string Definition => word.Definition;
 
     internal WordResponse(Word word)

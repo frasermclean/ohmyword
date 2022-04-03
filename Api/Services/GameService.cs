@@ -61,7 +61,7 @@ public class GameService : IGameService
 
     public async Task<GuessWordResponse> TestPlayerGuess(GuessWordRequest request)
     {
-        var correct = string.Equals(request.Value, CurrentWord.Value, StringComparison.InvariantCultureIgnoreCase);
+        var correct = string.Equals(request.Value, CurrentWord.Id, StringComparison.InvariantCultureIgnoreCase);
 
         if (correct)
         {
