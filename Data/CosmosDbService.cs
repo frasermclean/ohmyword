@@ -16,14 +16,15 @@ public class CosmosDbService : ICosmosDbService
     private readonly CosmosClient cosmosClient;
     private readonly Task<Database> databaseTask;
 
-    public CosmosDbService(IOptions<CosmosDbOptions> options, ILogger<CosmosDbService> logger)
+    public CosmosDbService(IOptions<CosmosDbOptions> options, ILogger<CosmosDbService> logger, IHttpClientFactory httpClientFactory)
     {
         this.logger = logger;
         logger.LogInformation("Creating Cosmos DB client.");
 
         cosmosClient = new CosmosClient(options.Value.Endpoint, options.Value.PrimaryKey, new CosmosClientOptions()
         {
-            SerializerOptions = new CosmosSerializationOptions()
+            HttpClientFactory = httpClientFactory.CreateClient,
+            SerializerOptions = new CosmosSerializationOptions
             {
                 PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase,
             }
@@ -39,7 +40,7 @@ public class CosmosDbService : ICosmosDbService
         switch (response.StatusCode)
         {
             case HttpStatusCode.Created:
-                logger.LogInformation("Created new databasee with ID: {databaseId}", databaseId);
+                logger.LogInformation("Created new database with ID: {databaseId}", databaseId);
                 break;
             case HttpStatusCode.OK:
                 logger.LogInformation("Connected to existing database with ID: {databaseId}", databaseId);

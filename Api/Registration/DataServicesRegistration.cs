@@ -13,6 +13,7 @@ public static class DataServicesRegistration
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
+        services.AddHttpClient();
         services.AddSingleton<ICosmosDbService, CosmosDbService>();
 
         return services;
