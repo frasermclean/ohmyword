@@ -21,6 +21,7 @@ jobs:
         uses: actions/setup-dotnet@v2
         with: 
           dotnet-version: '6.0.x'
+          include-prerelease: true
       
       # Restore packages
       - name: Restore packages
@@ -36,7 +37,7 @@ jobs:
 
       # Upload API project artifact
       - name: Upload API project artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: published-api
           path: ${{env.DOTNET_ROOT}}/api
