@@ -21,11 +21,8 @@ public static class Program
     {
         var services = builder.Services;
         var configuration = builder.Configuration;
-        var environment = builder.Environment;
 
-        services.AddControllersWithViews();
-
-        services.AddCorsPolicy(environment);
+        services.AddControllers();
 
         // add database services
         services.AddCosmosDbService(configuration);
@@ -50,17 +47,14 @@ public static class Program
         {
             app.UseSwagger();
             app.UseSwaggerUI();
+            app.UseLocalCorsPolicy();
             app.UseDeveloperExceptionPage();
         }
-
-        app.UseHttpsRedirection();
-        app.UseStaticFiles();
+        
         app.UseRouting();
-        app.UseCorsPolicy(app.Environment);
 
         app.MapControllers();
         app.MapHub<GameHub>("/game");
-        app.MapFallbackToFile("index.html");
 
         return app;
     }
