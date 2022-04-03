@@ -1,8 +1,8 @@
 ﻿using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Net;
 using OhMyWord.Services.Options;
+using System.Net;
 
 namespace OhMyWord.Services;
 

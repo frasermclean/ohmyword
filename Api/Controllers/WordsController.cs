@@ -30,8 +30,8 @@ public class WordsController : ControllerBase
     public async Task<ActionResult<WordResponse>> GetWordById(string id)
     {
         var word = await wordsRepository.GetWordById(id);
-        return word is null ? 
-            NotFound() : 
+        return word is null ?
+            NotFound() :
             Ok(mapper.Map<WordResponse>(word));
     }
 

@@ -1,4 +1,5 @@
 using AutoMapper;
+using FluentAssertions;
 using OhMyWord.Api.Mapping;
 using OhMyWord.Api.Responses.Words;
 using OhMyWord.Core.Models;
@@ -33,10 +34,10 @@ public class MappingTests
             PartOfSpeech = PartOfSpeech.Noun,
         };
 
-        var response = mapper.Map<WordResponse>(word);
+        var (id, partOfSpeech, definition) = mapper.Map<WordResponse>(word);
 
-        Assert.Equal("cat", response.Id);
-        Assert.Equal("Small furry creature", response.Definition);
-        Assert.Equal(PartOfSpeech.Noun, response.PartOfSpeech);
+        id.Should().Be(word.Id);
+        partOfSpeech.Should().Be(word.PartOfSpeech);
+        definition.Should().Be(word.Definition);
     }
 }

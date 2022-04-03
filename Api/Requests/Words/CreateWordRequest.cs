@@ -12,7 +12,7 @@ public class CreateWordRequest
     public string Definition { get; init; } = string.Empty;
 
     [Required]
-    public PartOfSpeech? PartOfSpeech { get; init; } 
+    public PartOfSpeech? PartOfSpeech { get; init; }
 
     public Word ToWord() => new()
     {

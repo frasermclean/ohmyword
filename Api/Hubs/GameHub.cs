@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.SignalR;
 using OhMyWord.Api.Requests.Game;
 using OhMyWord.Api.Responses.Game;
 using OhMyWord.Core.Models;
@@ -15,11 +16,13 @@ public class GameHub : Hub<IGameHub>, IGameHub
 {
     private readonly ILogger<GameHub> logger;
     private readonly IGameService gameService;
+    private readonly IMapper mapper;
 
-    public GameHub(ILogger<GameHub> logger, IGameService gameService)
+    public GameHub(ILogger<GameHub> logger, IGameService gameService, IMapper mapper)
     {
         this.logger = logger;
         this.gameService = gameService;
+        this.mapper = mapper;
     }
 
     public override Task OnConnectedAsync()
@@ -38,7 +41,7 @@ public class GameHub : Hub<IGameHub>, IGameHub
     {
         logger.LogInformation("Attempting to register client with visitor ID: {visitorId}", visitorId);
         var player = await gameService.RegisterPlayerAsync(visitorId, Context.ConnectionId);
-        return new RegisterPlayerResponse(player);
+        return mapper.Map<RegisterPlayerResponse>(player);
     }
 
     public Hint GetHint(GetHintRequest request)

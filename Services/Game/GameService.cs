@@ -14,7 +14,7 @@ public interface IGameService
     bool IsCorrect(string value);
     Task<Player> RegisterPlayerAsync(string visitorId, string connectionId);
     Task UnregisterPlayerAsync(string connectionId);
-    
+
 }
 
 public class GameService : IGameService

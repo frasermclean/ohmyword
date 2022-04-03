@@ -1,9 +1,8 @@
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using OhMyWord.Api.Hubs;
 using OhMyWord.Api.Mapping;
 using OhMyWord.Api.Registration;
-using OhMyWord.Api.Responses;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace OhMyWord.Api;
 
@@ -62,7 +61,7 @@ public static class Program
             app.UseLocalCorsPolicy();
             app.UseDeveloperExceptionPage();
         }
-        
+
         app.UseRouting();
 
         app.MapControllers();

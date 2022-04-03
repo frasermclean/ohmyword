@@ -4,7 +4,7 @@ namespace OhMyWord.Api.Mapping;
 
 public static class MappingProfiles
 {
-    private static readonly Profile[] Profiles = 
+    private static readonly Profile[] Profiles =
     {
         new ResponsesProfile()
     };
