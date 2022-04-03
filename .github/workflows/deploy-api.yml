@@ -22,17 +22,17 @@ jobs:
         with: 
           dotnet-version: '6.0.x'
       
-      # Build solution
-      - name: Build solution
-        run: dotnet build --configuration Release
+      # Restore packages
+      - name: Restore packages
+        run: dotnet restore
 
-      # Run tests
-      - name: Run tests
-        run: dotnet test --no-build
+      # Build API project
+      - name: Build solution
+        run: dotnet build --no-restore --configuration Release ./Api/Api.csproj
 
       # Publish API project
       - name: Publish API project
-        run: dotnet publish Api --no-build --output ${{env.DOTNET_ROOT}}/api
+        run: dotnet publish --no-build --output ${{env.DOTNET_ROOT}}/api ./Api/Api.csproj
 
       # Upload API project artifact
       - name: Upload API project artifact
