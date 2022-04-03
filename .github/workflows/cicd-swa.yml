@@ -1,11 +1,11 @@
-name: CI/CD Static Web Application
+name: Deploy Static Web Application
 
 on:
   push:
     branches:
       - main
-    paths:
-      'Client/**'
+    #paths:
+    #  'Client/**'
 
 jobs:
   build_and_deploy:
