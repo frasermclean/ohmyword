@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using OhMyWord.Api.Requests.Words;
 using OhMyWord.Api.Responses.Words;
 using OhMyWord.Api.Services;
@@ -11,21 +12,19 @@ namespace OhMyWord.Api.Controllers;
 public class WordsController : ControllerBase
 {
     private readonly IWordsRepository wordsRepository;
-    private readonly IGameService gameService;
+    private readonly IMapper mapper;
 
-    public WordsController(IWordsRepository wordsRepository, IGameService gameService)
+    public WordsController(IWordsRepository wordsRepository, IMapper mapper)
     {
         this.wordsRepository = wordsRepository;
-        this.gameService = gameService;
+        this.mapper = mapper;
     }
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<WordResponse>>> GetAllWordsAsync()
     {
-        var words = (await wordsRepository.GetAllWordsAsync())
-            .Select(word => new WordResponse(word));
-
-        return Ok(words);
+        var words = await wordsRepository.GetAllWordsAsync();
+        return Ok(mapper.Map<IEnumerable<WordResponse>>(words));
     }
 
     [HttpGet("{id}")]
@@ -34,14 +33,14 @@ public class WordsController : ControllerBase
         var word = await wordsRepository.GetWordById(id);
         return word is null ? 
             NotFound() : 
-            Ok(new WordResponse(word));
+            Ok(mapper.Map<WordResponse>(word));
     }
 
     [HttpPost]
     public async Task<IActionResult> CreateWord(CreateWordRequest request)
     {
         var word = await wordsRepository.CreateWordAsync(request.ToWord());
-        return CreatedAtAction(nameof(GetWordById), new { word.Id }, word);
+        return CreatedAtAction(nameof(GetWordById), new { word.Id }, mapper.Map<WordResponse>(word));
     }
 
     [HttpDelete("{id}")]

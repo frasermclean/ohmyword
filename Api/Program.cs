@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using OhMyWord.Api.Hubs;
 using OhMyWord.Api.Registration;
+using OhMyWord.Api.Responses;
 
 namespace OhMyWord.Api;
 
@@ -40,6 +41,9 @@ public static class Program
 
         // game services
         services.AddGameServices(configuration);
+
+        // object mapping service
+        services.AddAutoMapper(typeof(MappingProfile));
 
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         services.AddEndpointsApiExplorer();
