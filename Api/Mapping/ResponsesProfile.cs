@@ -2,13 +2,12 @@
 using OhMyWord.Api.Responses.Words;
 using OhMyWord.Core.Models;
 
-namespace OhMyWord.Api.Responses;
+namespace OhMyWord.Api.Mapping;
 
-public class MappingProfile : Profile
+public class ResponsesProfile : Profile
 {
-    public MappingProfile()
+    public ResponsesProfile()
     {
         CreateMap<Word, WordResponse>();
     }
 }
-
