@@ -25,10 +25,7 @@ public class CosmosDbService : ICosmosDbService
         cosmosClient = new CosmosClient(options.Value.Endpoint, options.Value.PrimaryKey, new CosmosClientOptions()
         {
             HttpClientFactory = httpClientFactory.CreateClient,
-            SerializerOptions = new CosmosSerializationOptions
-            {
-                PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase,
-            }
+            Serializer = new EntitySerializer()
         });
 
         databaseTask = CreateDatabaseAsync(options.Value.DatabaseId);
