@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
+import { HintResponse } from 'src/app/models/hint.response';
 import { GameService } from 'src/app/services/game.service';
 
 @Component({
@@ -7,23 +8,24 @@ import { GameService } from 'src/app/services/game.service';
   styleUrls: ['./countdown.component.scss'],
 })
 export class CountdownComponent implements OnInit {
+  @Input() hint: HintResponse = null!;
   secondsRemaining: number = 0;
   interval: any;
 
-  constructor(private gameService: GameService) {}
+  constructor() {}
 
   ngOnInit(): void {
-    this.gameService.hint$.subscribe((hint) => {
-      const expiry = new Date(hint.expiry).getTime();
-      this.secondsRemaining = this.getSecondRemaining(expiry);
-      
-      // clear any previous inteval
-      if (this.interval) clearInterval(this.interval);
+    if (!this.hint) throw new Error('Hint must be provided');
 
-      this.interval = setInterval(() => {
-        this.secondsRemaining = this.getSecondRemaining(expiry);
-      }, 1000);
-    });
+    const expiry = new Date(this.hint.expiry).getTime();
+    this.secondsRemaining = this.getSecondRemaining(expiry);
+
+    // clear any previous inteval
+    if (this.interval) clearInterval(this.interval);
+
+    this.interval = setInterval(() => {
+      this.secondsRemaining = this.getSecondRemaining(expiry);
+    }, 1000);
   }
 
   private getSecondRemaining(expiry: number) {

@@ -12,6 +12,7 @@ import { environment } from 'src/environments/environment';
 import { GuessResponse } from '../models/guess.response';
 import { FingerprintService } from './fingerprint.service';
 import { SoundService, SoundSprite } from './sound.service';
+import { RoundOverResponse } from '../models/round-over.response';
 
 @Injectable({
   providedIn: 'root',
@@ -101,6 +102,11 @@ export class GameService {
       // server sends us a hint
       this.hubConnection.on('sendHint', (hint: HintResponse) => {
         this.hintSubject.next(hint);
+      });
+
+      this.hubConnection.on('sendRoundOver', (response: RoundOverResponse) => {
+        console.log(response);
+        this.hintSubject.next(undefined);
       });
 
       await this.hubConnection.start();

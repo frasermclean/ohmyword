@@ -10,9 +10,10 @@ namespace OhMyWord.Api.Hubs;
 public interface IGameHub
 {
     Task SendHint(Hint hint);
+    Task SendRoundOver(RoundOverResponse response);
 }
 
-public class GameHub : Hub<IGameHub>, IGameHub
+public class GameHub : Hub<IGameHub>
 {
     private readonly ILogger<GameHub> logger;
     private readonly IGameService gameService;
@@ -58,6 +59,4 @@ public class GameHub : Hub<IGameHub>, IGameHub
             Correct = isCorrect,
         };
     }
-
-    public Task SendHint(Hint hint) => Clients.All.SendHint(hint);
 }

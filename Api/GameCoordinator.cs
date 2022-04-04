@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Options;
 using OhMyWord.Api.Hubs;
 using OhMyWord.Api.Options;
+using OhMyWord.Api.Responses.Game;
 using OhMyWord.Services.Game;
 
 namespace OhMyWord.Api;
@@ -41,6 +42,14 @@ public class GameCoordinator : BackgroundService
 
                 logger.LogDebug("Round: {count} has begun. Current word is \"{currentWord}\". Round will end at: {expiry}", ++RoundCount, currentWord, currentRoundExpiry);
                 await Task.Delay(roundDelay, cancellationToken);
+
+                // end of round delay
+                var nextRoundStart = DateTime.UtcNow.AddSeconds(Options.NextRoundDelay);
+                await gameHubContext.Clients.All.SendRoundOver(new RoundOverResponse
+                {
+                    NextRoundStart = nextRoundStart,
+                });
+                await Task.Delay(nextRoundStart - DateTime.UtcNow, cancellationToken);
             }
             catch (Exception ex)
             {
