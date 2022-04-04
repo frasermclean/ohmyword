@@ -57,8 +57,13 @@ export class GameService {
       visitorId
     );
     this.playerId = response.playerId;
-    this.registeredSubject.next(!!this.playerId);
-    await this.getHint();
+    const registered = !!this.playerId;
+    this.registeredSubject.next(registered);
+
+    // automatically get a hint about the current word
+    if (registered) {
+      await this.getHint();
+    }
   }
 
   /**

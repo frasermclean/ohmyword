@@ -1,4 +1,4 @@
-<ng-container *ngIf="registered$ | async; else notRegistered">
+<ng-container *ngIf="registered$ | async as registered; else registering">
   <ng-container *ngIf="hint$ | async as hint">
     <app-hint [guess]="guess" [hint]="hint"></app-hint>
     <app-guess [hint]="hint" (valueChanged)="guess = $event"></app-guess>
@@ -6,6 +6,6 @@
   </ng-container>
 </ng-container>
 
-<ng-template #notRegistered>
-  <p>Not registered with game server.</p>
+<ng-template #registering>
+  <p>Attempting to register with the game server.</p>
 </ng-template>
