@@ -17,6 +17,7 @@ import { Hint } from '../models/hint';
 
 import { FingerprintService } from './fingerprint.service';
 import { SoundService, SoundSprite } from './sound.service';
+import { GameStatus } from '../models/game-status';
 
 @Injectable({
   providedIn: 'root',
@@ -38,6 +39,11 @@ export class GameService {
   private readonly registeredSubject = new BehaviorSubject<boolean>(false);
   public get registered$() {
     return this.registeredSubject.asObservable();
+  }
+
+  private readonly statusSubject = new Subject<GameStatus>();
+  public get status$() {
+    return this.statusSubject.asObservable();
   }
 
   constructor(
@@ -79,7 +85,14 @@ export class GameService {
       'getHint',
       args
     );
-    this.hintSubject.next(new Hint(response));
+    const hint = new Hint(response);
+    const status: GameStatus = {
+      roundStatus: 'active',
+      expiry: new Date(response.expiry),
+      hint,
+    };
+    this.statusSubject.next(status);
+    this.hintSubject.next(hint);
     return response;
   }
 
@@ -114,9 +127,21 @@ export class GameService {
       });
 
       this.hubConnection.on('sendRoundOver', (response: RoundOverResponse) => {
-        const nextRoundStart = new Date(response.nextRoundStart);
-        console.log(nextRoundStart);
+        const status: GameStatus = {
+          roundStatus: 'complete',
+          expiry: new Date(response.nextRoundStart),
+          hint: null,
+        };
+        console.log(status);
+        this.statusSubject.next(status);
+
         this.hintSubject.next(undefined);
+      });
+
+      // register callback for connection closed error
+      this.hubConnection.onclose((error) => {
+        console.error('Connection closed: ', error);
+        this.registeredSubject.next(false);
       });
 
       await this.hubConnection.start();
