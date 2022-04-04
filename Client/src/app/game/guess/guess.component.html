@@ -1,21 +1,19 @@
-<ng-container *ngIf="hint$ | async as hint">
-  <h2>Have a guess!</h2>
-  <label for="guess">Enter your guess</label>
-  <input
-    #input
-    type="text"
-    id="guess"
-    [formControl]="inputControl"
-    [maxlength]="hint.length"
-    autofocus
-    (blur)="onInputBlur($event)"
-    (keydown.enter)="onEnterKeyDown()"
-  />
+<h2>Have a guess!</h2>
+<label for="guess">Enter your guess</label>
+<input
+  #input
+  type="text"
+  id="guess"
+  [formControl]="inputControl"
+  [maxlength]="hint.length"
+  autofocus
+  (blur)="onInputBlur($event)"
+  (keydown.enter)="onEnterKeyDown()"
+/>
 
-  <div *ngIf="response">
-    <p>
-      Your last guess of "{{ response.value }}" was
-      {{ response.correct ? "correct" : "incorrect" }}
-    </p>
-  </div>
-</ng-container>
+<div *ngIf="response">
+  <p>
+    Your last guess of "{{ response.value }}" was
+    {{ response.correct ? "correct" : "incorrect" }}
+  </p>
+</div>

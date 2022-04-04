@@ -1,9 +1,9 @@
 <ng-container *ngIf="registered$ | async; else notRegistered">
   <ng-container *ngIf="hint$ | async as hint">
     <app-hint [guess]="guess" [hint]="hint"></app-hint>
+    <app-guess [hint]="hint" (valueChanged)="guess = $event"></app-guess>
   </ng-container>
 
-  <app-guess (valueChanged)="guess = $event"></app-guess>
   <app-countdown></app-countdown>
 </ng-container>
 

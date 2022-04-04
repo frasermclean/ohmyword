@@ -2,6 +2,7 @@ import {
   Component,
   ElementRef,
   EventEmitter,
+  Input,
   OnDestroy,
   OnInit,
   Output,
@@ -10,6 +11,7 @@ import {
 import { FormControl } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { GuessResponse } from 'src/app/models/guess.response';
+import { HintResponse } from 'src/app/models/hint.response';
 import { GameService } from 'src/app/services/game.service';
 
 @Component({
@@ -20,8 +22,11 @@ import { GameService } from 'src/app/services/game.service';
 export class GuessComponent implements OnInit, OnDestroy {
   inputControl = new FormControl('');
   response: GuessResponse | null = null;
-  hint$ = this.gameService.hint$;
+
   subscription: Subscription = null!;
+
+  @Input()
+  hint: HintResponse = null!;
 
   @Output()
   valueChanged = new EventEmitter<string>();
@@ -32,6 +37,7 @@ export class GuessComponent implements OnInit, OnDestroy {
   constructor(private gameService: GameService) {}
 
   ngOnInit(): void {
+    if (!this.hint) throw new Error('Hint has not been set!');
     this.subscription = this.inputControl.valueChanges.subscribe((value) => {
       if (typeof value !== 'string') return;
       this.valueChanged.emit(value);
@@ -54,7 +60,7 @@ export class GuessComponent implements OnInit, OnDestroy {
         ? this.inputControl.value.trim()
         : '';
 
-    if (value) {
+    if (value.length === this.hint.length) {
       this.response = await this.gameService.guessWord(value);
       this.inputControl.reset('');
       setTimeout(() => {
