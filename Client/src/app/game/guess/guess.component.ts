@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { Howl } from 'howler';
 import { GuessResponse } from 'src/app/models/guess.response';
 import { GameService } from 'src/app/services/game.service';
 
@@ -12,29 +11,13 @@ import { GameService } from 'src/app/services/game.service';
 export class GuessComponent implements OnInit {
   guess = new FormControl('');
   response: GuessResponse | null = null;
-  sound = new Howl({
-    src: 'assets/audio/sprites.ogg',
-    sprite: {
-      correct: [0, 720],
-      incorrect: [721, 810],
-    },
-    autoplay: false,
-    preload: true,
-  });
 
   constructor(private gameService: GameService) {}
 
-  ngOnInit(): void {
-    console.log(this.sound);
-  }
+  ngOnInit(): void {}
 
   async onGuess(value: string) {
-    this.response = await this.gameService.guessWord(value);
-
-    // play sound
-    const soundId = this.response.correct ? 'correct' : 'incorrect';
-    this.sound.play(soundId);
-
+    this.response = await this.gameService.guessWord(value.trim());
     this.guess.reset();
     setTimeout(() => {
       this.response = null;

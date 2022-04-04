@@ -11,6 +11,7 @@ import { RegisterResponse } from '../models/register.response';
 import { environment } from 'src/environments/environment';
 import { GuessResponse } from '../models/guess.response';
 import { FingerprintService } from './fingerprint.service';
+import { SoundService, SoundSprite } from './sound.service';
 
 @Injectable({
   providedIn: 'root',
@@ -34,7 +35,10 @@ export class GameService {
     return this.isRegisteredSubject.asObservable();
   }
 
-  constructor(private fingerprintService: FingerprintService) {}
+  constructor(
+    private fingerprintService: FingerprintService,
+    private soundService: SoundService
+  ) {}
 
   /**
    * Attempt to register with game service.
@@ -78,7 +82,13 @@ export class GameService {
       this.guessWord.name,
       args
     );
-    console.log(response);
+
+    // play sound to indicate correct / incorrect
+    const sprite = response.correct
+      ? SoundSprite.Correct
+      : SoundSprite.Incorrect;
+    this.soundService.play(sprite);
+
     return response;
   }
 
