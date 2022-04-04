@@ -1,8 +1,8 @@
 ﻿using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
-using OhMyWord.Data.Models;
+using OhMyWord.Core.Models;
 
-namespace OhMyWord.Data.Repositories;
+namespace OhMyWord.Services.Data.Repositories;
 
 public interface IPlayerRepository
 {

@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.SignalR;
 using OhMyWord.Api.Requests.Game;
 using OhMyWord.Api.Responses.Game;
-using OhMyWord.Api.Services;
+using OhMyWord.Core.Models;
+using OhMyWord.Services.Game;
 
 namespace OhMyWord.Api.Hubs;
 
@@ -14,11 +16,13 @@ public class GameHub : Hub<IGameHub>, IGameHub
 {
     private readonly ILogger<GameHub> logger;
     private readonly IGameService gameService;
+    private readonly IMapper mapper;
 
-    public GameHub(ILogger<GameHub> logger, IGameService gameService)
+    public GameHub(ILogger<GameHub> logger, IGameService gameService, IMapper mapper)
     {
         this.logger = logger;
         this.gameService = gameService;
+        this.mapper = mapper;
     }
 
     public override Task OnConnectedAsync()
@@ -37,7 +41,7 @@ public class GameHub : Hub<IGameHub>, IGameHub
     {
         logger.LogInformation("Attempting to register client with visitor ID: {visitorId}", visitorId);
         var player = await gameService.RegisterPlayerAsync(visitorId, Context.ConnectionId);
-        return new RegisterPlayerResponse(player);
+        return mapper.Map<RegisterPlayerResponse>(player);
     }
 
     public Hint GetHint(GetHintRequest request)
@@ -45,10 +49,14 @@ public class GameHub : Hub<IGameHub>, IGameHub
         return gameService.CurrentHint;
     }
 
-    public async Task<GuessWordResponse> GuessWord(GuessWordRequest request)
+    public GuessWordResponse GuessWord(GuessWordRequest request)
     {
-        var response = await gameService.TestPlayerGuess(request);
-        return response;
+        var isCorrect = gameService.IsCorrect(request.Value);
+        return new GuessWordResponse
+        {
+            Value = request.Value.ToLowerInvariant(),
+            Correct = isCorrect,
+        };
     }
 
     public Task SendHint(Hint hint) => Clients.All.SendHint(hint);

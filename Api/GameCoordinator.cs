@@ -2,8 +2,9 @@
 using Microsoft.Extensions.Options;
 using OhMyWord.Api.Hubs;
 using OhMyWord.Api.Options;
+using OhMyWord.Services.Game;
 
-namespace OhMyWord.Api.Services;
+namespace OhMyWord.Api;
 
 public class GameCoordinator : BackgroundService
 {
@@ -30,20 +31,21 @@ public class GameCoordinator : BackgroundService
     {
         while (!cancellationToken.IsCancellationRequested)
         {
+            var currentRoundExpiry = DateTime.UtcNow.AddSeconds(Options.RoundLength);
+            var roundDelay = TimeSpan.FromSeconds(Options.RoundLength);
+
             try
             {
-                var currentRoundExpiry = DateTime.UtcNow.AddSeconds(Options.RoundLength);
                 var currentWord = await gameService.SelectNextWord(currentRoundExpiry);
-                var roundDelay = TimeSpan.FromSeconds(Options.RoundLength);
-
                 await gameHubContext.Clients.All.SendHint(gameService.CurrentHint);
 
-                logger.LogDebug("Round: {count} has begun. Current word is \"{value}\". Round will end at: {expiry}", ++RoundCount, currentWord.Value, currentRoundExpiry);
+                logger.LogDebug("Round: {count} has begun. Current word is \"{currentWord}\". Round will end at: {expiry}", ++RoundCount, currentWord, currentRoundExpiry);
                 await Task.Delay(roundDelay, cancellationToken);
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Exception occurred in game coordinator main loop. Round count: {RoundCount}", RoundCount);
+                await Task.Delay(roundDelay, cancellationToken);
             }
         }
     }

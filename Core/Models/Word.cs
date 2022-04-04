@@ -1,11 +1,11 @@
-﻿namespace OhMyWord.Data.Models;
+﻿namespace OhMyWord.Core.Models;
 
 public class Word : Entity
 {
-    public string Value { get; init; } = string.Empty;
     public string Definition { get; init; } = string.Empty;
+    public PartOfSpeech PartOfSpeech { get; init; }
 
-    public override string ToString() => Value;
+    public override string ToString() => Id;
 
     public static readonly Word Default = new();
 }

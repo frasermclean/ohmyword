@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
-using OhMyWord.Data.Models;
+using OhMyWord.Core.Models;
 
-namespace OhMyWord.Data.Repositories;
+namespace OhMyWord.Services.Data.Repositories;
 
 public interface IWordsRepository
 {
@@ -14,7 +14,7 @@ public interface IWordsRepository
 public class WordsRepository : Repository<Word>, IWordsRepository
 {
     public WordsRepository(ICosmosDbService cosmosDbService, ILogger<WordsRepository> logger)
-        : base(cosmosDbService, logger, "Words")
+        : base(cosmosDbService, logger, "Words", "/partOfSpeech")
     {
     }
 

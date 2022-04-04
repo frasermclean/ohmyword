@@ -1,5 +1,7 @@
-﻿using OhMyWord.Data;
-using OhMyWord.Data.Repositories;
+﻿using OhMyWord.Services;
+using OhMyWord.Services.Data;
+using OhMyWord.Services.Data.Repositories;
+using OhMyWord.Services.Options;
 
 namespace OhMyWord.Api.Registration;
 
@@ -13,6 +15,7 @@ public static class DataServicesRegistration
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
+        services.AddHttpClient();
         services.AddSingleton<ICosmosDbService, CosmosDbService>();
 
         return services;

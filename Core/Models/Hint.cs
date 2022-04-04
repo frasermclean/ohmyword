@@ -1,12 +1,10 @@
-﻿using OhMyWord.Data.Models;
-
-namespace OhMyWord.Api.Responses.Game;
+﻿namespace OhMyWord.Core.Models;
 
 public class Hint
 {
     private readonly Word word;
 
-    public int Length => word.Value.Length;
+    public int Length => word.Id.Length;
     public string Definition => word.Definition;
     public DateTime Expiry { get; }
 

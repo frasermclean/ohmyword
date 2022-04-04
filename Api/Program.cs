@@ -1,5 +1,8 @@
 using OhMyWord.Api.Hubs;
+using OhMyWord.Api.Mapping;
 using OhMyWord.Api.Registration;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace OhMyWord.Api;
 
@@ -22,7 +25,12 @@ public static class Program
         var services = builder.Services;
         var configuration = builder.Configuration;
 
-        services.AddControllers();
+        services.AddControllers()
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.Converters.Add(
+                    new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
+            });
 
         // add database services
         services.AddCosmosDbService(configuration);
@@ -33,6 +41,9 @@ public static class Program
 
         // game services
         services.AddGameServices(configuration);
+
+        // object mapping service
+        services.AddAutoMapper(mapperConfiguration => mapperConfiguration.AddProfiles(MappingProfiles.GetProfiles()));
 
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         services.AddEndpointsApiExplorer();
@@ -50,7 +61,7 @@ public static class Program
             app.UseLocalCorsPolicy();
             app.UseDeveloperExceptionPage();
         }
-        
+
         app.UseRouting();
 
         app.MapControllers();

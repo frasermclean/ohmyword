@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using OhMyWord.Api.Requests.Words;
-using OhMyWord.Api.Services;
-using OhMyWord.Data.Repositories;
+using OhMyWord.Api.Responses.Words;
+using OhMyWord.Services.Data.Repositories;
 
 namespace OhMyWord.Api.Controllers;
 
@@ -10,34 +11,35 @@ namespace OhMyWord.Api.Controllers;
 public class WordsController : ControllerBase
 {
     private readonly IWordsRepository wordsRepository;
-    private readonly IGameService gameService;
+    private readonly IMapper mapper;
 
-    public WordsController(IWordsRepository wordsRepository, IGameService gameService)
+    public WordsController(IWordsRepository wordsRepository, IMapper mapper)
     {
         this.wordsRepository = wordsRepository;
-        this.gameService = gameService;
+        this.mapper = mapper;
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAllWordsAsync([FromQuery] bool current)
+    public async Task<ActionResult<IEnumerable<WordResponse>>> GetAllWordsAsync()
     {
-        return current ?
-            Ok(gameService.CurrentWord) :
-            Ok(await wordsRepository.GetAllWordsAsync());
+        var words = await wordsRepository.GetAllWordsAsync();
+        return Ok(mapper.Map<IEnumerable<WordResponse>>(words));
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetWordById(string id)
+    public async Task<ActionResult<WordResponse>> GetWordById(string id)
     {
         var word = await wordsRepository.GetWordById(id);
-        return word is not null ? Ok(word) : NotFound();
+        return word is null ?
+            NotFound() :
+            Ok(mapper.Map<WordResponse>(word));
     }
 
     [HttpPost]
     public async Task<IActionResult> CreateWord(CreateWordRequest request)
     {
         var word = await wordsRepository.CreateWordAsync(request.ToWord());
-        return CreatedAtRoute(nameof(GetWordById), new { word.Id }, word);
+        return CreatedAtAction(nameof(GetWordById), new { word.Id }, mapper.Map<WordResponse>(word));
     }
 
     [HttpDelete("{id}")]

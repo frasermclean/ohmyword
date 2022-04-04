@@ -1,9 +1,10 @@
 ﻿using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using OhMyWord.Services.Options;
 using System.Net;
 
-namespace OhMyWord.Data;
+namespace OhMyWord.Services.Data;
 
 public interface ICosmosDbService
 {
@@ -14,35 +15,35 @@ public class CosmosDbService : ICosmosDbService
 {
     private readonly ILogger<CosmosDbService> logger;
     private readonly CosmosClient cosmosClient;
-    private readonly Task<Database> databaseTask;
+    private Database? database;
 
-    public CosmosDbService(IOptions<CosmosDbOptions> options, ILogger<CosmosDbService> logger)
+    private string DatabaseId { get; }
+
+    public CosmosDbService(IOptions<CosmosDbOptions> options, ILogger<CosmosDbService> logger, IHttpClientFactory httpClientFactory)
     {
         this.logger = logger;
         logger.LogInformation("Creating Cosmos DB client.");
 
         cosmosClient = new CosmosClient(options.Value.Endpoint, options.Value.PrimaryKey, new CosmosClientOptions()
         {
-            SerializerOptions = new CosmosSerializationOptions()
-            {
-                PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase,
-            }
+            HttpClientFactory = httpClientFactory.CreateClient,
+            Serializer = new EntitySerializer()
         });
 
-        databaseTask = CreateDatabaseAsync(options.Value.DatabaseId);
+        DatabaseId = options.Value.DatabaseId;
     }
 
-    private async Task<Database> CreateDatabaseAsync(string databaseId)
+    private async Task<Database> GetDatabaseAsync()
     {
-        var response = await cosmosClient.CreateDatabaseIfNotExistsAsync(databaseId);
+        var response = await cosmosClient.CreateDatabaseIfNotExistsAsync(DatabaseId);
 
         switch (response.StatusCode)
         {
             case HttpStatusCode.Created:
-                logger.LogInformation("Created new databasee with ID: {databaseId}", databaseId);
+                logger.LogInformation("Created new database with ID: {databaseId}", DatabaseId);
                 break;
             case HttpStatusCode.OK:
-                logger.LogInformation("Connected to existing database with ID: {databaseId}", databaseId);
+                logger.LogInformation("Connected to existing database with ID: {databaseId}", DatabaseId);
                 break;
         }
 
@@ -51,7 +52,7 @@ public class CosmosDbService : ICosmosDbService
 
     public async Task<Container> GetContainerAsync(string containerId, string partitionKeyPath)
     {
-        var database = await databaseTask;
+        database ??= await GetDatabaseAsync();
 
         var response = await database.CreateContainerIfNotExistsAsync(containerId, partitionKeyPath);
 
