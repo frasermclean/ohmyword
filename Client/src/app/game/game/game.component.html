@@ -1,6 +1,9 @@
-<ng-container *ngIf="isRegistered$ | async; else notRegistered">
-  <app-hint></app-hint>
-  <app-guess></app-guess>
+<ng-container *ngIf="registered$ | async; else notRegistered">
+  <ng-container *ngIf="hint$ | async as hint">
+    <app-hint [guess]="guess" [hint]="hint"></app-hint>
+  </ng-container>
+
+  <app-guess (valueChanged)="guess = $event"></app-guess>
   <app-countdown></app-countdown>
 </ng-container>
 

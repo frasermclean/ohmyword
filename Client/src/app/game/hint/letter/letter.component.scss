@@ -1,12 +1,35 @@
-#box {
+.box {
   width: 40px;
   height: 40px;
   border: 4px gray solid;
   border-radius: 8px;
-  background: wheat;
   color: black;
+  background: wheat;
   display: flex;
   flex-direction: column;
   justify-content: center;
   font-size: 1.8rem;
+
+  &.hint {
+    color: darkblue;
+    background: lightblue;
+    border-color: darken(lightblue, 10);
+  }
+
+  &.correct {
+    color: darkgreen;
+    background: lightgreen;
+    border-color: darken(lightgreen, 10);
+  }
+
+  &.incorrect {
+    color: darkred;
+    background: lightcoral;
+    border-color: darken(lightcoral, 10);
+  }
+}
+
+.position {
+  margin-top: 4px;
+  font-size: 0.7rem;
 }

@@ -30,9 +30,9 @@ export class GameService {
     return this.hintSubject.asObservable();
   }
 
-  private readonly isRegisteredSubject = new BehaviorSubject<boolean>(false);
-  public get isRegistered$() {
-    return this.isRegisteredSubject.asObservable();
+  private readonly registeredSubject = new BehaviorSubject<boolean>(false);
+  public get registered$() {
+    return this.registeredSubject.asObservable();
   }
 
   constructor(
@@ -52,7 +52,8 @@ export class GameService {
       visitorId
     );
     this.playerId = response.playerId;
-    this.isRegisteredSubject.next(!!this.playerId);
+    this.registeredSubject.next(!!this.playerId);
+    await this.getHint();
   }
 
   /**
