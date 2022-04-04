@@ -2,7 +2,7 @@
   <ng-container *ngIf="hint$ | async as hint">
     <app-hint [guess]="guess" [hint]="hint"></app-hint>
     <app-guess [hint]="hint" (valueChanged)="guess = $event"></app-guess>
-    <app-countdown [hint]="hint"></app-countdown>
+    <app-countdown [date]="hint.expiry"></app-countdown>
   </ng-container>
 </ng-container>
 

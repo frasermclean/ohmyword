@@ -10,8 +10,9 @@ import {
 } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Subscription } from 'rxjs';
-import { GuessResponse } from 'src/app/models/guess.response';
-import { HintResponse } from 'src/app/models/hint.response';
+import { GuessResponse } from 'src/app/models/responses/guess.response';
+import { Hint } from 'src/app/models/hint';
+
 import { GameService } from 'src/app/services/game.service';
 
 @Component({
@@ -26,7 +27,7 @@ export class GuessComponent implements OnInit, OnDestroy {
   subscription: Subscription = null!;
 
   @Input()
-  hint: HintResponse = null!;
+  hint: Hint = null!;
 
   @Output()
   valueChanged = new EventEmitter<string>();

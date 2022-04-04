@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { HintResponse } from 'src/app/models/hint.response';
 import { GameService } from 'src/app/services/game.service';
 
 @Component({

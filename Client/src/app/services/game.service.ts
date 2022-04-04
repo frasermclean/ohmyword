@@ -6,13 +6,17 @@ import {
   LogLevel,
 } from '@microsoft/signalr';
 
-import { HintResponse } from '../models/hint.response';
-import { RegisterResponse } from '../models/register.response';
 import { environment } from 'src/environments/environment';
-import { GuessResponse } from '../models/guess.response';
+
+import { HintResponse } from '../models/responses/hint.response';
+import { RegisterResponse } from '../models/responses/register.response';
+import { GuessResponse } from '../models/responses/guess.response';
+import { RoundOverResponse } from '../models/responses/round-over.response';
+
+import { Hint } from '../models/hint';
+
 import { FingerprintService } from './fingerprint.service';
 import { SoundService, SoundSprite } from './sound.service';
-import { RoundOverResponse } from '../models/round-over.response';
 
 @Injectable({
   providedIn: 'root',
@@ -26,7 +30,7 @@ export class GameService {
     )
     .build();
 
-  private readonly hintSubject = new Subject<HintResponse>();
+  private readonly hintSubject = new Subject<Hint>();
   public get hint$() {
     return this.hintSubject.asObservable();
   }
@@ -70,7 +74,7 @@ export class GameService {
       'getHint',
       args
     );
-    this.hintSubject.next(response);
+    this.hintSubject.next(new Hint(response));
     return response;
   }
 
@@ -100,12 +104,13 @@ export class GameService {
   private async initialize() {
     if (this.hubConnection.state === HubConnectionState.Disconnected) {
       // server sends us a hint
-      this.hubConnection.on('sendHint', (hint: HintResponse) => {
-        this.hintSubject.next(hint);
+      this.hubConnection.on('sendHint', (response: HintResponse) => {
+        this.hintSubject.next(new Hint(response));
       });
 
       this.hubConnection.on('sendRoundOver', (response: RoundOverResponse) => {
-        console.log(response);
+        const nextRoundStart = new Date(response.nextRoundStart);
+        console.log(nextRoundStart);
         this.hintSubject.next(undefined);
       });
 
