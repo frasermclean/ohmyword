@@ -101,10 +101,7 @@ export class GameService {
    */
   private async initialize() {
     if (this.hubConnection.state === HubConnectionState.Disconnected) {
-      // server sends us a hint
-      this.hubConnection.on('SendHint', (response: WordHintResponse) => {
-        this.hintSubject.next(new WordHint(response));
-      });
+      
 
       this.hubConnection.on('SendGameStatus', (response: GameStatusResponse) => {
         this.statusSubject.next(new GameStatus(response));
@@ -116,8 +113,9 @@ export class GameService {
         this.registeredSubject.next(false);
       });
 
-
+      // register game callbacks
       this.hubConnection.on('SendRoundActive', (value: boolean) => this.roundActiveSubject.next(value));
+      this.hubConnection.on('SendWordHint', (value: WordHintResponse) => this.hintSubject.next(new WordHint(value)));
 
       await this.hubConnection.start();
     }

@@ -12,4 +12,6 @@ public class WordHint
     {
         this.word = word;
     }
+
+    public static readonly WordHint Default = new(Word.Default);
 }

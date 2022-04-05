@@ -8,7 +8,7 @@ namespace OhMyWord.Api.Hubs;
 
 public interface IGameHub
 {
-    Task SendHint(WordHint wordHint);
+    Task SendWordHint(WordHint wordHint);
     Task SendGameStatus(GameStatus status);
     Task SendRoundActive(bool value);
 }
@@ -40,7 +40,7 @@ public class GameHub : Hub<IGameHub>
     {
         logger.LogInformation("Attempting to register client with visitor ID: {visitorId}", visitorId);
         var player = await gameService.RegisterPlayerAsync(visitorId, Context.ConnectionId);
-        await Clients.Caller.SendHint(gameService.GetHint());
+        await Clients.Caller.SendWordHint(gameService.WordHint);
         return new RegisterPlayerResponse
         {
             PlayerId = player.Id,
@@ -48,15 +48,9 @@ public class GameHub : Hub<IGameHub>
         };
     }
 
-    public WordHint GetHint(string playerId)
-    {
-        return gameService.GetHint();
-    }
+    public WordHint GetHint(string playerId) => gameService.WordHint;
 
-    public GameStatus GetStatus(string playerId)
-    {
-        return gameService.GetGameStatus();
-    }
+    public GameStatus GetStatus(string playerId) => gameService.GetGameStatus();
 
     public GuessWordResponse GuessWord(GuessWordRequest request)
     {

@@ -21,6 +21,7 @@ public class GameCoordinator : BackgroundService
         this.gameHubContext = gameHubContext;
 
         gameService.RoundActiveChanged += async (_, value) => await gameHubContext.Clients.All.SendRoundActive(value);
+        gameService.WordHintChanged += async (_, value) => await gameHubContext.Clients.All.SendWordHint(value);
     }
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
@@ -31,9 +32,7 @@ public class GameCoordinator : BackgroundService
             {
                 // start round
                 var roundDelay = await gameService.StartRoundAsync();
-                await Task.WhenAll(
-                    gameHubContext.Clients.All.SendGameStatus(gameService.GetGameStatus()),
-                    gameHubContext.Clients.All.SendHint(gameService.GetHint()));
+                await gameHubContext.Clients.All.SendGameStatus(gameService.GetGameStatus());
 
                 await Task.Delay(roundDelay, cancellationToken);
 

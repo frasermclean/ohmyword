@@ -11,13 +11,15 @@ public interface IGameService
     int PlayerCount { get; }
     bool RoundActive { get; }
     int RoundNumber { get; }
+    WordHint WordHint { get; }
 
     event EventHandler<bool> RoundActiveChanged;
+    event EventHandler<WordHint> WordHintChanged;
 
     Task<TimeSpan> StartRoundAsync();
     Task<TimeSpan> EndRoundAsync();
     bool IsCorrect(string value);
-    WordHint GetHint();
+    
     GameStatus GetGameStatus();
     Task<Player> RegisterPlayerAsync(string visitorId, string connectionId);
     Task UnregisterPlayerAsync(string connectionId);
@@ -32,7 +34,8 @@ public class GameService : IGameService
 
     private Word word = Word.Default;
     private DateTime expiry;
-    private bool _roundActive;
+    private bool roundActive;
+    private WordHint wordHint = WordHint.Default;
 
     private GameServiceOptions Options { get; }
 
@@ -41,15 +44,26 @@ public class GameService : IGameService
 
     public bool RoundActive
     {
-        get => _roundActive;
+        get => roundActive;
         private set
         {
-            _roundActive = value;
-            RoundActiveChanged.Invoke(this, value);
+            roundActive = value;
+            RoundActiveChanged?.Invoke(this, value);
         }
     }
 
-    public event EventHandler<bool> RoundActiveChanged;
+    public WordHint WordHint
+    {
+        get => wordHint;
+        private set
+        {
+            wordHint = value;
+            WordHintChanged?.Invoke(this, value);
+        }
+    }
+
+    public event EventHandler<bool>? RoundActiveChanged;
+    public event EventHandler<WordHint>? WordHintChanged;
 
     public GameService(
         ILogger<GameService> logger,
@@ -80,6 +94,8 @@ public class GameService : IGameService
             // remove word from list of words
             var wasRemoved = words.Remove(word);
             if (!wasRemoved) logger.LogWarning("Word: {word} at index: {index} couldn't be removed from the list.", word, index);
+
+            WordHint = new WordHint(word);
         }
         else
         {
