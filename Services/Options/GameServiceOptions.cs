@@ -1,14 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace OhMyWord.Api.Options;
+namespace OhMyWord.Services.Options;
 
-public class GameCoordinatorOptions
+public class GameServiceOptions
 {
-    public const string SectionName = "GameCoordinator";
+    public const string SectionName = "Game";
 
     [Range(5, 120, ErrorMessage = "Invalid round length.")]
     public int RoundLength { get; set; }
 
     [Range(5, 60, ErrorMessage = "Invalid next round delay.")]
-    public int NextRoundDelay { get; set; }
+    public int PostRoundDelay { get; set; }
 }

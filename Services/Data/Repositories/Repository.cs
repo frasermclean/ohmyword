@@ -1,8 +1,8 @@
-﻿using System.Net;
-using Humanizer;
+﻿using Humanizer;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using OhMyWord.Core.Models;
+using System.Net;
 
 namespace OhMyWord.Services.Data.Repositories;
 

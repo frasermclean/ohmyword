@@ -1,11 +1,15 @@
-<ng-container *ngIf="registered$ | async as registered; else registering">
-  <ng-container *ngIf="hint$ | async as hint">
-    <app-hint [guess]="guess" [hint]="hint"></app-hint>
-    <app-guess [hint]="hint" (valueChanged)="guess = $event"></app-guess>
-    <app-countdown [date]="hint.expiry"></app-countdown>
+<ng-container *ngIf="status$ | async as status">
+  <ng-container *ngIf="status.roundActive; else roundEnded">    
+    <ng-container *ngIf="hint$ | async as hint; else noHint">
+      <app-hint [guess]="guess" [hint]="hint"></app-hint>
+      <app-guess [hint]="hint" (valueChanged)="guess = $event"></app-guess>
+    </ng-container>
+    <ng-template #noHint>
+      <h2>NO HINT :(</h2>
+    </ng-template>
   </ng-container>
+  <ng-template #roundEnded>
+    <h2>The round has ended!</h2>
+  </ng-template>
+  <app-countdown [expiryDate]="status.expiry"></app-countdown>
 </ng-container>
-
-<ng-template #registering>
-  <p>Attempting to register with the game server.</p>
-</ng-template>

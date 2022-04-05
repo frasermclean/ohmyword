@@ -1,17 +1,13 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Subject } from 'rxjs';
-import {
-  HubConnectionBuilder,
-  HubConnectionState,
-  LogLevel,
-} from '@microsoft/signalr';
+import { BehaviorSubject } from 'rxjs';
+import { HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
 
 import { environment } from 'src/environments/environment';
 
 import { HintResponse } from '../models/responses/hint.response';
-import { RegisterResponse } from '../models/responses/register.response';
+import { RegisterPlayerResponse } from '../models/responses/register-player.response';
 import { GuessResponse } from '../models/responses/guess.response';
-import { RoundOverResponse } from '../models/responses/round-over.response';
+import { GameStatusResponse } from '../models/responses/game-status.response';
 
 import { Hint } from '../models/hint';
 
@@ -26,30 +22,25 @@ export class GameService {
   private playerId = '';
   private hubConnection = new HubConnectionBuilder()
     .withUrl(environment.api.hubUrl)
-    .configureLogging(
-      environment.production ? LogLevel.Error : LogLevel.Information
-    )
+    .configureLogging(environment.production ? LogLevel.Error : LogLevel.Information)
     .build();
-
-  private readonly hintSubject = new Subject<Hint>();
-  public get hint$() {
-    return this.hintSubject.asObservable();
-  }
 
   private readonly registeredSubject = new BehaviorSubject<boolean>(false);
   public get registered$() {
     return this.registeredSubject.asObservable();
   }
 
-  private readonly statusSubject = new Subject<GameStatus>();
+  private readonly statusSubject = new BehaviorSubject<GameStatus>(GameStatus.default);
   public get status$() {
     return this.statusSubject.asObservable();
   }
 
-  constructor(
-    private fingerprintService: FingerprintService,
-    private soundService: SoundService
-  ) {}
+  private readonly hintSubject = new BehaviorSubject<Hint>(Hint.default);
+  public get hint$() {
+    return this.hintSubject.asObservable();
+  }
+
+  constructor(private fingerprintService: FingerprintService, private soundService: SoundService) {}
 
   /**
    * Attempt to register with game service.
@@ -58,42 +49,31 @@ export class GameService {
   async registerPlayer() {
     await this.initialize();
     const visitorId = await this.fingerprintService.getVisitorId();
-    const response = await this.hubConnection.invoke<RegisterResponse>(
-      'registerPlayer',
-      visitorId
-    );
-    this.playerId = response.playerId;
-    const registered = !!this.playerId;
-    this.registeredSubject.next(registered);
+    const response = await this.hubConnection.invoke<RegisterPlayerResponse>('registerPlayer', visitorId);
 
-    // automatically get a hint about the current word
-    if (registered) {
-      await this.getHint();
-    }
+    if (!response.success) throw new Error('Failed to register player');
+
+    this.playerId = response.playerId;
+    this.registeredSubject.next(true);
+    const status = new GameStatus(response.status);
+    this.statusSubject.next(status);
+
+    return status;
   }
 
   /**
    * Get hint about the current word.
    * @returns
    */
-  async getHint() {
+  private async getGameStatus() {
     await this.initialize();
-    const args = {
-      playerId: this.playerId,
-    };
-    const response = await this.hubConnection.invoke<HintResponse>(
-      'getHint',
-      args
-    );
-    const hint = new Hint(response);
-    const status: GameStatus = {
-      roundStatus: 'active',
-      expiry: new Date(response.expiry),
-      hint,
-    };
+
+    const response = await this.hubConnection.invoke<GameStatusResponse>('getStatus', this.playerId);
+
+    const status = new GameStatus(response);
     this.statusSubject.next(status);
-    this.hintSubject.next(hint);
-    return response;
+
+    return status;
   }
 
   public async guessWord(value: string) {
@@ -102,15 +82,10 @@ export class GameService {
       playerId: this.playerId,
       value,
     };
-    const response = await this.hubConnection.invoke<GuessResponse>(
-      this.guessWord.name,
-      args
-    );
+    const response = await this.hubConnection.invoke<GuessResponse>(this.guessWord.name, args);
 
     // play sound to indicate correct / incorrect
-    const sprite = response.correct
-      ? SoundSprite.Correct
-      : SoundSprite.Incorrect;
+    const sprite = response.correct ? SoundSprite.Correct : SoundSprite.Incorrect;
     this.soundService.play(sprite);
 
     return response;
@@ -122,20 +97,12 @@ export class GameService {
   private async initialize() {
     if (this.hubConnection.state === HubConnectionState.Disconnected) {
       // server sends us a hint
-      this.hubConnection.on('sendHint', (response: HintResponse) => {
+      this.hubConnection.on('SendHint', (response: HintResponse) => {
         this.hintSubject.next(new Hint(response));
       });
 
-      this.hubConnection.on('sendRoundOver', (response: RoundOverResponse) => {
-        const status: GameStatus = {
-          roundStatus: 'complete',
-          expiry: new Date(response.nextRoundStart),
-          hint: null,
-        };
-        console.log(status);
-        this.statusSubject.next(status);
-
-        this.hintSubject.next(undefined);
+      this.hubConnection.on('SendGameStatus', (response: GameStatusResponse) => {
+        this.statusSubject.next(new GameStatus(response));
       });
 
       // register callback for connection closed error

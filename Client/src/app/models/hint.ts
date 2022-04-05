@@ -10,4 +10,10 @@ export class Hint {
     this.definition = response.definition;
     this.expiry = new Date(response.expiry);
   }
+
+  public static default = new Hint({
+    length: 0,
+    definition: '',
+    expiry: '',
+  });
 }

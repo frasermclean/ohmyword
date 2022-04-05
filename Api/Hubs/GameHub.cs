@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 using OhMyWord.Api.Requests.Game;
 using OhMyWord.Api.Responses.Game;
 using OhMyWord.Core.Models;
@@ -10,20 +9,18 @@ namespace OhMyWord.Api.Hubs;
 public interface IGameHub
 {
     Task SendHint(Hint hint);
-    Task SendRoundOver(RoundOverResponse response);
+    Task SendGameStatus(GameStatus status);
 }
 
 public class GameHub : Hub<IGameHub>
 {
     private readonly ILogger<GameHub> logger;
     private readonly IGameService gameService;
-    private readonly IMapper mapper;
 
-    public GameHub(ILogger<GameHub> logger, IGameService gameService, IMapper mapper)
+    public GameHub(ILogger<GameHub> logger, IGameService gameService)
     {
         this.logger = logger;
         this.gameService = gameService;
-        this.mapper = mapper;
     }
 
     public override Task OnConnectedAsync()
@@ -42,12 +39,22 @@ public class GameHub : Hub<IGameHub>
     {
         logger.LogInformation("Attempting to register client with visitor ID: {visitorId}", visitorId);
         var player = await gameService.RegisterPlayerAsync(visitorId, Context.ConnectionId);
-        return mapper.Map<RegisterPlayerResponse>(player);
+        await Clients.Caller.SendHint(gameService.GetHint());
+        return new RegisterPlayerResponse
+        {
+            PlayerId = player.Id,
+            Status = gameService.GetGameStatus()
+        };
     }
 
-    public Hint GetHint(GetHintRequest request)
+    public Hint GetHint(string playerId)
     {
-        return gameService.CurrentHint;
+        return gameService.GetHint();
+    }
+
+    public GameStatus GetStatus(string playerId)
+    {
+        return gameService.GetGameStatus();
     }
 
     public GuessWordResponse GuessWord(GuessWordRequest request)

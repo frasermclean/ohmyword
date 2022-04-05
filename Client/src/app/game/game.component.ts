@@ -7,13 +7,13 @@ import { GameService } from 'src/app/services/game.service';
   styleUrls: ['./game.component.scss'],
 })
 export class GameComponent implements OnInit {
-  registered$ = this.gameService.registered$;
+  status$ = this.gameService.status$;
   hint$ = this.gameService.hint$;
   guess = '';
 
   constructor(private gameService: GameService) {}
 
-  ngOnInit(): void {
+  ngOnInit() {
     this.gameService.registerPlayer();
   }
 

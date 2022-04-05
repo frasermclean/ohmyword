@@ -1,21 +1,21 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 
 @Component({
   selector: 'app-countdown',
   templateUrl: './countdown.component.html',
   styleUrls: ['./countdown.component.scss'],
 })
-export class CountdownComponent implements OnInit {
-  @Input() date: Date = null!;
+export class CountdownComponent implements OnChanges {
+  @Input() expiryDate: Date = null!;
   secondsRemaining: number = 0;
   interval: any;
 
   constructor() {}
 
-  ngOnInit(): void {
-    if (!this.date) throw new Error('Date must be provided');
-
-    const expiryTime = this.date.getTime();
+  ngOnChanges(): void {
+    if (!this.expiryDate) throw new Error('Expiry date must be provided!');
+    
+    const expiryTime = this.expiryDate.getTime();
     this.secondsRemaining = this.getSecondsRemaining(expiryTime);
 
     // clear any previous inteval
