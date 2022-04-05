@@ -30,6 +30,11 @@ export class GameService {
     return this.registeredSubject.asObservable();
   }
 
+  private roundActiveSubject = new BehaviorSubject<boolean>(false);
+  public get roundActive$() {
+    return this.roundActiveSubject.asObservable();
+  }
+
   private readonly statusSubject = new BehaviorSubject<GameStatus>(GameStatus.default);
   public get status$() {
     return this.statusSubject.asObservable();
@@ -110,6 +115,9 @@ export class GameService {
         console.error('Connection closed: ', error);
         this.registeredSubject.next(false);
       });
+
+
+      this.hubConnection.on('SendRoundActive', (value: boolean) => this.roundActiveSubject.next(value));
 
       await this.hubConnection.start();
     }

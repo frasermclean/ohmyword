@@ -12,6 +12,8 @@ public interface IGameService
     bool RoundActive { get; }
     int RoundNumber { get; }
 
+    event EventHandler<bool> RoundActiveChanged;
+
     Task<TimeSpan> StartRoundAsync();
     Task<TimeSpan> EndRoundAsync();
     bool IsCorrect(string value);
@@ -30,12 +32,24 @@ public class GameService : IGameService
 
     private Word word = Word.Default;
     private DateTime expiry;
+    private bool _roundActive;
 
     private GameServiceOptions Options { get; }
 
     public int PlayerCount { get; private set; }
     public int RoundNumber { get; private set; }
-    public bool RoundActive { get; private set; }
+
+    public bool RoundActive
+    {
+        get => _roundActive;
+        private set
+        {
+            _roundActive = value;
+            RoundActiveChanged.Invoke(this, value);
+        }
+    }
+
+    public event EventHandler<bool> RoundActiveChanged;
 
     public GameService(
         ILogger<GameService> logger,

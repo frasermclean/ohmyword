@@ -10,6 +10,7 @@ public interface IGameHub
 {
     Task SendHint(WordHint wordHint);
     Task SendGameStatus(GameStatus status);
+    Task SendRoundActive(bool value);
 }
 
 public class GameHub : Hub<IGameHub>

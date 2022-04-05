@@ -20,6 +20,7 @@ public class GameCoordinator : BackgroundService
         this.gameService = gameService;
         this.gameHubContext = gameHubContext;
 
+        gameService.RoundActiveChanged += async (_, value) => await gameHubContext.Clients.All.SendRoundActive(value);
     }
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
