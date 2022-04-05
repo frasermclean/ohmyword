@@ -1,5 +1,4 @@
-﻿using Humanizer;
-using Microsoft.Azure.Cosmos;
+﻿using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using OhMyWord.Core.Models;
 using System.Net;
@@ -8,20 +7,23 @@ namespace OhMyWord.Services.Data.Repositories;
 
 public abstract class Repository<TEntity> where TEntity : Entity
 {
-    private readonly Task<Container> containerTask;
+    private readonly ICosmosDbService cosmosDbService;
     private readonly ILogger<Repository<TEntity>> logger;
 
+    private ContainerId ContainerId { get; }
     private string EntityTypeName { get; }
 
-    protected Repository(ICosmosDbService cosmosDbService, ILogger<Repository<TEntity>> logger, string? containerId = null, string partitionKeyPath = "/id")
+    protected Repository(ICosmosDbService cosmosDbService, ILogger<Repository<TEntity>> logger, ContainerId containerId)
     {
-        EntityTypeName = typeof(TEntity).Name;
-        containerId ??= EntityTypeName.Pluralize();
-        containerTask = cosmosDbService.GetContainerAsync(containerId, partitionKeyPath);
+        this.cosmosDbService = cosmosDbService;
         this.logger = logger;
+
+        ContainerId = containerId;
+        EntityTypeName = typeof(TEntity).Name;
     }
 
-    private Task<Container> GetContainerAsync() => containerTask;
+    private Task<Container> GetContainerAsync(CancellationToken cancellation = default) =>
+        cosmosDbService.GetContainerAsync(ContainerId, cancellation);
 
     protected async Task<TEntity> CreateItemAsync(TEntity item)
     {

@@ -1,6 +1,4 @@
-﻿using OhMyWord.Core.Models;
-
-namespace OhMyWord.Services.Game;
+﻿namespace OhMyWord.Services.Game;
 
 public class GameStatus
 {

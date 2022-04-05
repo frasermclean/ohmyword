@@ -8,7 +8,7 @@ namespace OhMyWord.Services.Data;
 
 public interface ICosmosDbService
 {
-    Task<Container> GetContainerAsync(string containerId, string partitionKeyPath);
+    Task<Container> GetContainerAsync(ContainerId containerId, CancellationToken cancellationToken = default);
 }
 
 public class CosmosDbService : ICosmosDbService
@@ -18,6 +18,12 @@ public class CosmosDbService : ICosmosDbService
     private Database? database;
 
     private string DatabaseId { get; }
+
+    private readonly Dictionary<ContainerId, string> containerDetails = new()
+    {
+        { ContainerId.Words, "/partOfSpeech" },
+        { ContainerId.Players, "/id" }
+    };
 
     public CosmosDbService(IOptions<CosmosDbOptions> options, ILogger<CosmosDbService> logger, IHttpClientFactory httpClientFactory)
     {
@@ -33,9 +39,9 @@ public class CosmosDbService : ICosmosDbService
         DatabaseId = options.Value.DatabaseId;
     }
 
-    private async Task<Database> GetDatabaseAsync()
+    private async Task<Database> GetDatabaseAsync(CancellationToken cancellationToken = default)
     {
-        var response = await cosmosClient.CreateDatabaseIfNotExistsAsync(DatabaseId);
+        var response = await cosmosClient.CreateDatabaseIfNotExistsAsync(DatabaseId, cancellationToken: cancellationToken);
 
         switch (response.StatusCode)
         {
@@ -50,11 +56,12 @@ public class CosmosDbService : ICosmosDbService
         return response.Database;
     }
 
-    public async Task<Container> GetContainerAsync(string containerId, string partitionKeyPath)
+    public async Task<Container> GetContainerAsync(ContainerId containerId, CancellationToken cancellationToken = default)
     {
-        database ??= await GetDatabaseAsync();
+        database ??= await GetDatabaseAsync(cancellationToken);
 
-        var response = await database.CreateContainerIfNotExistsAsync(containerId, partitionKeyPath);
+        var partitionKeyPath = containerDetails[containerId];
+        var response = await database.CreateContainerIfNotExistsAsync(containerId.ToString(), partitionKeyPath, cancellationToken: cancellationToken);
 
         switch (response.StatusCode)
         {
