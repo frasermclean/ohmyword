@@ -4,8 +4,8 @@ export class LetterHint {
   position: number;
   value: string;
 
-  constructor(response: LetterHintResponse) {
-    this.position = response.position;
-    this.value = response.value;
+  constructor(init?: Partial<LetterHintResponse>) {
+    this.position = init?.position ?? 0;
+    this.value = init?.value ?? '';
   }
 }

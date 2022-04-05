@@ -6,13 +6,10 @@ export class WordHint {
   definition: string;
   letters: LetterHint[] = [];
 
-  constructor(response: WordHintResponse) {
-    this.length = response.length;
-    this.definition = response.definition;
+  constructor(init?: Partial<WordHintResponse>) {
+    this.length = init?.length ?? 0;
+    this.definition = init?.definition ?? '';
   }
 
-  public static default = new WordHint({
-    length: 0,
-    definition: '',
-  });
+  public static default = new WordHint();
 }
