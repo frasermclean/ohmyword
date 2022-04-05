@@ -4,12 +4,12 @@ import { HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/s
 
 import { environment } from 'src/environments/environment';
 
-import { HintResponse } from '../models/responses/hint.response';
+import { WordHintResponse } from '../models/responses/word-hint.response';
 import { RegisterPlayerResponse } from '../models/responses/register-player.response';
 import { GuessResponse } from '../models/responses/guess.response';
 import { GameStatusResponse } from '../models/responses/game-status.response';
 
-import { Hint } from '../models/hint';
+import { WordHint } from '../models/word-hint';
 
 import { FingerprintService } from './fingerprint.service';
 import { SoundService, SoundSprite } from './sound.service';
@@ -35,7 +35,7 @@ export class GameService {
     return this.statusSubject.asObservable();
   }
 
-  private readonly hintSubject = new BehaviorSubject<Hint>(Hint.default);
+  private readonly hintSubject = new BehaviorSubject<WordHint>(WordHint.default);
   public get hint$() {
     return this.hintSubject.asObservable();
   }
@@ -97,8 +97,8 @@ export class GameService {
   private async initialize() {
     if (this.hubConnection.state === HubConnectionState.Disconnected) {
       // server sends us a hint
-      this.hubConnection.on('SendHint', (response: HintResponse) => {
-        this.hintSubject.next(new Hint(response));
+      this.hubConnection.on('SendHint', (response: WordHintResponse) => {
+        this.hintSubject.next(new WordHint(response));
       });
 
       this.hubConnection.on('SendGameStatus', (response: GameStatusResponse) => {

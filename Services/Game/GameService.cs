@@ -15,7 +15,7 @@ public interface IGameService
     Task<TimeSpan> StartRoundAsync();
     Task<TimeSpan> EndRoundAsync();
     bool IsCorrect(string value);
-    Hint GetHint();
+    WordHint GetHint();
     GameStatus GetGameStatus();
     Task<Player> RegisterPlayerAsync(string visitorId, string connectionId);
     Task UnregisterPlayerAsync(string connectionId);
@@ -87,7 +87,7 @@ public class GameService : IGameService
 
     public bool IsCorrect(string value) => string.Equals(value, word.Id, StringComparison.InvariantCultureIgnoreCase);
 
-    public Hint GetHint() => new(word, expiry);
+    public WordHint GetHint() => new(word);
 
     public GameStatus GetGameStatus() => new()
     {

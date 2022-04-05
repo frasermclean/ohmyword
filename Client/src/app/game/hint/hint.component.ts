@@ -1,5 +1,5 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { Hint } from 'src/app/models/hint';
+import { WordHint } from 'src/app/models/word-hint';
 
 export interface LetterData {
   position: number;
@@ -14,7 +14,7 @@ export interface LetterData {
 })
 export class HintComponent implements OnChanges {
   @Input() guess: string = '';
-  @Input() hint: Hint = null!;
+  @Input() hint: WordHint = null!;
 
   letters: LetterData[] = [];
 

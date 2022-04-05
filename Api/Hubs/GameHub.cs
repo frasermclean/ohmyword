@@ -8,7 +8,7 @@ namespace OhMyWord.Api.Hubs;
 
 public interface IGameHub
 {
-    Task SendHint(Hint hint);
+    Task SendHint(WordHint wordHint);
     Task SendGameStatus(GameStatus status);
 }
 
@@ -47,7 +47,7 @@ public class GameHub : Hub<IGameHub>
         };
     }
 
-    public Hint GetHint(string playerId)
+    public WordHint GetHint(string playerId)
     {
         return gameService.GetHint();
     }

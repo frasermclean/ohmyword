@@ -11,7 +11,7 @@ import {
 import { FormControl } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { GuessResponse } from 'src/app/models/responses/guess.response';
-import { Hint } from 'src/app/models/hint';
+import { WordHint } from 'src/app/models/word-hint';
 
 import { GameService } from 'src/app/services/game.service';
 
@@ -27,7 +27,7 @@ export class GuessComponent implements OnInit, OnDestroy {
   subscription: Subscription = null!;
 
   @Input()
-  hint: Hint = null!;
+  hint: WordHint = null!;
 
   @Output()
   valueChanged = new EventEmitter<string>();
