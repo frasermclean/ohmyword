@@ -115,7 +115,7 @@ public class GameService : IGameService
 
             var letterHint = new LetterHint
             {
-                Position = index,
+                Position = index + 1,
                 Value = word.Value[index]
             };
 
