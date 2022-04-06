@@ -9,7 +9,7 @@ import { GameService } from 'src/app/services/game.service';
 export class GameComponent implements OnInit {
   roundActive$ = this.gameService.roundActive$;
   status$ = this.gameService.status$;
-  hint$ = this.gameService.hint$;
+  hint$ = this.gameService.wordHint$;
   guess = '';
 
   constructor(private gameService: GameService) {}

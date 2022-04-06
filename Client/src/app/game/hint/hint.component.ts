@@ -14,21 +14,21 @@ export interface LetterData {
 })
 export class HintComponent implements OnChanges {
   @Input() guess: string = '';
-  @Input() hint: WordHint = null!;
+  @Input() wordHint: WordHint = null!;
 
   letters: LetterData[] = [];
 
   constructor() {}
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (!this.hint) throw new Error('Hint has not been set!');
+    if (!this.wordHint) throw new Error('Word hint has not been set!');
 
     if (changes.guess) {
       this.letters = [];
-      for (let i = 0; i < this.hint.length; i++) {
+      for (let i = 0; i < this.wordHint.length; i++) {
         this.letters.push({
           position: i + 1,
-          hintValue: i === 0 ? 'r' : i === 2 ? 'o' : null,
+          hintValue: null,
           guessValue: this.guess[i] || null,
         });
       }

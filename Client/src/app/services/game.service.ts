@@ -40,9 +40,9 @@ export class GameService {
     return this.statusSubject.asObservable();
   }
 
-  private readonly hintSubject = new BehaviorSubject<WordHint>(WordHint.default);
-  public get hint$() {
-    return this.hintSubject.asObservable();
+  private readonly wordHintSubject = new BehaviorSubject<WordHint>(WordHint.default);
+  public get wordHint$() {
+    return this.wordHintSubject.asObservable();
   }
 
   constructor(private fingerprintService: FingerprintService, private soundService: SoundService) {}
@@ -115,7 +115,7 @@ export class GameService {
 
       // register game callbacks
       this.hubConnection.on('SendRoundActive', (value: boolean) => this.roundActiveSubject.next(value));
-      this.hubConnection.on('SendWordHint', (value: WordHintResponse) => this.hintSubject.next(new WordHint(value)));
+      this.hubConnection.on('SendWordHint', (value: WordHintResponse) => this.wordHintSubject.next(new WordHint(value)));
 
       await this.hubConnection.start();
     }
