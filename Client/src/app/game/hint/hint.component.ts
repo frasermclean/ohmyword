@@ -1,12 +1,11 @@
 import { Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
-import { LetterHint } from 'src/app/models/letter-hint';
+import { Subscription } from 'rxjs';
 import { WordHint } from 'src/app/models/word-hint';
 import { GameService } from 'src/app/services/game.service';
 
 export interface LetterData {
-  position: number;
-  hintValue: string | null;
-  guessValue: string | null;
+  hint: string | null;
+  guess: string | null;
 }
 
 @Component({
@@ -16,16 +15,29 @@ export interface LetterData {
 })
 export class HintComponent implements OnInit, OnDestroy, OnChanges {
   @Input() guess: string = '';
-  @Input() wordHint: WordHint = null!;
 
-  wordHintSubscription = this.gameService.wordHint$.subscribe((wordHint) => this.onWordHint(wordHint));
-  letterHintSubscription = this.gameService.letterHint$.subscribe((letterHint) => this.onLetterHint(letterHint));
-
+  wordHint = WordHint.default;
   letters: LetterData[] = [];
+  wordHintSubscription: Subscription = null!;
+  letterHintSubscription: Subscription = null!;
 
   constructor(private gameService: GameService) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.wordHintSubscription = this.gameService.wordHint$.subscribe((wordHint) => {
+      this.wordHint = wordHint;
+      for (let i = 0; i < wordHint.length; i++) {
+        this.letters.push({
+          hint: null,
+          guess: null,
+        });
+      }
+    });
+
+    this.letterHintSubscription = this.gameService.letterHint$.subscribe((letterHint) => {
+      this.letters[letterHint.position - 1].hint = letterHint.value;
+    });
+  }
 
   ngOnDestroy(): void {
     this.wordHintSubscription.unsubscribe();
@@ -33,37 +45,11 @@ export class HintComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    console.log(changes);
-    if (!this.wordHint) throw new Error('Word hint has not been set!');
-
     if (changes.guess) {
-      this.letters = [];
-      for (let i = 0; i < this.wordHint.length; i++) {
-        this.letters.push({
-          position: i + 1,
-          hintValue: null,
-          guessValue: this.guess[i] || null,
-        });
-      }
+      const guess: string = changes.guess.currentValue;
+      this.letters.forEach((letter, i) => {
+        letter.guess = guess[i] || null;
+      });
     }
-  }
-
-  onWordHint(wordHint: WordHint) {
-    console.log('Word hint: ', wordHint);
-  }
-
-  onLetterHint(letterHint: LetterHint) {
-    console.log('Letter hint: ', letterHint);
-    if (letterHint === LetterHint.default) return;
-
-    if (!this.letters) {
-      console.warn('No letters to update!');
-      return;
-    }
-
-    
-    console.log(this.letters);    
-
-    this.letters[letterHint.position - 1].hintValue = letterHint.value;
   }
 }

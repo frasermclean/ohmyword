@@ -1,6 +1,6 @@
 <div class="box" [ngClass]="getState()">
   <span class="letter">
-    {{ data.guessValue || data.hintValue | uppercase }}
+    {{ data.guess || data.hint | uppercase }}
   </span>
 </div>
-<p class="position">{{ data.position }}</p>
+<p class="position">{{ position }}</p>
