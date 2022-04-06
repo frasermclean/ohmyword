@@ -4,7 +4,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 
 import { HintComponent } from './hint/hint.component';
 import { GuessComponent } from './guess/guess.component';
-import { GameComponent } from './game/game.component';
+import { GameComponent } from './game.component';
 import { LetterComponent } from './hint/letter/letter.component';
 import { CountdownComponent } from './countdown/countdown.component';
 

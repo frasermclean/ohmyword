@@ -1,52 +1,24 @@
 ﻿using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Options;
 using OhMyWord.Api.Hubs;
-using OhMyWord.Api.Options;
 using OhMyWord.Services.Game;
 
 namespace OhMyWord.Api;
 
 public class GameCoordinator : BackgroundService
 {
-    private readonly ILogger<GameCoordinator> logger;
     private readonly IGameService gameService;
-    private readonly IHubContext<GameHub, IGameHub> gameHubContext;
-
-    private GameCoordinatorOptions Options { get; }
-    private int RoundCount { get; set; }
 
     public GameCoordinator(
-        ILogger<GameCoordinator> logger,
-        IOptions<GameCoordinatorOptions> options,
         IGameService gameService,
-        IHubContext<GameHub, IGameHub> gameHubContext)
+        IHubContext<GameHub, IGameHub> gameHubContext
+        )
     {
-        this.logger = logger;
         this.gameService = gameService;
-        this.gameHubContext = gameHubContext;
-        Options = options.Value;
+
+        gameService.GameStatusChanged += async gameStatus => await gameHubContext.Clients.All.SendGameStatus(gameStatus);
+        gameService.WordHintChanged += async wordHint => await gameHubContext.Clients.All.SendWordHint(wordHint);
     }
 
-    protected override async Task ExecuteAsync(CancellationToken cancellationToken)
-    {
-        while (!cancellationToken.IsCancellationRequested)
-        {
-            var currentRoundExpiry = DateTime.UtcNow.AddSeconds(Options.RoundLength);
-            var roundDelay = TimeSpan.FromSeconds(Options.RoundLength);
-
-            try
-            {
-                var currentWord = await gameService.SelectNextWord(currentRoundExpiry);
-                await gameHubContext.Clients.All.SendHint(gameService.CurrentHint);
-
-                logger.LogDebug("Round: {count} has begun. Current word is \"{currentWord}\". Round will end at: {expiry}", ++RoundCount, currentWord, currentRoundExpiry);
-                await Task.Delay(roundDelay, cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Exception occurred in game coordinator main loop. Round count: {RoundCount}", RoundCount);
-                await Task.Delay(roundDelay, cancellationToken);
-            }
-        }
-    }
+    protected override Task ExecuteAsync(CancellationToken cancellationToken) =>
+        gameService.StartGameAsync(cancellationToken);
 }

@@ -17,7 +17,7 @@ public interface IPlayerRepository
 public class PlayerRepository : Repository<Player>, IPlayerRepository
 {
     public PlayerRepository(ICosmosDbService cosmosDbService, ILogger<PlayerRepository> logger)
-        : base(cosmosDbService, logger)
+        : base(cosmosDbService, logger, ContainerId.Players)
     {
     }
 

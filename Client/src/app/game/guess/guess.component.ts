@@ -1,7 +1,18 @@
-import { Component, OnInit } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { Howl } from 'howler';
-import { GuessResponse } from 'src/app/models/guess.response';
+import { Subscription } from 'rxjs';
+import { GuessResponse } from 'src/app/models/responses/guess.response';
+import { WordHint } from 'src/app/models/word-hint';
+
 import { GameService } from 'src/app/services/game.service';
 
 @Component({
@@ -9,35 +20,53 @@ import { GameService } from 'src/app/services/game.service';
   templateUrl: './guess.component.html',
   styleUrls: ['./guess.component.scss'],
 })
-export class GuessComponent implements OnInit {
-  guess = new FormControl('');
+export class GuessComponent implements OnInit, OnDestroy {
+  inputControl = new FormControl('');
   response: GuessResponse | null = null;
-  sound = new Howl({
-    src: 'assets/audio/sprites.ogg',
-    sprite: {
-      correct: [0, 720],
-      incorrect: [721, 810],
-    },
-    autoplay: false,
-    preload: true,
-  });
+
+  subscription: Subscription = null!;
+
+  @Input()
+  hint: WordHint = null!;
+
+  @Output()
+  valueChanged = new EventEmitter<string>();
+
+  @ViewChild('input')
+  inputElement: ElementRef<HTMLInputElement> = null!;
 
   constructor(private gameService: GameService) {}
 
   ngOnInit(): void {
-    console.log(this.sound);
+    if (!this.hint) throw new Error('Hint has not been set!');
+    this.subscription = this.inputControl.valueChanges.subscribe((value) => {
+      if (typeof value !== 'string') return;
+      this.valueChanged.emit(value);
+    });
   }
 
-  async onGuess(value: string) {
-    this.response = await this.gameService.guessWord(value);
+  ngOnDestroy(): void {
+    this.subscription.unsubscribe();
+  }
 
-    // play sound
-    const soundId = this.response.correct ? 'correct' : 'incorrect';
-    this.sound.play(soundId);
+  onInputBlur(event: FocusEvent) {
+    if (this.inputElement) {
+      this.inputElement.nativeElement.focus();
+    }
+  }
 
-    this.guess.reset();
-    setTimeout(() => {
-      this.response = null;
-    }, 2000);
+  async onEnterKeyDown() {
+    const value =
+      typeof this.inputControl.value === 'string'
+        ? this.inputControl.value.trim()
+        : '';
+
+    if (value.length === this.hint.length) {
+      this.response = await this.gameService.guessWord(value);
+      this.inputControl.reset('');
+      setTimeout(() => {
+        this.response = null;
+      }, 2000);
+    }
   }
 }

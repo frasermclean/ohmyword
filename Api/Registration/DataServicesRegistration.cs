@@ -1,5 +1,4 @@
-﻿using OhMyWord.Services;
-using OhMyWord.Services.Data;
+﻿using OhMyWord.Services.Data;
 using OhMyWord.Services.Data.Repositories;
 using OhMyWord.Services.Options;
 

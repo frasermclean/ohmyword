@@ -1,9 +1,0 @@
-<ng-container *ngIf="isRegistered$ | async; else notRegistered">
-  <app-hint></app-hint>
-  <app-guess></app-guess>
-  <app-countdown></app-countdown>
-</ng-container>
-
-<ng-template #notRegistered>
-  <p>Not registered with game server.</p>
-</ng-template>

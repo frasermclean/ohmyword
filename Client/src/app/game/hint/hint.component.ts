@@ -1,10 +1,10 @@
-import { Component, OnInit } from '@angular/core';
-
-import { GameService } from 'src/app/services/game.service';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { WordHint } from 'src/app/models/word-hint';
 
 export interface LetterData {
-  value: string;
   position: number;
+  hintValue: string | null;
+  guessValue: string | null;
 }
 
 @Component({
@@ -12,22 +12,26 @@ export interface LetterData {
   templateUrl: './hint.component.html',
   styleUrls: ['./hint.component.scss'],
 })
-export class HintComponent implements OnInit {
-  public hint$ = this.gameService.hint$;
-  public letters: LetterData[] = [];
+export class HintComponent implements OnChanges {
+  @Input() guess: string = '';
+  @Input() wordHint: WordHint = null!;
 
-  constructor(private gameService: GameService) {}
+  letters: LetterData[] = [];
 
-  ngOnInit(): void {
-    this.gameService.getHint();
-    this.hint$.subscribe((hint) => {
+  constructor() {}
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (!this.wordHint) throw new Error('Word hint has not been set!');
+
+    if (changes.guess) {
       this.letters = [];
-      for (let i = 0; i < hint.length; i++) {
+      for (let i = 0; i < this.wordHint.length; i++) {
         this.letters.push({
           position: i + 1,
-          value: '',
+          hintValue: null,
+          guessValue: this.guess[i] || null,
         });
       }
-    });
+    }
   }
 }

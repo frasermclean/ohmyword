@@ -14,4 +14,17 @@ export class LetterComponent implements OnInit {
   ngOnInit(): void {
     if (!this.data) throw new Error('Letter data input is not set!');
   }
+
+  getState(): 'correct' | 'incorrect' | 'hint' | 'default' {
+    if (this.data.hintValue) {
+      if (this.data.guessValue) {
+        return this.data.guessValue === this.data.hintValue
+          ? 'correct'
+          : 'incorrect';
+      }
+      return 'hint';
+    }
+
+    return 'default';
+  }
 }

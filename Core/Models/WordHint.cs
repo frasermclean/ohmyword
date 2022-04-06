@@ -1,18 +1,17 @@
 ﻿namespace OhMyWord.Core.Models;
 
-public class Hint
+public class WordHint
 {
     private readonly Word word;
 
     public int Length => word.Id.Length;
     public string Definition => word.Definition;
-    public DateTime Expiry { get; }
+    public List<LetterHint> Letters { get; } = new();
 
-    public Hint(Word word, DateTime expiry)
+    public WordHint(Word word)
     {
         this.word = word;
-        Expiry = expiry;
     }
 
-    public static readonly Hint Default = new(Word.Default, DateTime.MinValue);
+    public static readonly WordHint Default = new(Word.Default);
 }

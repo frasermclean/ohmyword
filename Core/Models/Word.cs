@@ -7,5 +7,8 @@ public class Word : Entity
 
     public override string ToString() => Id;
 
-    public static readonly Word Default = new();
+    public static readonly Word Default = new()
+    {
+        Id = string.Empty
+    };
 }
