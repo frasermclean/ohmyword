@@ -6,7 +6,7 @@ namespace OhMyWord.Api.Requests.Words;
 public class CreateWordRequest
 {
     [Required]
-    public string Id { get; init; } = string.Empty;
+    public string Value { get; init; } = string.Empty;
 
     [Required]
     public string Definition { get; init; } = string.Empty;
@@ -16,7 +16,7 @@ public class CreateWordRequest
 
     public Word ToWord() => new()
     {
-        Id = Id,
+        Id = Value,
         Definition = Definition,
         PartOfSpeech = PartOfSpeech.GetValueOrDefault()
     };

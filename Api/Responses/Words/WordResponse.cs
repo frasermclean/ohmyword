@@ -2,4 +2,4 @@
 
 namespace OhMyWord.Api.Responses.Words;
 
-public record WordResponse(string Id, PartOfSpeech PartOfSpeech, string Definition);
+public record WordResponse(string Value, PartOfSpeech PartOfSpeech, string Definition);

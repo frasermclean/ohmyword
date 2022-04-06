@@ -1,14 +1,15 @@
 ﻿using Microsoft.Extensions.Logging;
 using OhMyWord.Core.Models;
+using OhMyWord.Services.Extensions;
 
 namespace OhMyWord.Services.Data.Repositories;
 
 public interface IWordsRepository
 {
     Task<IEnumerable<Word>> GetAllWordsAsync();
-    Task<Word?> GetWordById(string wordId);
+    Task<Word?> GetWordByValueAsync(PartOfSpeech partOfSpeech, string value);
     Task<Word> CreateWordAsync(Word word);
-    Task<bool> DeleteWordAsync(string wordId);
+    Task<bool> DeleteWordAsync(PartOfSpeech partOfSpeech, string value);
 }
 
 public class WordsRepository : Repository<Word>, IWordsRepository
@@ -19,7 +20,12 @@ public class WordsRepository : Repository<Word>, IWordsRepository
     }
 
     public Task<IEnumerable<Word>> GetAllWordsAsync() => ReadAllItemsAsync();
-    public Task<Word?> GetWordById(string wordId) => ReadItemAsync(wordId, wordId);
+
+    public Task<Word?> GetWordByValueAsync(PartOfSpeech partOfSpeech, string value) =>
+        ReadItemAsync(value, partOfSpeech.ToPartitionKey());
+
     public Task<Word> CreateWordAsync(Word word) => CreateItemAsync(word);
-    public Task<bool> DeleteWordAsync(string wordId) => DeleteItemAsync(wordId, wordId);
+
+    public Task<bool> DeleteWordAsync(PartOfSpeech partOfSpeech, string value) =>
+        DeleteItemAsync(value, partOfSpeech.ToPartitionKey());
 }
