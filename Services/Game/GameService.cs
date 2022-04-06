@@ -80,29 +80,40 @@ public class GameService : IGameService
 
         while (!cancellationToken.IsCancellationRequested)
         {
+            // randomly select a word
             Word = SelectNextRandomWord(words, previousIndices);
             WordHint = new WordHint(Word);
 
+            // start of round
             var delay = TimeSpan.FromSeconds(Options.RoundLength);
-            GameStatus = new GameStatus
+            UpdateGameStatus(true, delay);
+            logger.LogDebug("Round: {RoundNumber} has started. Current word is: {Word}", gameStatus.RoundNumber, Word);
+            await Task.Delay(delay, cancellationToken);
+
+            // end of round
+            delay = TimeSpan.FromSeconds(Options.PostRoundDelay);
+            UpdateGameStatus(false, delay);
+            logger.LogDebug("Round: {RoundNumber} has ended.", gameStatus.RoundNumber);
+            await Task.Delay(delay, cancellationToken);
+        }
+    }
+
+    private void UpdateGameStatus(bool roundActive, TimeSpan delay)
+    {
+        GameStatus = roundActive switch
+        {
+            true => new GameStatus
             {
                 RoundActive = true,
                 RoundNumber = GameStatus.RoundNumber + 1,
                 Expiry = DateTime.UtcNow + delay
-            };
-            logger.LogDebug("Round: {RoundNumber} has started. Current word is: {Word}", gameStatus.RoundNumber, Word);
-            await Task.Delay(delay, cancellationToken);
-
-            delay = TimeSpan.FromSeconds(Options.PostRoundDelay);
-            GameStatus = GameStatus with
+            },
+            false => GameStatus with
             {
                 RoundActive = false,
                 Expiry = DateTime.UtcNow + delay
-            };
-
-            logger.LogDebug("Round: {RoundNumber} has ended.", gameStatus.RoundNumber);
-            await Task.Delay(delay, cancellationToken);
-        }
+            }
+        };
     }
 
     private async Task<List<Word>> LoadWordsFromDatabaseAsync()
