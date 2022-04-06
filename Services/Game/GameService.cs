@@ -108,6 +108,8 @@ public class GameService : IGameService
 
         while (previousIndices.Count < word.Id.Length)
         {
+            await Task.Delay(letterDelay, cancellationToken);
+
             int index;
             do index = Random.Shared.Next(word.Id.Length);
             while (previousIndices.Contains(index));
@@ -121,8 +123,6 @@ public class GameService : IGameService
 
             LetterHintAdded?.Invoke(letterHint);
             // TODO: Add letter hint to LetterHint property
-            
-            await Task.Delay(letterDelay, cancellationToken);
         }
     }
 
