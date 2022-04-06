@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 import { HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
 
 import { environment } from 'src/environments/environment';
@@ -14,6 +14,8 @@ import { WordHint } from '../models/word-hint';
 import { FingerprintService } from './fingerprint.service';
 import { SoundService, SoundSprite } from './sound.service';
 import { GameStatus } from '../models/game-status';
+import { LetterHintResponse } from '../models/responses/letter-hint.response';
+import { LetterHint } from '../models/letter-hint';
 
 @Injectable({
   providedIn: 'root',
@@ -38,6 +40,11 @@ export class GameService {
   private readonly wordHintSubject = new BehaviorSubject<WordHint>(WordHint.default);
   public get wordHint$() {
     return this.wordHintSubject.asObservable();
+  }
+
+  private readonly letterHintSubject = new Subject<LetterHint>();
+  public get letterHint$() {
+    return this.letterHintSubject.asObservable();
   }
 
   constructor(private fingerprintService: FingerprintService, private soundService: SoundService) {}
@@ -86,9 +93,12 @@ export class GameService {
       this.hubConnection.on('SendGameStatus', (response: GameStatusResponse) =>
         this.gameStatusSubject.next(new GameStatus(response))
       );
-      this.hubConnection.on('SendWordHint', (value: WordHintResponse) =>
-        this.wordHintSubject.next(new WordHint(value))
+      this.hubConnection.on('SendWordHint', (response: WordHintResponse) =>
+        this.wordHintSubject.next(new WordHint(response))
       );
+      this.hubConnection.on('SendLetterHint', (response: LetterHintResponse) => {
+        this.letterHintSubject.next(new LetterHint(response));
+      });
 
       await this.hubConnection.start();
     }
