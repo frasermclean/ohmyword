@@ -7,6 +7,7 @@ import { GameService } from 'src/app/services/game.service';
   styleUrls: ['./game.component.scss'],
 })
 export class GameComponent implements OnInit {
+  registered$ = this.gameService.registered$;
   status$ = this.gameService.gameStatus$;
   hint$ = this.gameService.wordHint$;
   guess = '';
