@@ -10,6 +10,7 @@ public interface IGameHub
 {
     Task SendWordHint(WordHint wordHint);
     Task SendGameStatus(GameStatus status);
+    Task SendLetterHint(LetterHint letterHint);
 }
 
 public class GameHub : Hub<IGameHub>

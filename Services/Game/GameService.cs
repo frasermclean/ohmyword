@@ -14,6 +14,7 @@ public interface IGameService
 
     event Action<GameStatus> GameStatusChanged;
     event Action<WordHint> WordHintChanged;
+    event Action<LetterHint>? LetterHintAdded;
 
     Task StartGameAsync(CancellationToken cancellationToken);
 
@@ -59,6 +60,7 @@ public class GameService : IGameService
 
     public event Action<GameStatus>? GameStatusChanged;
     public event Action<WordHint>? WordHintChanged;
+    public event Action<LetterHint>? LetterHintAdded;
 
     public GameService(
         ILogger<GameService> logger,
@@ -81,22 +83,51 @@ public class GameService : IGameService
         while (!cancellationToken.IsCancellationRequested)
         {
             // randomly select a word
-            Word = SelectNextRandomWord(words, previousIndices);
+            Word = SelectRandomWord(words, previousIndices);
             WordHint = new WordHint(Word);
 
             // start of round
-            var delay = TimeSpan.FromSeconds(Options.RoundLength);
-            UpdateGameStatus(true, delay);
+            var roundDelay = CalculateRoundDelay(Word, Options.LetterHintDelay);
+            UpdateGameStatus(true, roundDelay);
             logger.LogDebug("Round: {RoundNumber} has started. Current word is: {Word}", gameStatus.RoundNumber, Word);
-            await Task.Delay(delay, cancellationToken);
+
+            await SendLetterHintsAsync(Word, roundDelay, cancellationToken);
 
             // end of round
-            delay = TimeSpan.FromSeconds(Options.PostRoundDelay);
-            UpdateGameStatus(false, delay);
+            var postRoundDelay = TimeSpan.FromSeconds(Options.PostRoundDelay);
+            UpdateGameStatus(false, postRoundDelay);
             logger.LogDebug("Round: {RoundNumber} has ended.", gameStatus.RoundNumber);
-            await Task.Delay(delay, cancellationToken);
+            await Task.Delay(postRoundDelay, cancellationToken);
         }
     }
+
+    private async Task SendLetterHintsAsync(Word word, TimeSpan roundDelay, CancellationToken cancellationToken)
+    {
+        var letterDelay = roundDelay / word.Id.Length;
+        var previousIndices = new List<int>();
+
+        while (previousIndices.Count < word.Id.Length)
+        {
+            int index;
+            do index = Random.Shared.Next(word.Id.Length);
+            while (previousIndices.Contains(index));
+            previousIndices.Add(index);
+
+            var letterHint = new LetterHint
+            {
+                Position = index,
+                Value = word.Value[index]
+            };
+
+            LetterHintAdded?.Invoke(letterHint);
+            // TODO: Add letter hint to LetterHint property
+            
+            await Task.Delay(letterDelay, cancellationToken);
+        }
+    }
+
+    private static TimeSpan CalculateRoundDelay(Word word, double letterHintDelay)
+        => TimeSpan.FromSeconds(word.Id.Length * letterHintDelay);
 
     private void UpdateGameStatus(bool roundActive, TimeSpan delay)
     {
@@ -131,13 +162,13 @@ public class GameService : IGameService
         return words;
     }
 
-    private static Word SelectNextRandomWord(IReadOnlyList<Word> words, ICollection<int> previousIndices)
+    private static Word SelectRandomWord(IReadOnlyList<Word> words, ICollection<int> previousIndices)
     {
         if (previousIndices.Count == words.Count)
             previousIndices.Clear();
 
         int index;
-        do index = Random.Shared.Next(0, words.Count);
+        do index = Random.Shared.Next(words.Count);
         while (previousIndices.Contains(index));
 
         var randomWord = words[index];

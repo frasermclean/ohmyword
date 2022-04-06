@@ -2,6 +2,7 @@
 
 public class Word : Entity
 {
+    public string Value => Id;
     public string Definition { get; init; } = string.Empty;
     public PartOfSpeech PartOfSpeech { get; init; }
 
