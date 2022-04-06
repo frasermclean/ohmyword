@@ -30,14 +30,9 @@ export class GameService {
     return this.registeredSubject.asObservable();
   }
 
-  private roundActiveSubject = new BehaviorSubject<boolean>(false);
-  public get roundActive$() {
-    return this.roundActiveSubject.asObservable();
-  }
-
-  private readonly statusSubject = new BehaviorSubject<GameStatus>(GameStatus.default);
-  public get status$() {
-    return this.statusSubject.asObservable();
+  private readonly gameStatusSubject = new BehaviorSubject<GameStatus>(GameStatus.default);
+  public get gameStatus$() {
+    return this.gameStatusSubject.asObservable();
   }
 
   private readonly wordHintSubject = new BehaviorSubject<WordHint>(WordHint.default);
@@ -49,36 +44,16 @@ export class GameService {
 
   /**
    * Attempt to register with game service.
-   * @returns
    */
   async registerPlayer() {
     await this.initialize();
     const visitorId = await this.fingerprintService.getVisitorId();
     const response = await this.hubConnection.invoke<RegisterPlayerResponse>('registerPlayer', visitorId);
 
-    if (!response.success) throw new Error('Failed to register player');
-
     this.playerId = response.playerId;
     this.registeredSubject.next(true);
-    const status = new GameStatus(response.status);
-    this.statusSubject.next(status);
-
-    return status;
-  }
-
-  /**
-   * Get hint about the current word.
-   * @returns
-   */
-  private async getGameStatus() {
-    await this.initialize();
-
-    const response = await this.hubConnection.invoke<GameStatusResponse>('getStatus', this.playerId);
-
-    const status = new GameStatus(response);
-    this.statusSubject.next(status);
-
-    return status;
+    this.wordHintSubject.next(new WordHint(response.wordHint));
+    this.gameStatusSubject.next(new GameStatus(response.gameStatus));
   }
 
   public async guessWord(value: string) {
@@ -101,12 +76,6 @@ export class GameService {
    */
   private async initialize() {
     if (this.hubConnection.state === HubConnectionState.Disconnected) {
-      
-
-      this.hubConnection.on('SendGameStatus', (response: GameStatusResponse) => {
-        this.statusSubject.next(new GameStatus(response));
-      });
-
       // register callback for connection closed error
       this.hubConnection.onclose((error) => {
         console.error('Connection closed: ', error);
@@ -114,8 +83,12 @@ export class GameService {
       });
 
       // register game callbacks
-      this.hubConnection.on('SendRoundActive', (value: boolean) => this.roundActiveSubject.next(value));
-      this.hubConnection.on('SendWordHint', (value: WordHintResponse) => this.wordHintSubject.next(new WordHint(value)));
+      this.hubConnection.on('SendGameStatus', (response: GameStatusResponse) =>
+        this.gameStatusSubject.next(new GameStatus(response))
+      );
+      this.hubConnection.on('SendWordHint', (value: WordHintResponse) =>
+        this.wordHintSubject.next(new WordHint(value))
+      );
 
       await this.hubConnection.start();
     }

@@ -10,7 +10,6 @@ public interface IGameHub
 {
     Task SendWordHint(WordHint wordHint);
     Task SendGameStatus(GameStatus status);
-    Task SendRoundActive(bool value);
 }
 
 public class GameHub : Hub<IGameHub>
@@ -40,17 +39,18 @@ public class GameHub : Hub<IGameHub>
     {
         logger.LogInformation("Attempting to register client with visitor ID: {visitorId}", visitorId);
         var player = await gameService.RegisterPlayerAsync(visitorId, Context.ConnectionId);
-        await Clients.Caller.SendWordHint(gameService.WordHint);
         return new RegisterPlayerResponse
         {
             PlayerId = player.Id,
-            Status = gameService.GetGameStatus()
+            GameStatus = gameService.GameStatus,
+            WordHint = gameService.WordHint,
+            PlayerCount = gameService.PlayerCount
         };
     }
 
     public WordHint GetHint(string playerId) => gameService.WordHint;
 
-    public GameStatus GetStatus(string playerId) => gameService.GetGameStatus();
+    public GameStatus GetStatus(string playerId) => gameService.GameStatus;
 
     public GuessWordResponse GuessWord(GuessWordRequest request)
     {

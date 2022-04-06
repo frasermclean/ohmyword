@@ -1,7 +1,9 @@
 import { GameStatusResponse } from './game-status.response';
+import { WordHintResponse } from './word-hint.response';
 
 export interface RegisterPlayerResponse {
-  success: boolean;
   playerId: string;
-  status: GameStatusResponse;
+  gameStatus: GameStatusResponse;
+  wordHint: WordHintResponse;
+  playerCount: number;
 }

@@ -1,8 +1,8 @@
 ﻿namespace OhMyWord.Services.Game;
 
-public class GameStatus
+public record GameStatus
 {
     public bool RoundActive { get; init; }
+    public int RoundNumber { get; init; }
     public DateTime Expiry { get; init; }
-    public int PlayerCount { get; init; }
 }
