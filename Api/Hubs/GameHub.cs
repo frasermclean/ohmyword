@@ -53,10 +53,10 @@ public class GameHub : Hub<IGameHub>
 
     public GameStatus GetStatus(string playerId) => gameService.GameStatus;
 
-    public GuessWordResponse GuessWord(GuessWordRequest request)
+    public SubmitGuessResponse SubmitGuess(SubmitGuessRequest request)
     {
         var isCorrect = gameService.IsCorrect(request.Value);
-        return new GuessWordResponse
+        return new SubmitGuessResponse
         {
             Value = request.Value.ToLowerInvariant(),
             Correct = isCorrect,
