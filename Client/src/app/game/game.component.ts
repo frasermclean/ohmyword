@@ -10,15 +10,10 @@ export class GameComponent implements OnInit {
   registered$ = this.gameService.registered$;
   status$ = this.gameService.gameStatus$;
   hint$ = this.gameService.wordHint$;
-  guess = '';
 
   constructor(private gameService: GameService) {}
 
   ngOnInit() {
     this.gameService.registerPlayer();
-  }
-
-  onGuessChanged(value: string) {
-    this.guess = value;
   }
 }

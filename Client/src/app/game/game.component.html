@@ -2,8 +2,8 @@
   <ng-container *ngIf="status$ | async as status">
     <ng-container *ngIf="status.roundActive; else roundEnded">
       <ng-container *ngIf="hint$ | async as hint; else noHint">
-        <app-hint [guess]="guess"></app-hint>
-        <app-guess [hint]="hint" (valueChanged)="guess = $event"></app-guess>
+        <app-hint></app-hint>
+        <app-guess [hint]="hint"></app-guess>
       </ng-container>
       <ng-template #noHint>
         <h2>NO HINT :(</h2>

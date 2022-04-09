@@ -13,13 +13,12 @@ export interface LetterData {
   templateUrl: './hint.component.html',
   styleUrls: ['./hint.component.scss'],
 })
-export class HintComponent implements OnInit, OnDestroy, OnChanges {
-  @Input() guess: string = '';
-
+export class HintComponent implements OnInit, OnDestroy {
   wordHint = WordHint.default;
   letters: LetterData[] = [];
   wordHintSubscription: Subscription = null!;
   letterHintSubscription: Subscription = null!;
+  guessSubscription: Subscription = null!;
 
   constructor(private gameService: GameService) {}
 
@@ -37,19 +36,17 @@ export class HintComponent implements OnInit, OnDestroy, OnChanges {
     this.letterHintSubscription = this.gameService.letterHint$.subscribe((letterHint) => {
       this.letters[letterHint.position - 1].hint = letterHint.value;
     });
+
+    this.guessSubscription = this.gameService.guess$.subscribe((guess) => {
+      this.letters.forEach((letter, i) => {
+        letter.guess = guess[i] || null;
+      });
+    });
   }
 
   ngOnDestroy(): void {
     this.wordHintSubscription.unsubscribe();
     this.letterHintSubscription.unsubscribe();
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes.guess) {
-      const guess: string = changes.guess.currentValue;
-      this.letters.forEach((letter, i) => {
-        letter.guess = guess[i] || null;
-      });
-    }
+    this.guessSubscription.unsubscribe();
   }
 }
