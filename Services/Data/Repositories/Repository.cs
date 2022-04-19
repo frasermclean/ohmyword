@@ -53,15 +53,7 @@ public abstract class Repository<TEntity> where TEntity : Entity
         await using var stream = EntitySerializer.ConvertToStream(item);
         var response = await container.ReplaceItemStreamAsync(stream, id, partitionKey, cancellationToken: cancellationToken);
 
-        return new RepositoryActionResult<TEntity>
-        {
-            Action = RepositoryAction.Update,
-            Success = response.IsSuccessStatusCode,
-            StatusCode = response.StatusCode,
-            ErrorMessage = response.ErrorMessage,
-            Resource = response.IsSuccessStatusCode && response.Content.CanRead ? 
-                EntitySerializer.ConvertFromStream<TEntity>(response.Content) : null,
-        };
+        return RepositoryActionResult<TEntity>.FromResponseMessage(response, RepositoryAction.Update, id);
     }
 
     protected Task DeleteItemAsync(TEntity item) => DeleteItemAsync(item.Id, item.GetPartition());
