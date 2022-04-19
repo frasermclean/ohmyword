@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace OhMyWord.Services.Data;
 
-internal class EntitySerializer : CosmosSerializer
+public class EntitySerializer : CosmosSerializer
 {
     private static readonly JsonObjectSerializer Serializer = new (new JsonSerializerOptions
     {
