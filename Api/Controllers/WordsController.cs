@@ -33,7 +33,7 @@ public class WordsController : ControllerBase
         var result = await wordsRepository.GetWordByValueAsync(partOfSpeech, value);
         return result.Success ?
             Ok(mapper.Map<WordResponse>(result.Resource)) :
-            StatusCode(result.StatusCode, new { result.ErrorMessage });
+            StatusCode(result.StatusCode, new { result.Message });
     }
 
     [HttpPost]
@@ -49,13 +49,13 @@ public class WordsController : ControllerBase
         var result = await wordsRepository.UpdateWordAsync(partOfSpeech, value, request.ToWord());
         return result.Success ? 
             Ok(mapper.Map<WordResponse>(result.Resource)) : 
-            StatusCode(result.StatusCode, new { result.ErrorMessage });
+            StatusCode(result.StatusCode, new { result.Message });
     }
 
     [HttpDelete("{partOfSpeech}/{value}")]
     public async Task<IActionResult> DeleteWord(PartOfSpeech partOfSpeech, string value)
     {
-        var wasDeleted = await wordsRepository.DeleteWordAsync(partOfSpeech, value);
-        return wasDeleted ? NoContent() : NotFound();
+        var result = await wordsRepository.DeleteWordAsync(partOfSpeech, value);
+        return result.Success ? NoContent() : StatusCode(result.StatusCode, new { result.Message });
     }
 }
