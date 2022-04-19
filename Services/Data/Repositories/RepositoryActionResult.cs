@@ -21,8 +21,8 @@ public class RepositoryActionResult<T> where T : Entity
             ? string.Empty
             : response.StatusCode switch
             {
-                HttpStatusCode.NotFound => $"Could not find a {typeof(T).Name} with ID: '{id}' to {action}",
-                _ => $"Error occurred during {action} of {typeof(T).Name}"
+                HttpStatusCode.NotFound => $"Could not {action} a {typeof(T).Name} with ID: {id}",
+                _ => $"Error occurred during {action} of {typeof(T).Name} with ID: {id}"
             };
 
         return new RepositoryActionResult<T>

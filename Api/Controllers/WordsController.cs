@@ -30,10 +30,10 @@ public class WordsController : ControllerBase
     [HttpGet("{partOfSpeech}/{value}")]
     public async Task<ActionResult<WordResponse>> GetWordByValue(PartOfSpeech partOfSpeech, string value)
     {
-        var word = await wordsRepository.GetWordByValueAsync(partOfSpeech, value);
-        return word is null ?
-            NotFound() :
-            Ok(mapper.Map<WordResponse>(word));
+        var result = await wordsRepository.GetWordByValueAsync(partOfSpeech, value);
+        return result.Success ?
+            Ok(mapper.Map<WordResponse>(result.Resource)) :
+            StatusCode(result.StatusCode, new { result.ErrorMessage });
     }
 
     [HttpPost]
@@ -47,7 +47,9 @@ public class WordsController : ControllerBase
     public async Task<IActionResult> UpdateWord(PartOfSpeech partOfSpeech, string value, CreateWordRequest request)
     {
         var result = await wordsRepository.UpdateWordAsync(partOfSpeech, value, request.ToWord());
-        return result.Success ? Ok(mapper.Map<WordResponse>(result.Resource)) : StatusCode(result.StatusCode, new { result.ErrorMessage });
+        return result.Success ? 
+            Ok(mapper.Map<WordResponse>(result.Resource)) : 
+            StatusCode(result.StatusCode, new { result.ErrorMessage });
     }
 
     [HttpDelete("{partOfSpeech}/{value}")]

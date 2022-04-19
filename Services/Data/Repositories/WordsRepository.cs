@@ -7,7 +7,7 @@ namespace OhMyWord.Services.Data.Repositories;
 public interface IWordsRepository
 {
     Task<IEnumerable<Word>> GetAllWordsAsync();
-    Task<Word?> GetWordByValueAsync(PartOfSpeech partOfSpeech, string value);
+    Task<RepositoryActionResult<Word>> GetWordByValueAsync(PartOfSpeech partOfSpeech, string value);
     Task<Word> CreateWordAsync(Word word);
     Task<RepositoryActionResult<Word>> UpdateWordAsync(PartOfSpeech partOfSpeech, string value, Word word);
     Task<bool> DeleteWordAsync(PartOfSpeech partOfSpeech, string value);
@@ -20,7 +20,7 @@ public class WordsRepository : Repository<Word>, IWordsRepository
 
     public Task<IEnumerable<Word>> GetAllWordsAsync() => ReadAllItemsAsync();
 
-    public Task<Word?> GetWordByValueAsync(PartOfSpeech partOfSpeech, string value) =>
+    public Task<RepositoryActionResult<Word>> GetWordByValueAsync(PartOfSpeech partOfSpeech, string value) =>
         ReadItemAsync(value, partOfSpeech.ToPartitionKey());
 
     public Task<Word> CreateWordAsync(Word word) => CreateItemAsync(word);

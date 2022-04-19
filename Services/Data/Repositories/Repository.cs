@@ -35,14 +35,14 @@ public abstract class Repository<TEntity> where TEntity : Entity
         return response.Resource;
     }
 
-    protected async Task<TEntity?> ReadItemAsync(string id, string partition, CancellationToken cancellationToken = default)
+    protected async Task<RepositoryActionResult<TEntity>> ReadItemAsync(string id, string partition, CancellationToken cancellationToken = default)
     {
         container ??= await GetContainerAsync(cancellationToken);
         var partitionKey = new PartitionKey(partition);
 
         using var response = await container.ReadItemStreamAsync(id, partitionKey, cancellationToken: cancellationToken);
 
-        return response.IsSuccessStatusCode ? EntitySerializer.ConvertFromStream<TEntity>(response.Content) : null;
+        return RepositoryActionResult<TEntity>.FromResponseMessage(response, RepositoryAction.Read, id);
     }
 
     protected async Task<RepositoryActionResult<TEntity>> UpdateItemAsync(TEntity item, string id, string partition, CancellationToken cancellationToken = default)
