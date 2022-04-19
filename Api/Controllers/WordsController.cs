@@ -43,6 +43,13 @@ public class WordsController : ControllerBase
         return CreatedAtAction(nameof(GetWordByValue), new { word.PartOfSpeech, word.Value }, mapper.Map<WordResponse>(word));
     }
 
+    [HttpPut("{partOfSpeech}/{value}")]
+    public async Task<ActionResult<WordResponse>> UpdateWord(PartOfSpeech partOfSpeech, string value, CreateWordRequest request)
+    {
+        var result = await wordsRepository.UpdateWordAsync(partOfSpeech, value, request.ToWord());
+        return result.Success ? Ok(result.Resource) : NotFound();
+    }
+
     [HttpDelete("{partOfSpeech}/{value}")]
     public async Task<IActionResult> DeleteWord(PartOfSpeech partOfSpeech, string value)
     {
