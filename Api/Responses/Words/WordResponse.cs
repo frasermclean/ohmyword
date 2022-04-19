@@ -2,4 +2,10 @@
 
 namespace OhMyWord.Api.Responses.Words;
 
-public record WordResponse(string Value, PartOfSpeech PartOfSpeech, string Definition);
+public class WordResponse
+{
+    public string Value { get; init; } = string.Empty;
+    public PartOfSpeech PartOfSpeech { get; init; }
+    public string Definition { get; init; } = string.Empty;
+    public DateTime LastUpdateTime { get; init; }
+}

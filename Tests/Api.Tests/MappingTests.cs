@@ -34,10 +34,11 @@ public class MappingTests
             PartOfSpeech = PartOfSpeech.Noun,
         };
 
-        var (id, partOfSpeech, definition) = mapper.Map<WordResponse>(word);
+        var response = mapper.Map<WordResponse>(word);
 
-        id.Should().Be(word.Id);
-        partOfSpeech.Should().Be(word.PartOfSpeech);
-        definition.Should().Be(word.Definition);
+        response.Value.Should().Be(word.Value);
+        response.PartOfSpeech.Should().Be(word.PartOfSpeech);
+        response.Definition.Should().Be(word.Definition);
+        response.LastUpdateTime.Should().Be(word.LastUpdateTime);
     }
 }
