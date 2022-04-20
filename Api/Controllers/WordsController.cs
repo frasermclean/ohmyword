@@ -33,14 +33,18 @@ public class WordsController : ControllerBase
         var result = await wordsRepository.GetWordByValueAsync(partOfSpeech, value);
         return result.Success ?
             Ok(mapper.Map<WordResponse>(result.Resource)) :
-            StatusCode(result.StatusCode, new { result.ErrorMessage });
+            StatusCode(result.StatusCode, new { result.Message });
     }
 
     [HttpPost]
     public async Task<IActionResult> CreateWord(CreateWordRequest request)
     {
-        var word = await wordsRepository.CreateWordAsync(request.ToWord());
-        return CreatedAtAction(nameof(GetWordByValue), new { word.PartOfSpeech, word.Value }, mapper.Map<WordResponse>(word));
+        var result = await wordsRepository.CreateWordAsync(request.ToWord());
+        var word = result.Resource ?? Word.Default;
+        return result.Success
+            ? CreatedAtAction(nameof(GetWordByValue), new {word.PartOfSpeech, word.Value},
+                mapper.Map<WordResponse>(word))
+            : StatusCode(result.StatusCode, new {result.Message});
     }
 
     [HttpPut("{partOfSpeech}/{value}")]
@@ -49,13 +53,13 @@ public class WordsController : ControllerBase
         var result = await wordsRepository.UpdateWordAsync(partOfSpeech, value, request.ToWord());
         return result.Success ?
             Ok(mapper.Map<WordResponse>(result.Resource)) :
-            StatusCode(result.StatusCode, new { result.ErrorMessage });
+            StatusCode(result.StatusCode, new { result.Message });
     }
 
     [HttpDelete("{partOfSpeech}/{value}")]
     public async Task<IActionResult> DeleteWord(PartOfSpeech partOfSpeech, string value)
     {
-        var wasDeleted = await wordsRepository.DeleteWordAsync(partOfSpeech, value);
-        return wasDeleted ? NoContent() : NotFound();
+        var result = await wordsRepository.DeleteWordAsync(partOfSpeech, value);
+        return result.Success ? NoContent() : StatusCode(result.StatusCode, new { result.Message });
     }
 }

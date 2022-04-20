@@ -186,11 +186,16 @@ public class GameService : IGameService
         var player = await playerRepository.FindPlayerByVisitorIdAsync(visitorId);
 
         // create new player if existing player not found
-        player ??= await playerRepository.CreatePlayerAsync(new Player
+        if (player is null)
         {
-            VisitorId = visitorId,
-            ConnectionId = connectionId
-        });
+            var result = await playerRepository.CreatePlayerAsync(new Player
+            {
+                VisitorId = visitorId,
+                ConnectionId = connectionId
+            });
+
+            player = result.Resource ?? throw new NullReferenceException("Player resource is null!");
+        }
 
         logger.LogInformation("Player with ID: {playerId} joined the game. Player count: {playerCount}", player.Id, ++PlayerCount);
 
