@@ -10,6 +10,7 @@ public class Word : Entity
 
     public static readonly Word Default = new()
     {
-        Id = string.Empty
+        Id = "default",
+        Definition = "Default word"
     };
 }
