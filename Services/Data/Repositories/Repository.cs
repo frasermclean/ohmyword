@@ -23,7 +23,7 @@ public abstract class Repository<TEntity> where TEntity : Entity
 
         LogResponseMessage(response, RepositoryAction.Create, item.Id, item.GetPartition());
 
-        return RepositoryActionResult<TEntity>.FromResponseMessage(response, RepositoryAction.Create, item.Id);
+        return new RepositoryActionResult<TEntity>(response, RepositoryAction.Create, item.Id);
     }
 
     protected async Task<RepositoryActionResult<TEntity>> ReadItemAsync(string id, string partition, CancellationToken cancellationToken = default)
@@ -34,7 +34,7 @@ public abstract class Repository<TEntity> where TEntity : Entity
 
         LogResponseMessage(response, RepositoryAction.Read, id, partition);
 
-        return RepositoryActionResult<TEntity>.FromResponseMessage(response, RepositoryAction.Read, id);
+        return new RepositoryActionResult<TEntity>(response, RepositoryAction.Read, id);
     }
 
     protected async Task<RepositoryActionResult<TEntity>> UpdateItemAsync(TEntity item, string id, string partition, CancellationToken cancellationToken = default)
@@ -47,7 +47,7 @@ public abstract class Repository<TEntity> where TEntity : Entity
 
         LogResponseMessage(response, RepositoryAction.Update, id, partition);
 
-        return RepositoryActionResult<TEntity>.FromResponseMessage(response, RepositoryAction.Update, id);
+        return new RepositoryActionResult<TEntity>(response, RepositoryAction.Update, id);
     }
 
     protected Task DeleteItemAsync(TEntity item) => DeleteItemAsync(item.Id, item.GetPartition());
@@ -59,7 +59,7 @@ public abstract class Repository<TEntity> where TEntity : Entity
 
         LogResponseMessage(response, RepositoryAction.Delete, id, partition);
 
-        return RepositoryActionResult<TEntity>.FromResponseMessage(response, RepositoryAction.Delete, id);
+        return new RepositoryActionResult<TEntity>(response, RepositoryAction.Delete, id);
     }
 
     #region Multiple item enumeration methods
