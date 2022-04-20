@@ -31,7 +31,7 @@ public class GameService : IGameService
     private readonly IPlayerRepository playerRepository;
 
     private Word currentWord = Word.Default;
-    
+
     private GameStatus gameStatus = new();
 
     private GameServiceOptions Options { get; }
@@ -60,7 +60,6 @@ public class GameService : IGameService
     }
 
     public WordHint WordHint { get; private set; } = WordHint.Default;
-
 
     public event Action<GameStatus>? GameStatusChanged;
     public event Action<WordHint>? WordHintChanged;

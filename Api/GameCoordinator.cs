@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using OhMyWord.Api.Hubs;
-using OhMyWord.Core.Models;
 using OhMyWord.Services.Game;
 
 namespace OhMyWord.Api;
@@ -9,10 +8,7 @@ public class GameCoordinator : BackgroundService
 {
     private readonly IGameService gameService;
 
-    public GameCoordinator(
-        IGameService gameService,
-        IHubContext<GameHub, IGameHub> gameHubContext
-        )
+    public GameCoordinator(IGameService gameService, IHubContext<GameHub, IGameHub> gameHubContext)
     {
         this.gameService = gameService;
 

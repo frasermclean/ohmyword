@@ -7,7 +7,7 @@ namespace OhMyWord.Services.Data;
 
 public class EntitySerializer : CosmosSerializer
 {
-    private static readonly JsonObjectSerializer Serializer = new (new JsonSerializerOptions
+    private static readonly JsonObjectSerializer Serializer = new(new JsonSerializerOptions
     {
         IgnoreReadOnlyProperties = true,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,

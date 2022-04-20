@@ -43,7 +43,7 @@ public class EntitySerializerTests
         word.PartOfSpeech.Should().Be(TestWord.PartOfSpeech);
     }
 
-    private static Word TestWord => new ()
+    private static Word TestWord => new()
     {
         Id = "cat",
         Definition = "Small furry creature",

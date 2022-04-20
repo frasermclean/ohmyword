@@ -29,7 +29,7 @@ public class RepositoryActionResult<T> where T : Entity
         {
             Action = action,
             Success = response.IsSuccessStatusCode,
-            StatusCode = (int) response.StatusCode,
+            StatusCode = (int)response.StatusCode,
             ErrorMessage = errorMessage,
             Resource = response.IsSuccessStatusCode && response.Content.CanRead
                 ? EntitySerializer.ConvertFromStream<T>(response.Content)

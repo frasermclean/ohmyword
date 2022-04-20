@@ -47,8 +47,8 @@ public class WordsController : ControllerBase
     public async Task<IActionResult> UpdateWord(PartOfSpeech partOfSpeech, string value, CreateWordRequest request)
     {
         var result = await wordsRepository.UpdateWordAsync(partOfSpeech, value, request.ToWord());
-        return result.Success ? 
-            Ok(mapper.Map<WordResponse>(result.Resource)) : 
+        return result.Success ?
+            Ok(mapper.Map<WordResponse>(result.Resource)) :
             StatusCode(result.StatusCode, new { result.ErrorMessage });
     }
 
