@@ -21,6 +21,9 @@ public class GameController : ControllerBase
     [HttpGet("status")]
     public ActionResult<GameStatus> GetGameStatus() => Ok(gameService.GameStatus);
 
+    [HttpGet("word-hint")]
+    public ActionResult<GameStatus> GetWordHint() => Ok(gameService.WordHint);
+
     [HttpGet("current-word")]
     public ActionResult<WordResponse> GetCurrentWord() => Ok(mapper.Map<WordResponse>(gameService.CurrentWord));
 }
