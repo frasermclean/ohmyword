@@ -3,10 +3,11 @@
 public class WordHint
 {
     private readonly Word word;
+    private readonly List<LetterHint> letterHints = new();
 
     public int Length => word.Id.Length;
     public string Definition => word.Definition;
-    public List<LetterHint> Letters { get; } = new();
+    public IReadOnlyList<LetterHint> Letters => letterHints;
 
     public WordHint(Word word)
     {
@@ -14,4 +15,6 @@ public class WordHint
     }
 
     public static readonly WordHint Default = new(Word.Default);
+
+    public void AddLetterHint(LetterHint letterHint) => letterHints.Add(letterHint);
 }

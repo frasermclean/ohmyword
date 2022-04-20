@@ -1,15 +1,4 @@
 <h2>Have a guess!</h2>
-<label for="guess">Enter your guess</label>
-<input
-  #input
-  type="text"
-  id="guess"
-  [formControl]="inputControl"
-  [maxlength]="hint.length"
-  autofocus
-  (blur)="onInputBlur($event)"
-  (keydown.enter)="onEnterKeyDown()"
-/>
 
 <div *ngIf="response">
   <p>

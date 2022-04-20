@@ -8,6 +8,7 @@ import { LetterData } from '../hint.component';
 })
 export class LetterComponent implements OnInit {
   @Input() data: LetterData = null!;
+  @Input() position: number = 0;
 
   constructor() {}
 
@@ -16,9 +17,9 @@ export class LetterComponent implements OnInit {
   }
 
   getState(): 'correct' | 'incorrect' | 'hint' | 'default' {
-    if (this.data.hintValue) {
-      if (this.data.guessValue) {
-        return this.data.guessValue === this.data.hintValue
+    if (this.data.hint) {
+      if (this.data.guess) {
+        return this.data.guess === this.data.hint
           ? 'correct'
           : 'incorrect';
       }

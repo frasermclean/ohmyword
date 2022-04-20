@@ -11,4 +11,6 @@ public class Player : Entity
     /// SignalR hub context connection ID.
     /// </summary>
     public string ConnectionId { get; set; } = string.Empty;
+
+    public override string GetPartition() => Id;
 }

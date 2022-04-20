@@ -12,4 +12,9 @@ export class WordHint {
   }
 
   public static default = new WordHint();
+
+  public addLetterHint(letterHint: LetterHint) {
+    this.letters.push(letterHint);
+    this.letters.sort((a, b) => a.position - b.position);
+  }
 }

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using OhMyWord.Api.Requests.Words;
 using OhMyWord.Api.Responses.Words;
+using OhMyWord.Core.Models;
 using OhMyWord.Services.Data.Repositories;
 
 namespace OhMyWord.Api.Controllers;
@@ -26,26 +27,39 @@ public class WordsController : ControllerBase
         return Ok(mapper.Map<IEnumerable<WordResponse>>(words));
     }
 
-    [HttpGet("{id}")]
-    public async Task<ActionResult<WordResponse>> GetWordById(string id)
+    [HttpGet("{partOfSpeech}/{value}")]
+    public async Task<ActionResult<WordResponse>> GetWordByValue(PartOfSpeech partOfSpeech, string value)
     {
-        var word = await wordsRepository.GetWordById(id);
-        return word is null ?
-            NotFound() :
-            Ok(mapper.Map<WordResponse>(word));
+        var result = await wordsRepository.GetWordByValueAsync(partOfSpeech, value);
+        return result.Success ?
+            Ok(mapper.Map<WordResponse>(result.Resource)) :
+            StatusCode(result.StatusCode, new { result.Message });
     }
 
     [HttpPost]
     public async Task<IActionResult> CreateWord(CreateWordRequest request)
     {
-        var word = await wordsRepository.CreateWordAsync(request.ToWord());
-        return CreatedAtAction(nameof(GetWordById), new { word.Id }, mapper.Map<WordResponse>(word));
+        var result = await wordsRepository.CreateWordAsync(request.ToWord());
+        var word = result.Resource ?? Word.Default;
+        return result.Success
+            ? CreatedAtAction(nameof(GetWordByValue), new {word.PartOfSpeech, word.Value},
+                mapper.Map<WordResponse>(word))
+            : StatusCode(result.StatusCode, new {result.Message});
     }
 
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteWord(string id)
+    [HttpPut("{partOfSpeech}/{value}")]
+    public async Task<IActionResult> UpdateWord(PartOfSpeech partOfSpeech, string value, CreateWordRequest request)
     {
-        var wasDeleted = await wordsRepository.DeleteWordAsync(id);
-        return wasDeleted ? NoContent() : NotFound();
+        var result = await wordsRepository.UpdateWordAsync(partOfSpeech, value, request.ToWord());
+        return result.Success ?
+            Ok(mapper.Map<WordResponse>(result.Resource)) :
+            StatusCode(result.StatusCode, new { result.Message });
+    }
+
+    [HttpDelete("{partOfSpeech}/{value}")]
+    public async Task<IActionResult> DeleteWord(PartOfSpeech partOfSpeech, string value)
+    {
+        var result = await wordsRepository.DeleteWordAsync(partOfSpeech, value);
+        return result.Success ? NoContent() : StatusCode(result.StatusCode, new { result.Message });
     }
 }

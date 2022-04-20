@@ -8,4 +8,6 @@ export class LetterHint {
     this.position = init?.position ?? 0;
     this.value = init?.value ?? '';
   }
+
+  public static default = new LetterHint();
 }

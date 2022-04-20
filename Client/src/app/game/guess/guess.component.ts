@@ -1,30 +1,17 @@
-import {
-  Component,
-  ElementRef,
-  EventEmitter,
-  Input,
-  OnDestroy,
-  OnInit,
-  Output,
-  ViewChild,
-} from '@angular/core';
-import { FormControl } from '@angular/forms';
-import { Subscription } from 'rxjs';
-import { GuessResponse } from 'src/app/models/responses/guess.response';
-import { WordHint } from 'src/app/models/word-hint';
+import { Component, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output } from '@angular/core';
 
 import { GameService } from 'src/app/services/game.service';
+
+import { GuessResponse } from 'src/app/models/responses/guess.response';
+import { WordHint } from 'src/app/models/word-hint';
 
 @Component({
   selector: 'app-guess',
   templateUrl: './guess.component.html',
   styleUrls: ['./guess.component.scss'],
 })
-export class GuessComponent implements OnInit, OnDestroy {
-  inputControl = new FormControl('');
+export class GuessComponent implements OnInit {
   response: GuessResponse | null = null;
-
-  subscription: Subscription = null!;
 
   @Input()
   hint: WordHint = null!;
@@ -32,41 +19,38 @@ export class GuessComponent implements OnInit, OnDestroy {
   @Output()
   valueChanged = new EventEmitter<string>();
 
-  @ViewChild('input')
-  inputElement: ElementRef<HTMLInputElement> = null!;
+  @HostListener('window:keyup', ['$event'])
+  onKeyUpEvent(event: KeyboardEvent) {
+    switch (event.key) {
+      case 'Backspace':
+        this.deleteCharFromGuess();
+        break;
+      case 'Enter':
+        this.submitGuess();
+        break;
+      default:
+        if (event.key.length !== 1 || !event.key[0].match(/[A-z]/g)) return;
+        this.addCharToGuess(event.key.toLowerCase());
+        break;
+    }
+  }
 
   constructor(private gameService: GameService) {}
 
   ngOnInit(): void {
     if (!this.hint) throw new Error('Hint has not been set!');
-    this.subscription = this.inputControl.valueChanges.subscribe((value) => {
-      if (typeof value !== 'string') return;
-      this.valueChanged.emit(value);
-    });
   }
 
-  ngOnDestroy(): void {
-    this.subscription.unsubscribe();
+  addCharToGuess(char: string) {
+    this.gameService.guess += char;
   }
 
-  onInputBlur(event: FocusEvent) {
-    if (this.inputElement) {
-      this.inputElement.nativeElement.focus();
-    }
+  deleteCharFromGuess() {
+    if (this.gameService.guess.length === 0) return;
+    this.gameService.guess = this.gameService.guess.slice(0, -1);
   }
 
-  async onEnterKeyDown() {
-    const value =
-      typeof this.inputControl.value === 'string'
-        ? this.inputControl.value.trim()
-        : '';
-
-    if (value.length === this.hint.length) {
-      this.response = await this.gameService.guessWord(value);
-      this.inputControl.reset('');
-      setTimeout(() => {
-        this.response = null;
-      }, 2000);
-    }
+  submitGuess() {
+    this.gameService.submitGuess();
   }
 }
