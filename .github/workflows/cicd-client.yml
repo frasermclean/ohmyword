@@ -1,4 +1,4 @@
-name: Deploy Client
+name: CI/CD Client
 
 on:
   push:
