@@ -42,15 +42,15 @@ public class WordsController : ControllerBase
         var result = await wordsRepository.CreateWordAsync(request.ToWord());
         var word = result.Resource ?? Word.Default;
         return result.Success
-            ? CreatedAtAction(nameof(GetWordByValue), new {word.PartOfSpeech, word.Value},
+            ? CreatedAtAction(nameof(GetWordByValue), new { word.PartOfSpeech, word.Value },
                 mapper.Map<WordResponse>(word))
-            : StatusCode(result.StatusCode, new {result.Message});
+            : StatusCode(result.StatusCode, new { result.Message });
     }
 
     [HttpPut("{partOfSpeech}/{value}")]
-    public async Task<IActionResult> UpdateWord(PartOfSpeech partOfSpeech, string value, CreateWordRequest request)
+    public async Task<IActionResult> UpdateWord(PartOfSpeech partOfSpeech, string value, UpdateWordRequest request)
     {
-        var result = await wordsRepository.UpdateWordAsync(partOfSpeech, value, request.ToWord());
+        var result = await wordsRepository.UpdateWordAsync(request.ToWord(partOfSpeech, value));
         return result.Success ?
             Ok(mapper.Map<WordResponse>(result.Resource)) :
             StatusCode(result.StatusCode, new { result.Message });

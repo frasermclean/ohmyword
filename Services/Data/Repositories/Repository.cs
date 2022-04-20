@@ -20,34 +20,25 @@ public abstract class Repository<TEntity> where TEntity : Entity
         var partitionKey = new PartitionKey(item.GetPartition());
         await using var stream = EntitySerializer.ConvertToStream(item);
         var response = await container.CreateItemStreamAsync(stream, partitionKey, cancellationToken: cancellationToken);
-
         LogResponseMessage(response, RepositoryAction.Create, item.Id, item.GetPartition());
-
         return new RepositoryActionResult<TEntity>(response, RepositoryAction.Create, item.Id);
     }
 
     protected async Task<RepositoryActionResult<TEntity>> ReadItemAsync(string id, string partition, CancellationToken cancellationToken = default)
     {
         var partitionKey = new PartitionKey(partition);
-
         using var response = await container.ReadItemStreamAsync(id, partitionKey, cancellationToken: cancellationToken);
-
         LogResponseMessage(response, RepositoryAction.Read, id, partition);
-
         return new RepositoryActionResult<TEntity>(response, RepositoryAction.Read, id);
     }
 
-    protected async Task<RepositoryActionResult<TEntity>> UpdateItemAsync(TEntity item, string id, string partition, CancellationToken cancellationToken = default)
+    protected async Task<RepositoryActionResult<TEntity>> UpdateItemAsync(TEntity item, CancellationToken cancellationToken = default)
     {
-        var partitionKey = new PartitionKey(partition);
-
+        var partitionKey = new PartitionKey(item.GetPartition());
         await using var stream = EntitySerializer.ConvertToStream(item);
-
-        var response = await container.ReplaceItemStreamAsync(stream, id, partitionKey, cancellationToken: cancellationToken);
-
-        LogResponseMessage(response, RepositoryAction.Update, id, partition);
-
-        return new RepositoryActionResult<TEntity>(response, RepositoryAction.Update, id);
+        var response = await container.ReplaceItemStreamAsync(stream, item.Id, partitionKey, cancellationToken: cancellationToken);
+        LogResponseMessage(response, RepositoryAction.Update, item.Id, item.GetPartition());
+        return new RepositoryActionResult<TEntity>(response, RepositoryAction.Update, item.Id);
     }
 
     protected Task DeleteItemAsync(TEntity item) => DeleteItemAsync(item.Id, item.GetPartition());
@@ -56,9 +47,7 @@ public abstract class Repository<TEntity> where TEntity : Entity
     {
         var partitionKey = new PartitionKey(partition);
         var response = await container.DeleteItemStreamAsync(id, partitionKey, cancellationToken: cancellationToken);
-
         LogResponseMessage(response, RepositoryAction.Delete, id, partition);
-
         return new RepositoryActionResult<TEntity>(response, RepositoryAction.Delete, id);
     }
 

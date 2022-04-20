@@ -15,7 +15,7 @@ public class RepositoryActionResult<T> where T : Entity
     {
         Action = action;
         Success = response.IsSuccessStatusCode;
-        StatusCode = (int) response.StatusCode;
+        StatusCode = (int)response.StatusCode;
 
         Message = response.IsSuccessStatusCode
             ? string.Empty
