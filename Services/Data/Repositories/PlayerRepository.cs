@@ -6,7 +6,7 @@ namespace OhMyWord.Services.Data.Repositories;
 
 public interface IPlayerRepository
 {
-    Task<Player> CreatePlayerAsync(Player player);
+    Task<RepositoryActionResult<Player>> CreatePlayerAsync(Player player);
     Task DeletePlayerAsync(Player player);
     Task<RepositoryActionResult<Player>> FindPlayerByPlayerId(string playerId);
     Task<Player?> FindPlayerByVisitorIdAsync(string visitorId);
@@ -19,7 +19,7 @@ public class PlayerRepository : Repository<Player>, IPlayerRepository
     public PlayerRepository(ICosmosDbService cosmosDbService, ILogger<PlayerRepository> logger)
         : base(cosmosDbService, logger, ContainerId.Players) { }
 
-    public Task<Player> CreatePlayerAsync(Player player) => CreateItemAsync(player);
+    public Task<RepositoryActionResult<Player>> CreatePlayerAsync(Player player) => CreateItemAsync(player);
     public Task DeletePlayerAsync(Player player) => DeleteItemAsync(player);
     public Task<RepositoryActionResult<Player>> FindPlayerByPlayerId(string playerId) => ReadItemAsync(playerId, playerId);
 

@@ -25,14 +25,16 @@ public abstract class Repository<TEntity> where TEntity : Entity
     private Task<Container> GetContainerAsync(CancellationToken cancellationToken = default) =>
         cosmosDbService.GetContainerAsync(ContainerId, cancellationToken);
 
-    protected async Task<TEntity> CreateItemAsync(TEntity item, CancellationToken cancellationToken = default)
+    protected async Task<RepositoryActionResult<TEntity>> CreateItemAsync(TEntity item, CancellationToken cancellationToken = default)
     {
         container ??= await GetContainerAsync(cancellationToken);
-        var response = await container.CreateItemAsync(item, cancellationToken: cancellationToken);
+        var partitionKey = new PartitionKey(item.GetPartition());
+        await using var stream = EntitySerializer.ConvertToStream(item);
+        var response = await container.CreateItemStreamAsync(stream, partitionKey, cancellationToken: cancellationToken);
 
-        logger.LogDebug("Created {typeName} with ID: {id}. Resource charge: {charge} RU.", EntityTypeName, item.Id, response.RequestCharge);
+        LogResponseMessage(response, RepositoryAction.Create, item.Id, item.GetPartition());
 
-        return response.Resource;
+        return RepositoryActionResult<TEntity>.FromResponseMessage(response, RepositoryAction.Create, item.Id);
     }
 
     protected async Task<RepositoryActionResult<TEntity>> ReadItemAsync(string id, string partition, CancellationToken cancellationToken = default)

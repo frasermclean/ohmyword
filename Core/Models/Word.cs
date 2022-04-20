@@ -1,4 +1,6 @@
-﻿namespace OhMyWord.Core.Models;
+﻿using OhMyWord.Core.Extensions;
+
+namespace OhMyWord.Core.Models;
 
 public class Word : Entity
 {
@@ -6,7 +8,9 @@ public class Word : Entity
     public string Definition { get; init; } = string.Empty;
     public PartOfSpeech PartOfSpeech { get; init; }
 
-    public override string ToString() => Id;
+    public override string GetPartition() => PartOfSpeech.ToPartitionKey();
+
+    public override string ToString() => $"{PartOfSpeech} - {Value}";
 
     public static readonly Word Default = new()
     {
