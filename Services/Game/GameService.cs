@@ -108,7 +108,7 @@ public class GameService : IGameService
         var letterDelay = roundDelay / word.Id.Length;
         var previousIndices = new List<int>();
 
-        while (previousIndices.Count < word.Id.Length)
+        while (previousIndices.Count < word.Id.Length && !cancellationToken.IsCancellationRequested)
         {
             await Task.Delay(letterDelay, cancellationToken);
 
@@ -124,7 +124,7 @@ public class GameService : IGameService
             };
 
             LetterHintAdded?.Invoke(letterHint);
-            // TODO: Add letter hint to LetterHint property
+            WordHint.AddLetterHint(letterHint);
         }
     }
 
