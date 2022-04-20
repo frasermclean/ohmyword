@@ -17,7 +17,7 @@ public interface IPlayerRepository
 public class PlayerRepository : Repository<Player>, IPlayerRepository
 {
     public PlayerRepository(ICosmosDbService cosmosDbService, ILogger<PlayerRepository> logger)
-        : base(cosmosDbService, logger, ContainerId.Players) { }
+        : base(cosmosDbService, logger, "Players") { }
 
     public Task<RepositoryActionResult<Player>> CreatePlayerAsync(Player player) => CreateItemAsync(player);
     public Task DeletePlayerAsync(Player player) => DeleteItemAsync(player);
