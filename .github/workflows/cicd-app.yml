@@ -58,6 +58,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: client-build
+          path: ./Api/wwwroot
       
       # Setup .NET environment
       - name: Set up .NET Core
@@ -74,16 +75,17 @@ jobs:
       - name: Test solution
         run: dotnet test --configuration Release --logger trx --results-directory TestResults
 
-      # Publish API project
-      - name: Publish API project
-        run: dotnet publish --configuration Release --output ${{env.DOTNET_ROOT}}/api Api
+      # Publish application
+      - name: Publish application
+        working-directory: ./Api
+        run: dotnet publish --configuration Release --output ${{env.DOTNET_ROOT}}/app
 
-      # Upload API project artifact
-      - name: Upload API project artifact
+      # Upload published application artifact
+      - name: Upload published application artifact
         uses: actions/upload-artifact@v3
         with:
-          name: published-api
-          path: ${{env.DOTNET_ROOT}}/api
+          name: published-app
+          path: ${{env.DOTNET_ROOT}}/app
 
   deploy:
     name: Deploy application
@@ -98,7 +100,7 @@ jobs:
       - name: Download API project artifact
         uses: actions/download-artifact@v3
         with:
-          name: published-api
+          name: published-app
 
       # Deploy to Azure app service
       - name: Deploy to Azure Web App
