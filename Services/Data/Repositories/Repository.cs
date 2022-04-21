@@ -6,74 +6,49 @@ namespace OhMyWord.Services.Data.Repositories;
 
 public abstract class Repository<TEntity> where TEntity : Entity
 {
-    private readonly ICosmosDbService cosmosDbService;
     private readonly ILogger<Repository<TEntity>> logger;
+    private readonly Container container;
 
-    private ContainerId ContainerId { get; }
-    private Container? container;
-    private string EntityTypeName { get; }
-
-    protected Repository(ICosmosDbService cosmosDbService, ILogger<Repository<TEntity>> logger, ContainerId containerId)
+    protected Repository(ICosmosDbService cosmosDbService, ILogger<Repository<TEntity>> logger, string containerId)
     {
-        this.cosmosDbService = cosmosDbService;
         this.logger = logger;
-
-        ContainerId = containerId;
-        EntityTypeName = typeof(TEntity).Name;
+        container = cosmosDbService.GetContainer(containerId);
     }
-
-    private Task<Container> GetContainerAsync(CancellationToken cancellationToken = default) =>
-        cosmosDbService.GetContainerAsync(ContainerId, cancellationToken);
 
     protected async Task<RepositoryActionResult<TEntity>> CreateItemAsync(TEntity item, CancellationToken cancellationToken = default)
     {
-        container ??= await GetContainerAsync(cancellationToken);
         var partitionKey = new PartitionKey(item.GetPartition());
         await using var stream = EntitySerializer.ConvertToStream(item);
         var response = await container.CreateItemStreamAsync(stream, partitionKey, cancellationToken: cancellationToken);
-
         LogResponseMessage(response, RepositoryAction.Create, item.Id, item.GetPartition());
-
-        return RepositoryActionResult<TEntity>.FromResponseMessage(response, RepositoryAction.Create, item.Id);
+        return new RepositoryActionResult<TEntity>(response, RepositoryAction.Create, item.Id);
     }
 
     protected async Task<RepositoryActionResult<TEntity>> ReadItemAsync(string id, string partition, CancellationToken cancellationToken = default)
     {
-        container ??= await GetContainerAsync(cancellationToken);
         var partitionKey = new PartitionKey(partition);
-
         using var response = await container.ReadItemStreamAsync(id, partitionKey, cancellationToken: cancellationToken);
-
         LogResponseMessage(response, RepositoryAction.Read, id, partition);
-
-        return RepositoryActionResult<TEntity>.FromResponseMessage(response, RepositoryAction.Read, id);
+        return new RepositoryActionResult<TEntity>(response, RepositoryAction.Read, id);
     }
 
-    protected async Task<RepositoryActionResult<TEntity>> UpdateItemAsync(TEntity item, string id, string partition, CancellationToken cancellationToken = default)
+    protected async Task<RepositoryActionResult<TEntity>> UpdateItemAsync(TEntity item, CancellationToken cancellationToken = default)
     {
-        container ??= await GetContainerAsync(cancellationToken);
-        var partitionKey = new PartitionKey(partition);
-
+        var partitionKey = new PartitionKey(item.GetPartition());
         await using var stream = EntitySerializer.ConvertToStream(item);
-
-        var response = await container.ReplaceItemStreamAsync(stream, id, partitionKey, cancellationToken: cancellationToken);
-
-        LogResponseMessage(response, RepositoryAction.Update, id, partition);
-
-        return RepositoryActionResult<TEntity>.FromResponseMessage(response, RepositoryAction.Update, id);
+        var response = await container.ReplaceItemStreamAsync(stream, item.Id, partitionKey, cancellationToken: cancellationToken);
+        LogResponseMessage(response, RepositoryAction.Update, item.Id, item.GetPartition());
+        return new RepositoryActionResult<TEntity>(response, RepositoryAction.Update, item.Id);
     }
 
     protected Task DeleteItemAsync(TEntity item) => DeleteItemAsync(item.Id, item.GetPartition());
 
     protected async Task<RepositoryActionResult<TEntity>> DeleteItemAsync(string id, string partition, CancellationToken cancellationToken = default)
     {
-        container ??= await GetContainerAsync(cancellationToken);
         var partitionKey = new PartitionKey(partition);
         var response = await container.DeleteItemStreamAsync(id, partitionKey, cancellationToken: cancellationToken);
-
         LogResponseMessage(response, RepositoryAction.Delete, id, partition);
-
-        return RepositoryActionResult<TEntity>.FromResponseMessage(response, RepositoryAction.Delete, id);
+        return new RepositoryActionResult<TEntity>(response, RepositoryAction.Delete, id);
     }
 
     #region Multiple item enumeration methods
@@ -92,8 +67,6 @@ public abstract class Repository<TEntity> where TEntity : Entity
         string? partition = null,
         CancellationToken cancellationToken = default)
     {
-        container ??= await GetContainerAsync(cancellationToken);
-
         using var iterator = container.GetItemQueryIterator<TResponse>(queryDefinition, requestOptions: new QueryRequestOptions
         {
             PartitionKey = partition is not null ? new PartitionKey(partition) : null

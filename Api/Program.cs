@@ -64,6 +64,10 @@ public static class Program
 
         app.UseRouting();
 
+        // enable serving static content
+        app.UseDefaultFiles();
+        app.UseStaticFiles();
+
         app.MapControllers();
         app.MapHub<GameHub>("/game");
 
