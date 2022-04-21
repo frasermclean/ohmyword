@@ -53,6 +53,12 @@ jobs:
         with:
           lfs: true
       
+      # Download client build artifact
+      - name: Download client build artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: client-build
+      
       # Setup .NET environment
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v2
