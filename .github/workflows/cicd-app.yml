@@ -34,6 +34,13 @@ jobs:
       - name: Build client application
         working-directory: ./Client
         run: npm run build
+      
+      # Upload build artifact
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: client-build
+          path: ./Client/dist
 
   build-app:
     name: Build application
