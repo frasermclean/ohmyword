@@ -1,4 +1,4 @@
-name: CI/CD API
+name: CI/CD Application
 
 on:
   push:
@@ -24,6 +24,16 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: "16"
+      
+      # Install dependencies
+      - name: Install dependencies
+        working-directory: ./Client
+        run: npm ci
+      
+      # Build the client
+      - name: Build client application
+        working-directory: ./Client
+        run: npm run build
 
   build-app:
     name: Build application
