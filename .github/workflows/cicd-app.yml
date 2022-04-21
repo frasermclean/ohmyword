@@ -96,8 +96,8 @@ jobs:
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
-      # Download API project artifact from build job
-      - name: Download API project artifact
+      # Download published application from build job
+      - name: Download published application artifact
         uses: actions/download-artifact@v3
         with:
           name: published-app
