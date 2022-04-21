@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - main
+      - develop
   workflow_dispatch:
 
 jobs:
+
   build:
     name: Build application
     runs-on: ubuntu-latest
@@ -16,6 +18,12 @@ jobs:
         uses: actions/checkout@v3
         with:
           lfs: true
+
+      # Setup Node environment
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: "16"
       
       # Setup .NET environment
       - name: Set up .NET Core
