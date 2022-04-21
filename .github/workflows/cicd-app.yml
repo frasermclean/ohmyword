@@ -107,5 +107,5 @@ jobs:
         with:
           app-name: app-ohmyword-prod
           slot-name: Production
-          publish-profile: ${{ env.AZURE_APPSERVICE_PUBLISH_PROFILE }}
+          publish-profile: ${{ secrets.AZURE_APPSERVICE_PUBLISH_PROFILE }}
           package: .
