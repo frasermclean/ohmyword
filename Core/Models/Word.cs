@@ -10,7 +10,7 @@ public class Word : Entity
 
     public override string GetPartition() => PartOfSpeech.ToPartitionKey();
 
-    public override string ToString() => $"{PartOfSpeech} - {Value}";
+    public override string ToString() => Value;
 
     public static readonly Word Default = new()
     {

@@ -25,9 +25,9 @@ export class HintComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.wordHintSubscription = this.gameService.wordHint$.subscribe((wordHint) => {
       this.wordHint = wordHint;
-      for (let i = 0; i < wordHint.length; i++) {
+      for (let i = 1; i <= wordHint.length; i++) {
         this.letters.push({
-          hint: null,
+          hint: wordHint.letters.find((letterHint) => letterHint.position === i)?.value ?? null,
           guess: null,
         });
       }
