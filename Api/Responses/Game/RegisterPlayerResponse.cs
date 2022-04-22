@@ -10,4 +10,5 @@ public class RegisterPlayerResponse
     public bool RoundActive { get; init; }
     public WordHint? WordHint { get; init; }
     public int PlayerCount { get; init; }
+    public DateTime Expiry { get; init; }
 }

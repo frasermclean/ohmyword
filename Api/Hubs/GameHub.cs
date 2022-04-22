@@ -47,7 +47,8 @@ public class GameHub : Hub<IGameHub>
             RoundNumber = gameService.RoundNumber,
             RoundActive = gameService.RoundActive,
             WordHint = gameService.Round?.WordHint,
-            PlayerCount = gameService.PlayerCount
+            PlayerCount = gameService.PlayerCount,
+            Expiry = gameService.Expiry,
         };
     }
 

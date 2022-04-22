@@ -4,24 +4,24 @@ import { HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/s
 
 import { environment } from 'src/environments/environment';
 
-import { WordHintResponse } from '../models/responses/word-hint.response';
 import { RegisterPlayerResponse } from '../models/responses/register-player.response';
 import { GuessResponse } from '../models/responses/guess.response';
-import { GameStatusResponse } from '../models/responses/game-status.response';
 
 import { WordHint } from '../models/word-hint';
 
 import { FingerprintService } from './fingerprint.service';
 import { SoundService, SoundSprite } from './sound.service';
-import { GameStatus } from '../models/game-status';
 import { LetterHintResponse } from '../models/responses/letter-hint.response';
 import { LetterHint } from '../models/letter-hint';
+import { RoundStartResponse } from '../models/responses/round-start.response';
+import { RoundEndResponse } from '../models/responses/round-end.response';
 
 @Injectable({
   providedIn: 'root',
 })
 export class GameService {
   private playerId = '';
+  private roundId = '';
   private hubConnection = new HubConnectionBuilder()
     .withUrl(environment.api.hubUrl)
     .configureLogging(environment.production ? LogLevel.Error : LogLevel.Information)
@@ -32,9 +32,9 @@ export class GameService {
     return this.registeredSubject.asObservable();
   }
 
-  private readonly gameStatusSubject = new BehaviorSubject<GameStatus>(GameStatus.default);
-  public get gameStatus$() {
-    return this.gameStatusSubject.asObservable();
+  private readonly roundActiveSubject = new BehaviorSubject<boolean>(false);
+  public get roundActive$() {
+    return this.roundActiveSubject.asObservable();
   }
 
   private readonly wordHintSubject = new BehaviorSubject<WordHint>(WordHint.default);
@@ -45,6 +45,11 @@ export class GameService {
   private readonly letterHintSubject = new Subject<LetterHint>();
   public get letterHint$() {
     return this.letterHintSubject.asObservable();
+  }
+
+  private readonly expirySubject = new BehaviorSubject<Date>(new Date());
+  public get expiry$() {
+    return this.expirySubject.asObservable();
   }
 
   private guessSubject = new BehaviorSubject<string>('');
@@ -73,8 +78,11 @@ export class GameService {
 
     this.playerId = response.playerId;
     this.registeredSubject.next(true);
-    this.wordHintSubject.next(new WordHint(response.wordHint));
-    this.gameStatusSubject.next(new GameStatus(response.gameStatus));
+    this.roundActiveSubject.next(response.roundActive);
+    this.expirySubject.next(new Date(response.expiry));
+    if (response.wordHint) {
+      this.wordHintSubject.next(new WordHint(response.wordHint));
+    }
   }
 
   public async submitGuess() {
@@ -111,12 +119,16 @@ export class GameService {
       });
 
       // register game callbacks
-      this.hubConnection.on('SendGameStatus', (response: GameStatusResponse) => {
-        this.gameStatusSubject.next(new GameStatus(response));
-      });
-      this.hubConnection.on('SendWordHint', (response: WordHintResponse) => {
-        this.wordHintSubject.next(new WordHint(response));
+      this.hubConnection.on('SendRoundStarted', (response: RoundStartResponse) => {
+        this.roundId = response.roundId;
+        this.roundActiveSubject.next(true);
+        this.wordHintSubject.next(new WordHint(response.wordHint));
+        this.expirySubject.next(new Date(response.roundEnds));
         this.guess = '';
+      });
+      this.hubConnection.on('SendRoundEnded', (response: RoundEndResponse) => {
+        this.roundActiveSubject.next(false);
+        this.expirySubject.next(new Date(response.nextRoundStart));
       });
       this.hubConnection.on('SendLetterHint', (response: LetterHintResponse) => {
         this.letterHintSubject.next(new LetterHint(response));

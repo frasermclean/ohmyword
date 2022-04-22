@@ -8,8 +8,9 @@ import { GameService } from 'src/app/services/game.service';
 })
 export class GameComponent implements OnInit {
   registered$ = this.gameService.registered$;
-  status$ = this.gameService.gameStatus$;
+  roundActive$ = this.gameService.roundActive$;
   hint$ = this.gameService.wordHint$;
+  expiry$ = this.gameService.expiry$;
 
   constructor(private gameService: GameService) {}
 

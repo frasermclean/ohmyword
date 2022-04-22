@@ -13,6 +13,7 @@ public interface IGameService
     bool RoundActive { get; }
     int RoundNumber { get; }
     int PlayerCount { get; }
+    DateTime Expiry { get; }
 
     event Action<RoundStart> RoundStarted;
     event Action<RoundEnd> RoundEnded;
@@ -36,6 +37,7 @@ public class GameService : IGameService
     public bool RoundActive => Round is not null;
     public int RoundNumber { get; private set; }
     public int PlayerCount { get; private set; }
+    public DateTime Expiry { get; private set; }
     
     public event Action<LetterHint>? LetterHintAdded;
     public event Action<RoundStart>? RoundStarted;
@@ -53,13 +55,8 @@ public class GameService : IGameService
     {
         while (!cancellationToken.IsCancellationRequested)
         {
-            // start the round
             Round = await StartRoundAsync(++RoundNumber);
-
-            // send all letter hints
             await SendLetterHintsAsync(Round.Word, Round.WordHint, Round.Duration, cancellationToken);
-
-            // end the round
             await EndRoundAsync(Round, cancellationToken);
         }
     }
@@ -69,6 +66,7 @@ public class GameService : IGameService
         var word = await wordsService.SelectRandomWordAsync();
         var duration = TimeSpan.FromSeconds(word.Value.Length * options.LetterHintDelay);
         var round = new Round(roundNumber, word, duration);
+        Expiry = round.Expiry;
         RoundStarted?.Invoke(new RoundStart(round));
         logger.LogDebug("Round: {roundNumber} has started. Current currentWord is: {word}. Round duration: {seconds} seconds.",
             round.Number, round.Word, duration.Seconds);
@@ -77,8 +75,9 @@ public class GameService : IGameService
 
     private async Task EndRoundAsync(Round round, CancellationToken cancellationToken)
     {
-        Round = null;
         var postRoundDelay = TimeSpan.FromSeconds(options.PostRoundDelay);
+        Round = null;
+        Expiry = DateTime.UtcNow + postRoundDelay;
         logger.LogDebug("Round: {number} has ended. Post round delay is: {seconds} seconds", round.Number, postRoundDelay.Seconds);
         RoundEnded?.Invoke(new RoundEnd(round, DateTime.UtcNow + postRoundDelay));
         await Task.Delay(postRoundDelay, cancellationToken);
