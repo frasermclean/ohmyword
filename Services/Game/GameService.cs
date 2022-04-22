@@ -135,6 +135,7 @@ public class GameService : IGameService
     public async Task<Player> RegisterPlayerAsync(string visitorId, string connectionId)
     {
         var player = await playerRepository.FindPlayerByVisitorIdAsync(visitorId);
+        if (player is not null) await playerRepository.UpdatePlayerConnectionIdAsync(player.Id, connectionId);
 
         // create new player if existing player not found
         player ??= await playerRepository.CreatePlayerAsync(new Player

@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using Microsoft.Azure.Cosmos;
+﻿using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using OhMyWord.Core.Models;
 
@@ -12,7 +11,7 @@ public interface IPlayerRepository
     Task<Player?> FindPlayerByPlayerIdAsync(string playerId);
     Task<Player?> FindPlayerByVisitorIdAsync(string visitorId);
     Task<Player?> FindPlayerByConnectionIdAsync(string connectionId);
-    Task<Player> UpdatePlayerConnectionIdAsync(Player player, string connectionId);
+    Task UpdatePlayerConnectionIdAsync(string playerId, string connectionId);
     Task IncrementPlayerScoreAsync(string playerId, long value);
 }
 
@@ -58,20 +57,17 @@ public class PlayerRepository : Repository<Player>, IPlayerRepository
         return results.FirstOrDefault();
     }
 
-    public Task<Player> UpdatePlayerConnectionIdAsync(Player player, string connectionId)
+    public async Task UpdatePlayerConnectionIdAsync(string playerId, string connectionId)
     {
-        throw new NotImplementedException();
+        var patchOperations = new [] { PatchOperation.Set("/connectionId", connectionId) };
+        var result = await PatchItemAsync(playerId, playerId, patchOperations);
+        if (result.Success)
+            logger.LogDebug("Updated player with ID: {playerId} to have connection ID: {connectionId}", playerId, connectionId);
     }
 
     public async Task IncrementPlayerScoreAsync(string playerId, long value)
     {
         var patchOperations = new[] { PatchOperation.Increment("/score", value) };
-        var response = await Container.PatchItemStreamAsync(playerId, new PartitionKey(playerId), patchOperations);
-
-        if (response.IsSuccessStatusCode)
-            logger.LogDebug("Increased player with ID: {playerId} score by: {value}", playerId, value);
-        else
-            logger.LogWarning("Could not increase player score. Error message: {message}", response.ErrorMessage);
-
+        await PatchItemAsync(playerId, playerId, patchOperations);
     }
 }
