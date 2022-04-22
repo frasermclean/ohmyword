@@ -20,10 +20,9 @@ public interface IGameService
     event Action<LetterHint> LetterHintAdded;
 
     Task ExecuteGameAsync(CancellationToken cancellationToken);
-
-    bool IsCorrect(string value);
     Task<Player> RegisterPlayerAsync(string visitorId, string connectionId);
     Task UnregisterPlayerAsync(string connectionId);
+    Task<int> ProcessGuessAsync(string playerId, string guess);
 }
 
 public class GameService : IGameService
@@ -110,23 +109,39 @@ public class GameService : IGameService
         }
     }
 
-    public bool IsCorrect(string value) => string.Equals(value, Round?.Word.Value, StringComparison.InvariantCultureIgnoreCase);
+    public async Task<int> ProcessGuessAsync(string playerId, string guess)
+    {
+        // if round is not active then immediately return false
+        if (Round is null) return 0;
+
+        // compare guess to current word value
+        if (!string.Equals(guess, Round.Word.Value, StringComparison.InvariantCultureIgnoreCase))
+            return 0;
+
+        // look up player to award points
+        var player = await playerRepository.FindPlayerByPlayerIdAsync(playerId);
+        if (player is null)
+        {
+            logger.LogWarning("Couldn't find player with ID: {playerId} to award points to.", playerId);
+            return 0;
+        }
+
+        const int points = 100;
+        await playerRepository.IncrementPlayerScoreAsync(player.Id, points);
+
+        return points;
+    }
 
     public async Task<Player> RegisterPlayerAsync(string visitorId, string connectionId)
     {
         var player = await playerRepository.FindPlayerByVisitorIdAsync(visitorId);
 
         // create new player if existing player not found
-        if (player is null)
+        player ??= await playerRepository.CreatePlayerAsync(new Player
         {
-            var result = await playerRepository.CreatePlayerAsync(new Player
-            {
-                VisitorId = visitorId,
-                ConnectionId = connectionId
-            });
-
-            player = result.Resource ?? throw new NullReferenceException("Player resource is null!");
-        }
+            VisitorId = visitorId,
+            ConnectionId = connectionId
+        });
 
         logger.LogInformation("Player with ID: {playerId} joined the game. Player count: {playerCount}", player.Id, ++PlayerCount);
 

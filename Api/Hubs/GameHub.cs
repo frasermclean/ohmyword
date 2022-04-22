@@ -49,16 +49,18 @@ public class GameHub : Hub<IGameHub>
             WordHint = gameService.Round?.WordHint,
             PlayerCount = gameService.PlayerCount,
             Expiry = gameService.Expiry,
+            Score = player.Score
         };
     }
-
-    public SubmitGuessResponse SubmitGuess(SubmitGuessRequest request)
+    
+    public async Task<SubmitGuessResponse> SubmitGuess(SubmitGuessRequest request)
     {
-        var isCorrect = gameService.IsCorrect(request.Value);
+        var points = await gameService.ProcessGuessAsync(request.PlayerId, request.Value);
         return new SubmitGuessResponse
         {
             Value = request.Value.ToLowerInvariant(),
-            Correct = isCorrect,
+            Correct = points > 0,
+            Points = points
         };
     }
 }

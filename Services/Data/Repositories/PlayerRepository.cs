@@ -1,4 +1,5 @@
-﻿using Microsoft.Azure.Cosmos;
+﻿using System.Reflection;
+using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using OhMyWord.Core.Models;
 
@@ -6,22 +7,38 @@ namespace OhMyWord.Services.Data.Repositories;
 
 public interface IPlayerRepository
 {
-    Task<RepositoryActionResult<Player>> CreatePlayerAsync(Player player);
+    Task<Player> CreatePlayerAsync(Player player);
     Task DeletePlayerAsync(Player player);
-    Task<RepositoryActionResult<Player>> FindPlayerByPlayerId(string playerId);
+    Task<Player?> FindPlayerByPlayerIdAsync(string playerId);
     Task<Player?> FindPlayerByVisitorIdAsync(string visitorId);
     Task<Player?> FindPlayerByConnectionIdAsync(string connectionId);
     Task<Player> UpdatePlayerConnectionIdAsync(Player player, string connectionId);
+    Task IncrementPlayerScoreAsync(string playerId, long value);
 }
 
 public class PlayerRepository : Repository<Player>, IPlayerRepository
 {
-    public PlayerRepository(ICosmosDbService cosmosDbService, ILogger<PlayerRepository> logger)
-        : base(cosmosDbService, logger, "Players") { }
+    private readonly ILogger<PlayerRepository> logger;
 
-    public Task<RepositoryActionResult<Player>> CreatePlayerAsync(Player player) => CreateItemAsync(player);
+    public PlayerRepository(ICosmosDbService cosmosDbService, ILogger<PlayerRepository> logger)
+        : base(cosmosDbService, logger, "Players")
+    {
+        this.logger = logger;
+    }
+
+    public async Task<Player> CreatePlayerAsync(Player player)
+    {
+        var result = await CreateItemAsync(player);
+        return result.Resource ?? throw new InvalidOperationException("Could not create player");
+    }
+
     public Task DeletePlayerAsync(Player player) => DeleteItemAsync(player);
-    public Task<RepositoryActionResult<Player>> FindPlayerByPlayerId(string playerId) => ReadItemAsync(playerId, playerId);
+
+    public async Task<Player?> FindPlayerByPlayerIdAsync(string playerId)
+    {
+        var result = await ReadItemAsync(playerId, playerId);
+        return result.Resource;
+    }
 
     public async Task<Player?> FindPlayerByVisitorIdAsync(string visitorId)
     {
@@ -44,5 +61,17 @@ public class PlayerRepository : Repository<Player>, IPlayerRepository
     public Task<Player> UpdatePlayerConnectionIdAsync(Player player, string connectionId)
     {
         throw new NotImplementedException();
+    }
+
+    public async Task IncrementPlayerScoreAsync(string playerId, long value)
+    {
+        var patchOperations = new[] { PatchOperation.Increment("/score", value) };
+        var response = await Container.PatchItemStreamAsync(playerId, new PartitionKey(playerId), patchOperations);
+
+        if (response.IsSuccessStatusCode)
+            logger.LogDebug("Increased player with ID: {playerId} score by: {value}", playerId, value);
+        else
+            logger.LogWarning("Could not increase player score. Error message: {message}", response.ErrorMessage);
+
     }
 }

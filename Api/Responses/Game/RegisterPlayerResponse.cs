@@ -11,4 +11,5 @@ public class RegisterPlayerResponse
     public WordHint? WordHint { get; init; }
     public int PlayerCount { get; init; }
     public DateTime Expiry { get; init; }
+    public long Score { get; init; }
 }
