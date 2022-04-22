@@ -15,6 +15,7 @@ import { LetterHintResponse } from '../models/responses/letter-hint.response';
 import { LetterHint } from '../models/letter-hint';
 import { RoundStartResponse } from '../models/responses/round-start.response';
 import { RoundEndResponse } from '../models/responses/round-end.response';
+import { RoundEnd } from '../models/round-end';
 
 @Injectable({
   providedIn: 'root',
@@ -50,6 +51,11 @@ export class GameService {
   private readonly expirySubject = new BehaviorSubject<Date>(new Date());
   public get expiry$() {
     return this.expirySubject.asObservable();
+  }
+
+  private readonly roundEndSubject = new BehaviorSubject<RoundEnd | null>(null);
+  public get roundEnd$() {
+    return this.roundEndSubject.asObservable();
   }
 
   private guessSubject = new BehaviorSubject<string>('');
@@ -119,22 +125,35 @@ export class GameService {
       });
 
       // register game callbacks
-      this.hubConnection.on('SendRoundStarted', (response: RoundStartResponse) => {
-        this.roundId = response.roundId;
-        this.roundActiveSubject.next(true);
-        this.wordHintSubject.next(new WordHint(response.wordHint));
-        this.expirySubject.next(new Date(response.roundEnds));
-        this.guess = '';
-      });
-      this.hubConnection.on('SendRoundEnded', (response: RoundEndResponse) => {
-        this.roundActiveSubject.next(false);
-        this.expirySubject.next(new Date(response.nextRoundStart));
-      });
+      this.hubConnection.on('SendRoundStarted', (response) => this.onRoundStart(response));
+      this.hubConnection.on('SendRoundEnded', (response) => this.onRoundEnd(response));
       this.hubConnection.on('SendLetterHint', (response: LetterHintResponse) => {
         this.letterHintSubject.next(new LetterHint(response));
       });
 
       await this.hubConnection.start();
     }
+  }
+
+  /**
+   * Callback method to run upon round start
+   * @param response The round start response
+   */
+  private onRoundStart(response: RoundStartResponse) {
+    this.roundId = response.roundId;
+    this.roundActiveSubject.next(true);
+    this.wordHintSubject.next(new WordHint(response.wordHint));
+    this.expirySubject.next(new Date(response.roundEnds));
+    this.guess = '';
+  }
+
+  /**
+   * Callback method to run upon round end
+   * @param response The round end response
+   */
+  private onRoundEnd(response: RoundEndResponse) {
+    this.roundActiveSubject.next(false);
+    this.roundEndSubject.next(new RoundEnd(response));
+    this.expirySubject.next(new Date(response.nextRoundStart));
   }
 }

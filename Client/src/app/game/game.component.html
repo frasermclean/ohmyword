@@ -4,7 +4,7 @@
     <app-guess></app-guess>
   </ng-container>
   <ng-template #roundEnded>
-    <h2>The round has ended!</h2>
+    <app-round-end-summary></app-round-end-summary>
   </ng-template>
   <app-countdown *ngIf="expiry$ | async as expiry" [expiryDate]="expiry"></app-countdown>
 </ng-container>

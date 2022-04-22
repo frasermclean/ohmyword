@@ -1,13 +1,18 @@
-﻿namespace OhMyWord.Services.Models;
+﻿using OhMyWord.Core.Models;
+
+namespace OhMyWord.Services.Models;
 
 public class RoundEnd
 {
-    public Guid RoundId { get; }
+    private readonly Round round;
+
+    public Guid RoundId => round.Id;
     public DateTime NextRoundStart { get; }
+    public string Word => round.Word.Value;
 
     internal RoundEnd(Round round, DateTime nextRoundStart)
     {
-        RoundId = round.Id;
+        this.round = round;
         NextRoundStart = nextRoundStart;
     }
 }
