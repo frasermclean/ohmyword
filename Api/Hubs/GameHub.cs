@@ -3,14 +3,15 @@ using OhMyWord.Api.Requests.Game;
 using OhMyWord.Api.Responses.Game;
 using OhMyWord.Core.Models;
 using OhMyWord.Services.Game;
+using OhMyWord.Services.Models;
 
 namespace OhMyWord.Api.Hubs;
 
 public interface IGameHub
 {
-    Task SendWordHint(WordHint wordHint);
-    Task SendGameStatus(GameStatus status);
     Task SendLetterHint(LetterHint letterHint);
+    Task SendRoundStarted(RoundStart roundStart);
+    Task SendRoundEnded(RoundEnd roundEnd);
 }
 
 public class GameHub : Hub<IGameHub>
@@ -43,15 +44,12 @@ public class GameHub : Hub<IGameHub>
         return new RegisterPlayerResponse
         {
             PlayerId = player.Id,
-            GameStatus = gameService.GameStatus,
-            WordHint = gameService.WordHint,
+            RoundNumber = gameService.RoundNumber,
+            RoundActive = gameService.RoundActive,
+            WordHint = gameService.Round?.WordHint,
             PlayerCount = gameService.PlayerCount
         };
     }
-
-    public WordHint GetHint(string playerId) => gameService.WordHint;
-
-    public GameStatus GetStatus(string playerId) => gameService.GameStatus;
 
     public SubmitGuessResponse SubmitGuess(SubmitGuessRequest request)
     {

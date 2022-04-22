@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using OhMyWord.Api.Responses.Words;
+using OhMyWord.Core.Models;
 using OhMyWord.Services.Game;
 
 namespace OhMyWord.Api.Controllers;
@@ -18,12 +19,14 @@ public class GameController : ControllerBase
         this.mapper = mapper;
     }
 
-    [HttpGet("status")]
-    public ActionResult<GameStatus> GetGameStatus() => Ok(gameService.GameStatus);
+    [HttpGet("state")]
+    public IActionResult GetState() => Ok(gameService);
 
     [HttpGet("word-hint")]
-    public ActionResult<GameStatus> GetWordHint() => Ok(gameService.WordHint);
+    public ActionResult<WordHint> GetWordHint() =>
+        gameService.Round is not null ? Ok(gameService.Round.WordHint) : NoContent();
 
     [HttpGet("current-word")]
-    public ActionResult<WordResponse> GetCurrentWord() => Ok(mapper.Map<WordResponse>(gameService.CurrentWord));
+    public ActionResult<WordResponse> GetCurrentWord() =>
+        gameService.Round is not null ? Ok(mapper.Map<WordResponse>(gameService.Round.Word)) : NoContent();
 }

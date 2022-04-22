@@ -12,11 +12,11 @@ public class GameCoordinator : BackgroundService
     {
         this.gameService = gameService;
 
-        gameService.GameStatusChanged += async gameStatus => await gameHubContext.Clients.All.SendGameStatus(gameStatus);
-        gameService.WordHintChanged += async wordHint => await gameHubContext.Clients.All.SendWordHint(wordHint);
+        gameService.RoundStarted += async roundStart => await gameHubContext.Clients.All.SendRoundStarted(roundStart);
+        gameService.RoundEnded += async roundEnd => await gameHubContext.Clients.All.SendRoundEnded(roundEnd);
         gameService.LetterHintAdded += async letterHint => await gameHubContext.Clients.All.SendLetterHint(letterHint);
     }
 
     protected override Task ExecuteAsync(CancellationToken cancellationToken) =>
-        gameService.StartGameAsync(cancellationToken);
+        gameService.ExecuteGameAsync(cancellationToken);
 }
