@@ -7,5 +7,5 @@ public class WordResponse
     public string Value { get; init; } = string.Empty;
     public PartOfSpeech PartOfSpeech { get; init; }
     public string Definition { get; init; } = string.Empty;
-    public DateTime LastUpdateTime { get; init; }
+    public DateTime LastModifiedTime { get; init; }
 }
