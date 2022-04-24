@@ -34,13 +34,13 @@ public class GameHub : Hub<IGameHub>
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
         logger.LogDebug("Client disconnected. Connection ID: {connectionId}", Context.ConnectionId);
-        await gameService.UnregisterPlayerAsync(Context.ConnectionId);
+        await gameService.RemovePlayerAsync(Context.ConnectionId);
     }
 
     public async Task<RegisterPlayerResponse> RegisterPlayer(string visitorId)
     {
         logger.LogInformation("Attempting to register client with visitor ID: {visitorId}", visitorId);
-        var player = await gameService.RegisterPlayerAsync(visitorId, Context.ConnectionId);
+        var player = await gameService.AddPlayerAsync(visitorId, Context.ConnectionId);
         return new RegisterPlayerResponse
         {
             PlayerId = player.Id,

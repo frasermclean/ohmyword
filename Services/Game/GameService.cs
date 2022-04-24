@@ -20,8 +20,8 @@ public interface IGameService
     event Action<LetterHint> LetterHintAdded;
 
     Task ExecuteGameAsync(CancellationToken cancellationToken);
-    Task<Player> RegisterPlayerAsync(string visitorId, string connectionId);
-    Task UnregisterPlayerAsync(string connectionId);
+    Task<Player> AddPlayerAsync(string visitorId, string connectionId);
+    Task RemovePlayerAsync(string connectionId);
     Task<int> ProcessGuessAsync(string playerId, string guess);
 }
 
@@ -31,13 +31,14 @@ public class GameService : IGameService
     private readonly IWordsService wordsService;
     private readonly IPlayerRepository playerRepository;
     private readonly GameServiceOptions options;
+    private readonly List<string> playerConnectionIds = new();
 
     public Round? Round { get; private set; }
     public bool RoundActive => Round is not null;
     public int RoundNumber { get; private set; }
-    public int PlayerCount { get; private set; }
+    public int PlayerCount => playerConnectionIds.Count;
     public DateTime Expiry { get; private set; }
-    
+
     public event Action<LetterHint>? LetterHintAdded;
     public event Action<RoundStart>? RoundStarted;
     public event Action<RoundEnd>? RoundEnded;
@@ -132,8 +133,10 @@ public class GameService : IGameService
         return points;
     }
 
-    public async Task<Player> RegisterPlayerAsync(string visitorId, string connectionId)
+    public async Task<Player> AddPlayerAsync(string visitorId, string connectionId)
     {
+        playerConnectionIds.Add(connectionId);
+
         var player = await playerRepository.FindPlayerByVisitorIdAsync(visitorId);
         if (player is not null) await playerRepository.UpdatePlayerConnectionIdAsync(player.Id, connectionId);
 
@@ -144,24 +147,23 @@ public class GameService : IGameService
             ConnectionId = connectionId
         });
 
-        logger.LogInformation("Player with ID: {playerId} joined the game. Player count: {playerCount}", player.Id, ++PlayerCount);
-
+        logger.LogInformation("Player with ID: {playerId} joined the game. Player count: {playerCount}", player.Id, PlayerCount);
         return player;
     }
 
-    public async Task UnregisterPlayerAsync(string connectionId)
+    public async Task RemovePlayerAsync(string connectionId)
     {
-        --PlayerCount;
+        playerConnectionIds.Remove(connectionId);
 
         var player = await playerRepository.FindPlayerByConnectionIdAsync(connectionId);
 
         if (player is null)
         {
-            logger.LogWarning("Couldn't find a player with connection ID: {connectionId} to unregister. Player count: {playerCount}", connectionId, PlayerCount);
+            logger.LogWarning("Couldn't find a player with connection ID: {connectionId} to remove. Player count: {playerCount}", connectionId, PlayerCount);
             return;
         }
 
-        await playerRepository.DeletePlayerAsync(player);
+        await playerRepository.UpdatePlayerConnectionIdAsync(player.Id, string.Empty);
         logger.LogInformation("Player with connection ID: {connectionId} left the game. Player count: {playerCount}", connectionId, PlayerCount);
     }
 }
