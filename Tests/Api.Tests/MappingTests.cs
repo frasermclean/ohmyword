@@ -1,3 +1,4 @@
+using System;
 using AutoMapper;
 using FluentAssertions;
 using OhMyWord.Api.Mapping;
@@ -32,6 +33,7 @@ public class MappingTests
             Id = "cat",
             Definition = "Small furry creature",
             PartOfSpeech = PartOfSpeech.Noun,
+            Timestamp = 123
         };
 
         var response = mapper.Map<WordResponse>(word);
@@ -39,6 +41,6 @@ public class MappingTests
         response.Value.Should().Be(word.Value);
         response.PartOfSpeech.Should().Be(word.PartOfSpeech);
         response.Definition.Should().Be(word.Definition);
-        response.LastUpdateTime.Should().Be(word.LastUpdateTime);
+        response.LastModifiedTime.Should().Be(new DateTime(1970, 1, 1, 0, 2, 3));
     }
 }

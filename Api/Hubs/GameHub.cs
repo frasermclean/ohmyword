@@ -18,11 +18,13 @@ public class GameHub : Hub<IGameHub>
 {
     private readonly ILogger<GameHub> logger;
     private readonly IGameService gameService;
+    private readonly IPlayerService playerService;
 
-    public GameHub(ILogger<GameHub> logger, IGameService gameService)
+    public GameHub(ILogger<GameHub> logger, IGameService gameService, IPlayerService playerService)
     {
         this.logger = logger;
         this.gameService = gameService;
+        this.playerService = playerService;
     }
 
     public override Task OnConnectedAsync()
@@ -34,31 +36,33 @@ public class GameHub : Hub<IGameHub>
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
         logger.LogDebug("Client disconnected. Connection ID: {connectionId}", Context.ConnectionId);
-        await gameService.UnregisterPlayerAsync(Context.ConnectionId);
+        await playerService.RemovePlayerAsync(Context.ConnectionId);
     }
 
     public async Task<RegisterPlayerResponse> RegisterPlayer(string visitorId)
     {
         logger.LogInformation("Attempting to register client with visitor ID: {visitorId}", visitorId);
-        var player = await gameService.RegisterPlayerAsync(visitorId, Context.ConnectionId);
+        var player = await playerService.AddPlayerAsync(visitorId, Context.ConnectionId);
         return new RegisterPlayerResponse
         {
             PlayerId = player.Id,
             RoundNumber = gameService.RoundNumber,
             RoundActive = gameService.RoundActive,
             WordHint = gameService.Round?.WordHint,
-            PlayerCount = gameService.PlayerCount,
+            PlayerCount = playerService.PlayerCount,
             Expiry = gameService.Expiry,
+            Score = player.Score
         };
     }
-
-    public SubmitGuessResponse SubmitGuess(SubmitGuessRequest request)
+    
+    public async Task<SubmitGuessResponse> SubmitGuess(SubmitGuessRequest request)
     {
-        var isCorrect = gameService.IsCorrect(request.Value);
+        var points = await gameService.ProcessGuessAsync(request.PlayerId, request.Value);
         return new SubmitGuessResponse
         {
             Value = request.Value.ToLowerInvariant(),
-            Correct = isCorrect,
+            Correct = points > 0,
+            Points = points
         };
     }
 }

@@ -51,6 +51,14 @@ public abstract class Repository<TEntity> where TEntity : Entity
         return new RepositoryActionResult<TEntity>(response, RepositoryAction.Delete, id);
     }
 
+    protected async Task<RepositoryActionResult<TEntity>> PatchItemAsync(string id, string partition, PatchOperation[] operations, CancellationToken cancellationToken = default)
+    {
+        var partitionKey = new PartitionKey(partition);
+        var response = await container.PatchItemStreamAsync(id, partitionKey, operations, cancellationToken: cancellationToken);
+        LogResponseMessage(response, RepositoryAction.Patch, id, partition);
+        return new RepositoryActionResult<TEntity>(response, RepositoryAction.Patch, id);
+    }
+
     #region Multiple item enumeration methods
 
     /// <summary>
@@ -108,6 +116,7 @@ public abstract class Repository<TEntity> where TEntity : Entity
             RepositoryAction.Create => "Created",
             RepositoryAction.Update => "Updated",
             RepositoryAction.Delete => "Deleted",
+            RepositoryAction.Patch => "Patched",
             _ => action.ToString()
         };
 
