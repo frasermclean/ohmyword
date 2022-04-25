@@ -11,8 +11,8 @@ public interface IPlayerRepository
     Task<Player?> FindPlayerByPlayerIdAsync(string playerId);
     Task<Player?> FindPlayerByVisitorIdAsync(string visitorId);
     Task<Player?> FindPlayerByConnectionIdAsync(string connectionId);
-    Task UpdatePlayerConnectionIdAsync(string playerId, string connectionId);
-    Task IncrementPlayerScoreAsync(string playerId, long value);
+    Task<bool> UpdatePlayerConnectionIdAsync(string playerId, string connectionId);
+    Task<bool> IncrementPlayerScoreAsync(string playerId, long value);
 }
 
 public class PlayerRepository : Repository<Player>, IPlayerRepository
@@ -57,17 +57,33 @@ public class PlayerRepository : Repository<Player>, IPlayerRepository
         return results.FirstOrDefault();
     }
 
-    public async Task UpdatePlayerConnectionIdAsync(string playerId, string connectionId)
+    public async Task<bool> UpdatePlayerConnectionIdAsync(string playerId, string connectionId)
     {
-        var patchOperations = new [] { PatchOperation.Set("/connectionId", connectionId) };
+        var patchOperations = new [] { PatchOperation.Replace("/connectionId", connectionId) };
         var result = await PatchItemAsync(playerId, playerId, patchOperations);
-        if (result.Success)
-            logger.LogDebug("Updated player with ID: {playerId} to have connection ID: {connectionId}", playerId, connectionId);
+        if (!result.Success)
+        {
+            logger.LogWarning(
+                "Could not update player connection ID. Player ID: {playerId}, connection ID: {connectionId} Message: '{message}'",
+                result.Message, playerId, connectionId);
+            return false;
+        }
+
+        logger.LogDebug("Updated player with ID: {playerId} to have connection ID: {connectionId}", playerId, connectionId);
+        return true;
     }
 
-    public async Task IncrementPlayerScoreAsync(string playerId, long value)
+    public async Task<bool> IncrementPlayerScoreAsync(string playerId, long value)
     {
         var patchOperations = new[] { PatchOperation.Increment("/score", value) };
-        await PatchItemAsync(playerId, playerId, patchOperations);
+        var result = await PatchItemAsync(playerId, playerId, patchOperations);
+        if (!result.Success)
+        {
+            logger.LogWarning("Could not increment player score. Message: '{message}'", result.Message);
+            return false;
+        }
+
+        logger.LogDebug("Incremented player with ID: {playerId} score by: {value}", playerId, value);
+        return true;
     }
 }
