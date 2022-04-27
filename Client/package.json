@@ -19,6 +19,8 @@
     "@angular/platform-browser-dynamic": "~13.3.4",
     "@angular/platform-server": "~13.3.4",
     "@angular/router": "~13.3.4",
+    "@azure/msal-angular": "^2.2.0",
+    "@azure/msal-browser": "^2.23.0",
     "@fingerprintjs/fingerprintjs": "^3.3.3",
     "@microsoft/signalr": "^6.0.4",
     "howler": "^2.2.3",
