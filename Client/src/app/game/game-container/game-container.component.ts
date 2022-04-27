@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { GameService } from 'src/app/services/game.service';
 
 @Component({
@@ -6,14 +6,18 @@ import { GameService } from 'src/app/services/game.service';
   templateUrl: './game-container.component.html',
   styleUrls: ['./game-container.component.scss'],
 })
-export class GameContainerComponent implements OnInit {
+export class GameContainerComponent implements OnInit, OnDestroy {
   registered$ = this.gameService.registered$;
   roundActive$ = this.gameService.roundActive$;
   expiry$ = this.gameService.expiry$;
 
   constructor(private gameService: GameService) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.gameService.registerPlayer();
+  }
+
+  ngOnDestroy(): void {
+    this.gameService.disconnectAndReset();
   }
 }

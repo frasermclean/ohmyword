@@ -91,6 +91,11 @@ export class GameService {
     }
   }
 
+  disconnectAndReset() {
+    if (this.hubConnection.state == HubConnectionState.Connected) this.hubConnection.stop();
+    this.playerId = '';
+  }
+
   public async submitGuess() {
     // check for mismatched length
     if (this.guessSubject.value.length !== this.wordHintSubject.value.length) {
@@ -120,7 +125,7 @@ export class GameService {
     if (this.hubConnection.state === HubConnectionState.Disconnected) {
       // register callback for connection closed error
       this.hubConnection.onclose((error) => {
-        console.error('Connection closed: ', error);
+        if (error) console.error(error);
         this.registeredSubject.next(false);
       });
 
