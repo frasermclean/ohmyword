@@ -6,9 +6,7 @@ using OhMyWord.Services.Game;
 
 namespace OhMyWord.Api.Controllers;
 
-[Route("api/[controller]")]
-[ApiController]
-public class GameController : ControllerBase
+public class GameController : AuthorizedControllerBase
 {
     private readonly IGameService gameService;
     private readonly IMapper mapper;

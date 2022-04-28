@@ -1,3 +1,4 @@
+using Microsoft.Identity.Web;
 using OhMyWord.Api.Hubs;
 using OhMyWord.Api.Mapping;
 using OhMyWord.Api.Registration;
@@ -32,6 +33,10 @@ public static class Program
                     new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
             });
 
+
+        // add microsoft identity authentication services
+        services.AddMicrosoftIdentityWebApiAuthentication(configuration);
+
         // add database services
         services.AddCosmosDbService(configuration);
         services.AddRepositoryServices();
@@ -62,11 +67,13 @@ public static class Program
             app.UseDeveloperExceptionPage();
         }
 
-        app.UseRouting();
-
         // enable serving static content
         app.UseDefaultFiles();
         app.UseStaticFiles();
+
+        app.UseRouting();
+        app.UseAuthentication();
+        app.UseAuthorization();
 
         app.MapControllers();
         app.MapHub<GameHub>("/game");

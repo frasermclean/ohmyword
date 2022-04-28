@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Identity.Web.Resource;
 using OhMyWord.Api.Requests.Words;
 using OhMyWord.Api.Responses.Words;
 using OhMyWord.Core.Models;
@@ -7,9 +8,8 @@ using OhMyWord.Services.Data.Repositories;
 
 namespace OhMyWord.Api.Controllers;
 
-[Route("api/[controller]")]
-[ApiController]
-public class WordsController : ControllerBase
+
+public class WordsController : AuthorizedControllerBase
 {
     private readonly IWordsRepository wordsRepository;
     private readonly IMapper mapper;
@@ -21,6 +21,7 @@ public class WordsController : ControllerBase
     }
 
     [HttpGet]
+    [RequiredScope("words.read")]
     public async Task<ActionResult<IEnumerable<WordResponse>>> GetAllWordsAsync()
     {
         var words = await wordsRepository.GetAllWordsAsync();
@@ -28,15 +29,17 @@ public class WordsController : ControllerBase
     }
 
     [HttpGet("{partOfSpeech}/{value}")]
+    [RequiredScope("words.read")]
     public async Task<ActionResult<WordResponse>> GetWordByValue(PartOfSpeech partOfSpeech, string value)
     {
         var result = await wordsRepository.GetWordByValueAsync(partOfSpeech, value);
-        return result.Success ?
-            Ok(mapper.Map<WordResponse>(result.Resource)) :
-            StatusCode(result.StatusCode, new { result.Message });
+        return result.Success
+            ? Ok(mapper.Map<WordResponse>(result.Resource))
+            : GetErrorResult(result.StatusCode, result.Message);
     }
 
     [HttpPost]
+    [RequiredScope("words.write")]
     public async Task<IActionResult> CreateWord(CreateWordRequest request)
     {
         var result = await wordsRepository.CreateWordAsync(request.ToWord());
@@ -44,22 +47,26 @@ public class WordsController : ControllerBase
         return result.Success
             ? CreatedAtAction(nameof(GetWordByValue), new { word.PartOfSpeech, word.Value },
                 mapper.Map<WordResponse>(word))
-            : StatusCode(result.StatusCode, new { result.Message });
+            : GetErrorResult(result.StatusCode, result.Message);
     }
 
     [HttpPut("{partOfSpeech}/{value}")]
+    [RequiredScope("words.write")]
     public async Task<IActionResult> UpdateWord(PartOfSpeech partOfSpeech, string value, UpdateWordRequest request)
     {
         var result = await wordsRepository.UpdateWordAsync(request.ToWord(partOfSpeech, value));
-        return result.Success ?
-            Ok(mapper.Map<WordResponse>(result.Resource)) :
-            StatusCode(result.StatusCode, new { result.Message });
+        return result.Success
+           ? Ok(mapper.Map<WordResponse>(result.Resource))
+           : GetErrorResult(result.StatusCode, result.Message);
     }
 
     [HttpDelete("{partOfSpeech}/{value}")]
+    [RequiredScope("words.write")]
     public async Task<IActionResult> DeleteWord(PartOfSpeech partOfSpeech, string value)
     {
         var result = await wordsRepository.DeleteWordAsync(partOfSpeech, value);
-        return result.Success ? NoContent() : StatusCode(result.StatusCode, new { result.Message });
+        return result.Success 
+            ? NoContent() 
+            : GetErrorResult(result.StatusCode, result.Message);
     }
 }

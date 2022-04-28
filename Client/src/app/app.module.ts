@@ -1,22 +1,41 @@
-import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
-import { RouterModule } from '@angular/router';
+import { BrowserModule } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { RouterModule, Routes } from '@angular/router';
 
-import { GameModule } from './game/game.module';
+// angular material modules
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatButtonModule } from '@angular/material/button';
+
+import { MsalModule, MsalGuard, MsalInterceptor, MsalRedirectComponent } from '@azure/msal-angular';
+
+import { msalInstance, guardConfig, interceptorConfig } from './auth-config';
+
 import { AppComponent } from './app.component';
+import { ToolbarComponent } from './toolbar/toolbar.component';
+
+const routes: Routes = [
+  { path: 'admin', loadChildren: () => import('./admin/admin.module').then((m) => m.AdminModule), canActivate: [MsalGuard] },
+  { path: 'game', loadChildren: () => import('./game/game.module').then((m) => m.GameModule) },
+  { path: '**', redirectTo: 'game', pathMatch: 'full' },
+];
 
 @NgModule({
-  declarations: [AppComponent],
+  declarations: [AppComponent, ToolbarComponent],
   imports: [
-    BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
+    BrowserModule,
+    BrowserAnimationsModule,
     HttpClientModule,
-    FormsModule,
-    RouterModule.forRoot([]),
-    GameModule,
+    RouterModule.forRoot(routes),
+    MatToolbarModule,
+    MatButtonModule,
+    MsalModule.forRoot(msalInstance, guardConfig, interceptorConfig),
   ],
-  providers: [],
-  bootstrap: [AppComponent],
+  providers: [
+    { provide: HTTP_INTERCEPTORS, useClass: MsalInterceptor, multi: true }, 
+    MsalGuard
+  ],
+  bootstrap: [AppComponent, MsalRedirectComponent],
 })
 export class AppModule {}

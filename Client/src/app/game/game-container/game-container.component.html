@@ -1,0 +1,15 @@
+<div id="container">
+  <div *ngIf="registered$ | async; else notRegistered" id="game-container">
+    <ng-container *ngIf="roundActive$ | async; else roundEnded">
+      <app-hint></app-hint>
+      <app-guess></app-guess>
+    </ng-container>
+    <ng-template #roundEnded>
+      <app-round-end-summary></app-round-end-summary>
+    </ng-template>
+    <app-countdown *ngIf="expiry$ | async as expiry" [expiryDate]="expiry"></app-countdown>
+  </div>
+  <ng-template #notRegistered>
+    <h3>Not registered with the game server :(</h3>
+  </ng-template>
+</div>
