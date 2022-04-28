@@ -3,7 +3,11 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { RouterModule, Routes } from '@angular/router';
+
+// angular material modules
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatButtonModule } from '@angular/material/button';
+
 import { MsalModule, MsalGuard, MsalInterceptor, MsalRedirectComponent } from '@azure/msal-angular';
 
 import { msalInstance, guardConfig, interceptorConfig } from './auth-config';
@@ -25,6 +29,7 @@ const routes: Routes = [
     HttpClientModule,
     RouterModule.forRoot(routes),
     MatToolbarModule,
+    MatButtonModule,
     MsalModule.forRoot(msalInstance, guardConfig, interceptorConfig),
   ],
   providers: [

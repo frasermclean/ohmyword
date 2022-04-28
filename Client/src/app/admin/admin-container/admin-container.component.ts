@@ -11,9 +11,5 @@ export class AdminContainerComponent implements OnInit {
 
   ngOnInit(): void {}
 
-  onLogout() {
-    this.msalService.logoutRedirect({
-      postLogoutRedirectUri: window.location.origin,
-    });
-  }
+  
 }
