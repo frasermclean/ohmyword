@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 import { HintComponent } from './hint/hint.component';
 import { GuessComponent } from './guess/guess.component';
@@ -20,6 +21,10 @@ const routes: Routes = [{ path: '', component: GameContainerComponent }];
     CountdownComponent,
     RoundEndSummaryComponent,
   ],
-  imports: [CommonModule, RouterModule.forChild(routes)],
+  imports: [
+    CommonModule,
+    RouterModule.forChild(routes),
+    MatProgressBarModule
+  ],
 })
 export class GameModule {}
