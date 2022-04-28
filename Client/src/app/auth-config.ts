@@ -10,6 +10,11 @@ const policyNames = {
   signUpSignIn: 'B2C_1_signup_signin',
 };
 
+export const scopes = [
+  'https://ohmyword.live/api/words.read',
+  'https://ohmyword.live/api/words.write'
+]
+
 /**
  * MSAL client application
  */
