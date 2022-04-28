@@ -15,6 +15,7 @@ import { msalInstance, guardConfig, interceptorConfig } from './auth-config';
 import { AppComponent } from './app.component';
 import { ToolbarComponent } from './toolbar/toolbar.component';
 
+
 const routes: Routes = [
   { path: 'admin', loadChildren: () => import('./admin/admin.module').then((m) => m.AdminModule), canActivate: [MsalGuard] },
   { path: 'game', loadChildren: () => import('./game/game.module').then((m) => m.GameModule) },
