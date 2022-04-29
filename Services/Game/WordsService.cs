@@ -6,7 +6,7 @@ namespace OhMyWord.Services.Game;
 
 public interface IWordsService
 {
-    Task<Word> SelectRandomWordAsync();
+    Task<Word> SelectRandomWordAsync(CancellationToken cancellationToken);
 }
 
 public class WordsService : IWordsService
@@ -22,9 +22,9 @@ public class WordsService : IWordsService
         this.wordsRepository = wordsRepository;
     }
 
-    public async Task<Word> SelectRandomWordAsync()
+    public async Task<Word> SelectRandomWordAsync(CancellationToken cancellationToken)
     {
-        if (words.Count == 0) await LoadWordsFromRepositoryAsync();
+        if (words.Count == 0) await LoadWordsFromRepositoryAsync(cancellationToken);
 
         if (previousIndices.Count == words.Count)
             previousIndices.Clear();
@@ -41,9 +41,9 @@ public class WordsService : IWordsService
         return randomWord;
     }
 
-    private async Task LoadWordsFromRepositoryAsync()
+    private async Task LoadWordsFromRepositoryAsync(CancellationToken cancellationToken)
     {
-        words.AddRange(await wordsRepository.GetAllWordsAsync());
+        words.AddRange(await wordsRepository.GetAllWordsAsync(cancellationToken));
 
         if (words.Count == 0)
         {

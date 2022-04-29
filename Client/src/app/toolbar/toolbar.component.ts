@@ -3,6 +3,7 @@ import { MsalBroadcastService, MsalService } from '@azure/msal-angular';
 import { InteractionStatus } from '@azure/msal-browser';
 import { Subject } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
+import { scopes } from '../auth-config';
 
 @Component({
   selector: 'app-toolbar',
@@ -33,7 +34,9 @@ export class ToolbarComponent implements OnInit, OnDestroy {
   }
 
   onLogin() {
-    this.authService.loginRedirect();
+    this.authService.loginRedirect({
+      scopes: scopes,
+    });
   }
 
   onLogout() {

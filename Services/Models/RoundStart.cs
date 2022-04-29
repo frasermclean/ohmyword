@@ -4,16 +4,15 @@ namespace OhMyWord.Services.Models;
 
 public class RoundStart
 {
-    public Guid RoundId { get; }
-    public int RoundNumber { get; }
-    public DateTime RoundEnds { get; }
-    public WordHint WordHint { get; }
+    private readonly Round round;
+
+    public Guid RoundId => round.Id;
+    public int RoundNumber => round.Number;
+    public DateTime RoundEnds => round.Expiry;
+    public WordHint WordHint => round.WordHint;
 
     internal RoundStart(Round round)
     {
-        RoundId = round.Id;
-        RoundNumber = round.Number;
-        RoundEnds = round.Expiry;
-        WordHint = round.WordHint;
+        this.round = round;
     }
 }

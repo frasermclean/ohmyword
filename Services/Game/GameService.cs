@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Options;
 using OhMyWord.Core.Models;
 using OhMyWord.Services.Models;
+using OhMyWord.Services.Models.Events;
 using OhMyWord.Services.Options;
 
 namespace OhMyWord.Services.Game;
@@ -18,7 +19,7 @@ public interface IGameService
     event Action<LetterHint> LetterHintAdded;
 
     Task ExecuteGameAsync(CancellationToken gameCancellationToken);
-    Task<int> ProcessGuessAsync(string playerId, string guess);
+    Task<int> ProcessGuessAsync(string playerId, string roundId, string value);
 }
 
 public class GameService : IGameService
@@ -43,13 +44,22 @@ public class GameService : IGameService
         this.wordsService = wordsService;
         this.playerService = playerService;
         this.options = options.Value;
+
+        playerService.PlayerRemoved += OnPlayerRemoved;
     }
 
     public async Task ExecuteGameAsync(CancellationToken gameCancellationToken)
     {
         while (!gameCancellationToken.IsCancellationRequested)
         {
-            Round = await StartRoundAsync(++RoundNumber);
+            // sleep while there are no players
+            if (playerService.PlayerCount == 0)
+            {
+                await Task.Delay(1000, gameCancellationToken);
+                continue;
+            }
+
+            Round = await StartRoundAsync(++RoundNumber, gameCancellationToken);
 
             try
             {
@@ -64,9 +74,9 @@ public class GameService : IGameService
         }
     }
 
-    private async Task<Round> StartRoundAsync(int roundNumber)
+    private async Task<Round> StartRoundAsync(int roundNumber, CancellationToken cancellationToken)
     {
-        var word = await wordsService.SelectRandomWordAsync();
+        var word = await wordsService.SelectRandomWordAsync(cancellationToken); 
         var duration = TimeSpan.FromSeconds(word.Value.Length * options.LetterHintDelay);
 
         var round = new Round(roundNumber, word, duration);
@@ -120,20 +130,31 @@ public class GameService : IGameService
         }
     }
 
-    public async Task<int> ProcessGuessAsync(string playerId, string guess)
+    public async Task<int> ProcessGuessAsync(string playerId, string roundId, string value)
     {
         // if round is not active then immediately return false
-        if (Round is null) return 0;
+        if (Round is null || roundId != Round.Id.ToString()) return 0;
 
-        // compare guess to current word value
-        if (!string.Equals(guess, Round.Word.Value, StringComparison.InvariantCultureIgnoreCase))
+        // compare value to current word value
+        if (!string.Equals(value, Round.Word.Value, StringComparison.InvariantCultureIgnoreCase))
             return 0;
 
         const int points = 100; // TODO: Calculate points value dynamically
         var isSuccessful = await playerService.AwardPlayerPointsAsync(playerId, points);
 
-        Round.EndRound();
+        // end round if all players have been awarded points
+        if (playerService.AllPlayersAwarded)
+            Round.EndRound();
 
         return isSuccessful ? points : 0;
+    }
+
+    private void OnPlayerRemoved(object? _, PlayerEventArgs args)
+    {
+        if (Round is null || args.PlayerCount > 0)
+            return;
+        
+        // end round early if all players left
+        Round.EndRound();
     }
 }
