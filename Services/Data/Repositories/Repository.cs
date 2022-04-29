@@ -64,10 +64,10 @@ public abstract class Repository<TEntity> where TEntity : Entity
     /// <summary>
     /// Read all items across all partitions. This is an expensive operation and should be avoided if possible.
     /// </summary>
-    protected async Task<IEnumerable<TEntity>> ReadAllItemsAsync()
+    protected async Task<IEnumerable<TEntity>> ReadAllItemsAsync(CancellationToken cancellationToken)
     {
         QueryDefinition queryDefinition = new("SELECT * FROM c");
-        return await ExecuteQueryAsync<TEntity>(queryDefinition);
+        return await ExecuteQueryAsync<TEntity>(queryDefinition, cancellationToken: cancellationToken);
     }
 
     protected async Task<IEnumerable<TResponse>> ExecuteQueryAsync<TResponse>(

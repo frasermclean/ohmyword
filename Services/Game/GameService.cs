@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OhMyWord.Core.Models;
 using OhMyWord.Services.Models;
@@ -64,9 +64,9 @@ public class GameService : IGameService
         }
     }
 
-    private async Task<Round> StartRoundAsync(int roundNumber)
+    private async Task<Round> StartRoundAsync(int roundNumber, CancellationToken cancellationToken)
     {
-        var word = await wordsService.SelectRandomWordAsync();
+        var word = await wordsService.SelectRandomWordAsync(cancellationToken); 
         var duration = TimeSpan.FromSeconds(word.Value.Length * options.LetterHintDelay);
 
         var round = new Round(roundNumber, word, duration);
