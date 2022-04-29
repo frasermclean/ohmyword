@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Options;
 using OhMyWord.Core.Models;
 using OhMyWord.Services.Models;
+using OhMyWord.Services.Models.Events;
 using OhMyWord.Services.Options;
 
 namespace OhMyWord.Services.Game;
@@ -148,9 +149,9 @@ public class GameService : IGameService
         return isSuccessful ? points : 0;
     }
 
-    private void OnPlayerRemoved(Player _)
+    private void OnPlayerRemoved(object? _, PlayerEventArgs args)
     {
-        if (Round is null || playerService.PlayerCount > 0)
+        if (Round is null || args.PlayerCount > 0)
             return;
         
         // end round early if all players left
