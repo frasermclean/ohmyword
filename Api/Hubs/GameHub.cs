@@ -57,10 +57,11 @@ public class GameHub : Hub<IGameHub>
     
     public async Task<SubmitGuessResponse> SubmitGuess(SubmitGuessRequest request)
     {
-        var points = await gameService.ProcessGuessAsync(request.PlayerId, request.Value);
+        var (playerId, roundId, value) = request;
+        var points = await gameService.ProcessGuessAsync(playerId, roundId, value);
         return new SubmitGuessResponse
         {
-            Value = request.Value.ToLowerInvariant(),
+            Value = value.ToLowerInvariant(),
             Correct = points > 0,
             Points = points
         };

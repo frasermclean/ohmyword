@@ -19,7 +19,7 @@ public interface IGameService
     event Action<LetterHint> LetterHintAdded;
 
     Task ExecuteGameAsync(CancellationToken gameCancellationToken);
-    Task<int> ProcessGuessAsync(string playerId, string guess);
+    Task<int> ProcessGuessAsync(string playerId, string roundId, string value);
 }
 
 public class GameService : IGameService
@@ -130,13 +130,13 @@ public class GameService : IGameService
         }
     }
 
-    public async Task<int> ProcessGuessAsync(string playerId, string guess)
+    public async Task<int> ProcessGuessAsync(string playerId, string roundId, string value)
     {
         // if round is not active then immediately return false
-        if (Round is null) return 0;
+        if (Round is null || roundId != Round.Id.ToString()) return 0;
 
-        // compare guess to current word value
-        if (!string.Equals(guess, Round.Word.Value, StringComparison.InvariantCultureIgnoreCase))
+        // compare value to current word value
+        if (!string.Equals(value, Round.Word.Value, StringComparison.InvariantCultureIgnoreCase))
             return 0;
 
         const int points = 100; // TODO: Calculate points value dynamically

@@ -105,6 +105,7 @@ export class GameService {
 
     const response = await this.hubConnection.invoke<GuessResponse>('SubmitGuess', {
       playerId: this.playerId,
+      roundId: this.roundId,
       value: this.guessSubject.value,
     });
 
