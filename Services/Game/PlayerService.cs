@@ -8,6 +8,10 @@ namespace OhMyWord.Services.Game;
 public interface IPlayerService
 {
     int PlayerCount { get; }
+    bool AllPlayersAwarded { get; }
+
+    event Action<Player> PlayerAdded;
+    event Action<Player> PlayerRemoved;
 
     Task<Player> AddPlayerAsync(string visitorId, string connectionId);
     Task RemovePlayerAsync(string connectionId);
@@ -21,6 +25,11 @@ public class PlayerService : IPlayerService
     private readonly ConcurrentDictionary<string, Player> playerCache = new();
 
     public int PlayerCount => playerCache.Count;
+
+    public bool AllPlayersAwarded => true; // TODO: Implement AllPlayersAwarded logic
+
+    public event Action<Player>? PlayerAdded;
+    public event Action<Player>? PlayerRemoved;
 
     public PlayerService(ILogger<PlayerService> logger, IPlayerRepository playerRepository)
     {
@@ -51,6 +60,8 @@ public class PlayerService : IPlayerService
             // TODO: Deal with error here
         }
 
+        PlayerAdded?.Invoke(player);
+
         logger.LogInformation("Player with ID: {playerId} joined the game. Player count: {playerCount}", player.Id, PlayerCount);
         return player;
     }
@@ -64,6 +75,8 @@ public class PlayerService : IPlayerService
             logger.LogWarning("Couldn't find a player with connection ID: {connectionId} to remove.", connectionId);
             return;
         }
+
+        PlayerRemoved?.Invoke(player);
 
         var wasUpdated =  await playerRepository.UpdatePlayerConnectionIdAsync(player.Id, string.Empty);
         if (!wasUpdated) logger.LogWarning("Couldn't update player with ID: {playerId}.", player.Id);

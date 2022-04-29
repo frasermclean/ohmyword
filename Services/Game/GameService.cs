@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OhMyWord.Core.Models;
 using OhMyWord.Services.Models;
@@ -43,13 +43,22 @@ public class GameService : IGameService
         this.wordsService = wordsService;
         this.playerService = playerService;
         this.options = options.Value;
+
+        playerService.PlayerRemoved += OnPlayerRemoved;
     }
 
     public async Task ExecuteGameAsync(CancellationToken gameCancellationToken)
     {
         while (!gameCancellationToken.IsCancellationRequested)
         {
-            Round = await StartRoundAsync(++RoundNumber);
+            // sleep while there are no players
+            if (playerService.PlayerCount == 0)
+            {
+                await Task.Delay(1000, gameCancellationToken);
+                continue;
+            }
+
+            Round = await StartRoundAsync(++RoundNumber, gameCancellationToken);
 
             try
             {
@@ -132,8 +141,19 @@ public class GameService : IGameService
         const int points = 100; // TODO: Calculate points value dynamically
         var isSuccessful = await playerService.AwardPlayerPointsAsync(playerId, points);
 
-        Round.EndRound();
+        // end round if all players have been awarded points
+        if (playerService.AllPlayersAwarded)
+            Round.EndRound();
 
         return isSuccessful ? points : 0;
+    }
+
+    private void OnPlayerRemoved(Player _)
+    {
+        if (Round is null || playerService.PlayerCount > 0)
+            return;
+        
+        // end round early if all players left
+        Round.EndRound();
     }
 }
