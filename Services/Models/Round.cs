@@ -13,6 +13,7 @@ public class Round : IDisposable
     public WordHint WordHint { get; }
     public TimeSpan Duration { get; }
     public DateTime Expiry { get; }
+    public RoundEndReason EndReason { get; private set; } = RoundEndReason.Timeout;
 
     [JsonIgnore]
     public CancellationToken CancellationToken => cancellationTokenSource.Token;
@@ -29,7 +30,11 @@ public class Round : IDisposable
     /// <summary>
     /// End the round early.
     /// </summary>
-    internal void EndRound() => cancellationTokenSource.Cancel();
+    internal void EndRound(RoundEndReason reason)
+    {
+        EndReason = reason;
+        cancellationTokenSource.Cancel();
+    }
 
     public void Dispose()
     {

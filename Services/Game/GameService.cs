@@ -144,7 +144,7 @@ public class GameService : IGameService
 
         // end round if all players have been awarded points
         if (playerService.AllPlayersAwarded)
-            Round.EndRound();
+            Round.EndRound(RoundEndReason.AllPlayersAwarded);
 
         return isSuccessful ? points : 0;
     }
@@ -154,7 +154,7 @@ public class GameService : IGameService
         if (Round is null || args.PlayerCount > 0)
             return;
         
-        // end round early if all players left
-        Round.EndRound();
+        // end round early if no players left
+        Round.EndRound(RoundEndReason.NoPlayersLeft);
     }
 }
