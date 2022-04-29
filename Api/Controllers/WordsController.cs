@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Identity.Web.Resource;
 using OhMyWord.Api.Requests.Words;
 using OhMyWord.Api.Responses.Words;
 using OhMyWord.Core.Models;
@@ -8,8 +7,7 @@ using OhMyWord.Services.Data.Repositories;
 
 namespace OhMyWord.Api.Controllers;
 
-
-public class WordsController : AuthorizedControllerBase
+public sealed class WordsController : AuthorizedControllerBase
 {
     private readonly IWordsRepository wordsRepository;
     private readonly IMapper mapper;
@@ -21,7 +19,6 @@ public class WordsController : AuthorizedControllerBase
     }
 
     [HttpGet]
-    [RequiredScope("words.read")]
     public async Task<ActionResult<IEnumerable<WordResponse>>> GetAllWordsAsync()
     {
         var words = await wordsRepository.GetAllWordsAsync();
@@ -29,7 +26,6 @@ public class WordsController : AuthorizedControllerBase
     }
 
     [HttpGet("{partOfSpeech}/{value}")]
-    [RequiredScope("words.read")]
     public async Task<ActionResult<WordResponse>> GetWordByValue(PartOfSpeech partOfSpeech, string value)
     {
         var result = await wordsRepository.GetWordByValueAsync(partOfSpeech, value);
@@ -39,7 +35,6 @@ public class WordsController : AuthorizedControllerBase
     }
 
     [HttpPost]
-    [RequiredScope("words.write")]
     public async Task<IActionResult> CreateWord(CreateWordRequest request)
     {
         var result = await wordsRepository.CreateWordAsync(request.ToWord());
@@ -51,7 +46,6 @@ public class WordsController : AuthorizedControllerBase
     }
 
     [HttpPut("{partOfSpeech}/{value}")]
-    [RequiredScope("words.write")]
     public async Task<IActionResult> UpdateWord(PartOfSpeech partOfSpeech, string value, UpdateWordRequest request)
     {
         var result = await wordsRepository.UpdateWordAsync(request.ToWord(partOfSpeech, value));
@@ -61,7 +55,6 @@ public class WordsController : AuthorizedControllerBase
     }
 
     [HttpDelete("{partOfSpeech}/{value}")]
-    [RequiredScope("words.write")]
     public async Task<IActionResult> DeleteWord(PartOfSpeech partOfSpeech, string value)
     {
         var result = await wordsRepository.DeleteWordAsync(partOfSpeech, value);
