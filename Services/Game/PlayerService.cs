@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using OhMyWord.Core.Models;
 using OhMyWord.Services.Data.Repositories;
-using OhMyWord.Services.Models.Events;
+using OhMyWord.Services.Events;
 using System.Collections.Concurrent;
 
 namespace OhMyWord.Services.Game;
@@ -79,9 +79,9 @@ public class PlayerService : IPlayerService
 
         PlayerRemoved?.Invoke(this, new PlayerEventArgs(player, PlayerCount));
 
-        var wasUpdated =  await playerRepository.UpdatePlayerConnectionIdAsync(player.Id, string.Empty);
+        var wasUpdated = await playerRepository.UpdatePlayerConnectionIdAsync(player.Id, string.Empty);
         if (!wasUpdated) logger.LogWarning("Couldn't update player with ID: {playerId}.", player.Id);
-        
+
         logger.LogInformation("Player with connection ID: {connectionId} left the game. Player count: {playerCount}", connectionId, PlayerCount);
     }
 

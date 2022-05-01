@@ -1,21 +1,21 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OhMyWord.Core.Models;
+using OhMyWord.Services.Events;
 using OhMyWord.Services.Models;
-using OhMyWord.Services.Models.Events;
 using OhMyWord.Services.Options;
 
 namespace OhMyWord.Services.Game;
 
 public interface IGameService
 {
-    Round? Round { get; }
+    Round Round { get; }
     bool RoundActive { get; }
     int RoundNumber { get; }
     DateTime Expiry { get; }
 
-    event Action<RoundStart> RoundStarted;
-    event Action<RoundEnd> RoundEnded;
+    event EventHandler<RoundStartedEventArgs> RoundStarted;
+    event EventHandler<RoundEndedEventArgs> RoundEnded;
     event Action<LetterHint> LetterHintAdded;
 
     Task ExecuteGameAsync(CancellationToken gameCancellationToken);
@@ -29,14 +29,14 @@ public class GameService : IGameService
     private readonly IPlayerService playerService;
     private readonly GameServiceOptions options;
 
-    public Round? Round { get; private set; }
+    public Round Round { get; private set; } = Round.Default;
     public int RoundNumber { get; private set; }
-    public bool RoundActive => Round is not null;
+    public bool RoundActive { get; private set; }
     public DateTime Expiry { get; private set; }
 
     public event Action<LetterHint>? LetterHintAdded;
-    public event Action<RoundStart>? RoundStarted;
-    public event Action<RoundEnd>? RoundEnded;
+    public event EventHandler<RoundStartedEventArgs>? RoundStarted;
+    public event EventHandler<RoundEndedEventArgs>? RoundEnded;
 
     public GameService(ILogger<GameService> logger, IWordsService wordsService, IPlayerService playerService, IOptions<GameServiceOptions> options)
     {
@@ -59,45 +59,50 @@ public class GameService : IGameService
                 continue;
             }
 
-            Round = await StartRoundAsync(++RoundNumber, gameCancellationToken);
+            // start new round
+            var word = await wordsService.SelectRandomWordAsync(gameCancellationToken);
+            var duration = TimeSpan.FromSeconds(word.Value.Length * options.LetterHintDelay);
+            RoundActive = true;
+            Round = new Round(++RoundNumber, word, duration);
+            RoundStarted?.Invoke(this, new RoundStartedEventArgs
+            {
+                RoundId = Round.Id,
+                RoundNumber = RoundNumber,
+                RoundEnds = Round.EndTime,
+                WordHint = Round.WordHint,
+            });
+            Expiry = Round.EndTime;
 
+            logger.LogDebug("Round: {roundNumber} has started. Current currentWord is: {word}. Round duration: {seconds} seconds.",
+                Round.Number, Round.Word, Round.Duration.Seconds);
+
+            // send all letter hints
             try
             {
                 await SendLetterHintsAsync(Round);
             }
             catch (TaskCanceledException)
             {
-                logger.LogInformation("Round has been terminated early.");
+                logger.LogInformation("Round has been terminated early. Reason: {EndReason}", Round.EndReason);
             }
 
-            await EndRoundAsync(Round, gameCancellationToken);
+            // end current round
+            var postRoundDelay = TimeSpan.FromSeconds(options.PostRoundDelay);
+            var nextRoundStart = DateTime.UtcNow + postRoundDelay;
+            RoundActive = false;
+            RoundEnded?.Invoke(this, new RoundEndedEventArgs
+            {
+                Round = Round,
+                NextRoundStart = nextRoundStart,
+            });
+            Expiry = nextRoundStart;
+            Round.Dispose();
+            Round = Round.Default;
+
+            logger.LogDebug("Round: {number} has ended. Post round delay is: {seconds} seconds", RoundNumber, postRoundDelay.Seconds);
+
+            await Task.Delay(postRoundDelay, gameCancellationToken);
         }
-    }
-
-    private async Task<Round> StartRoundAsync(int roundNumber, CancellationToken cancellationToken)
-    {
-        var word = await wordsService.SelectRandomWordAsync(cancellationToken); 
-        var duration = TimeSpan.FromSeconds(word.Value.Length * options.LetterHintDelay);
-
-        var round = new Round(roundNumber, word, duration);
-        Expiry = round.Expiry;
-        RoundStarted?.Invoke(new RoundStart(round));
-
-        logger.LogDebug("Round: {roundNumber} has started. Current currentWord is: {word}. Round duration: {seconds} seconds.",
-            round.Number, round.Word, duration.Seconds);
-
-        return round;
-    }
-
-    private async Task EndRoundAsync(Round round, CancellationToken cancellationToken)
-    {
-        var postRoundDelay = TimeSpan.FromSeconds(options.PostRoundDelay);
-        Expiry = DateTime.UtcNow + postRoundDelay;
-        round.Dispose();
-        Round = null;
-        logger.LogDebug("Round: {number} has ended. Post round delay is: {seconds} seconds", round.Number, postRoundDelay.Seconds);
-        RoundEnded?.Invoke(new RoundEnd(round, DateTime.UtcNow + postRoundDelay));
-        await Task.Delay(postRoundDelay, cancellationToken);
     }
 
     private async Task SendLetterHintsAsync(Round round)
@@ -122,7 +127,7 @@ public class GameService : IGameService
                 Value = word.Value[index]
             };
 
-            logger.LogDebug("Added letter hint. Position: {position}, value: {value}", 
+            logger.LogDebug("Added letter hint. Position: {position}, value: {value}",
                 letterHint.Position, letterHint.Value);
 
             LetterHintAdded?.Invoke(letterHint);
@@ -151,9 +156,9 @@ public class GameService : IGameService
 
     private void OnPlayerRemoved(object? _, PlayerEventArgs args)
     {
-        if (Round is null || args.PlayerCount > 0)
+        if (!RoundActive || args.PlayerCount > 0)
             return;
-        
+
         // end round early if no players left
         Round.EndRound(RoundEndReason.NoPlayersLeft);
     }

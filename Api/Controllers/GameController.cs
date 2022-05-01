@@ -21,10 +21,8 @@ public sealed class GameController : AuthorizedControllerBase
     public IActionResult GetState() => Ok(gameService);
 
     [HttpGet("word-hint")]
-    public ActionResult<WordHint> GetWordHint() =>
-        gameService.Round is not null ? Ok(gameService.Round.WordHint) : NoContent();
+    public ActionResult<WordHint> GetWordHint() => Ok(gameService.Round.WordHint);
 
     [HttpGet("current-word")]
-    public ActionResult<WordResponse> GetCurrentWord() =>
-        gameService.Round is not null ? Ok(mapper.Map<WordResponse>(gameService.Round.Word)) : NoContent();
+    public ActionResult<WordResponse> GetCurrentWord() => Ok(mapper.Map<WordResponse>(gameService.Round.Word));
 }
