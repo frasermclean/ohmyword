@@ -1,15 +1,13 @@
-﻿using OhMyWord.Core.Models;
-
-namespace OhMyWord.Services.Events;
+﻿namespace OhMyWord.Services.Events;
 
 public class PlayerEventArgs : EventArgs
 {
-    public Player Player { get; }
+    public string PlayerId { get; }
     public int PlayerCount { get; }
 
-    public PlayerEventArgs(Player player, int playerCount)
+    public PlayerEventArgs(string playerId, int playerCount)
     {
-        Player = player;
+        PlayerId = playerId;
         PlayerCount = playerCount;
     }
 }

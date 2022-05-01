@@ -9,14 +9,18 @@ namespace OhMyWord.Services.Game;
 public interface IPlayerService
 {
     int PlayerCount { get; }
-    bool AllPlayersAwarded { get; }
+
+    /// <summary>
+    /// Currently connected player IDs.
+    /// </summary>
+    IEnumerable<string> PlayerIds { get; }
 
     event EventHandler<PlayerEventArgs> PlayerAdded;
     event EventHandler<PlayerEventArgs> PlayerRemoved;
 
     Task<Player> AddPlayerAsync(string visitorId, string connectionId);
     Task RemovePlayerAsync(string connectionId);
-    Task<bool> AwardPlayerPointsAsync(string playerId, int points);
+    Task<bool> IncrementPlayerScoreAsync(string playerId, int points);
 }
 
 public class PlayerService : IPlayerService
@@ -26,8 +30,7 @@ public class PlayerService : IPlayerService
     private readonly ConcurrentDictionary<string, Player> playerCache = new();
 
     public int PlayerCount => playerCache.Count;
-
-    public bool AllPlayersAwarded => true; // TODO: Implement AllPlayersAwarded logic
+    public IEnumerable<string> PlayerIds => playerCache.Keys;
 
     public event EventHandler<PlayerEventArgs>? PlayerAdded;
     public event EventHandler<PlayerEventArgs>? PlayerRemoved;
@@ -54,14 +57,14 @@ public class PlayerService : IPlayerService
             ConnectionId = connectionId
         });
 
-        var wasAdded = playerCache.TryAdd(connectionId, player);
+        var wasAdded = playerCache.TryAdd(player.Id, player);
         if (!wasAdded)
         {
             logger.LogError("Could not add player with connection ID: {connectionId} to the local cache.", connectionId);
             // TODO: Deal with error here
         }
 
-        PlayerAdded?.Invoke(this, new PlayerEventArgs(player, PlayerCount));
+        PlayerAdded?.Invoke(this, new PlayerEventArgs(player.Id, PlayerCount));
 
         logger.LogInformation("Player with ID: {playerId} joined the game. Player count: {playerCount}", player.Id, PlayerCount);
         return player;
@@ -69,21 +72,25 @@ public class PlayerService : IPlayerService
 
     public async Task RemovePlayerAsync(string connectionId)
     {
-        playerCache.TryRemove(connectionId, out var player);
-
+        var player = playerCache.Values.FirstOrDefault(p => p.ConnectionId == connectionId);
         if (player is null)
         {
             logger.LogWarning("Couldn't find a player with connection ID: {connectionId} to remove.", connectionId);
             return;
         }
 
-        PlayerRemoved?.Invoke(this, new PlayerEventArgs(player, PlayerCount));
+        var wasRemovedFromCache = playerCache.TryRemove(player.Id, out _);
+        if (!wasRemovedFromCache)
+            logger.LogError("Couldn't remove player with ID: {playerId} from cache.", player.Id);
+
+        PlayerRemoved?.Invoke(this, new PlayerEventArgs(player.Id, PlayerCount));
 
         var wasUpdated = await playerRepository.UpdatePlayerConnectionIdAsync(player.Id, string.Empty);
-        if (!wasUpdated) logger.LogWarning("Couldn't update player with ID: {playerId}.", player.Id);
+        if (!wasUpdated)
+            logger.LogWarning("Couldn't update player with ID: {playerId}.", player.Id);
 
-        logger.LogInformation("Player with connection ID: {connectionId} left the game. Player count: {playerCount}", connectionId, PlayerCount);
+        logger.LogInformation("Player with ID: {playerId} left the game. Player count: {playerCount}", player.Id, PlayerCount);
     }
 
-    public Task<bool> AwardPlayerPointsAsync(string playerId, int points) => playerRepository.IncrementPlayerScoreAsync(playerId, points); // TODO: Update local cache to keep points in sync
+    public Task<bool> IncrementPlayerScoreAsync(string playerId, int points) => playerRepository.IncrementPlayerScoreAsync(playerId, points); // TODO: Update local cache to keep points in sync
 }

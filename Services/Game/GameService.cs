@@ -45,6 +45,7 @@ public class GameService : IGameService
         this.playerService = playerService;
         this.options = options.Value;
 
+        playerService.PlayerAdded += OnPlayerAdded;
         playerService.PlayerRemoved += OnPlayerRemoved;
     }
 
@@ -63,7 +64,7 @@ public class GameService : IGameService
             var word = await wordsService.SelectRandomWordAsync(gameCancellationToken);
             var duration = TimeSpan.FromSeconds(word.Value.Length * options.LetterHintDelay);
             RoundActive = true;
-            Round = new Round(++RoundNumber, word, duration);
+            Round = new Round(++RoundNumber, word, duration, playerService.PlayerIds);
             RoundStarted?.Invoke(this, new RoundStartedEventArgs
             {
                 RoundId = Round.Id,
@@ -138,28 +139,52 @@ public class GameService : IGameService
     public async Task<int> ProcessGuessAsync(string playerId, string roundId, string value)
     {
         // if round is not active then immediately return false
-        if (Round is null || roundId != Round.Id.ToString()) return 0;
+        if (!RoundActive || roundId != Round.Id.ToString()) return 0;
 
         // compare value to current word value
         if (!string.Equals(value, Round.Word.Value, StringComparison.InvariantCultureIgnoreCase))
             return 0;
 
-        const int points = 100; // TODO: Calculate points value dynamically
-        var isSuccessful = await playerService.AwardPlayerPointsAsync(playerId, points);
+        var guessCountIncremented = Round.IncrementGuessCount(playerId);
+        if (!guessCountIncremented)
+            logger.LogWarning("Couldn't increment guess count of player with ID: {playerId}", playerId);
+
+        var pointsAwarded = Round.AwardPlayer(playerId);
+        if (pointsAwarded == 0)
+            logger.LogWarning("Zero points were awarded to player with ID: {playerId}", playerId);
+
+        await playerService.IncrementPlayerScoreAsync(playerId, pointsAwarded);
 
         // end round if all players have been awarded points
-        if (playerService.AllPlayersAwarded)
+        if (Round.AllPlayersAwarded)
             Round.EndRound(RoundEndReason.AllPlayersAwarded);
 
-        return isSuccessful ? points : 0;
+        return pointsAwarded;
+    }
+
+    private void OnPlayerAdded(object? _, PlayerEventArgs args)
+    {
+        // player joined while round wasn't active
+        if (!RoundActive)
+            return;
+
+        var wasAdded = Round.AddPlayer(args.PlayerId);
+        if (!wasAdded)
+            logger.LogError("Couldn't add player with ID {playerId} to round.", args.PlayerId);
     }
 
     private void OnPlayerRemoved(object? _, PlayerEventArgs args)
     {
-        if (!RoundActive || args.PlayerCount > 0)
+        // player left while round wasn't active
+        if (!RoundActive)
             return;
 
-        // end round early if no players left
-        Round.EndRound(RoundEndReason.NoPlayersLeft);
+        var wasRemoved = Round.RemovePlayer(args.PlayerId);
+        if (!wasRemoved)
+            logger.LogError("Couldn't remove player with ID {playerId} from round.", args.PlayerId);
+
+        // last player left while round active
+        if (args.PlayerCount > 0)
+            Round.EndRound(RoundEndReason.NoPlayersLeft);
     }
 }
