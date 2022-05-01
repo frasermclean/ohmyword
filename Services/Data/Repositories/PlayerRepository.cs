@@ -59,7 +59,7 @@ public class PlayerRepository : Repository<Player>, IPlayerRepository
 
     public async Task<bool> UpdatePlayerConnectionIdAsync(string playerId, string connectionId)
     {
-        var patchOperations = new [] { PatchOperation.Replace("/connectionId", connectionId) };
+        var patchOperations = new[] { PatchOperation.Replace("/connectionId", connectionId) };
         var result = await PatchItemAsync(playerId, playerId, patchOperations);
         if (!result.Success)
         {

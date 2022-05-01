@@ -6,7 +6,8 @@ namespace OhMyWord.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize][RequiredScope("access")]
+[Authorize]
+[RequiredScope("access")]
 public abstract class AuthorizedControllerBase : ControllerBase
 {
     protected ObjectResult GetErrorResult(int statusCode, string message) =>

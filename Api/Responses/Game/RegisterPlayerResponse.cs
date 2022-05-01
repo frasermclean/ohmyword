@@ -1,5 +1,4 @@
 ﻿using OhMyWord.Core.Models;
-using OhMyWord.Services.Game;
 
 namespace OhMyWord.Api.Responses.Game;
 

@@ -58,8 +58,8 @@ public sealed class WordsController : AuthorizedControllerBase
     public async Task<IActionResult> DeleteWord(PartOfSpeech partOfSpeech, string value)
     {
         var result = await wordsRepository.DeleteWordAsync(partOfSpeech, value);
-        return result.Success 
-            ? NoContent() 
+        return result.Success
+            ? NoContent()
             : GetErrorResult(result.StatusCode, result.Message);
     }
 }

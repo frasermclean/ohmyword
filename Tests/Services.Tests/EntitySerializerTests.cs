@@ -10,7 +10,7 @@ namespace Services.Tests;
 public class EntitySerializerTests
 {
     private const long OneTwoThree = 123;
-    private readonly DateTime oneTwoThreeSecondsPastEpoch = new (1970, 1, 1, 0, 2, 3);
+    private readonly DateTime oneTwoThreeSecondsPastEpoch = new(1970, 1, 1, 0, 2, 3);
 
     [Fact]
     public void ConvertToStream_ShouldPass()

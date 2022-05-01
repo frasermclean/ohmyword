@@ -1,10 +1,9 @@
 ﻿using OhMyWord.Core.Models;
 
-namespace OhMyWord.Services.Models.Events;
+namespace OhMyWord.Services.Events;
 
 public class PlayerEventArgs : EventArgs
 {
-    private readonly Player player;
     public Player Player { get; }
     public int PlayerCount { get; }
 
