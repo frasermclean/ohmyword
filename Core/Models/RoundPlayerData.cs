@@ -1,4 +1,4 @@
-﻿namespace OhMyWord.Services.Models;
+﻿namespace OhMyWord.Core.Models;
 
 public record RoundPlayerData
 {

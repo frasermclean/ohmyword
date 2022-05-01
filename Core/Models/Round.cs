@@ -1,8 +1,7 @@
-﻿using OhMyWord.Core.Models;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Text.Json.Serialization;
 
-namespace OhMyWord.Services.Models;
+namespace OhMyWord.Core.Models;
 
 public class Round : IDisposable
 {

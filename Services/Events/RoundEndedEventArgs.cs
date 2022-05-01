@@ -1,4 +1,4 @@
-﻿using OhMyWord.Services.Models;
+﻿using OhMyWord.Core.Models;
 using OhMyWord.Services.Options;
 
 namespace OhMyWord.Services.Events;

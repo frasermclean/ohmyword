@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Options;
 using OhMyWord.Core.Models;
 using OhMyWord.Services.Events;
-using OhMyWord.Services.Models;
 using OhMyWord.Services.Options;
 
 namespace OhMyWord.Services.Game;
