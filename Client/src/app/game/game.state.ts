@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Action, Selector, State, StateContext, StateToken } from '@ngxs/store';
+import { GameService } from '../services/game.service';
 
 export interface GameStateModel {
   connected: boolean;
@@ -25,9 +26,7 @@ const GAME_STATE_TOKEN = new StateToken<GameStateModel>('game');
 })
 @Injectable()
 export class GameState {
-  constructor() {
-    console.log('GameState constructor');
-  }
+  constructor(private gameService: GameService) {}
 
   @Action(Connect)
   connect(context: StateContext<GameStateModel>) {
@@ -57,3 +56,5 @@ export class GameState {
     return state.roundNumber;
   }
 }
+
+
