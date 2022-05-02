@@ -1,4 +1,7 @@
 <div id="container">
+  <h1>Round Number: {{ roundNumber$ | async }}</h1>
+  <p>Connected: {{ connected$ | async }}</p>
+
   <div *ngIf="registered$ | async; else notRegistered" id="game-container">
     <ng-container *ngIf="roundActive$ | async; else roundEnded">
       <app-hint></app-hint>

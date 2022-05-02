@@ -14,6 +14,8 @@ import { msalInstance, guardConfig, interceptorConfig } from './auth-config';
 
 import { AppComponent } from './app.component';
 import { ToolbarComponent } from './toolbar/toolbar.component';
+import { NgxsModule } from '@ngxs/store';
+import { environment } from 'src/environments/environment';
 
 const routes: Routes = [
   { path: 'admin', loadChildren: () => import('./admin/admin.module').then((m) => m.AdminModule), canActivate: [MsalGuard] },
@@ -28,6 +30,9 @@ const routes: Routes = [
     BrowserAnimationsModule,
     HttpClientModule,
     RouterModule.forRoot(routes),
+    NgxsModule.forRoot([], { 
+      developmentMode: !environment.production
+    }),
     MatToolbarModule,
     MatButtonModule,
     MsalModule.forRoot(msalInstance, guardConfig, interceptorConfig),
