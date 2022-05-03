@@ -1,6 +1,9 @@
 <div id="container">
+  <div *ngIf="(hubConnection$ | async) === 'connecting'" id="connecting-container">
+    <mat-spinner color="accent"></mat-spinner>
+    <p>Connecting to server</p>
+  </div>
   <h1>Round Number: {{ roundNumber$ | async }}</h1>
-  <p>Connection State: {{ hubConnection$ | async | titlecase }}</p>
 
   <div *ngIf="registered$ | async; else notRegistered" id="game-container">
     <ng-container *ngIf="roundActive$ | async; else roundEnded">
@@ -16,5 +19,3 @@
     <h3>Not registered with the game server :(</h3>
   </ng-template>
 </div>
-
-<a routerLink="/admin">Admin</a>

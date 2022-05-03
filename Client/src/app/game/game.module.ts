@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { HintComponent } from './hint/hint.component';
 import { GuessComponent } from './guess/guess.component';
@@ -27,7 +28,8 @@ const routes: Routes = [{ path: '', component: GameContainerComponent }];
     CommonModule,
     RouterModule.forChild(routes),
     NgxsModule.forFeature([GameState]),
-    MatProgressBarModule
+    MatProgressBarModule,
+    MatProgressSpinnerModule
   ],
 })
 export class GameModule {}
