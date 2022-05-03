@@ -1,7 +1,8 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngxs/store';
+import { tap } from 'rxjs/operators';
 import { GameService } from 'src/app/services/game.service';
-import { Connect, Disconnect, GameState } from '../game.state';
+import { GameState, Hub } from '../game.state';
 
 @Component({
   selector: 'game-container',
@@ -12,21 +13,20 @@ export class GameContainerComponent implements OnInit, OnDestroy {
   registered$ = this.gameService.registered$;
   roundActive$ = this.gameService.roundActive$;
   expiry$ = this.gameService.expiry$;
-  connected$ = this.store.select(GameState.connected);
+  hubConnection$ = this.store.select(GameState.hubConnection);
   roundNumber$ = this.store.select(GameState.roundNumber);
 
   constructor(private gameService: GameService, private store: Store) {}
 
   ngOnInit(): void {
-    this.gameService.registerPlayer();
+    //this.gameService.registerPlayer();
+    this.store.dispatch(new Hub.Connect());
 
-    setTimeout(() => {
-      this.store.dispatch(new Connect());
-    }, 1000);
+    this.hubConnection$.pipe(tap(value => console.log('hubConnection', value))).subscribe();
   }
 
   ngOnDestroy(): void {
     this.gameService.disconnectAndReset();
-    this.store.dispatch(new Disconnect());
+    this.store.dispatch(new Hub.Disconnect());
   }
 }

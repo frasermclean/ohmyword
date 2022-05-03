@@ -1,6 +1,6 @@
 <div id="container">
   <h1>Round Number: {{ roundNumber$ | async }}</h1>
-  <p>Connected: {{ connected$ | async }}</p>
+  <p>Connection State: {{ hubConnection$ | async | titlecase }}</p>
 
   <div *ngIf="registered$ | async; else notRegistered" id="game-container">
     <ng-container *ngIf="roundActive$ | async; else roundEnded">
@@ -16,3 +16,5 @@
     <h3>Not registered with the game server :(</h3>
   </ng-template>
 </div>
+
+<a routerLink="/admin">Admin</a>

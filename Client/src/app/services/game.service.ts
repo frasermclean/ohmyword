@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Subject } from 'rxjs';
+import { BehaviorSubject, from, Subject } from 'rxjs';
 import { HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
 
 import { environment } from 'src/environments/environment';
@@ -16,6 +16,8 @@ import { LetterHint } from '../models/letter-hint';
 import { RoundStartResponse } from '../models/responses/round-start.response';
 import { RoundEndResponse } from '../models/responses/round-end.response';
 import { RoundEnd } from '../models/round-end';
+import { Store } from '@ngxs/store';
+import { Hub } from '../game/game.state';
 
 @Injectable({
   providedIn: 'root',
@@ -72,13 +74,37 @@ export class GameService {
     this.guessSubject.next(value);
   }
 
-  constructor(private fingerprintService: FingerprintService, private soundService: SoundService) {}
+  constructor(
+    private fingerprintService: FingerprintService,
+    private soundService: SoundService,
+    private store: Store
+  ) {
+    // register callback for connection closed error
+    this.hubConnection.onclose((error) => {
+      if (error) console.error(error);
+      this.registeredSubject.next(false);
+      this.store.dispatch(new Hub.Disconnected(error));
+    });
+
+    // register game callbacks
+    this.hubConnection.on('SendRoundStarted', (response) => this.onRoundStart(response));
+    this.hubConnection.on('SendRoundEnded', (response) => this.onRoundEnd(response));
+    this.hubConnection.on('SendLetterHint', (response: LetterHintResponse) => {
+      this.letterHintSubject.next(new LetterHint(response));
+    });
+  }
+
+  /**
+   * Connect to game hub (if not already connected)
+   */
+  public connect = () => this.hubConnection.start();
+
+  public disconnect = () => this.hubConnection.stop();
 
   /**
    * Attempt to register with game service.
    */
   async registerPlayer() {
-    await this.initialize();
     const visitorId = await this.fingerprintService.getVisitorId();
     const response = await this.hubConnection.invoke<RegisterPlayerResponse>('RegisterPlayer', visitorId);
 
@@ -117,28 +143,6 @@ export class GameService {
     this.guess = '';
 
     return response;
-  }
-
-  /**
-   * Initialize connection to game hub (if not already connected)
-   */
-  private async initialize() {
-    if (this.hubConnection.state === HubConnectionState.Disconnected) {
-      // register callback for connection closed error
-      this.hubConnection.onclose((error) => {
-        if (error) console.error(error);
-        this.registeredSubject.next(false);
-      });
-
-      // register game callbacks
-      this.hubConnection.on('SendRoundStarted', (response) => this.onRoundStart(response));
-      this.hubConnection.on('SendRoundEnded', (response) => this.onRoundEnd(response));
-      this.hubConnection.on('SendLetterHint', (response: LetterHintResponse) => {
-        this.letterHintSubject.next(new LetterHint(response));
-      });
-
-      await this.hubConnection.start();
-    }
   }
 
   /**
