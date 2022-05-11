@@ -1,6 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngxs/store';
-import { GameService } from 'src/app/services/game.service';
 import { GameState } from '../game.state';
 import { Hub, HubState } from '../hub.state';
 
@@ -16,7 +15,7 @@ export class GameContainerComponent implements OnInit, OnDestroy {
   connectionState$ = this.store.select(HubState.connectionState);
   roundNumber$ = this.store.select(GameState.roundNumber);
 
-  constructor(private gameService: GameService, private store: Store) {}
+  constructor(private store: Store) {}
 
   ngOnInit(): void {
     this.store.dispatch(new Hub.Connect());

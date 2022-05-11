@@ -1,6 +1,6 @@
 <ng-container *ngIf="wordHint$ | async as wordHint">
   <div id="letters-container">
-    <app-letter *ngFor="let data of letterData; index as i" [data]="data" [position]="i + 1"></app-letter>
+    <app-letter *ngFor="let char of wordHint.letterHints; index as i" [hintChar]="char" [index]="i"></app-letter>
   </div>
 
   <p>{{ wordHint.definition }}</p>

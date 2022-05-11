@@ -31,21 +31,7 @@ export class GameService {
   private readonly roundEndSubject = new BehaviorSubject<RoundEnd | null>(null);
   public get roundEnd$() {
     return this.roundEndSubject.asObservable();
-  }
-
-  private guessSubject = new BehaviorSubject<string>('');
-  public get guess$() {
-    return this.guessSubject.asObservable();
-  }
-
-  public get guess() {
-    return this.guessSubject.value;
-  }
-
-  public set guess(value: string) {
-    // if (value.length > this.wordHintSubject.value.length) return;
-    this.guessSubject.next(value);
-  }
+  }  
 
   constructor(
     private fingerprintService: FingerprintService,
@@ -110,19 +96,16 @@ export class GameService {
     //   return;
     // }
 
-    const response = await this.hubConnection.invoke<GuessResponse>('SubmitGuess', {
-      playerId: this.playerId,
-      roundId: this.roundId,
-      value: this.guessSubject.value,
-    });
+    // const response = await this.hubConnection.invoke<GuessResponse>('SubmitGuess', {
+    //   playerId: this.playerId,
+    //   roundId: this.roundId,
+    //   value: this.guessSubject.value,
+    // });
 
-    // play sound to indicate correct / incorrect
-    const sprite = response.correct ? SoundSprite.Correct : SoundSprite.Incorrect;
-    this.soundService.play(sprite);
+    // // play sound to indicate correct / incorrect
+    // const sprite = response.correct ? SoundSprite.Correct : SoundSprite.Incorrect;
+    // this.soundService.play(sprite);
 
-    // reset guess
-    this.guess = '';
-
-    return response;
+    // return response;
   }
 }

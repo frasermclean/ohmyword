@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { Action, Selector, State, StateContext, StateToken } from '@ngxs/store';
-import { LetterHint } from '../models/letter-hint';
 import { LetterHintResponse } from '../models/responses/letter-hint.response';
 import { RegisterPlayerResponse } from '../models/responses/register-player.response';
 import { RoundEndResponse } from '../models/responses/round-end.response';

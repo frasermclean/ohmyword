@@ -1,6 +1,7 @@
 import { Component, EventEmitter, HostListener, OnInit, Output } from '@angular/core';
-import { GameService } from 'src/app/services/game.service';
 import { GuessResponse } from 'src/app/models/responses/guess.response';
+import { Store } from '@ngxs/store';
+import { Guess } from '../guess.state';
 
 @Component({
   selector: 'app-guess',
@@ -29,20 +30,19 @@ export class GuessComponent implements OnInit {
     }
   }
 
-  constructor(private gameService: GameService) {}
+  constructor(private store: Store) {}
 
   ngOnInit(): void {}
 
   addCharToGuess(char: string) {
-    this.gameService.guess += char;
+    this.store.dispatch(new Guess.Append(char));
   }
 
   deleteCharFromGuess() {
-    if (this.gameService.guess.length === 0) return;
-    this.gameService.guess = this.gameService.guess.slice(0, -1);
+    this.store.dispatch(new Guess.Backspace());
   }
 
   submitGuess() {
-    this.gameService.submitGuess();
+    this.store.dispatch(new Guess.Submit());
   }
 }
