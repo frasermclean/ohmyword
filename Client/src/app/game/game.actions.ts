@@ -2,7 +2,7 @@ import { LetterHintResponse } from '../models/responses/letter-hint.response';
 import { RegisterPlayerResponse } from '../models/responses/register-player.response';
 import { RoundEndResponse } from '../models/responses/round-end.response';
 import { RoundStartResponse } from '../models/responses/round-start.response';
-import { WordHint } from '../models/word-hint';
+import { WordHint } from '../models/word-hint.model';
 
 /**
  * Hub actions and events
