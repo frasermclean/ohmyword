@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, from, Subject } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
 
 import { environment } from 'src/environments/environment';
@@ -7,12 +7,9 @@ import { environment } from 'src/environments/environment';
 import { RegisterPlayerResponse } from '../models/responses/register-player.response';
 import { GuessResponse } from '../models/responses/guess.response';
 
-import { WordHint } from '../models/word-hint';
-
 import { FingerprintService } from './fingerprint.service';
 import { SoundService, SoundSprite } from './sound.service';
 import { LetterHintResponse } from '../models/responses/letter-hint.response';
-import { LetterHint } from '../models/letter-hint';
 import { RoundStartResponse } from '../models/responses/round-start.response';
 import { RoundEndResponse } from '../models/responses/round-end.response';
 import { RoundEnd } from '../models/round-end';
@@ -31,16 +28,6 @@ export class GameService {
     .configureLogging(environment.production ? LogLevel.Error : LogLevel.Information)
     .build();
 
-  private readonly wordHintSubject = new BehaviorSubject<WordHint>(WordHint.default);
-  public get wordHint$() {
-    return this.wordHintSubject.asObservable();
-  }
-
-  private readonly letterHintSubject = new Subject<LetterHint>();
-  public get letterHint$() {
-    return this.letterHintSubject.asObservable();
-  }
-
   private readonly roundEndSubject = new BehaviorSubject<RoundEnd | null>(null);
   public get roundEnd$() {
     return this.roundEndSubject.asObservable();
@@ -56,7 +43,7 @@ export class GameService {
   }
 
   public set guess(value: string) {
-    if (value.length > this.wordHintSubject.value.length) return;
+    // if (value.length > this.wordHintSubject.value.length) return;
     this.guessSubject.next(value);
   }
 
@@ -74,7 +61,7 @@ export class GameService {
       this.store.dispatch(new Game.RoundEnded(response))
     );
     this.hubConnection.on('SendLetterHint', (response: LetterHintResponse) => {
-      this.letterHintSubject.next(new LetterHint(response));
+      this.store.dispatch(new Game.LetterHintReceived(response));
     });
   }
 
@@ -110,24 +97,18 @@ export class GameService {
   /**
    * Attempt to register with game service.
    */
-  async registerPlayer() {
+  public async registerPlayer() {
     const visitorId = await this.fingerprintService.getVisitorId();
     const response = await this.hubConnection.invoke<RegisterPlayerResponse>('RegisterPlayer', visitorId);
     this.store.dispatch(new Game.PlayerRegistered(response));
-
-    this.playerId = response.playerId;
-
-    if (response.wordHint) {
-      this.wordHintSubject.next(new WordHint(response.wordHint));
-    }
   }
 
   public async submitGuess() {
     // check for mismatched length
-    if (this.guessSubject.value.length !== this.wordHintSubject.value.length) {
-      this.soundService.play(SoundSprite.Incorrect);
-      return;
-    }
+    // if (this.guessSubject.value.length !== this.wordHintSubject.value.length) {
+    //   this.soundService.play(SoundSprite.Incorrect);
+    //   return;
+    // }
 
     const response = await this.hubConnection.invoke<GuessResponse>('SubmitGuess', {
       playerId: this.playerId,

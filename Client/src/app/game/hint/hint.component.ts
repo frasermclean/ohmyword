@@ -1,7 +1,9 @@
-import { Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Store } from '@ngxs/store';
 import { Subscription } from 'rxjs';
-import { WordHint } from 'src/app/models/word-hint';
+import { tap } from 'rxjs/operators';
 import { GameService } from 'src/app/services/game.service';
+import { GameState } from '../game.state';
 
 export interface LetterData {
   hint: string | null;
@@ -14,39 +16,31 @@ export interface LetterData {
   styleUrls: ['./hint.component.scss'],
 })
 export class HintComponent implements OnInit, OnDestroy {
-  wordHint = WordHint.default;
-  letters: LetterData[] = [];
-  wordHintSubscription: Subscription = null!;
-  letterHintSubscription: Subscription = null!;
-  guessSubscription: Subscription = null!;
-
-  constructor(private gameService: GameService) {}
-
-  ngOnInit(): void {
-    this.wordHintSubscription = this.gameService.wordHint$.subscribe((wordHint) => {
-      this.wordHint = wordHint;
-      for (let i = 1; i <= wordHint.length; i++) {
-        this.letters.push({
-          hint: wordHint.letters.find((letterHint) => letterHint.position === i)?.value ?? null,
+  wordHint$ = this.store.select(GameState.wordHint).pipe(
+    tap((wordHint) => {
+      this.letterData = [];
+      for (let i = 0; i < wordHint.length; i++) {
+        this.letterData.push({
+          hint: wordHint.letterHints[i] || null,
           guess: null,
         });
       }
-    });
+    })
+  );
+  letterData: LetterData[] = [];
+  guessSubscription: Subscription = null!;
 
-    this.letterHintSubscription = this.gameService.letterHint$.subscribe((letterHint) => {
-      this.letters[letterHint.position - 1].hint = letterHint.value;
-    });
+  constructor(private gameService: GameService, private store: Store) {}
 
+  ngOnInit(): void {
     this.guessSubscription = this.gameService.guess$.subscribe((guess) => {
-      this.letters.forEach((letter, i) => {
+      this.letterData.forEach((letter, i) => {
         letter.guess = guess[i] || null;
       });
     });
   }
 
   ngOnDestroy(): void {
-    this.wordHintSubscription.unsubscribe();
-    this.letterHintSubscription.unsubscribe();
     this.guessSubscription.unsubscribe();
   }
 }

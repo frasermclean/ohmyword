@@ -1,8 +1,11 @@
 import { Injectable } from '@angular/core';
 import { Action, Selector, State, StateContext, StateToken } from '@ngxs/store';
+import { LetterHint } from '../models/letter-hint';
+import { LetterHintResponse } from '../models/responses/letter-hint.response';
 import { RegisterPlayerResponse } from '../models/responses/register-player.response';
 import { RoundEndResponse } from '../models/responses/round-end.response';
 import { RoundStartResponse } from '../models/responses/round-start.response';
+import { WordHint } from '../models/word-hint';
 import { GameService } from '../services/game.service';
 import { Hub } from './hub.state';
 
@@ -13,6 +16,7 @@ export interface GameStateModel {
   roundActive: boolean;
   roundNumber: number;
   expiry: Date;
+  wordHint: WordHint;
 }
 
 export namespace Game {
@@ -24,6 +28,7 @@ export namespace Game {
     roundActive = this.response.roundActive;
     roundNumber = this.response.roundNumber;
     expiry = new Date(this.response.expiry);
+    wordHint = this.response.wordHint ? new WordHint(this.response.wordHint) : WordHint.default;
 
     constructor(private response: RegisterPlayerResponse) {}
   }
@@ -48,6 +53,15 @@ export namespace Game {
 
     constructor(private response: RoundEndResponse) {}
   }
+
+  export class LetterHintReceived {
+    static readonly type = '[Game Service] Game.LetterHintReceived';
+
+    position = this.response.position;
+    value = this.response.value;
+
+    constructor(private response: LetterHintResponse) {}
+  }
 }
 
 const GAME_STATE_TOKEN = new StateToken<GameStateModel>('game');
@@ -61,6 +75,7 @@ const GAME_STATE_TOKEN = new StateToken<GameStateModel>('game');
     roundActive: false,
     roundNumber: 0,
     expiry: new Date(),
+    wordHint: WordHint.default,
   },
 })
 @Injectable()
@@ -76,6 +91,7 @@ export class GameState {
       roundActive: action.roundActive,
       roundNumber: action.roundNumber,
       expiry: action.expiry,
+      wordHint: action.wordHint,
     });
   }
 
@@ -85,6 +101,7 @@ export class GameState {
       roundActive: true,
       roundNumber: action.roundNumber,
       expiry: new Date(action.roundEnds),
+      wordHint: new WordHint(action.wordHint),
     });
   }
 
@@ -93,6 +110,21 @@ export class GameState {
     context.patchState({
       roundActive: false,
       expiry: new Date(action.nextRoundStart),
+      wordHint: WordHint.default,
+    });
+  }
+
+  @Action(Game.LetterHintReceived)
+  letterHintReceived(context: StateContext<GameStateModel>, action: Game.LetterHintReceived) {
+    const state = context.getState();
+    const letterHints = [...state.wordHint.letterHints];
+    letterHints[action.position - 1] = action.value;
+    context.setState({
+      ...state,
+      wordHint: {
+        ...state.wordHint,
+        letterHints,
+      },
     });
   }
 
@@ -122,5 +154,10 @@ export class GameState {
   @Selector([GAME_STATE_TOKEN])
   static expiry(state: GameStateModel) {
     return state.expiry;
+  }
+
+  @Selector([GAME_STATE_TOKEN])
+  static wordHint(state: GameStateModel) {
+    return state.wordHint;
   }
 }
