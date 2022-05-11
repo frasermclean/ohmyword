@@ -4,6 +4,7 @@ import { RegisterPlayerResponse } from '../models/responses/register-player.resp
 import { RoundEndResponse } from '../models/responses/round-end.response';
 import { RoundStartResponse } from '../models/responses/round-start.response';
 import { GameService } from '../services/game.service';
+import { Hub } from './hub.state';
 
 export interface GameStateModel {
   registered: boolean;
@@ -17,7 +18,7 @@ export interface GameStateModel {
 export namespace Game {
   export class PlayerRegistered {
     static readonly type = '[Game Service] Game.PlayerRegistered';
-    
+
     playerId = this.response.playerId;
     playerCount = this.response.playerCount;
     roundActive = this.response.roundActive;
@@ -38,7 +39,7 @@ export namespace Game {
     constructor(private response: RoundStartResponse) {}
   }
 
-  export class RoundEnded  {
+  export class RoundEnded {
     static readonly type = '[Game Service] Game.RoundEnded';
 
     roundId = this.response.roundId;
@@ -48,7 +49,6 @@ export namespace Game {
     constructor(private response: RoundEndResponse) {}
   }
 }
-
 
 const GAME_STATE_TOKEN = new StateToken<GameStateModel>('game');
 
@@ -85,7 +85,7 @@ export class GameState {
       roundActive: true,
       roundNumber: action.roundNumber,
       expiry: new Date(action.roundEnds),
-    })
+    });
   }
 
   @Action(Game.RoundEnded)
@@ -93,7 +93,15 @@ export class GameState {
     context.patchState({
       roundActive: false,
       expiry: new Date(action.nextRoundStart),
-    })
+    });
+  }
+
+  @Action(Hub.Disconnected)
+  disconnected(context: StateContext<GameStateModel>) {
+    context.patchState({
+      registered: false,
+      playerId: '',
+    });
   }
 
   @Selector([GAME_STATE_TOKEN])
