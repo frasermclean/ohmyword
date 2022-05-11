@@ -31,11 +31,7 @@ export class GameService {
     return this.roundEndSubject.asObservable();
   }
 
-  constructor(
-    private fingerprintService: FingerprintService,
-    private soundService: SoundService,
-    private store: Store
-  ) {
+  constructor(private fingerprintService: FingerprintService, private store: Store) {
     // register callbacks
     this.hubConnection.onclose((error) => this.store.dispatch(new Hub.Disconnected(error)));
     this.hubConnection.on('SendRoundStarted', (response: RoundStartResponse) =>
@@ -87,24 +83,19 @@ export class GameService {
     this.store.dispatch(new Game.PlayerRegistered(response));
   }
 
+  /**
+   * Submit to word guess to be evaluated by the game server.
+   * @param playerId The local player ID.
+   * @param roundId The current round ID.
+   * @param value The value of the guess to submit.
+   */
   public async submitGuess(playerId: string, roundId: string, value: string) {
-    //check for mismatched length
-    // if (this.guessSubject.value.length !== this.wordHintSubject.value.length) {
-    //   this.soundService.play(SoundSprite.Incorrect);
-    //   return;
-    // }
     const response = await this.hubConnection.invoke<GuessResponse>('SubmitGuess', {
       playerId,
       roundId,
       value,
     });
 
-    this.store.dispatch(response.correct ? new Guess.Succeeded : new Guess.Failed)
-
-    
-    // play sound to indicate correct / incorrect
-    // const sprite = response.correct ? SoundSprite.Correct : SoundSprite.Incorrect;
-    // this.soundService.play(sprite);
-    // return response;
+    this.store.dispatch(response.correct ? new Guess.Succeeded(response.points) : new Guess.Failed());
   }
 }

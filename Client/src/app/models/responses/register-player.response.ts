@@ -8,4 +8,5 @@ export interface RegisterPlayerResponse {
   wordHint: WordHintResponse | null;
   playerCount: number;
   expiry: string;
+  score: number;
 }

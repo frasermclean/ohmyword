@@ -1,8 +1,8 @@
-import { LetterHintResponse } from "../models/responses/letter-hint.response";
-import { RegisterPlayerResponse } from "../models/responses/register-player.response";
-import { RoundEndResponse } from "../models/responses/round-end.response";
-import { RoundStartResponse } from "../models/responses/round-start.response";
-import { WordHint } from "../models/word-hint";
+import { LetterHintResponse } from '../models/responses/letter-hint.response';
+import { RegisterPlayerResponse } from '../models/responses/register-player.response';
+import { RoundEndResponse } from '../models/responses/round-end.response';
+import { RoundStartResponse } from '../models/responses/round-start.response';
+import { WordHint } from '../models/word-hint';
 
 /**
  * Hub actions and events
@@ -33,7 +33,7 @@ export namespace Hub {
 /**
  * Game actions and events
  */
- export namespace Game {
+export namespace Game {
   export class PlayerRegistered {
     static readonly type = '[Game Service] Game.PlayerRegistered';
 
@@ -44,6 +44,7 @@ export namespace Hub {
     roundId = this.response.roundId;
     expiry = new Date(this.response.expiry);
     wordHint = this.response.wordHint ? new WordHint(this.response.wordHint) : WordHint.default;
+    score = this.response.score;
 
     constructor(private response: RegisterPlayerResponse) {}
   }
@@ -98,6 +99,7 @@ export namespace Guess {
 
   export class Succeeded {
     static readonly type = '[Guess Component] Guess.Succeeded';
+    constructor(public points: number) {}
   }
 
   export class Failed {

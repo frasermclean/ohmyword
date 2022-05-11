@@ -3,6 +3,7 @@ import { HubConnectionState } from '@microsoft/signalr';
 import { Action, Selector, State, StateContext, StateToken } from '@ngxs/store';
 import { WordHint } from '../models/word-hint';
 import { GameService } from '../services/game.service';
+import { SoundService } from '../services/sound.service';
 import { Game, Guess, Hub } from './game.actions';
 
 interface GameStateModel {
@@ -16,6 +17,7 @@ interface GameStateModel {
   };
   expiry: Date;
   wordHint: WordHint;
+  score: number;
   hub: {
     connectionState: HubConnectionState;
     error: any;
@@ -43,6 +45,7 @@ export const GUESS_DEFAULT_CHAR = '_';
     },
     expiry: new Date(),
     wordHint: WordHint.default,
+    score: 0,
     hub: {
       connectionState: HubConnectionState.Disconnected,
       error: null,
@@ -56,7 +59,7 @@ export const GUESS_DEFAULT_CHAR = '_';
 })
 @Injectable()
 export class GameState {
-  constructor(private gameService: GameService) {}
+  constructor(private gameService: GameService, private soundService: SoundService) {}
 
   @Action(Game.PlayerRegistered)
   registered(context: StateContext<GameStateModel>, action: Game.PlayerRegistered) {
@@ -71,6 +74,7 @@ export class GameState {
       },
       expiry: action.expiry,
       wordHint: action.wordHint,
+      score: action.score,
     });
   }
 
@@ -217,6 +221,18 @@ export class GameState {
     this.gameService.submitGuess(state.playerId, state.round.id, state.guess.value);
   }
 
+  @Action(Guess.Succeeded)
+  guessSucceeded(context: StateContext<GameStateModel>, action: Guess.Succeeded) {
+    const state = context.getState();
+    context.patchState({ score: state.score + action.points });
+    this.soundService.playCorrect();
+  }
+
+  @Action(Guess.Failed)
+  guessFailed() {
+    this.soundService.playIncorrect();
+  }
+
   @Selector([GAME_STATE_TOKEN])
   static connectionState(state: GameStateModel) {
     return state.hub.connectionState;
@@ -245,6 +261,11 @@ export class GameState {
   @Selector([GAME_STATE_TOKEN])
   static wordHint(state: GameStateModel) {
     return state.wordHint;
+  }
+
+  @Selector([GAME_STATE_TOKEN])
+  static score(state: GameStateModel) {
+    return state.score;
   }
 
   @Selector([GAME_STATE_TOKEN])
