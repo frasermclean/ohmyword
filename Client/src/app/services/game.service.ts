@@ -1,18 +1,15 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
 import { HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
 
 import { environment } from 'src/environments/environment';
+import { FingerprintService } from './fingerprint.service';
 
 import { RegisterPlayerResponse } from '../models/responses/register-player.response';
 import { GuessResponse } from '../models/responses/guess.response';
-
-import { FingerprintService } from './fingerprint.service';
-import { SoundService, SoundSprite } from './sound.service';
 import { LetterHintResponse } from '../models/responses/letter-hint.response';
 import { RoundStartResponse } from '../models/responses/round-start.response';
 import { RoundEndResponse } from '../models/responses/round-end.response';
-import { RoundEnd } from '../models/round-end';
+
 import { Store } from '@ngxs/store';
 
 import { Game, Guess, Hub } from '../game/game.actions';
@@ -25,11 +22,6 @@ export class GameService {
     .withUrl(environment.api.hubUrl)
     .configureLogging(environment.production ? LogLevel.Error : LogLevel.Information)
     .build();
-
-  private readonly roundEndSubject = new BehaviorSubject<RoundEnd | null>(null);
-  public get roundEnd$() {
-    return this.roundEndSubject.asObservable();
-  }
 
   constructor(private fingerprintService: FingerprintService, private store: Store) {
     // register callbacks

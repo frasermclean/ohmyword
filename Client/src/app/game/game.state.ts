@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HubConnectionState } from '@microsoft/signalr';
 import { Action, Selector, State, StateContext, StateToken } from '@ngxs/store';
+import { RoundEndSummary } from '../models/round-end-summary.model';
 import { WordHint } from '../models/word-hint';
 import { GameService } from '../services/game.service';
 import { SoundService } from '../services/sound.service';
@@ -14,6 +15,7 @@ interface GameStateModel {
     active: boolean;
     number: number;
     id: string;
+    endSummary: RoundEndSummary | null;
   };
   expiry: Date;
   wordHint: WordHint;
@@ -42,6 +44,7 @@ export const GUESS_DEFAULT_CHAR = '_';
       active: false,
       number: 0,
       id: '',
+      endSummary: null,
     },
     expiry: new Date(),
     wordHint: WordHint.default,
@@ -71,6 +74,7 @@ export class GameState {
         active: action.roundActive,
         number: action.roundNumber,
         id: action.roundId,
+        endSummary: null,
       },
       expiry: action.expiry,
       wordHint: action.wordHint,
@@ -85,6 +89,7 @@ export class GameState {
         active: true,
         number: action.roundNumber,
         id: action.roundId,
+        endSummary: null,
       },
       expiry: new Date(action.roundEnds),
       wordHint: new WordHint(action.wordHint),
@@ -104,6 +109,7 @@ export class GameState {
         ...state.round,
         active: false,
         id: '',
+        endSummary: new RoundEndSummary(action.word),
       },
       expiry: new Date(action.nextRoundStart),
       wordHint: WordHint.default,
@@ -251,6 +257,11 @@ export class GameState {
   @Selector([GAME_STATE_TOKEN])
   static roundNumber(state: GameStateModel) {
     return state.round.number;
+  }
+
+  @Selector([GAME_STATE_TOKEN])
+  static roundEndSummary(state: GameStateModel) {
+    return state.round.endSummary;
   }
 
   @Selector([GAME_STATE_TOKEN])

@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { GameService } from 'src/app/services/game.service';
+import { Store } from '@ngxs/store';
+import { GameState } from '../game.state';
 
 @Component({
   selector: 'app-round-end-summary',
@@ -7,8 +8,8 @@ import { GameService } from 'src/app/services/game.service';
   styleUrls: ['./round-end-summary.component.scss'],
 })
 export class RoundEndSummaryComponent implements OnInit {
-  roundEnd$ = this.gameService.roundEnd$;
-  constructor(private gameService: GameService) {}
+  summary$ = this.store.select(GameState.roundEndSummary);
+  constructor(private store: Store) {}
 
   ngOnInit(): void {}
 }
