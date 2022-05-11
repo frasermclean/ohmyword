@@ -12,6 +12,7 @@ import { RoundEndSummaryComponent } from './round-end-summary/round-end-summary.
 import { RouterModule, Routes } from '@angular/router';
 import { NgxsModule } from '@ngxs/store';
 import { GameState } from './game.state';
+import { HubState } from './hub.state';
 
 const routes: Routes = [{ path: '', component: GameContainerComponent }];
 
@@ -27,9 +28,9 @@ const routes: Routes = [{ path: '', component: GameContainerComponent }];
   imports: [
     CommonModule,
     RouterModule.forChild(routes),
-    NgxsModule.forFeature([GameState]),
+    NgxsModule.forFeature([HubState, GameState]),
     MatProgressBarModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
   ],
 })
 export class GameModule {}

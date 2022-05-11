@@ -17,7 +17,8 @@ import { RoundStartResponse } from '../models/responses/round-start.response';
 import { RoundEndResponse } from '../models/responses/round-end.response';
 import { RoundEnd } from '../models/round-end';
 import { Store } from '@ngxs/store';
-import { GameHub, Player, Round } from '../game/game.state';
+import { Game } from '../game/game.state';
+import { Hub } from '../game/hub.state';
 
 @Injectable({
   providedIn: 'root',
@@ -65,9 +66,13 @@ export class GameService {
     private store: Store
   ) {
     // register callbacks
-    this.hubConnection.onclose((error) => this.store.dispatch(new GameHub.Disconnected(error)));
-    this.hubConnection.on('SendRoundStarted', (response: RoundStartResponse) => this.store.dispatch(new Round.Started(response)));
-    this.hubConnection.on('SendRoundEnded', (response: RoundEndResponse) => this.store.dispatch(new Round.Ended(response)));
+    this.hubConnection.onclose((error) => this.store.dispatch(new Hub.Disconnected(error)));
+    this.hubConnection.on('SendRoundStarted', (response: RoundStartResponse) =>
+      this.store.dispatch(new Game.RoundStarted(response))
+    );
+    this.hubConnection.on('SendRoundEnded', (response: RoundEndResponse) =>
+      this.store.dispatch(new Game.RoundEnded(response))
+    );
     this.hubConnection.on('SendLetterHint', (response: LetterHintResponse) => {
       this.letterHintSubject.next(new LetterHint(response));
     });
@@ -77,15 +82,30 @@ export class GameService {
    * Connect to game hub (if not already connected)
    */
   public async connect() {
+    if (this.hubConnection.state !== HubConnectionState.Disconnected) {
+      console.warn('Invalid hub connection state to perform connect:', this.hubConnection.state);
+      return;
+    }
+
     try {
       await this.hubConnection.start();
-      this.store.dispatch(new GameHub.Connected())
+      this.store.dispatch(new Hub.Connected());
     } catch (error) {
-      this.store.dispatch(new GameHub.ConnectFailed(error));
+      this.store.dispatch(new Hub.ConnectFailed(error));
     }
-  } 
+  }
 
-  public disconnect = () => this.hubConnection.stop();
+  /**
+   * Disconnect from game hub
+   */
+  public disconnect() {
+    if (this.hubConnection.state !== HubConnectionState.Connected) {
+      console.warn('Invalid hub connection state to perform disconnect:', this.hubConnection.state);
+      return;
+    }
+
+    this.hubConnection.stop();
+  }
 
   /**
    * Attempt to register with game service.
@@ -93,7 +113,7 @@ export class GameService {
   async registerPlayer() {
     const visitorId = await this.fingerprintService.getVisitorId();
     const response = await this.hubConnection.invoke<RegisterPlayerResponse>('RegisterPlayer', visitorId);
-    this.store.dispatch(new Player.Registered(response));
+    this.store.dispatch(new Game.PlayerRegistered(response));
 
     this.playerId = response.playerId;
 

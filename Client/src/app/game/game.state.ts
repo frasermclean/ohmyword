@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { HubConnectionState } from '@microsoft/signalr';
 import { Action, Selector, State, StateContext, StateToken } from '@ngxs/store';
 import { RegisterPlayerResponse } from '../models/responses/register-player.response';
 import { RoundEndResponse } from '../models/responses/round-end.response';
@@ -7,50 +6,29 @@ import { RoundStartResponse } from '../models/responses/round-start.response';
 import { GameService } from '../services/game.service';
 
 export interface GameStateModel {
-  hubConnection: HubConnectionState;
   registered: boolean;
   playerId: string;
   playerCount: number;
   roundActive: boolean;
   roundNumber: number;
   expiry: Date;
-  error: any;
 }
 
-export namespace GameHub {
-  export class Connect {
-    static readonly type = '[Game Container] GameHub.Connect';
+export namespace Game {
+  export class PlayerRegistered {
+    static readonly type = '[Game Service] Game.PlayerRegistered';
+    
+    playerId = this.response.playerId;
+    playerCount = this.response.playerCount;
+    roundActive = this.response.roundActive;
+    roundNumber = this.response.roundNumber;
+    expiry = new Date(this.response.expiry);
+
+    constructor(private response: RegisterPlayerResponse) {}
   }
 
-  export class Disconnect {
-    static readonly type = '[Game Container] GameHub.Disconnect';
-  }
-
-  export class Connected {
-    static readonly type = '[Game Service] GameHub.Connected';
-  }
-
-  export class Disconnected {
-    static readonly type = '[Game Service] GameHub.Disconnected';
-    constructor(public error?: Error) {}
-  }
-
-  export class ConnectFailed {
-    static readonly type = '[Game Service] GameHub.ConnectFailed';
-    constructor(public error?: any) {}
-  }
-}
-
-export namespace Player {
-  export class Registered {
-    static readonly type = '[Game Service] Player.Registered';
-    constructor(public response: RegisterPlayerResponse) {}
-  }
-}
-
-export namespace Round {
-  export class Started implements RoundStartResponse {
-    static readonly type = '[Game Service] Round.Started';
+  export class RoundStarted implements RoundStartResponse {
+    static readonly type = '[Game Service] Game.RoundStarted';
 
     roundId = this.response.roundId;
     roundNumber = this.response.roundNumber;
@@ -60,8 +38,8 @@ export namespace Round {
     constructor(private response: RoundStartResponse) {}
   }
 
-  export class Ended  {
-    static readonly type = '[Game Service] Round.Ended';
+  export class RoundEnded  {
+    static readonly type = '[Game Service] Game.RoundEnded';
 
     roundId = this.response.roundId;
     nextRoundStart = new Date(this.response.nextRoundStart);
@@ -77,70 +55,32 @@ const GAME_STATE_TOKEN = new StateToken<GameStateModel>('game');
 @State<GameStateModel>({
   name: GAME_STATE_TOKEN,
   defaults: {
-    hubConnection: HubConnectionState.Disconnected,
     registered: false,
     playerId: '',
     playerCount: 0,
     roundActive: false,
     roundNumber: 0,
     expiry: new Date(),
-    error: null,
   },
 })
 @Injectable()
 export class GameState {
   constructor(private gameService: GameService) {}
 
-  @Action(GameHub.Connect)
-  connect(context: StateContext<GameStateModel>) {
-    context.patchState({ hubConnection: HubConnectionState.Connecting });
-    this.gameService.connect();
-  }
-
-  @Action(GameHub.Disconnect)
-  disconnect(context: StateContext<GameStateModel>) {
-    context.patchState({ hubConnection: HubConnectionState.Disconnecting });
-    this.gameService.disconnect();
-  }
-
-  @Action(GameHub.Connected)
-  connected(context: StateContext<GameStateModel>) {
-    context.patchState({ hubConnection: HubConnectionState.Connected });
-    this.gameService.registerPlayer();
-  }
-
-  @Action(GameHub.Disconnected)
-  disconnected(context: StateContext<GameStateModel>, action: GameHub.Disconnected) {
-    context.patchState({
-      hubConnection: HubConnectionState.Disconnected,
-      registered: false,
-      error: action.error,
-    });
-  }
-
-  @Action(GameHub.ConnectFailed)
-  connectionError(context: StateContext<GameStateModel>, action: GameHub.ConnectFailed) {
-    context.patchState({
-      hubConnection: HubConnectionState.Disconnected,
-      error: action.error,
-      registered: false,
-    });
-  }
-
-  @Action(Player.Registered)
-  registered(context: StateContext<GameStateModel>, action: Player.Registered) {
+  @Action(Game.PlayerRegistered)
+  registered(context: StateContext<GameStateModel>, action: Game.PlayerRegistered) {
     context.patchState({
       registered: true,
-      playerId: action.response.playerId,
-      playerCount: action.response.playerCount,
-      roundActive: action.response.roundActive,
-      roundNumber: action.response.roundNumber,
-      expiry: new Date(action.response.expiry),
+      playerId: action.playerId,
+      playerCount: action.playerCount,
+      roundActive: action.roundActive,
+      roundNumber: action.roundNumber,
+      expiry: action.expiry,
     });
   }
 
-  @Action(Round.Started)
-  roundStarted(context: StateContext<GameStateModel>, action: Round.Started) {
+  @Action(Game.RoundStarted)
+  roundStarted(context: StateContext<GameStateModel>, action: Game.RoundStarted) {
     context.patchState({
       roundActive: true,
       roundNumber: action.roundNumber,
@@ -148,17 +88,12 @@ export class GameState {
     })
   }
 
-  @Action(Round.Ended)
-  roundEnded(context: StateContext<GameStateModel>, action: Round.Ended) {
+  @Action(Game.RoundEnded)
+  roundEnded(context: StateContext<GameStateModel>, action: Game.RoundEnded) {
     context.patchState({
       roundActive: false,
       expiry: new Date(action.nextRoundStart),
     })
-  }
-
-  @Selector([GAME_STATE_TOKEN])
-  static hubConnection(state: GameStateModel) {
-    return state.hubConnection;
   }
 
   @Selector([GAME_STATE_TOKEN])
