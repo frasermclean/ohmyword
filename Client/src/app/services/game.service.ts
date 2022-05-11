@@ -17,7 +17,7 @@ import { RoundStartResponse } from '../models/responses/round-start.response';
 import { RoundEndResponse } from '../models/responses/round-end.response';
 import { RoundEnd } from '../models/round-end';
 import { Store } from '@ngxs/store';
-import { Hub } from '../game/game.state';
+import { GameHub, Player, Round } from '../game/game.state';
 
 @Injectable({
   providedIn: 'root',
@@ -30,16 +30,6 @@ export class GameService {
     .configureLogging(environment.production ? LogLevel.Error : LogLevel.Information)
     .build();
 
-  private readonly registeredSubject = new BehaviorSubject<boolean>(false);
-  public get registered$() {
-    return this.registeredSubject.asObservable();
-  }
-
-  private readonly roundActiveSubject = new BehaviorSubject<boolean>(false);
-  public get roundActive$() {
-    return this.roundActiveSubject.asObservable();
-  }
-
   private readonly wordHintSubject = new BehaviorSubject<WordHint>(WordHint.default);
   public get wordHint$() {
     return this.wordHintSubject.asObservable();
@@ -48,11 +38,6 @@ export class GameService {
   private readonly letterHintSubject = new Subject<LetterHint>();
   public get letterHint$() {
     return this.letterHintSubject.asObservable();
-  }
-
-  private readonly expirySubject = new BehaviorSubject<Date>(new Date());
-  public get expiry$() {
-    return this.expirySubject.asObservable();
   }
 
   private readonly roundEndSubject = new BehaviorSubject<RoundEnd | null>(null);
@@ -79,16 +64,10 @@ export class GameService {
     private soundService: SoundService,
     private store: Store
   ) {
-    // register callback for connection closed error
-    this.hubConnection.onclose((error) => {
-      if (error) console.error(error);
-      this.registeredSubject.next(false);
-      this.store.dispatch(new Hub.Disconnected(error));
-    });
-
-    // register game callbacks
-    this.hubConnection.on('SendRoundStarted', (response) => this.onRoundStart(response));
-    this.hubConnection.on('SendRoundEnded', (response) => this.onRoundEnd(response));
+    // register callbacks
+    this.hubConnection.onclose((error) => this.store.dispatch(new GameHub.Disconnected(error)));
+    this.hubConnection.on('SendRoundStarted', (response: RoundStartResponse) => this.store.dispatch(new Round.Started(response)));
+    this.hubConnection.on('SendRoundEnded', (response: RoundEndResponse) => this.store.dispatch(new Round.Ended(response)));
     this.hubConnection.on('SendLetterHint', (response: LetterHintResponse) => {
       this.letterHintSubject.next(new LetterHint(response));
     });
@@ -97,7 +76,14 @@ export class GameService {
   /**
    * Connect to game hub (if not already connected)
    */
-  public connect = () => this.hubConnection.start();
+  public async connect() {
+    try {
+      await this.hubConnection.start();
+      this.store.dispatch(new GameHub.Connected())
+    } catch (error) {
+      this.store.dispatch(new GameHub.ConnectFailed(error));
+    }
+  } 
 
   public disconnect = () => this.hubConnection.stop();
 
@@ -107,19 +93,13 @@ export class GameService {
   async registerPlayer() {
     const visitorId = await this.fingerprintService.getVisitorId();
     const response = await this.hubConnection.invoke<RegisterPlayerResponse>('RegisterPlayer', visitorId);
+    this.store.dispatch(new Player.Registered(response));
 
     this.playerId = response.playerId;
-    this.registeredSubject.next(true);
-    this.roundActiveSubject.next(response.roundActive);
-    this.expirySubject.next(new Date(response.expiry));
+
     if (response.wordHint) {
       this.wordHintSubject.next(new WordHint(response.wordHint));
     }
-  }
-
-  disconnectAndReset() {
-    if (this.hubConnection.state == HubConnectionState.Connected) this.hubConnection.stop();
-    this.playerId = '';
   }
 
   public async submitGuess() {
@@ -143,27 +123,5 @@ export class GameService {
     this.guess = '';
 
     return response;
-  }
-
-  /**
-   * Callback method to run upon round start
-   * @param response The round start response
-   */
-  private onRoundStart(response: RoundStartResponse) {
-    this.roundId = response.roundId;
-    this.roundActiveSubject.next(true);
-    this.wordHintSubject.next(new WordHint(response.wordHint));
-    this.expirySubject.next(new Date(response.roundEnds));
-    this.guess = '';
-  }
-
-  /**
-   * Callback method to run upon round end
-   * @param response The round end response
-   */
-  private onRoundEnd(response: RoundEndResponse) {
-    this.roundActiveSubject.next(false);
-    this.roundEndSubject.next(new RoundEnd(response));
-    this.expirySubject.next(new Date(response.nextRoundStart));
   }
 }
