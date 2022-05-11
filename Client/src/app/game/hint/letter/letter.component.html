@@ -1,6 +1,9 @@
-<div class="box" [ngClass]="getState()">
-  <span class="letter">
-    {{ data.guess || data.hint | uppercase }}
-  </span>
-</div>
-<p class="position">{{ position }}</p>
+<ng-container *ngIf="guessChar$ | async as guessChar">
+  <div class="box" [ngClass]="getClass(guessChar)">
+    <span class="letter">
+      {{ getLetter(guessChar) }}
+    </span>
+  </div>
+  <p class="position">{{ index + 1 }}</p>
+</ng-container>
+

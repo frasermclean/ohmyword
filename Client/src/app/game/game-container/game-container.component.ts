@@ -1,5 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { GameService } from 'src/app/services/game.service';
+import { Store } from '@ngxs/store';
+import { Hub } from '../game.actions';
+import { GameState } from '../game.state';
 
 @Component({
   selector: 'game-container',
@@ -7,17 +9,20 @@ import { GameService } from 'src/app/services/game.service';
   styleUrls: ['./game-container.component.scss'],
 })
 export class GameContainerComponent implements OnInit, OnDestroy {
-  registered$ = this.gameService.registered$;
-  roundActive$ = this.gameService.roundActive$;
-  expiry$ = this.gameService.expiry$;
+  registered$ = this.store.select(GameState.registered);
+  roundActive$ = this.store.select(GameState.roundActive);
+  expiry$ = this.store.select(GameState.expiry);
+  connectionState$ = this.store.select(GameState.connectionState);
+  roundNumber$ = this.store.select(GameState.roundNumber);
+  score$ = this.store.select(GameState.score);
 
-  constructor(private gameService: GameService) {}
+  constructor(private store: Store) {}
 
   ngOnInit(): void {
-    this.gameService.registerPlayer();
+    this.store.dispatch(new Hub.Connect());
   }
 
   ngOnDestroy(): void {
-    this.gameService.disconnectAndReset();
+    this.store.dispatch(new Hub.Disconnect());
   }
 }

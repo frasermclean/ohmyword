@@ -25,6 +25,8 @@
     "@azure/msal-browser": "^2.23.0",
     "@fingerprintjs/fingerprintjs": "^3.3.3",
     "@microsoft/signalr": "^6.0.4",
+    "@ngxs/logger-plugin": "^3.7.3",
+    "@ngxs/store": "^3.7.3",
     "howler": "^2.2.3",
     "rxjs": "~6.6.0",
     "tslib": "^2.4.0",
