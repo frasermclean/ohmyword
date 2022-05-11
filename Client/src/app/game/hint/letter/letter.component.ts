@@ -1,7 +1,8 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Store } from '@ngxs/store';
 import { map } from 'rxjs/operators';
-import { GuessState, GUESS_DEFAULT_CHAR } from '../../guess.state';
+import { GameState, GUESS_DEFAULT_CHAR } from '../../game.state';
+
 
 @Component({
   selector: 'app-letter',
@@ -12,7 +13,7 @@ export class LetterComponent implements OnInit {
   @Input() hintChar: string = '';
   @Input() index: number = 0;
 
-  guessChar$ = this.store.select(GuessState.guessChar).pipe(map((indexer) => indexer(this.index)));
+  guessChar$ = this.store.select(GameState.guessChar).pipe(map((indexer) => indexer(this.index)));
 
   constructor(private store: Store) {}
 

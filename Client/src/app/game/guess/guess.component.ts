@@ -1,7 +1,7 @@
 import { Component, EventEmitter, HostListener, OnInit, Output } from '@angular/core';
 import { GuessResponse } from 'src/app/models/responses/guess.response';
 import { Store } from '@ngxs/store';
-import { Guess } from '../guess.state';
+import { Guess } from '../game.actions';
 
 @Component({
   selector: 'app-guess',

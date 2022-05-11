@@ -14,16 +14,14 @@ import { RoundStartResponse } from '../models/responses/round-start.response';
 import { RoundEndResponse } from '../models/responses/round-end.response';
 import { RoundEnd } from '../models/round-end';
 import { Store } from '@ngxs/store';
-import { Game } from '../game/game.state';
-import { Hub } from '../game/hub.state';
+
+import { Game, Guess, Hub } from '../game/game.actions';
 
 @Injectable({
   providedIn: 'root',
 })
 export class GameService {
-  private playerId = '';
-  private roundId = '';
-  private hubConnection = new HubConnectionBuilder()
+  private readonly hubConnection = new HubConnectionBuilder()
     .withUrl(environment.api.hubUrl)
     .configureLogging(environment.production ? LogLevel.Error : LogLevel.Information)
     .build();
@@ -31,7 +29,7 @@ export class GameService {
   private readonly roundEndSubject = new BehaviorSubject<RoundEnd | null>(null);
   public get roundEnd$() {
     return this.roundEndSubject.asObservable();
-  }  
+  }
 
   constructor(
     private fingerprintService: FingerprintService,
@@ -89,23 +87,24 @@ export class GameService {
     this.store.dispatch(new Game.PlayerRegistered(response));
   }
 
-  public async submitGuess() {
-    // check for mismatched length
+  public async submitGuess(playerId: string, roundId: string, value: string) {
+    //check for mismatched length
     // if (this.guessSubject.value.length !== this.wordHintSubject.value.length) {
     //   this.soundService.play(SoundSprite.Incorrect);
     //   return;
     // }
+    const response = await this.hubConnection.invoke<GuessResponse>('SubmitGuess', {
+      playerId,
+      roundId,
+      value,
+    });
 
-    // const response = await this.hubConnection.invoke<GuessResponse>('SubmitGuess', {
-    //   playerId: this.playerId,
-    //   roundId: this.roundId,
-    //   value: this.guessSubject.value,
-    // });
+    this.store.dispatch(response.correct ? new Guess.Succeeded : new Guess.Failed)
 
-    // // play sound to indicate correct / incorrect
+    
+    // play sound to indicate correct / incorrect
     // const sprite = response.correct ? SoundSprite.Correct : SoundSprite.Incorrect;
     // this.soundService.play(sprite);
-
     // return response;
   }
 }

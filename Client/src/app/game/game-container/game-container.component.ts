@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngxs/store';
+import { Hub } from '../game.actions';
 import { GameState } from '../game.state';
-import { Hub, HubState } from '../hub.state';
 
 @Component({
   selector: 'game-container',
@@ -12,7 +12,7 @@ export class GameContainerComponent implements OnInit, OnDestroy {
   registered$ = this.store.select(GameState.registered);
   roundActive$ = this.store.select(GameState.roundActive);
   expiry$ = this.store.select(GameState.expiry);
-  connectionState$ = this.store.select(HubState.connectionState);
+  connectionState$ = this.store.select(GameState.connectionState);
   roundNumber$ = this.store.select(GameState.roundNumber);
 
   constructor(private store: Store) {}
