@@ -41,6 +41,7 @@ export namespace Hub {
     playerCount = this.response.playerCount;
     roundActive = this.response.roundActive;
     roundNumber = this.response.roundNumber;
+    roundId = this.response.roundId;
     expiry = new Date(this.response.expiry);
     wordHint = this.response.wordHint ? new WordHint(this.response.wordHint) : WordHint.default;
 

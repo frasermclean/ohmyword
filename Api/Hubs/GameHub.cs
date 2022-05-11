@@ -45,9 +45,10 @@ public class GameHub : Hub<IGameHub>
         return new RegisterPlayerResponse
         {
             PlayerId = player.Id,
-            RoundNumber = gameService.RoundNumber,
             RoundActive = gameService.RoundActive,
-            WordHint = gameService.Round?.WordHint,
+            RoundNumber = gameService.RoundNumber,
+            RoundId = gameService.Round.Id.ToString(),
+            WordHint = gameService.Round.WordHint,
             PlayerCount = playerService.PlayerCount,
             Expiry = gameService.Expiry,
             Score = player.Score

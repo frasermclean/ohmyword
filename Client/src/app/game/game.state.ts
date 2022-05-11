@@ -9,8 +9,11 @@ interface GameStateModel {
   registered: boolean;
   playerId: string;
   playerCount: number;
-  roundActive: boolean;
-  roundNumber: number;
+  round: {
+    active: boolean;
+    number: number;
+    id: string;
+  };
   expiry: Date;
   wordHint: WordHint;
   hub: {
@@ -33,8 +36,11 @@ export const GUESS_DEFAULT_CHAR = '_';
     registered: false,
     playerId: '',
     playerCount: 0,
-    roundActive: false,
-    roundNumber: 0,
+    round: {
+      active: false,
+      number: 0,
+      id: '',
+    },
     expiry: new Date(),
     wordHint: WordHint.default,
     hub: {
@@ -58,8 +64,11 @@ export class GameState {
       registered: true,
       playerId: action.playerId,
       playerCount: action.playerCount,
-      roundActive: action.roundActive,
-      roundNumber: action.roundNumber,
+      round: {
+        active: action.roundActive,
+        number: action.roundNumber,
+        id: action.roundId,
+      },
       expiry: action.expiry,
       wordHint: action.wordHint,
     });
@@ -68,8 +77,11 @@ export class GameState {
   @Action(Game.RoundStarted)
   roundStarted(context: StateContext<GameStateModel>, action: Game.RoundStarted) {
     context.patchState({
-      roundActive: true,
-      roundNumber: action.roundNumber,
+      round: {
+        active: true,
+        number: action.roundNumber,
+        id: action.roundId,
+      },
       expiry: new Date(action.roundEnds),
       wordHint: new WordHint(action.wordHint),
       guess: {
@@ -82,8 +94,13 @@ export class GameState {
 
   @Action(Game.RoundEnded)
   roundEnded(context: StateContext<GameStateModel>, action: Game.RoundEnded) {
+    const state = context.getState();
     context.patchState({
-      roundActive: false,
+      round: {
+        ...state.round,
+        active: false,
+        id: '',
+      },
       expiry: new Date(action.nextRoundStart),
       wordHint: WordHint.default,
     });
@@ -196,6 +213,8 @@ export class GameState {
         count: state.guess.count + 1,
       },
     });
+
+    this.gameService.submitGuess(state.playerId, state.round.id, state.guess.value);
   }
 
   @Selector([GAME_STATE_TOKEN])
@@ -210,12 +229,12 @@ export class GameState {
 
   @Selector([GAME_STATE_TOKEN])
   static roundActive(state: GameStateModel) {
-    return state.roundActive;
+    return state.round.active;
   }
 
   @Selector([GAME_STATE_TOKEN])
   static roundNumber(state: GameStateModel) {
-    return state.roundNumber;
+    return state.round.number;
   }
 
   @Selector([GAME_STATE_TOKEN])
