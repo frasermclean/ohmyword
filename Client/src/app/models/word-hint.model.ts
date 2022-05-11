@@ -1,4 +1,3 @@
-
 import { WordHintResponse } from './responses/word-hint.response';
 
 export class WordHint {
@@ -6,11 +5,19 @@ export class WordHint {
   readonly definition: string;
   readonly letterHints: string[];
 
-  constructor(init?: Partial<WordHintResponse>) {
-    this.length = init?.length ?? 0;
-    this.definition = init?.definition ?? '';
+  constructor(response: WordHintResponse) {
+    this.length = response.length ?? 0;
+    this.definition = response.definition ?? '';
     this.letterHints = new Array(this.length).fill('');
+
+    response.letters.forEach((lh) => {
+      this.letterHints[lh.position - 1] = lh.value;
+    });
   }
 
-  public static default = new WordHint();
+  public static default = new WordHint({
+    length: 7,
+    definition: 'Default word',
+    letters: [],
+  });
 }
