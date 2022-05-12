@@ -64,14 +64,15 @@ export class GameState {
 
   @Action(Game.PlayerRegistered)
   registered(context: StateContext<GameStateModel>, action: Game.PlayerRegistered) {
+    const state = context.getState();
     context.patchState({
       registered: true,
       playerCount: action.playerCount,
       round: {
+        ...state.round,
         active: action.roundActive,
         number: action.roundNumber,
         id: action.roundId,
-        endSummary: null,
       },
       expiry: action.expiry,
       wordHint: action.wordHint,
@@ -106,7 +107,7 @@ export class GameState {
         ...state.round,
         active: false,
         id: '',
-        endSummary: new RoundEndSummary(action.word),
+        endSummary: new RoundEndSummary(action.word, action.endReason),
       },
       expiry: new Date(action.nextRoundStart),
       wordHint: WordHint.default,
