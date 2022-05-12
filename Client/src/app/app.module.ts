@@ -5,7 +5,7 @@ import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { RouterModule, Routes } from '@angular/router';
 
 // ngxs modules
-import { NgxsModule } from '@ngxs/store';
+import { getActionTypeFromInstance, NgxsModule } from '@ngxs/store';
 import { NgxsLoggerPluginModule } from '@ngxs/logger-plugin';
 
 // angular material modules
@@ -19,6 +19,7 @@ import { msalInstance, guardConfig, interceptorConfig } from './auth-config';
 import { environment } from 'src/environments/environment';
 import { AppComponent } from './app.component';
 import { ToolbarComponent } from './toolbar/toolbar.component';
+import { Game } from './game/game.actions';
 
 
 const routes: Routes = [
@@ -38,7 +39,15 @@ const routes: Routes = [
       developmentMode: !environment.production
     }),
     NgxsLoggerPluginModule.forRoot({
-      disabled: environment.production // disable logger in production
+      disabled: environment.production, // disable logger in production
+      filter: (action) => {
+        const actionType = getActionTypeFromInstance(action);
+        if (!actionType) return true;
+        const filteredActions = [
+          Game.LetterHintReceived.type
+        ]
+        return filteredActions.indexOf(actionType) === -1;
+      }
     }),
     MatToolbarModule,
     MatButtonModule,
