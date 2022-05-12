@@ -76,7 +76,7 @@ public static class Program
         app.UseAuthorization();
 
         app.MapControllers();
-        app.MapHub<GameHub>("/game");
+        app.MapHub<GameHub>("/hub");
 
         return app;
     }

@@ -4,7 +4,7 @@ export const environment = {
   production: true,
   api: {
     baseUrl: `/api`,
-    hubUrl: `/game`,
+    hubUrl: `/hub`,
   },
   authLogLevel: LogLevel.Error,
 };
