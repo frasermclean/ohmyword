@@ -1,0 +1,3 @@
+<div *ngFor="let row of keys" class="key-row">
+  <button *ngFor="let key of row" class="key" (click)="onKeyClick(key)">{{ key | uppercase }}</button>
+</div>

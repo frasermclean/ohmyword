@@ -10,6 +10,7 @@
     <ng-container *ngIf="roundActive$ | async; else roundEnded">
       <app-hint></app-hint>
       <app-guess></app-guess>
+      <app-keyboard></app-keyboard>
     </ng-container>
     <ng-template #roundEnded>
       <app-round-end-summary></app-round-end-summary>

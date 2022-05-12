@@ -12,6 +12,7 @@ import { RoundEndSummaryComponent } from './round-end-summary/round-end-summary.
 import { RouterModule, Routes } from '@angular/router';
 import { NgxsModule } from '@ngxs/store';
 import { GameState } from './game.state';
+import { KeyboardComponent } from './keyboard/keyboard.component';
 
 const routes: Routes = [{ path: '', component: GameContainerComponent }];
 
@@ -23,6 +24,7 @@ const routes: Routes = [{ path: '', component: GameContainerComponent }];
     LetterComponent,
     CountdownComponent,
     RoundEndSummaryComponent,
+    KeyboardComponent,
   ],
   imports: [
     CommonModule,

@@ -11,7 +11,8 @@
     };
   }
   #game-container {
-    width: 400px;
+    min-width: 375px;
+    max-width: 480px;
     margin: auto;
   }
 }
