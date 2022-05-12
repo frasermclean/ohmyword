@@ -280,6 +280,11 @@ export class GameState {
   }
 
   @Selector([GAME_STATE_TOKEN])
+  static playerCount(state: GameStateModel) {
+    return state.playerCount;
+  }
+
+  @Selector([GAME_STATE_TOKEN])
   static guessChar(state: GameStateModel) {
     return (index: number) => state.guess.value[index] || GUESS_DEFAULT_CHAR;
   }

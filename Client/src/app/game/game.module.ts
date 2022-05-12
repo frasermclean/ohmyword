@@ -13,6 +13,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { NgxsModule } from '@ngxs/store';
 import { GameState } from './game.state';
 import { KeyboardComponent } from './keyboard/keyboard.component';
+import { StatsComponent } from './stats/stats.component';
 
 const routes: Routes = [{ path: '', component: GameContainerComponent }];
 
@@ -25,6 +26,7 @@ const routes: Routes = [{ path: '', component: GameContainerComponent }];
     CountdownComponent,
     RoundEndSummaryComponent,
     KeyboardComponent,
+    StatsComponent,
   ],
   imports: [
     CommonModule,

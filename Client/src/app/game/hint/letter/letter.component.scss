@@ -3,12 +3,13 @@
   height: 40px;
   border: 4px gray solid;
   border-radius: 8px;
+  font-size: 1.8rem;
   color: black;
   background: wheat;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  font-size: 1.8rem;
+  
 
   &.hint {
     color: darkblue;
@@ -32,4 +33,13 @@
 .position {
   margin-top: 4px;
   font-size: 0.7rem;
+}
+
+@media screen and (max-width: 420px) {
+  .box {
+    width: 32px;
+    height: 32px;
+    border: 2px gray solid;
+    font-size: 1.6rem;
+  }
 }

@@ -1,0 +1,21 @@
+#container {
+  display: flex;
+  justify-content: space-between;
+  padding: 32px 16px;
+  .block {
+    width: 80px;
+    padding: 8px;
+    border-radius: 8px;
+    background: #444;
+    .title {
+      font-size: 16px;
+    }
+    .value {
+      font-size: 24px;
+      margin: 0;
+    }
+  }
+  p {
+    font-size: 18px;
+  }
+}
