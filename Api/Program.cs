@@ -78,6 +78,9 @@ public static class Program
         app.MapControllers();
         app.MapHub<GameHub>("/hub");
 
+        // fall back to SPA index file on unhandled route
+        app.UseEndpoints(configure => configure.MapFallbackToFile("/index.html"));
+
         return app;
     }
 }
