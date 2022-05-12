@@ -11,6 +11,7 @@ public interface IGameHub
     Task SendLetterHint(LetterHint letterHint);
     Task SendRoundStarted(RoundStartResponse response);
     Task SendRoundEnded(RoundEndResponse response);
+    Task SendPlayerCount(int count);
 }
 
 public class GameHub : Hub<IGameHub>
@@ -26,25 +27,20 @@ public class GameHub : Hub<IGameHub>
         this.playerService = playerService;
     }
 
-    public override Task OnConnectedAsync()
-    {
-        logger.LogDebug("New client connected from connection ID: {connectionId}", Context.ConnectionId);
-        return base.OnConnectedAsync();
-    }
-
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
         logger.LogDebug("Client disconnected. Connection ID: {connectionId}", Context.ConnectionId);
-        await playerService.RemovePlayerAsync(Context.ConnectionId);
+        playerService.RemovePlayer(Context.ConnectionId);
+        await Clients.Others.SendPlayerCount(playerService.PlayerCount);
     }
 
     public async Task<RegisterPlayerResponse> RegisterPlayer(string visitorId)
     {
         logger.LogInformation("Attempting to register client with visitor ID: {visitorId}", visitorId);
         var player = await playerService.AddPlayerAsync(visitorId, Context.ConnectionId);
+        await Clients.Others.SendPlayerCount(playerService.PlayerCount);
         return new RegisterPlayerResponse
         {
-            PlayerId = player.Id,
             RoundActive = gameService.RoundActive,
             RoundNumber = gameService.RoundNumber,
             RoundId = gameService.Round.Id.ToString(),
@@ -57,8 +53,8 @@ public class GameHub : Hub<IGameHub>
 
     public async Task<SubmitGuessResponse> SubmitGuess(SubmitGuessRequest request)
     {
-        var (playerId, roundId, value) = request;
-        var points = await gameService.ProcessGuessAsync(playerId, roundId, value);
+        var (roundId, value) = request;
+        var points = await gameService.ProcessGuessAsync(Context.ConnectionId, roundId, value);
         return new SubmitGuessResponse
         {
             Value = value.ToLowerInvariant(),

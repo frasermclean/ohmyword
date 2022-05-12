@@ -18,7 +18,7 @@ public interface IGameService
     event Action<LetterHint> LetterHintAdded;
 
     Task ExecuteGameAsync(CancellationToken gameCancellationToken);
-    Task<int> ProcessGuessAsync(string playerId, string roundId, string value);
+    Task<int> ProcessGuessAsync(string connectionId, string roundId, string value);
 }
 
 public class GameService : IGameService
@@ -73,7 +73,7 @@ public class GameService : IGameService
             });
             Expiry = Round.EndTime;
 
-            logger.LogDebug("Round: {roundNumber} has started. Current currentWord is: {word}. Round duration: {seconds} seconds.",
+            logger.LogDebug("Round: {roundNumber} has started. Current word is: {word}. Round duration: {seconds} seconds.",
                 Round.Number, Round.Word, Round.Duration.Seconds);
 
             // send all letter hints
@@ -127,16 +127,15 @@ public class GameService : IGameService
                 Value = word.Value[index]
             };
 
-            logger.LogDebug("Added letter hint. Position: {position}, value: {value}",
-                letterHint.Position, letterHint.Value);
-
-            LetterHintAdded?.Invoke(letterHint);
             wordHint.AddLetterHint(letterHint);
+            LetterHintAdded?.Invoke(letterHint);
         }
     }
 
-    public async Task<int> ProcessGuessAsync(string playerId, string roundId, string value)
+    public async Task<int> ProcessGuessAsync(string connectionId, string roundId, string value)
     {
+        var player = playerService.GetPlayer(connectionId);
+
         // if round is not active then immediately return false
         if (!RoundActive || roundId != Round.Id.ToString()) return 0;
 
@@ -144,15 +143,15 @@ public class GameService : IGameService
         if (!string.Equals(value, Round.Word.Value, StringComparison.InvariantCultureIgnoreCase))
             return 0;
 
-        var guessCountIncremented = Round.IncrementGuessCount(playerId);
+        var guessCountIncremented = Round.IncrementGuessCount(player.Id);
         if (!guessCountIncremented)
-            logger.LogWarning("Couldn't increment guess count of player with ID: {playerId}", playerId);
+            logger.LogWarning("Couldn't increment guess count of player with ID: {playerId}", player.Id);
 
-        var pointsAwarded = Round.AwardPlayer(playerId);
+        var pointsAwarded = Round.AwardPlayer(player.Id);
         if (pointsAwarded == 0)
-            logger.LogWarning("Zero points were awarded to player with ID: {playerId}", playerId);
+            logger.LogWarning("Zero points were awarded to player with ID: {playerId}", player.Id);
 
-        await playerService.IncrementPlayerScoreAsync(playerId, pointsAwarded);
+        await playerService.IncrementPlayerScoreAsync(player.Id, pointsAwarded);
 
         // end round if all players have been awarded points
         if (Round.AllPlayersAwarded)

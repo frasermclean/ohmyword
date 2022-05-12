@@ -4,7 +4,6 @@ namespace OhMyWord.Api.Responses.Game;
 
 public class RegisterPlayerResponse
 {
-    public string PlayerId { get; init; } = string.Empty;
     public bool RoundActive { get; init; }
     public int RoundNumber { get; init; }
     public string RoundId { get; init; }= string.Empty;

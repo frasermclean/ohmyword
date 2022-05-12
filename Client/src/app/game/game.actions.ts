@@ -78,6 +78,11 @@ export namespace Game {
 
     constructor(private response: LetterHintResponse) {}
   }
+
+  export class PlayerCountUpdated {
+    static readonly type = '[Game Service] Game.PlayerCountUpdated';
+    constructor(public count: number) {}
+  }
 }
 
 /**

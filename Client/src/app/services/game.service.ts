@@ -35,6 +35,9 @@ export class GameService {
     this.hubConnection.on('SendLetterHint', (response: LetterHintResponse) => {
       this.store.dispatch(new Game.LetterHintReceived(response));
     });
+    this.hubConnection.on('SendPlayerCount', (count: number) =>
+      this.store.dispatch(new Game.PlayerCountUpdated(count))
+    );
   }
 
   /**
@@ -77,17 +80,11 @@ export class GameService {
 
   /**
    * Submit to word guess to be evaluated by the game server.
-   * @param playerId The local player ID.
    * @param roundId The current round ID.
    * @param value The value of the guess to submit.
    */
-  public async submitGuess(playerId: string, roundId: string, value: string) {
-    const response = await this.hubConnection.invoke<GuessResponse>('SubmitGuess', {
-      playerId,
-      roundId,
-      value,
-    });
-
+  public async submitGuess(roundId: string, value: string) {
+    const response = await this.hubConnection.invoke<GuessResponse>('SubmitGuess', { roundId, value });
     this.store.dispatch(response.correct ? new Guess.Succeeded(response.points) : new Guess.Failed());
   }
 }

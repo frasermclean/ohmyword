@@ -9,7 +9,6 @@ import { Game, Guess, Hub } from './game.actions';
 
 interface GameStateModel {
   registered: boolean;
-  playerId: string;
   playerCount: number;
   round: {
     active: boolean;
@@ -38,7 +37,6 @@ export const GUESS_DEFAULT_CHAR = '_';
   name: GAME_STATE_TOKEN,
   defaults: {
     registered: false,
-    playerId: '',
     playerCount: 0,
     round: {
       active: false,
@@ -68,7 +66,6 @@ export class GameState {
   registered(context: StateContext<GameStateModel>, action: Game.PlayerRegistered) {
     context.patchState({
       registered: true,
-      playerId: action.playerId,
       playerCount: action.playerCount,
       round: {
         active: action.roundActive,
@@ -129,6 +126,11 @@ export class GameState {
     });
   }
 
+  @Action(Game.PlayerCountUpdated)
+  playerCountUpdated(context: StateContext<GameStateModel>, action: Game.PlayerCountUpdated) {
+    context.patchState({ playerCount: action.count });
+  }
+
   @Action(Hub.Connect)
   connect(context: StateContext<GameStateModel>) {
     const state = context.getState();
@@ -167,10 +169,8 @@ export class GameState {
 
   @Action(Hub.Disconnected)
   disconnected(context: StateContext<GameStateModel>, action: Hub.Disconnected) {
-    const state = context.getState();
     context.patchState({
       registered: false,
-      playerId: '',
       hub: {
         connectionState: HubConnectionState.Disconnected,
         error: action.error,
@@ -180,7 +180,6 @@ export class GameState {
 
   @Action(Hub.ConnectFailed)
   connectionError(context: StateContext<GameStateModel>, action: Hub.ConnectFailed) {
-    const state = context.getState();
     context.patchState({
       hub: {
         connectionState: HubConnectionState.Disconnected,
@@ -224,7 +223,7 @@ export class GameState {
       },
     });
 
-    this.gameService.submitGuess(state.playerId, state.round.id, state.guess.value);
+    this.gameService.submitGuess(state.round.id, state.guess.value);
   }
 
   @Action(Guess.Succeeded)
@@ -277,6 +276,11 @@ export class GameState {
   @Selector([GAME_STATE_TOKEN])
   static score(state: GameStateModel) {
     return state.score;
+  }
+
+  @Selector([GAME_STATE_TOKEN])
+  static playerCount(state: GameStateModel) {
+    return state.playerCount;
   }
 
   @Selector([GAME_STATE_TOKEN])

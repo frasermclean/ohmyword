@@ -13,8 +13,6 @@ export class GameContainerComponent implements OnInit, OnDestroy {
   roundActive$ = this.store.select(GameState.roundActive);
   expiry$ = this.store.select(GameState.expiry);
   connectionState$ = this.store.select(GameState.connectionState);
-  roundNumber$ = this.store.select(GameState.roundNumber);
-  score$ = this.store.select(GameState.score);
 
   constructor(private store: Store) {}
 

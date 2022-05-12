@@ -10,8 +10,6 @@ public interface IPlayerRepository
     Task DeletePlayerAsync(Player player);
     Task<Player?> FindPlayerByPlayerIdAsync(string playerId);
     Task<Player?> FindPlayerByVisitorIdAsync(string visitorId);
-    Task<Player?> FindPlayerByConnectionIdAsync(string connectionId);
-    Task<bool> UpdatePlayerConnectionIdAsync(string playerId, string connectionId);
     Task<bool> IncrementPlayerScoreAsync(string playerId, long value);
 }
 
@@ -46,31 +44,6 @@ public class PlayerRepository : Repository<Player>, IPlayerRepository
 
         var results = await ExecuteQueryAsync<Player>(queryDefinition);
         return results.FirstOrDefault();
-    }
-
-    public async Task<Player?> FindPlayerByConnectionIdAsync(string connectionId)
-    {
-        var queryDefinition = new QueryDefinition("SELECT * FROM c WHERE c.connectionId = @connectionId")
-            .WithParameter("@connectionId", connectionId);
-
-        var results = await ExecuteQueryAsync<Player>(queryDefinition);
-        return results.FirstOrDefault();
-    }
-
-    public async Task<bool> UpdatePlayerConnectionIdAsync(string playerId, string connectionId)
-    {
-        var patchOperations = new[] { PatchOperation.Replace("/connectionId", connectionId) };
-        var result = await PatchItemAsync(playerId, playerId, patchOperations);
-        if (!result.Success)
-        {
-            logger.LogWarning(
-                "Could not update player connection ID. Player ID: {playerId}, connection ID: {connectionId} Message: '{message}'",
-                result.Message, playerId, connectionId);
-            return false;
-        }
-
-        logger.LogDebug("Updated player with ID: {playerId} to have connection ID: {connectionId}", playerId, connectionId);
-        return true;
     }
 
     public async Task<bool> IncrementPlayerScoreAsync(string playerId, long value)
