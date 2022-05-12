@@ -8,11 +8,6 @@ public class Player : Entity
     public string VisitorId { get; init; } = string.Empty;
 
     /// <summary>
-    /// SignalR hub context connection ID.
-    /// </summary>
-    public string ConnectionId { get; init; } = string.Empty;
-
-    /// <summary>
     /// Total points this player has ever scored.
     /// </summary>
     public long Score { get; init; }
