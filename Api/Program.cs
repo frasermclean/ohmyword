@@ -42,7 +42,10 @@ public static class Program
         services.AddRepositoryServices();
 
         // signalR services
-        services.AddSignalR();
+        services.AddSignalR()
+            .AddJsonProtocol(options =>
+                options.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase))
+            );
 
         // game services
         services.AddGameServices(configuration);
