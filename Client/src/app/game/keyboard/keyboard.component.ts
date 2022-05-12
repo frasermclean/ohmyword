@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { Store } from '@ngxs/store';
+import { Guess } from '../game.actions';
 
 @Component({
   selector: 'app-keyboard',
@@ -12,11 +14,19 @@ export class KeyboardComponent implements OnInit {
     ['z', 'x', 'c', 'v', 'b', 'n', 'm'],
   ];
 
-  constructor() {}
+  constructor(private store: Store) {}
 
   ngOnInit(): void {}
 
   onKeyClick(key: string) {
-    console.log(key);
+    this.store.dispatch(new Guess.Append(key));
+  }
+
+  onBackspaceClick() {
+    this.store.dispatch(new Guess.Backspace());
+  }
+
+  onSubmitClick() {
+    this.store.dispatch(new Guess.Submit());
   }
 }
