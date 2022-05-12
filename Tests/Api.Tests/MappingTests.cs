@@ -5,7 +5,6 @@ using OhMyWord.Api.Responses.Game;
 using OhMyWord.Api.Responses.Words;
 using OhMyWord.Core.Models;
 using OhMyWord.Services.Events;
-using OhMyWord.Services.Models;
 using System;
 using Xunit;
 

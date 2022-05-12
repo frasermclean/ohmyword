@@ -1,5 +1,8 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { LetterData } from '../hint.component';
+import { Store } from '@ngxs/store';
+import { map } from 'rxjs/operators';
+import { GameState, GUESS_DEFAULT_CHAR } from '../../game.state';
+
 
 @Component({
   selector: 'app-letter',
@@ -7,25 +10,27 @@ import { LetterData } from '../hint.component';
   styleUrls: ['./letter.component.scss'],
 })
 export class LetterComponent implements OnInit {
-  @Input() data: LetterData = null!;
-  @Input() position: number = 0;
+  @Input() hintChar: string = '';
+  @Input() index: number = 0;
 
-  constructor() {}
+  guessChar$ = this.store.select(GameState.guessChar).pipe(map((indexer) => indexer(this.index)));
 
-  ngOnInit(): void {
-    if (!this.data) throw new Error('Letter data input is not set!');
+  constructor(private store: Store) {}
+
+  ngOnInit(): void {}
+
+  getLetter(guessChar: string) {
+    const letter = guessChar === GUESS_DEFAULT_CHAR ? this.hintChar : guessChar;
+    return letter.toUpperCase();
   }
 
-  getState(): 'correct' | 'incorrect' | 'hint' | 'default' {
-    if (this.data.hint) {
-      if (this.data.guess) {
-        return this.data.guess === this.data.hint
-          ? 'correct'
-          : 'incorrect';
-      }
-      return 'hint';
-    }
-
-    return 'default';
+  getClass(guessChar: string): 'correct' | 'incorrect' | 'hint' | 'default' {
+    return this.hintChar
+      ? guessChar !== GUESS_DEFAULT_CHAR
+        ? guessChar === this.hintChar
+          ? 'correct' // guess matched with hint
+          : 'incorrect' // guess didn't match with hint
+        : 'hint' // hint only
+      : 'default';
   }
 }

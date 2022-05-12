@@ -1,0 +1,4 @@
+<div *ngFor="let row of keys; let i = index" class="key-row">
+  <button *ngFor="let key of row" class="key" (click)="onKeyClick(key)">{{ key | uppercase }}</button>
+  <button *ngIf="i == 1" class="key backspace" (click)="onBackspaceClick()">BS</button>
+  <button *ngIf="i == 2" class="key submit" (click)="onSubmitClick()">SUBMIT</button>

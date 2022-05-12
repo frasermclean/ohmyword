@@ -20,7 +20,15 @@ export class SoundService {
     preload: true,
   });
 
-  public play(sprite: SoundSprite) {
+  private play(sprite: SoundSprite) {
     this.howl.play(sprite);
+  }
+
+  public playCorrect() {
+    this.play(SoundSprite.Correct);
+  }
+
+  public playIncorrect() {
+    this.play(SoundSprite.Incorrect);
   }
 }
