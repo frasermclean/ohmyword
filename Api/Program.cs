@@ -26,13 +26,19 @@ public static class Program
         var services = builder.Services;
         var configuration = builder.Configuration;
 
+        // set up routing options
+        services.AddRouting(options =>
+        {
+            options.LowercaseUrls = true;
+            options.LowercaseQueryStrings = true;
+        });
+
         services.AddControllers()
             .AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.Converters.Add(
                     new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
             });
-
 
         // add microsoft identity authentication services
         services.AddMicrosoftIdentityWebApiAuthentication(configuration);
@@ -42,7 +48,10 @@ public static class Program
         services.AddRepositoryServices();
 
         // signalR services
-        services.AddSignalR();
+        services.AddSignalR()
+            .AddJsonProtocol(options =>
+                options.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase))
+            );
 
         // game services
         services.AddGameServices(configuration);

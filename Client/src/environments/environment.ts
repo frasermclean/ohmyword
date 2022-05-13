@@ -6,8 +6,8 @@ import { LogLevel } from "@azure/msal-browser";
 export const environment = {
   production: false,
   api: {
-    baseUrl: 'https://localhost:5001/api',
-    hubUrl: 'https://localhost:5001/hub',
+    baseUrl: 'http://localhost:5000/api',
+    hubUrl: 'http://localhost:5000/hub',
   },
   authLogLevel: LogLevel.Info
 };

@@ -1,5 +1,11 @@
 <ng-container *ngIf="summary$ | async as summary; else noData">
   <h2>The round has ended</h2>
+  <p *ngIf="summary.endReason === 'allPlayersAwarded'; else timeout">
+    All players have guessed the word!
+  </p>
+  <ng-template #timeout>
+    <p>Time ran out before all players guess the word!</p>
+  </ng-template>
   <p>
     The word was: <strong>{{ summary.word | uppercase }}</strong>
   </p>

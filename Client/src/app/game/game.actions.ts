@@ -63,9 +63,11 @@ export namespace Game {
   export class RoundEnded {
     static readonly type = '[Game Service] Game.RoundEnded';
 
+    roundNumber = this.response.roundNumber;
     roundId = this.response.roundId;
-    nextRoundStart = new Date(this.response.nextRoundStart);
     word = this.response.word;
+    endReason = this.response.endReason;
+    nextRoundStart = new Date(this.response.nextRoundStart);
 
     constructor(private response: RoundEndResponse) {}
   }
