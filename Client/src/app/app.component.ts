@@ -1,5 +1,4 @@
-import { DOCUMENT } from '@angular/common';
-import { Component, Inject } from '@angular/core';
+import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-root',
@@ -8,9 +7,4 @@ import { Component, Inject } from '@angular/core';
     <router-outlet></router-outlet>
   `,
 })
-export class AppComponent {
-  constructor(@Inject(DOCUMENT) private document: Document) {
-    console.log(document);
-    document
-  }
-}
+export class AppComponent {}
