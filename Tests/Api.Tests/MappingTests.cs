@@ -42,20 +42,16 @@ public class MappingTests
     public void RoundStartResponseMappingShouldPass()
     {
         // arrange
-        var args = new RoundStartedEventArgs
-        {
-            RoundId = TestRound.Id,
-            RoundNumber = TestRound.Number,
-            RoundEnds = DateTime.UtcNow + TimeSpan.FromSeconds(12)
-        };
+        var args = new RoundStartedEventArgs(TestRound);
 
         // act
         var response = mapper.Map<RoundStartResponse>(args);
 
         // assert
-        response.RoundId.Should().Be(args.RoundId);
-        response.RoundNumber.Should().Be(args.RoundNumber);
-        response.RoundEnds.Should().Be(args.RoundEnds);
+        response.RoundId.Should().Be(args.Round.Id);
+        response.RoundNumber.Should().Be(args.Round.Number);
+        response.RoundStarted.Should().Be(args.Round.StartTime);
+        response.RoundEnds.Should().Be(args.Round.EndTime);
         response.WordHint.Should().BeOfType<WordHint>();
     }
 
@@ -63,11 +59,8 @@ public class MappingTests
     public void RoundEndResponseMappingShouldPass()
     {
         // arrange
-        var args = new RoundEndedEventArgs
-        {
-            Round = new Round(1, TestWord, TimeSpan.FromSeconds(10)),
-            NextRoundStart = DateTime.UtcNow + TimeSpan.FromSeconds(5)
-        };
+        var nextRoundStart = DateTime.UtcNow + TimeSpan.FromSeconds(5);
+        var args = new RoundEndedEventArgs(TestRound, nextRoundStart);
 
         // act
         var response = mapper.Map<RoundEndResponse>(args);

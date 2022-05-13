@@ -11,7 +11,14 @@ public class ResponsesProfile : Profile
     public ResponsesProfile()
     {
         CreateMap<Word, WordResponse>();
-        CreateMap<RoundStartedEventArgs, RoundStartResponse>();
+
+        CreateMap<RoundStartedEventArgs, RoundStartResponse>()
+            .ForMember(response => response.RoundNumber, options => options.MapFrom(args => args.Round.Number))
+            .ForMember(response => response.RoundId, options => options.MapFrom(args => args.Round.Id))
+            .ForMember(response => response.RoundStarted, options => options.MapFrom(args => args.Round.StartTime))
+            .ForMember(response => response.RoundEnds, options => options.MapFrom(args => args.Round.EndTime))
+            .ForMember(response => response.WordHint, options => options.MapFrom(args => args.Round.WordHint));
+
         CreateMap<RoundEndedEventArgs, RoundEndResponse>()
             .ForMember(response => response.RoundNumber, options => options.MapFrom(args => args.Round.Number))
             .ForMember(response => response.RoundId, options => options.MapFrom(args => args.Round.Id))

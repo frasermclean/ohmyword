@@ -5,6 +5,12 @@ namespace OhMyWord.Services.Events;
 
 public class RoundEndedEventArgs : EventArgs
 {
-    public Round Round { get; init; } = Round.Default;
-    public DateTime NextRoundStart { get; init; } = DateTime.UtcNow + TimeSpan.FromSeconds(GameServiceOptions.PostRoundDelayDefault);
+    public Round Round { get; }
+    public DateTime NextRoundStart { get; }
+
+    public RoundEndedEventArgs(Round round, DateTime nextRoundStart)
+    {
+        Round = round;
+        NextRoundStart = nextRoundStart;
+    }
 }

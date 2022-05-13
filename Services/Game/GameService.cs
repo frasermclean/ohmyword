@@ -64,14 +64,8 @@ public class GameService : IGameService
             var duration = TimeSpan.FromSeconds(word.Value.Length * options.LetterHintDelay);
             RoundActive = true;
             Round = new Round(++RoundNumber, word, duration, playerService.PlayerIds);
-            RoundStarted?.Invoke(this, new RoundStartedEventArgs
-            {
-                RoundId = Round.Id,
-                RoundNumber = RoundNumber,
-                RoundEnds = Round.EndTime,
-                WordHint = Round.WordHint,
-            });
             Expiry = Round.EndTime;
+            RoundStarted?.Invoke(this, new RoundStartedEventArgs(Round));
 
             logger.LogDebug("Round: {roundNumber} has started. Current word is: {word}. Round duration: {seconds} seconds.",
                 Round.Number, Round.Word, Round.Duration.Seconds);
@@ -90,12 +84,8 @@ public class GameService : IGameService
             var postRoundDelay = TimeSpan.FromSeconds(options.PostRoundDelay);
             var nextRoundStart = DateTime.UtcNow + postRoundDelay;
             RoundActive = false;
-            RoundEnded?.Invoke(this, new RoundEndedEventArgs
-            {
-                Round = Round,
-                NextRoundStart = nextRoundStart,
-            });
             Expiry = nextRoundStart;
+            RoundEnded?.Invoke(this, new RoundEndedEventArgs(Round, nextRoundStart));
             Round.Dispose();
             Round = Round.Default;
 
