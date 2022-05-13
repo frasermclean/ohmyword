@@ -182,7 +182,7 @@ public class GameService : IGameService
             logger.LogError("Couldn't remove player with ID {playerId} from round.", args.PlayerId);
 
         // last player left while round active
-        if (args.PlayerCount > 0)
+        if (args.PlayerCount == 0)
             Round.EndRound(RoundEndReason.NoPlayersLeft);
     }
 }
