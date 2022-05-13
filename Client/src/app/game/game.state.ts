@@ -14,6 +14,7 @@ interface GameStateModel {
     active: boolean;
     number: number;
     id: string;
+    guessed: boolean;
     endSummary: RoundEndSummary | null;
   };
   expiry: Date;
@@ -42,6 +43,7 @@ export const GUESS_DEFAULT_CHAR = '_';
       active: false,
       number: 0,
       id: '',
+      guessed: false,
       endSummary: null,
     },
     expiry: new Date(),
@@ -87,6 +89,7 @@ export class GameState {
         active: true,
         number: action.roundNumber,
         id: action.roundId,
+        guessed: false,
         endSummary: null,
       },
       expiry: new Date(action.roundEnds),
@@ -230,7 +233,13 @@ export class GameState {
   @Action(Guess.Succeeded)
   guessSucceeded(context: StateContext<GameStateModel>, action: Guess.Succeeded) {
     const state = context.getState();
-    context.patchState({ score: state.score + action.points });
+    context.patchState({
+      score: state.score + action.points,
+      round: {
+        ...state.round,
+        guessed: true,
+      },
+    });
     this.soundService.playCorrect();
   }
 
@@ -262,6 +271,11 @@ export class GameState {
   @Selector([GAME_STATE_TOKEN])
   static roundEndSummary(state: GameStateModel) {
     return state.round.endSummary;
+  }
+
+  @Selector([GAME_STATE_TOKEN])
+  static guessed(state: GameStateModel) {
+    return state.round.guessed;
   }
 
   @Selector([GAME_STATE_TOKEN])
