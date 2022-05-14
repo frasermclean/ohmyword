@@ -76,6 +76,8 @@ export class GameService {
     const visitorId = await this.fingerprintService.getVisitorId();
     const response = await this.hubConnection.invoke<RegisterPlayerResponse>('RegisterPlayer', visitorId);
     this.store.dispatch(new Game.PlayerRegistered(response));
+    if (response.roundStart) this.store.dispatch(new Game.RoundStarted(response.roundStart));
+    else if (response.roundEnd) this.store.dispatch(new Game.RoundEnded(response.roundEnd));
   }
 
   /**

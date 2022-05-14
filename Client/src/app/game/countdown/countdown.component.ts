@@ -17,8 +17,6 @@ export class CountdownComponent implements OnInit, OnDestroy {
     const startTime = this.startDate.getTime();
     const endTime = this.endDate.getTime();
     const timespan = endTime - startTime;
-
-    console.log(`startTime: ${startTime}, endTime: ${endTime}, timespan: ${timespan}`);
     
     this.intervalId = setInterval(() => {
       const now = new Date().getTime();

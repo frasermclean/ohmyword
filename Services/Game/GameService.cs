@@ -10,7 +10,6 @@ public interface IGameService
 {
     Round Round { get; }
     bool RoundActive { get; }
-    int RoundNumber { get; }
     DateTime Expiry { get; }
 
     event EventHandler<RoundStartedEventArgs> RoundStarted;
@@ -29,7 +28,6 @@ public class GameService : IGameService
     private readonly GameServiceOptions options;
 
     public Round Round { get; private set; } = Round.Default;
-    public int RoundNumber { get; private set; }
     public bool RoundActive { get; private set; }
     public DateTime Expiry { get; private set; }
 
@@ -60,12 +58,10 @@ public class GameService : IGameService
             }
 
             // start new round
-            var word = await wordsService.SelectRandomWordAsync(gameCancellationToken);
-            var duration = TimeSpan.FromSeconds(word.Value.Length * options.LetterHintDelay);
+            Round = await CreateRoundAsync(gameCancellationToken);
             RoundActive = true;
-            Round = new Round(++RoundNumber, word, duration, playerService.PlayerIds);
-            Expiry = Round.EndTime;
             RoundStarted?.Invoke(this, new RoundStartedEventArgs(Round));
+            Expiry = Round.EndTime;
 
             logger.LogDebug("Round: {roundNumber} has started with {playerCount} players. Current word is: {word}. Round duration: {seconds} seconds.",
                 Round.Number, Round.PlayerCount, Round.Word, Round.Duration.Seconds);
@@ -87,12 +83,20 @@ public class GameService : IGameService
             Expiry = nextRoundStart;
             RoundEnded?.Invoke(this, new RoundEndedEventArgs(Round, nextRoundStart));
             Round.Dispose();
-            Round = Round.Default;
 
-            logger.LogDebug("Round: {number} has ended. Post round delay is: {seconds} seconds", RoundNumber, postRoundDelay.Seconds);
+            logger.LogDebug("Round: {number} has ended. Post round delay is: {seconds} seconds", Round.Number, postRoundDelay.Seconds);
 
             await Task.Delay(postRoundDelay, gameCancellationToken);
         }
+    }
+
+    private async Task<Round> CreateRoundAsync(CancellationToken cancellationToken)
+    {
+        var word = await wordsService.SelectRandomWordAsync(cancellationToken);
+        var duration = TimeSpan.FromSeconds(word.Value.Length * options.LetterHintDelay);
+        var roundNumber = Round.Number + 1;
+        
+        return new Round(roundNumber, word, duration, playerService.PlayerIds);
     }
 
     private async Task SendLetterHintsAsync(Round round)

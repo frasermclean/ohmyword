@@ -68,17 +68,9 @@ export class GameState {
 
   @Action(Game.PlayerRegistered)
   registered(context: StateContext<GameStateModel>, action: Game.PlayerRegistered) {
-    const state = context.getState();
     context.patchState({
       registered: true,
       playerCount: action.playerCount,
-      round: {
-        ...state.round,
-        active: action.roundActive,
-        number: action.roundNumber,
-        id: action.roundId,
-      },
-      wordHint: action.wordHint,
       score: action.score,
     });
   }
@@ -112,6 +104,7 @@ export class GameState {
       round: {
         ...state.round,
         active: false,
+        number: action.roundNumber,
         endSummary: new RoundEndSummary(action.word, action.endReason, action.nextRoundStart),
       },
       wordHint: WordHint.default,

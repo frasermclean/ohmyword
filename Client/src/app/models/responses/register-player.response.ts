@@ -1,12 +1,10 @@
-import { WordHintResponse } from './word-hint.response';
+import { RoundEndResponse } from './round-end.response';
+import { RoundStartResponse } from './round-start.response';
 
 export interface RegisterPlayerResponse {
-  playerId: string;
   roundActive: boolean;
-  roundNumber: number;
-  roundId: string;
-  wordHint: WordHintResponse | null;
   playerCount: number;
-  expiry: string;
   score: number;
+  roundStart: RoundStartResponse | null;
+  roundEnd: RoundEndResponse | null;
 }

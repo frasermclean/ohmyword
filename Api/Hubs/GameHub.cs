@@ -42,24 +42,36 @@ public class GameHub : Hub<IGameHub>
         return new RegisterPlayerResponse
         {
             RoundActive = gameService.RoundActive,
-            RoundNumber = gameService.RoundNumber,
-            RoundId = gameService.Round.Id.ToString(),
-            WordHint = gameService.Round.WordHint,
             PlayerCount = playerService.PlayerCount,
-            Expiry = gameService.Expiry,
-            Score = player.Score
+            Score = player.Score,
+            RoundStart = gameService.RoundActive ? new RoundStartResponse
+                {
+                    RoundNumber = gameService.Round.Number,
+                    RoundId = gameService.Round.Id,
+                    RoundStarted = gameService.Round.StartTime,
+                    RoundEnds = gameService.Round.EndTime,
+                    WordHint = gameService.Round.WordHint,
+                } : null,
+            RoundEnd = !gameService.RoundActive ? new RoundEndResponse
+                {
+                    RoundNumber = gameService.Round.Number,
+                    RoundId = gameService.Round.Id,
+                    Word = gameService.Round.Word.Value,
+                    EndReason = gameService.Round.EndReason,
+                    NextRoundStart = gameService.Expiry,
+                } : null,
         };
-    }
+}
 
-    public async Task<SubmitGuessResponse> SubmitGuess(SubmitGuessRequest request)
+public async Task<SubmitGuessResponse> SubmitGuess(SubmitGuessRequest request)
+{
+    var (roundId, value) = request;
+    var points = await gameService.ProcessGuessAsync(Context.ConnectionId, roundId, value);
+    return new SubmitGuessResponse
     {
-        var (roundId, value) = request;
-        var points = await gameService.ProcessGuessAsync(Context.ConnectionId, roundId, value);
-        return new SubmitGuessResponse
-        {
-            Value = value.ToLowerInvariant(),
-            Correct = points > 0,
-            Points = points
-        };
-    }
+        Value = value.ToLowerInvariant(),
+        Correct = points > 0,
+        Points = points
+    };
+}
 }
