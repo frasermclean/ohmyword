@@ -67,8 +67,8 @@ public class GameService : IGameService
             Expiry = Round.EndTime;
             RoundStarted?.Invoke(this, new RoundStartedEventArgs(Round));
 
-            logger.LogDebug("Round: {roundNumber} has started. Current word is: {word}. Round duration: {seconds} seconds.",
-                Round.Number, Round.Word, Round.Duration.Seconds);
+            logger.LogDebug("Round: {roundNumber} has started with {playerCount} players. Current word is: {word}. Round duration: {seconds} seconds.",
+                Round.Number, Round.PlayerCount, Round.Word, Round.Duration.Seconds);
 
             // send all letter hints
             try

@@ -16,6 +16,8 @@ public class Round : IDisposable
     public TimeSpan Duration { get; }
     public DateTime EndTime => StartTime + Duration;
     public RoundEndReason EndReason { get; private set; } = RoundEndReason.Timeout;
+    public int PlayerCount => players.Count;
+    public bool AllPlayersAwarded => players.Values.Count(data => data.PointsAwarded > 0) == PlayerCount;
 
     [JsonIgnore]
     public CancellationToken CancellationToken => cancellationTokenSource.Token;
@@ -56,8 +58,6 @@ public class Round : IDisposable
 
         return points;
     }
-
-    public bool AllPlayersAwarded => players.Values.Count(data => data.PointsAwarded > 0) == players.Count;
 
     /// <summary>
     /// End the round early.
