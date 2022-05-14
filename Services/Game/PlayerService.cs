@@ -45,8 +45,13 @@ public class PlayerService : IPlayerService
     public async Task<Player> AddPlayerAsync(string visitorId, string connectionId)
     {
         var player = await playerRepository.FindPlayerByVisitorIdAsync(visitorId);
-        if (player is not null) // TODO: Handle multiple connections with same visitor ID
-            logger.LogDebug("Found existing player with visitorId: {visitorId}. Updating connection ID to: {connectionId}", visitorId, connectionId);
+        if (player is not null)
+        {
+            // TODO: Handle multiple connections with same visitor ID
+            await playerRepository.IncrementPlayerRegistrationCountAsync(player.Id);
+            logger.LogDebug("Found existing player with visitorId: {visitorId}.", visitorId);
+        }
+            
 
         // create new player if existing player not found
         player ??= await playerRepository.CreatePlayerAsync(new Player

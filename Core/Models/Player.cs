@@ -12,5 +12,10 @@ public class Player : Entity
     /// </summary>
     public long Score { get; init; }
 
+    /// <summary>
+    /// Number of times this player has registered with the game server.
+    /// </summary>
+    public int RegistrationCount { get; init; }
+
     public override string GetPartition() => Id;
 }

@@ -10,6 +10,7 @@ public interface IPlayerRepository
     Task DeletePlayerAsync(Player player);
     Task<Player?> FindPlayerByPlayerIdAsync(string playerId);
     Task<Player?> FindPlayerByVisitorIdAsync(string visitorId);
+    Task IncrementPlayerRegistrationCountAsync(string playerId);
     Task<bool> IncrementPlayerScoreAsync(string playerId, long value);
 }
 
@@ -44,6 +45,15 @@ public class PlayerRepository : Repository<Player>, IPlayerRepository
 
         var results = await ExecuteQueryAsync<Player>(queryDefinition);
         return results.FirstOrDefault();
+    }
+
+    public async Task IncrementPlayerRegistrationCountAsync(string playerId)
+    {
+        var patchOperations = new[] { PatchOperation.Increment("/registrationCount", 1) };
+        var result = await PatchItemAsync(playerId, playerId, patchOperations);
+
+        if (!result.Success)
+            logger.LogWarning("Could not increment player registration count. Message: '{message}'", result.Message);
     }
 
     public async Task<bool> IncrementPlayerScoreAsync(string playerId, long value)
