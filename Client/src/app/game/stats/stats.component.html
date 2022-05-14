@@ -1,7 +1,7 @@
 <div id="container">
-  <div class="block">
+  <div class="block" *ngIf="round$ | async as round">
     <p class="title">Round</p>
-    <p class="value">{{ roundNumber$ | async }}</p>
+    <p class="value">{{ round.number }}</p>
   </div>
 
   <div class="block">

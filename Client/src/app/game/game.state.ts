@@ -15,9 +15,10 @@ interface GameStateModel {
     number: number;
     id: string;
     guessed: boolean;
-    endSummary: RoundEndSummary | null;
+    startDate: Date;
+    endDate: Date;
+    endSummary: RoundEndSummary;
   };
-  expiry: Date;
   wordHint: WordHint;
   score: number;
   hub: {
@@ -44,9 +45,10 @@ export const GUESS_DEFAULT_CHAR = '_';
       number: 0,
       id: '',
       guessed: false,
-      endSummary: null,
+      startDate: new Date(),
+      endDate: new Date(),
+      endSummary: RoundEndSummary.default,
     },
-    expiry: new Date(),
     wordHint: WordHint.default,
     score: 0,
     hub: {
@@ -76,7 +78,6 @@ export class GameState {
         number: action.roundNumber,
         id: action.roundId,
       },
-      expiry: action.expiry,
       wordHint: action.wordHint,
       score: action.score,
     });
@@ -84,15 +85,17 @@ export class GameState {
 
   @Action(Game.RoundStarted)
   roundStarted(context: StateContext<GameStateModel>, action: Game.RoundStarted) {
+    const state = context.getState();
     context.patchState({
       round: {
+        ...state.round,
         active: true,
         number: action.roundNumber,
         id: action.roundId,
         guessed: false,
-        endSummary: null,
+        startDate: action.roundStarted,
+        endDate: action.roundEnds,
       },
-      expiry: new Date(action.roundEnds),
       wordHint: new WordHint(action.wordHint),
       guess: {
         value: '',
@@ -109,10 +112,8 @@ export class GameState {
       round: {
         ...state.round,
         active: false,
-        id: '',
-        endSummary: new RoundEndSummary(action.word, action.endReason),
+        endSummary: new RoundEndSummary(action.word, action.endReason, action.nextRoundStart),
       },
-      expiry: new Date(action.nextRoundStart),
       wordHint: WordHint.default,
     });
   }
@@ -259,28 +260,8 @@ export class GameState {
   }
 
   @Selector([GAME_STATE_TOKEN])
-  static roundActive(state: GameStateModel) {
-    return state.round.active;
-  }
-
-  @Selector([GAME_STATE_TOKEN])
-  static roundNumber(state: GameStateModel) {
-    return state.round.number;
-  }
-
-  @Selector([GAME_STATE_TOKEN])
-  static roundEndSummary(state: GameStateModel) {
-    return state.round.endSummary;
-  }
-
-  @Selector([GAME_STATE_TOKEN])
-  static guessed(state: GameStateModel) {
-    return state.round.guessed;
-  }
-
-  @Selector([GAME_STATE_TOKEN])
-  static expiry(state: GameStateModel) {
-    return state.expiry;
+  static round(state: GameStateModel) {
+    return state.round;
   }
 
   @Selector([GAME_STATE_TOKEN])

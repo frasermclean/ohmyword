@@ -8,8 +8,7 @@ import { GameState } from '../game.state';
   styleUrls: ['./round-end-summary.component.scss'],
 })
 export class RoundEndSummaryComponent implements OnInit {
-  summary$ = this.store.select(GameState.roundEndSummary);
+  round$ = this.store.select(GameState.round);
   constructor(private store: Store) {}
-
   ngOnInit(): void {}
 }

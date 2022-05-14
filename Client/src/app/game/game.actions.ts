@@ -54,7 +54,8 @@ export namespace Game {
 
     roundId = this.response.roundId;
     roundNumber = this.response.roundNumber;
-    roundEnds = this.response.roundEnds;
+    roundStarted = new Date(this.response.roundStarted);
+    roundEnds = new Date(this.response.roundEnds);
     wordHint = this.response.wordHint;
 
     constructor(private response: RoundStartResponse) {}
