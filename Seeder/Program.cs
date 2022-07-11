@@ -18,6 +18,8 @@ public static class Program
                 services.AddHttpClient();
                 services.AddSingleton<ICosmosDbService, CosmosDbService>();
 
+                services.AddSingleton<DataReader>();
+
                 services.AddHostedService<MainService>();
             })
             .Build();
