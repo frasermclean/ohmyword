@@ -7,13 +7,13 @@ namespace OhMyWord.Services.Data;
 
 public interface ICosmosDbService
 {
-    Container GetContainer(string containerId);
+    Task<Container> GetContainerAsync(string containerId, string partitionKeyPath);
 }
 
 public class CosmosDbService : ICosmosDbService, IDisposable
 {
     private readonly CosmosClient cosmosClient;
-    private readonly Database database;
+    private readonly Task<DatabaseResponse> databaseResponseTask;
 
     public CosmosDbService(IOptions<CosmosDbOptions> options, IHttpClientFactory httpClientFactory)
     {
@@ -23,10 +23,17 @@ public class CosmosDbService : ICosmosDbService, IDisposable
             .WithCustomSerializer(new EntitySerializer())
             .Build();
 
-        database = cosmosClient.GetDatabase(options.Value.DatabaseId);
+        databaseResponseTask = cosmosClient.CreateDatabaseIfNotExistsAsync(options.Value.DatabaseId);
     }
 
-    public Container GetContainer(string containerId) => database.GetContainer(containerId);
+    public async Task<Container> GetContainerAsync(string containerId, string partitionKeyPath)
+    {
+        var databaseResponse = await databaseResponseTask;
+
+        return await databaseResponse.Database
+            .CreateContainerIfNotExistsAsync(containerId, partitionKeyPath)
+            .ConfigureAwait(false);
+    }
 
     public void Dispose()
     {
