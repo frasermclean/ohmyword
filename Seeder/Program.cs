@@ -1,14 +1,27 @@
-﻿const string DefaultDatabaseName = "OhMyWord";
-const string DefaultConnectionString = "AccountEndpoint=https://localhost:8081/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==";
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using OhMyWord.Services.Data;
+using OhMyWord.Services.Options;
 
-Console.WriteLine("This program will attempt to populate an OhMyWord database.");
+namespace OhMyWord.Seeder;
 
-var databaseName = GetUserResponse($"Database name ({DefaultDatabaseName}): ", DefaultDatabaseName);
-var connectionString = GetUserResponse($"Connection string (local emulator): ", DefaultConnectionString);
-
-static string GetUserResponse(string prompt, string defaultResponse)
+public static class Program
 {
-    Console.Write(prompt);
-    var response = Console.ReadLine();
-    return string.IsNullOrEmpty(response) ? defaultResponse : response;
+    public static async Task Main(string[] args)
+    {
+        var host = Host.CreateDefaultBuilder(args)
+            .ConfigureServices((context, services) =>
+            {
+                var configuration = context.Configuration;
+
+                services.AddOptions<CosmosDbOptions>().Bind(configuration.GetSection("CosmosDb"));
+                services.AddHttpClient();
+                services.AddSingleton<ICosmosDbService, CosmosDbService>();
+
+                services.AddHostedService<MainService>();
+            })
+            .Build();
+
+        await host.RunAsync();
+    }
 }
