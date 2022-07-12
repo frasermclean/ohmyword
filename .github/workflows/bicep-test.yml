@@ -1,0 +1,10 @@
+name: Bicep Deploy Test
+
+# subscription: d38de57b-b6cc-4a43-aeac-c7e6b68f1283
+# resource-group: OhMyWord-Dev
+# scopes: --scopes /subscriptions/d38de57b-b6cc-4a43-aeac-c7e6b68f1283/resourceGroups/OhMyWord-Dev
+
+on:
+  push:
+    branches:
+      - bicep-pipeline
