@@ -9,7 +9,7 @@ public class ModelTests
     [Fact]
     public void WordShouldHaveValidProperties()
     {
-        var timestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
+        var timestamp = GetCurrentTimestamp();
         var word = GetTestWord(timestamp);
 
         word.Id.Should().Be("happy");
@@ -49,14 +49,35 @@ public class ModelTests
         letterHint.Value.Should().Be(expectedValue);
     }
 
-    private static Word GetTestWord(long timestamp = 0)
+    [Fact]
+    public void PlayerShouldHaveValidProperties()
     {
-        return new Word
-        {
-            Id = "happy",
-            Definition = "A warm fuzzy feeling",
-            PartOfSpeech = PartOfSpeech.Adjective,
-            Timestamp = timestamp
-        };
+        var timestamp = GetCurrentTimestamp();
+        var player = GetTestPlayer(timestamp);
+
+        player.VisitorId.Should().Be("123");
+        player.RegistrationCount.Should().Be(3);
+        player.Score.Should().Be(400);
+        player.Timestamp.Should().Be(timestamp);
+        player.GetPartition().Should().Be(player.Id);
     }
+
+    private static Player GetTestPlayer(long timestamp = default) => new()
+    {
+        Id = Guid.NewGuid().ToString(),
+        VisitorId = "123",
+        RegistrationCount = 3,
+        Score = 400,
+        Timestamp = timestamp,
+    };
+
+    private static Word GetTestWord(long timestamp = default) => new()
+    {
+        Id = "happy",
+        Definition = "A warm fuzzy feeling",
+        PartOfSpeech = PartOfSpeech.Adjective,
+        Timestamp = timestamp
+    };
+
+    private static long GetCurrentTimestamp() => DateTimeOffset.Now.ToUnixTimeSeconds();
 }
