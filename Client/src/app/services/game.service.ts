@@ -1,128 +1,92 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Subject } from 'rxjs';
 import { HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
 
 import { environment } from 'src/environments/environment';
+import { FingerprintService } from './fingerprint.service';
 
-import { WordHintResponse } from '../models/responses/word-hint.response';
 import { RegisterPlayerResponse } from '../models/responses/register-player.response';
 import { GuessResponse } from '../models/responses/guess.response';
-import { GameStatusResponse } from '../models/responses/game-status.response';
-
-import { WordHint } from '../models/word-hint';
-
-import { FingerprintService } from './fingerprint.service';
-import { SoundService, SoundSprite } from './sound.service';
-import { GameStatus } from '../models/game-status';
 import { LetterHintResponse } from '../models/responses/letter-hint.response';
-import { LetterHint } from '../models/letter-hint';
+import { RoundStartResponse } from '../models/responses/round-start.response';
+import { RoundEndResponse } from '../models/responses/round-end.response';
+
+import { Store } from '@ngxs/store';
+
+import { Game, Guess, Hub } from '../game/game.actions';
 
 @Injectable({
   providedIn: 'root',
 })
 export class GameService {
-  private playerId = '';
-  private hubConnection = new HubConnectionBuilder()
+  private readonly hubConnection = new HubConnectionBuilder()
     .withUrl(environment.api.hubUrl)
     .configureLogging(environment.production ? LogLevel.Error : LogLevel.Information)
     .build();
 
-  private readonly registeredSubject = new BehaviorSubject<boolean>(false);
-  public get registered$() {
-    return this.registeredSubject.asObservable();
+  constructor(private fingerprintService: FingerprintService, private store: Store) {
+    // register callbacks
+    this.hubConnection.onclose((error) => this.store.dispatch(new Hub.Disconnected(error)));
+    this.hubConnection.on('SendRoundStarted', (response: RoundStartResponse) =>
+      this.store.dispatch(new Game.RoundStarted(response))
+    );
+    this.hubConnection.on('SendRoundEnded', (response: RoundEndResponse) =>
+      this.store.dispatch(new Game.RoundEnded(response))
+    );
+    this.hubConnection.on('SendLetterHint', (response: LetterHintResponse) => {
+      this.store.dispatch(new Game.LetterHintReceived(response));
+    });
+    this.hubConnection.on('SendPlayerCount', (count: number) =>
+      this.store.dispatch(new Game.PlayerCountUpdated(count))
+    );
   }
 
-  private readonly gameStatusSubject = new BehaviorSubject<GameStatus>(GameStatus.default);
-  public get gameStatus$() {
-    return this.gameStatusSubject.asObservable();
+  /**
+   * Connect to game hub (if not already connected)
+   */
+  public async connect() {
+    if (this.hubConnection.state !== HubConnectionState.Disconnected) {
+      console.warn('Invalid hub connection state to perform connect:', this.hubConnection.state);
+      return;
+    }
+
+    try {
+      await this.hubConnection.start();
+      this.store.dispatch(new Hub.Connected());
+    } catch (error) {
+      this.store.dispatch(new Hub.ConnectFailed(error));
+    }
   }
 
-  private readonly wordHintSubject = new BehaviorSubject<WordHint>(WordHint.default);
-  public get wordHint$() {
-    return this.wordHintSubject.asObservable();
-  }
+  /**
+   * Disconnect from game hub
+   */
+  public disconnect() {
+    if (this.hubConnection.state !== HubConnectionState.Connected) {
+      console.warn('Invalid hub connection state to perform disconnect:', this.hubConnection.state);
+      return;
+    }
 
-  private readonly letterHintSubject = new Subject<LetterHint>();
-  public get letterHint$() {
-    return this.letterHintSubject.asObservable();
+    this.hubConnection.stop();
   }
-
-  private guessSubject = new BehaviorSubject<string>('');
-  public get guess$() {
-    return this.guessSubject.asObservable();
-  }
-
-  public get guess() {
-    return this.guessSubject.value;
-  }
-
-  public set guess(value: string) {
-    if (value.length > this.wordHintSubject.value.length) return;
-    this.guessSubject.next(value);
-  }
-
-  constructor(private fingerprintService: FingerprintService, private soundService: SoundService) {}
 
   /**
    * Attempt to register with game service.
    */
-  async registerPlayer() {
-    await this.initialize();
+  public async registerPlayer() {
     const visitorId = await this.fingerprintService.getVisitorId();
     const response = await this.hubConnection.invoke<RegisterPlayerResponse>('RegisterPlayer', visitorId);
-
-    this.playerId = response.playerId;
-    this.registeredSubject.next(true);
-    this.wordHintSubject.next(new WordHint(response.wordHint));
-    this.gameStatusSubject.next(new GameStatus(response.gameStatus));
-  }
-
-  public async submitGuess() {
-    // check for mismatched length
-    if (this.guessSubject.value.length !== this.wordHintSubject.value.length) {
-      this.soundService.play(SoundSprite.Incorrect);
-      return;
-    }
-
-    const response = await this.hubConnection.invoke<GuessResponse>('SubmitGuess', {
-      playerId: this.playerId,
-      value: this.guessSubject.value,
-    });
-
-    // play sound to indicate correct / incorrect
-    const sprite = response.correct ? SoundSprite.Correct : SoundSprite.Incorrect;
-    this.soundService.play(sprite);
-
-    // reset guess
-    this.guess = '';
-
-    return response;
+    this.store.dispatch(new Game.PlayerRegistered(response));
+    if (response.roundStart) this.store.dispatch(new Game.RoundStarted(response.roundStart));
+    else if (response.roundEnd) this.store.dispatch(new Game.RoundEnded(response.roundEnd));
   }
 
   /**
-   * Initialize connection to game hub (if not already connected)
+   * Submit to word guess to be evaluated by the game server.
+   * @param roundId The current round ID.
+   * @param value The value of the guess to submit.
    */
-  private async initialize() {
-    if (this.hubConnection.state === HubConnectionState.Disconnected) {
-      // register callback for connection closed error
-      this.hubConnection.onclose((error) => {
-        console.error('Connection closed: ', error);
-        this.registeredSubject.next(false);
-      });
-
-      // register game callbacks
-      this.hubConnection.on('SendGameStatus', (response: GameStatusResponse) => {
-        this.gameStatusSubject.next(new GameStatus(response));
-      });
-      this.hubConnection.on('SendWordHint', (response: WordHintResponse) => {
-        this.wordHintSubject.next(new WordHint(response));
-        this.guess = '';
-      });
-      this.hubConnection.on('SendLetterHint', (response: LetterHintResponse) => {
-        this.letterHintSubject.next(new LetterHint(response));
-      });
-
-      await this.hubConnection.start();
-    }
+  public async submitGuess(roundId: string, value: string) {
+    const response = await this.hubConnection.invoke<GuessResponse>('SubmitGuess', { roundId, value });
+    this.store.dispatch(response.correct ? new Guess.Succeeded(response.points) : new Guess.Failed());
   }
 }

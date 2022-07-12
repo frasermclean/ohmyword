@@ -13,6 +13,8 @@ public static class GameServicesRegistration
             .ValidateOnStart();
 
         services.AddHostedService<GameCoordinator>();
+        services.AddSingleton<IWordsService, WordsService>();
         services.AddSingleton<IGameService, GameService>();
+        services.AddSingleton<IPlayerService, PlayerService>();
     }
 }

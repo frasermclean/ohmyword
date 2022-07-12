@@ -5,5 +5,6 @@ public enum RepositoryAction
     Create,
     Read,
     Update,
-    Delete
+    Delete,
+    Patch
 }

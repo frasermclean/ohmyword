@@ -1,9 +1,7 @@
-import { Component, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output } from '@angular/core';
-
-import { GameService } from 'src/app/services/game.service';
-
+import { Component, EventEmitter, HostListener, OnInit, Output } from '@angular/core';
 import { GuessResponse } from 'src/app/models/responses/guess.response';
-import { WordHint } from 'src/app/models/word-hint';
+import { Store } from '@ngxs/store';
+import { Guess } from '../game.actions';
 
 @Component({
   selector: 'app-guess',
@@ -12,9 +10,6 @@ import { WordHint } from 'src/app/models/word-hint';
 })
 export class GuessComponent implements OnInit {
   response: GuessResponse | null = null;
-
-  @Input()
-  hint: WordHint = null!;
 
   @Output()
   valueChanged = new EventEmitter<string>();
@@ -35,22 +30,19 @@ export class GuessComponent implements OnInit {
     }
   }
 
-  constructor(private gameService: GameService) {}
+  constructor(private store: Store) {}
 
-  ngOnInit(): void {
-    if (!this.hint) throw new Error('Hint has not been set!');
-  }
+  ngOnInit(): void {}
 
   addCharToGuess(char: string) {
-    this.gameService.guess += char;
+    this.store.dispatch(new Guess.Append(char));
   }
 
   deleteCharFromGuess() {
-    if (this.gameService.guess.length === 0) return;
-    this.gameService.guess = this.gameService.guess.slice(0, -1);
+    this.store.dispatch(new Guess.Backspace());
   }
 
   submitGuess() {
-    this.gameService.submitGuess();
+    this.store.dispatch(new Guess.Submit());
   }
 }

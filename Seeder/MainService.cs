@@ -1,0 +1,37 @@
+﻿using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using OhMyWord.Services.Data.Repositories;
+
+namespace OhMyWord.Seeder;
+
+internal class MainService : BackgroundService
+{
+    private readonly ILogger<MainService> logger;
+    private readonly IWordsRepository wordsRepository;
+    private readonly DataReader dataReader;
+
+    public MainService(ILogger<MainService> logger, IWordsRepository wordsRepository, DataReader dataReader)
+    {
+        this.logger = logger;
+        this.wordsRepository = wordsRepository;
+        this.dataReader = dataReader;
+    }
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        var wordCreationCount = 0;
+        foreach (var word in dataReader.Words)
+        {
+            var result = await wordsRepository.CreateWordAsync(word);
+            if (result.Success)
+            {
+                logger.LogInformation("Successfully created word: {word}", word);
+                wordCreationCount++;
+            }
+            else
+                logger.LogError("{message}", result.Message);
+        }
+
+        logger.LogInformation("Operations completed. Created {count} words.", wordCreationCount);
+    }
+}

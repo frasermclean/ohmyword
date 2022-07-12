@@ -1,220 +1,178 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OhMyWord.Core.Models;
-using OhMyWord.Services.Data.Repositories;
+using OhMyWord.Services.Events;
 using OhMyWord.Services.Options;
 
 namespace OhMyWord.Services.Game;
 
 public interface IGameService
 {
-    GameStatus GameStatus { get; }
-    Word CurrentWord { get; }
-    WordHint WordHint { get; }
-    int PlayerCount { get; }
+    Round Round { get; }
+    bool RoundActive { get; }
+    DateTime Expiry { get; }
 
-    event Action<GameStatus> GameStatusChanged;
-    event Action<WordHint> WordHintChanged;
-    event Action<LetterHint>? LetterHintAdded;
+    event EventHandler<RoundStartedEventArgs> RoundStarted;
+    event EventHandler<RoundEndedEventArgs> RoundEnded;
+    event Action<LetterHint> LetterHintAdded;
 
-    Task StartGameAsync(CancellationToken cancellationToken);
-
-    bool IsCorrect(string value);
-    Task<Player> RegisterPlayerAsync(string visitorId, string connectionId);
-    Task UnregisterPlayerAsync(string connectionId);
+    Task ExecuteGameAsync(CancellationToken gameCancellationToken);
+    Task<int> ProcessGuessAsync(string connectionId, string roundId, string value);
 }
 
 public class GameService : IGameService
 {
     private readonly ILogger<GameService> logger;
-    private readonly IWordsRepository wordsRepository;
-    private readonly IPlayerRepository playerRepository;
+    private readonly IWordsService wordsService;
+    private readonly IPlayerService playerService;
+    private readonly GameServiceOptions options;
 
-    private Word currentWord = Word.Default;
+    public Round Round { get; private set; } = Round.Default;
+    public bool RoundActive { get; private set; }
+    public DateTime Expiry { get; private set; }
 
-    private GameStatus gameStatus = new();
-
-    private GameServiceOptions Options { get; }
-
-    public GameStatus GameStatus
-    {
-        get => gameStatus;
-        private set
-        {
-            gameStatus = value;
-            GameStatusChanged?.Invoke(value);
-        }
-    }
-
-    public int PlayerCount { get; private set; }
-
-    public Word CurrentWord
-    {
-        get => currentWord;
-        private set
-        {
-            currentWord = value;
-            WordHint = new WordHint(value);
-            WordHintChanged?.Invoke(WordHint);
-        }
-    }
-
-    public WordHint WordHint { get; private set; } = WordHint.Default;
-
-    public event Action<GameStatus>? GameStatusChanged;
-    public event Action<WordHint>? WordHintChanged;
     public event Action<LetterHint>? LetterHintAdded;
+    public event EventHandler<RoundStartedEventArgs>? RoundStarted;
+    public event EventHandler<RoundEndedEventArgs>? RoundEnded;
 
-    public GameService(
-        ILogger<GameService> logger,
-        IWordsRepository wordsRepository,
-        IPlayerRepository playerRepository,
-        IOptions<GameServiceOptions> options)
+    public GameService(ILogger<GameService> logger, IWordsService wordsService, IPlayerService playerService, IOptions<GameServiceOptions> options)
     {
         this.logger = logger;
-        this.wordsRepository = wordsRepository;
-        this.playerRepository = playerRepository;
+        this.wordsService = wordsService;
+        this.playerService = playerService;
+        this.options = options.Value;
 
-        Options = options.Value;
+        playerService.PlayerAdded += OnPlayerAdded;
+        playerService.PlayerRemoved += OnPlayerRemoved;
     }
 
-    public async Task StartGameAsync(CancellationToken cancellationToken)
+    public async Task ExecuteGameAsync(CancellationToken gameCancellationToken)
     {
-        var words = await LoadWordsFromDatabaseAsync();
-        var previousIndices = new List<int>();
-
-        while (!cancellationToken.IsCancellationRequested)
+        while (!gameCancellationToken.IsCancellationRequested)
         {
-            // randomly select a word
-            CurrentWord = SelectRandomWord(words, previousIndices);
+            // sleep while there are no players
+            if (playerService.PlayerCount == 0)
+            {
+                await Task.Delay(1000, gameCancellationToken);
+                continue;
+            }
 
-            // start of round
-            var roundDelay = CalculateRoundDelay(CurrentWord, Options.LetterHintDelay);
-            UpdateGameStatus(true, roundDelay);
-            logger.LogDebug("Round: {RoundNumber} has started. Current currentWord is: {CurrentWord}", gameStatus.RoundNumber, CurrentWord);
+            // start new round
+            Round = await CreateRoundAsync(gameCancellationToken);
+            RoundActive = true;
+            RoundStarted?.Invoke(this, new RoundStartedEventArgs(Round));
+            Expiry = Round.EndTime;
 
-            await SendLetterHintsAsync(CurrentWord, roundDelay, cancellationToken);
+            logger.LogDebug("Round: {roundNumber} has started with {playerCount} players. Current word is: {word}. Round duration: {seconds} seconds.",
+                Round.Number, Round.PlayerCount, Round.Word, Round.Duration.Seconds);
 
-            // end of round
-            var postRoundDelay = TimeSpan.FromSeconds(Options.PostRoundDelay);
-            UpdateGameStatus(false, postRoundDelay);
-            logger.LogDebug("Round: {RoundNumber} has ended.", gameStatus.RoundNumber);
-            await Task.Delay(postRoundDelay, cancellationToken);
+            // send all letter hints
+            try
+            {
+                await SendLetterHintsAsync(Round);
+            }
+            catch (TaskCanceledException)
+            {
+                logger.LogInformation("Round has been terminated early. Reason: {EndReason}", Round.EndReason);
+            }
+
+            // end current round
+            var postRoundDelay = TimeSpan.FromSeconds(options.PostRoundDelay);
+            var nextRoundStart = DateTime.UtcNow + postRoundDelay;
+            RoundActive = false;
+            Expiry = nextRoundStart;
+            RoundEnded?.Invoke(this, new RoundEndedEventArgs(Round, nextRoundStart));
+            Round.Dispose();
+
+            logger.LogDebug("Round: {number} has ended. Post round delay is: {seconds} seconds", Round.Number, postRoundDelay.Seconds);
+
+            await Task.Delay(postRoundDelay, gameCancellationToken);
         }
     }
 
-    private async Task SendLetterHintsAsync(Word word, TimeSpan roundDelay, CancellationToken cancellationToken)
+    private async Task<Round> CreateRoundAsync(CancellationToken cancellationToken)
     {
-        var letterDelay = roundDelay / word.Id.Length;
+        var word = await wordsService.SelectRandomWordAsync(cancellationToken);
+        var duration = TimeSpan.FromSeconds(word.Value.Length * options.LetterHintDelay);
+        var roundNumber = Round.Number + 1;
+        
+        return new Round(roundNumber, word, duration, playerService.PlayerIds);
+    }
+
+    private async Task SendLetterHintsAsync(Round round)
+    {
+        var word = round.Word;
+        var wordHint = round.WordHint;
+        var letterDelay = round.Duration / word.Value.Length;
         var previousIndices = new List<int>();
 
-        while (previousIndices.Count < word.Id.Length && !cancellationToken.IsCancellationRequested)
+        while (previousIndices.Count < word.Value.Length && !round.CancellationToken.IsCancellationRequested)
         {
-            await Task.Delay(letterDelay, cancellationToken);
+            await Task.Delay(letterDelay, round.CancellationToken);
 
             int index;
-            do index = Random.Shared.Next(word.Id.Length);
+            do index = Random.Shared.Next(word.Value.Length);
             while (previousIndices.Contains(index));
             previousIndices.Add(index);
 
-            var letterHint = new LetterHint
-            {
-                Position = index + 1,
-                Value = word.Value[index]
-            };
+            var letterHint = word.GetLetterHint(index);
 
+            wordHint.AddLetterHint(letterHint);
             LetterHintAdded?.Invoke(letterHint);
-            WordHint.AddLetterHint(letterHint);
         }
     }
 
-    private static TimeSpan CalculateRoundDelay(Word word, double letterHintDelay)
-        => TimeSpan.FromSeconds(word.Id.Length * letterHintDelay);
-
-    private void UpdateGameStatus(bool roundActive, TimeSpan delay)
+    public async Task<int> ProcessGuessAsync(string connectionId, string roundId, string value)
     {
-        GameStatus = roundActive switch
-        {
-            true => new GameStatus
-            {
-                RoundActive = true,
-                RoundNumber = GameStatus.RoundNumber + 1,
-                Expiry = DateTime.UtcNow + delay
-            },
-            false => GameStatus with
-            {
-                RoundActive = false,
-                Expiry = DateTime.UtcNow + delay
-            }
-        };
+        var player = playerService.GetPlayer(connectionId);
+
+        // if round is not active then immediately return false
+        if (!RoundActive || roundId != Round.Id.ToString()) return 0;
+
+        // compare value to current word value
+        if (!string.Equals(value, Round.Word.Value, StringComparison.InvariantCultureIgnoreCase))
+            return 0;
+
+        var guessCountIncremented = Round.IncrementGuessCount(player.Id);
+        if (!guessCountIncremented)
+            logger.LogWarning("Couldn't increment guess count of player with ID: {playerId}", player.Id);
+
+        var pointsAwarded = Round.AwardPlayer(player.Id);
+        if (pointsAwarded == 0)
+            logger.LogWarning("Zero points were awarded to player with ID: {playerId}", player.Id);
+
+        await playerService.IncrementPlayerScoreAsync(player.Id, pointsAwarded);
+
+        // end round if all players have been awarded points
+        if (Round.AllPlayersAwarded)
+            Round.EndRound(RoundEndReason.AllPlayersAwarded);
+
+        return pointsAwarded;
     }
 
-    private async Task<List<Word>> LoadWordsFromDatabaseAsync()
+    private void OnPlayerAdded(object? _, PlayerEventArgs args)
     {
-        List<Word> words = new(await wordsRepository.GetAllWordsAsync());
-
-        if (words.Count == 0)
-        {
-            logger.LogWarning("No words were retrieved from the database!");
-            words.Add(Word.Default);
-        }
-        else
-            logger.LogInformation("Retrieved: {count} words from database.", words.Count);
-
-        return words;
-    }
-
-    private static Word SelectRandomWord(IReadOnlyList<Word> words, ICollection<int> previousIndices)
-    {
-        if (previousIndices.Count == words.Count)
-            previousIndices.Clear();
-
-        int index;
-        do index = Random.Shared.Next(words.Count);
-        while (previousIndices.Contains(index));
-
-        var randomWord = words[index];
-        previousIndices.Add(index);
-
-        return randomWord;
-    }
-
-    public bool IsCorrect(string value) => string.Equals(value, CurrentWord.Id, StringComparison.InvariantCultureIgnoreCase);
-
-    public async Task<Player> RegisterPlayerAsync(string visitorId, string connectionId)
-    {
-        var player = await playerRepository.FindPlayerByVisitorIdAsync(visitorId);
-
-        // create new player if existing player not found
-        if (player is null)
-        {
-            var result = await playerRepository.CreatePlayerAsync(new Player
-            {
-                VisitorId = visitorId,
-                ConnectionId = connectionId
-            });
-
-            player = result.Resource ?? throw new NullReferenceException("Player resource is null!");
-        }
-
-        logger.LogInformation("Player with ID: {playerId} joined the game. Player count: {playerCount}", player.Id, ++PlayerCount);
-
-        return player;
-    }
-
-    public async Task UnregisterPlayerAsync(string connectionId)
-    {
-        --PlayerCount;
-
-        var player = await playerRepository.FindPlayerByConnectionIdAsync(connectionId);
-
-        if (player is null)
-        {
-            logger.LogWarning("Couldn't find a player with connection ID: {connectionId} to unregister. Player count: {playerCount}", connectionId, PlayerCount);
+        // player joined while round wasn't active
+        if (!RoundActive)
             return;
-        }
 
-        await playerRepository.DeletePlayerAsync(player);
-        logger.LogInformation("Player with connection ID: {connectionId} left the game. Player count: {playerCount}", connectionId, PlayerCount);
+        var wasAdded = Round.AddPlayer(args.PlayerId);
+        if (!wasAdded)
+            logger.LogError("Couldn't add player with ID {playerId} to round.", args.PlayerId);
+    }
+
+    private void OnPlayerRemoved(object? _, PlayerEventArgs args)
+    {
+        // player left while round wasn't active
+        if (!RoundActive)
+            return;
+
+        var wasRemoved = Round.RemovePlayer(args.PlayerId);
+        if (!wasRemoved)
+            logger.LogError("Couldn't remove player with ID {playerId} from round.", args.PlayerId);
+
+        // last player left while round active
+        if (args.PlayerCount == 0)
+            Round.EndRound(RoundEndReason.NoPlayersLeft);
     }
 }

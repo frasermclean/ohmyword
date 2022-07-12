@@ -1,3 +1,4 @@
+using Microsoft.Identity.Web;
 using OhMyWord.Api.Hubs;
 using OhMyWord.Api.Mapping;
 using OhMyWord.Api.Registration;
@@ -25,6 +26,13 @@ public static class Program
         var services = builder.Services;
         var configuration = builder.Configuration;
 
+        // set up routing options
+        services.AddRouting(options =>
+        {
+            options.LowercaseUrls = true;
+            options.LowercaseQueryStrings = true;
+        });
+
         services.AddControllers()
             .AddJsonOptions(options =>
             {
@@ -32,12 +40,18 @@ public static class Program
                     new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
             });
 
+        // add microsoft identity authentication services
+        services.AddMicrosoftIdentityWebApiAuthentication(configuration);
+
         // add database services
         services.AddCosmosDbService(configuration);
         services.AddRepositoryServices();
 
         // signalR services
-        services.AddSignalR();
+        services.AddSignalR()
+            .AddJsonProtocol(options =>
+                options.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase))
+            );
 
         // game services
         services.AddGameServices(configuration);
@@ -62,10 +76,19 @@ public static class Program
             app.UseDeveloperExceptionPage();
         }
 
+        // enable serving static content
+        app.UseDefaultFiles();
+        app.UseStaticFiles();
+
         app.UseRouting();
+        app.UseAuthentication();
+        app.UseAuthorization();
 
         app.MapControllers();
-        app.MapHub<GameHub>("/game");
+        app.MapHub<GameHub>("/hub");
+
+        // fall back to SPA index file on unhandled route
+        app.UseEndpoints(configure => configure.MapFallbackToFile("/index.html"));
 
         return app;
     }

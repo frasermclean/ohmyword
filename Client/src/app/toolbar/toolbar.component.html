@@ -1,0 +1,12 @@
+<mat-toolbar color="primary" class="mat-elevation-z4">
+  <a routerLink="/">
+    <h1>{{ appName }}</h1>
+  </a>
+  
+  <span class="spacer"></span>
+
+  <ng-container *ngIf="isLoggedIn">
+    <button mat-raised-button color="accent" (click)="onLogout()">LOGOUT</button>
+  </ng-container>
+  <button *ngIf="!isLoggedIn" mat-raised-button color="accent" (click)="onLogin()">LOGIN / REGISTER</button>
+</mat-toolbar>

@@ -1,34 +1,31 @@
-import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-countdown',
   templateUrl: './countdown.component.html',
   styleUrls: ['./countdown.component.scss'],
 })
-export class CountdownComponent implements OnChanges {
-  @Input() expiryDate: Date = null!;
-  secondsRemaining: number = 0;
-  interval: any;
-
-  constructor() {}
-
-  ngOnChanges(): void {
-    if (!this.expiryDate) throw new Error('Expiry date must be provided!');
+export class CountdownComponent implements OnInit, OnDestroy {
+  @Input() startDate: Date = new Date();
+  @Input() endDate: Date = new Date();
+  @Input() updateRate = 100;
+ 
+  private intervalId: any;
+  public progressPercentage: number = 0;
+  
+  ngOnInit() {
+    const startTime = this.startDate.getTime();
+    const endTime = this.endDate.getTime();
+    const timespan = endTime - startTime;
     
-    const expiryTime = this.expiryDate.getTime();
-    this.secondsRemaining = this.getSecondsRemaining(expiryTime);
-
-    // clear any previous inteval
-    if (this.interval) clearInterval(this.interval);
-
-    this.interval = setInterval(() => {
-      this.secondsRemaining = this.getSecondsRemaining(expiryTime);
-    }, 1000);
+    this.intervalId = setInterval(() => {
+      const now = new Date().getTime();
+      const elapsed = now - startTime;
+      this.progressPercentage = Math.round((elapsed / timespan) * 100);
+    }, this.updateRate);
   }
 
-  private getSecondsRemaining(expiry: number) {
-    const now = new Date().getTime();
-    const difference = expiry - now;
-    return Math.round((difference % (1000 * 60)) / 1000);
+  ngOnDestroy() {
+    clearInterval(this.intervalId);
   }
 }

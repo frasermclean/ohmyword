@@ -7,9 +7,9 @@ public class WordHint
 
     public int Length => word.Id.Length;
     public string Definition => word.Definition;
-    public IReadOnlyList<LetterHint> Letters => letterHints;
+    public IEnumerable<LetterHint> Letters => letterHints;
 
-    public WordHint(Word word)
+    internal WordHint(Word word)
     {
         this.word = word;
     }

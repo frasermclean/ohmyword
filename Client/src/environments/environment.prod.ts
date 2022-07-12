@@ -1,9 +1,10 @@
-const server = 'https://api.ohmyword.live';
+import { LogLevel } from '@azure/msal-browser';
 
 export const environment = {
   production: true,
   api: {
-    baseUrl: `${server}/api`,
-    hubUrl: `${server}/game`,
+    baseUrl: `/api`,
+    hubUrl: `/hub`,
   },
+  authLogLevel: LogLevel.Error,
 };

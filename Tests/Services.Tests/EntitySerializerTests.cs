@@ -9,6 +9,9 @@ namespace Services.Tests;
 
 public class EntitySerializerTests
 {
+    private const long OneTwoThree = 123;
+    private readonly DateTime oneTwoThreeSecondsPastEpoch = new(1970, 1, 1, 0, 2, 3);
+
     [Fact]
     public void ConvertToStream_ShouldPass()
     {
@@ -29,7 +32,8 @@ public class EntitySerializerTests
         word.Id.Should().Be("rooster");
         word.Definition.Should().Be("A male domestic chicken.");
         word.PartOfSpeech.Should().Be(PartOfSpeech.Noun);
-        word.LastUpdateTime.Should().BeAfter(DateTime.UnixEpoch);
+        word.Timestamp.Should().Be(OneTwoThree);
+        word.LastModifiedTime.Should().Be(oneTwoThreeSecondsPastEpoch);
     }
 
     [Fact]
@@ -41,6 +45,8 @@ public class EntitySerializerTests
         word.Id.Should().Be(TestWord.Id);
         word.Definition.Should().Be(TestWord.Definition);
         word.PartOfSpeech.Should().Be(TestWord.PartOfSpeech);
+        word.Timestamp.Should().Be(OneTwoThree);
+        word.LastModifiedTime.Should().Be(oneTwoThreeSecondsPastEpoch);
     }
 
     private static Word TestWord => new()
@@ -48,6 +54,7 @@ public class EntitySerializerTests
         Id = "cat",
         Definition = "Small furry creature",
         PartOfSpeech = PartOfSpeech.Noun,
+        Timestamp = OneTwoThree,
     };
 
     private static Stream GenerateStreamFromString(string input)

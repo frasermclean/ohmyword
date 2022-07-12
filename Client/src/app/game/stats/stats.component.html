@@ -1,0 +1,16 @@
+<div id="container">
+  <div class="block" *ngIf="round$ | async as round">
+    <p class="title">Round</p>
+    <p class="value">{{ round.number }}</p>
+  </div>
+
+  <div class="block">
+    <p class="title">Score</p>
+    <p class="value">{{ score$ | async }}</p>
+  </div>
+
+  <div class="block">
+    <p class="title">Players</p>
+    <p class="value">{{ playerCount$ | async }}</p>
+  </div>
+</div>
