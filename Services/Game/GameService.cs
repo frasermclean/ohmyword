@@ -115,7 +115,7 @@ public class GameService : IGameService
             while (previousIndices.Contains(index));
             previousIndices.Add(index);
 
-            var letterHint = word.GetLetterHint(index);
+            var letterHint = word.GetLetterHint(index + 1);
 
             wordHint.AddLetterHint(letterHint);
             LetterHintAdded?.Invoke(letterHint);

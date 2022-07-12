@@ -31,6 +31,7 @@ public class ModelTests
         wordHint.Length.Should().Be(5);
         wordHint.Definition.Should().Be(word.Definition);
         wordHint.Letters.Should().HaveCount(0);
+        letterHint.Value.Should().Be('a');
 
         // add a letter hint
         wordHint.AddLetterHint(letterHint);
