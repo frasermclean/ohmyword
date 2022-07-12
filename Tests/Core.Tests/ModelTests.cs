@@ -25,12 +25,8 @@ public class ModelTests
     public void WordHintShouldHaveValidProperties()
     {
         var word = GetTestWord();
-        var wordHint = new WordHint(word);
-        var letterHint = new LetterHint
-        {
-            Position = 2,
-            Value = 'a'
-        };
+        var wordHint = word.GetWordHint();
+        var letterHint = word.GetLetterHint(2);
 
         wordHint.Length.Should().Be(5);
         wordHint.Definition.Should().Be(word.Definition);
@@ -39,6 +35,18 @@ public class ModelTests
         // add a letter hint
         wordHint.AddLetterHint(letterHint);
         wordHint.Letters.Should().HaveCount(1);
+    }
+
+    [Theory]
+    [InlineData(1, 'h')]
+    [InlineData(3, 'p')]
+    [InlineData(5, 'y')]
+    public void LetterHintShouldHaveValidProperties(int position, char expectedValue)
+    {
+        var letterHint = GetTestWord().GetLetterHint(position);
+
+        letterHint.Position.Should().Be(position);
+        letterHint.Value.Should().Be(expectedValue);
     }
 
     private static Word GetTestWord(long timestamp = 0)
