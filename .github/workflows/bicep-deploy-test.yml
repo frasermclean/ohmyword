@@ -1,9 +1,5 @@
 name: Bicep Deploy Test
 
-# subscription: d38de57b-b6cc-4a43-aeac-c7e6b68f1283
-# resource-group: OhMyWord-Dev
-# scopes: --scopes /subscriptions/d38de57b-b6cc-4a43-aeac-c7e6b68f1283/resourceGroups/OhMyWord-Dev
-
 on:
   push:
     branches:
@@ -16,13 +12,13 @@ jobs:
     steps:
 
       # Check out the repository 
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
+        name: Checkout repository
         with:
           lfs: true
       
       # Login to Azure
-      - name: Login to Azure
-        uses: azure/login@v1
+      - uses: azure/login@v1
+        name: Login to Azure
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
