@@ -4,10 +4,10 @@ targetScope = 'resourceGroup'
 param appName string = 'OhMyWord'
 
 @allowed([
+  'Test'
   'Prod'
-  'Dev'
 ])
-param environment string = 'Dev'
+param environment string = 'Test'
 
 @description('Location of the resource group in which to deploy')
 param location string = resourceGroup().location

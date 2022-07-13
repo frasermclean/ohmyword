@@ -4,10 +4,13 @@ param appName string
 param location string = resourceGroup().location
 
 @allowed([
+  'Test'
   'Prod'
-  'Dev'
 ])
-param environment string = 'Dev'
+param environment string = 'Test'
+
+@description('The SKU to use for the App Service plan')
+param appServicePlanSkuName string = 'B1'
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
   name: 'ASP-${appName}-${environment}'
@@ -16,7 +19,7 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
     reserved: true
   }
   sku: {
-    name: 'F1'
+    name: appServicePlanSkuName
   }
   kind: 'linux'
 }
