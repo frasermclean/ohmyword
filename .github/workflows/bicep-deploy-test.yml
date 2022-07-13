@@ -44,5 +44,5 @@ jobs:
         name: Checkout repository
         with:
           lfs: true
-          
-      - uses: ./.github/workflows/build-app.yml
+
+      - uses: ./.github/workflows/build-app
