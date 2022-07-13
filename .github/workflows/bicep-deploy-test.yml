@@ -37,6 +37,7 @@ jobs:
         run: az deployment group create --resource-group $RESOURCE_GROUP --template-file main.bicep
 
   build-app:
+    name: Build application
     runs-on: ubuntu-latest
     steps:
-      - uses: ./.github/workflows/build-app.yml
+      - uses: .github/workflows/build-app.yml
