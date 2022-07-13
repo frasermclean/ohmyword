@@ -4,6 +4,10 @@ on:
   push:
     branches: [ feature/bicep-pipeline ]
   workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
    
 jobs:
   deploy-infrastructure:
