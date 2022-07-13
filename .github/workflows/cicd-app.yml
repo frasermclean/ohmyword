@@ -5,5 +5,6 @@ on:
     branches: [feature/bicep-pipeline]
 
 jobs:
-  build-app:
-    uses: ./.github/workflows/build-app.yml
+  build:
+    name: Build
+    uses: ./.github/workflows/build.yml

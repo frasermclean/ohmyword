@@ -1,11 +1,9 @@
-name: Build Application
-
 on:
   workflow_call:
 
 jobs:
   build-client:
-    name: Build client
+    name: Client
     runs-on: ubuntu-latest
     steps:
       # Check out the repository
@@ -38,7 +36,7 @@ jobs:
           path: ./Client/dist
 
   build-app:
-    name: Build application
+    name: Application
     runs-on: ubuntu-latest
     needs: build-client
     steps:
