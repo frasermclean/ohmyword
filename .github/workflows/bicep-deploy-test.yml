@@ -3,6 +3,7 @@ name: Bicep Deploy Test
 on:
   push:
     branches: [ feature/bicep-pipeline ]
+  workflow_dispatch:
    
 jobs:
   deploy-infrastructure:
