@@ -8,3 +8,12 @@ on:
   push:
     branches:
       - bicep-pipeline
+
+jobs:
+  runs-on: ubuntu-latest
+  environment: Test
+  steps:
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
