@@ -8,6 +8,7 @@ jobs:
   deploy-infrastructure:
     name: Deploy infrastructure
     runs-on: ubuntu-latest
+    environment: Test
     steps:
 
       # Check out the repository 
