@@ -40,4 +40,4 @@ jobs:
     name: Build application
     runs-on: ubuntu-latest
     steps:
-      - uses: frasermclean/ohmyword/.github/workflows/build-app.yml
+      - uses: ./.github/workflows/build-app.yml
