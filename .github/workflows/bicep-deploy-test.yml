@@ -34,5 +34,7 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       
       # Deploy Bicep template
-      - run: az deployment group create --resource-group $RESOURCE_GROUP --template-file .\main.bicep
-        name: Deploy Bicep template
+      - name: Deploy Bicep template
+        working-directory: ./Infrastructure
+        run: az deployment group create --resource-group $RESOURCE_GROUP --template-file main.bicep
+        
