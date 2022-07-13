@@ -11,21 +11,31 @@ public static class Program
 {
     public static void Main(string[] args)
     {
-        // build configured application
-        var app = WebApplication.CreateBuilder(args)
-            .AddServices()
-            .Build()
-            .ConfigureRequestPipeline();
+        var appBuilder = WebApplication.CreateBuilder(args);
+        var configuration = appBuilder.Configuration;
+
+        // configure app host
+        appBuilder.Host
+            .ConfigureAppConfiguration(configBuilder =>
+            {
+                // add azure app configuration store
+                var appConfigConnectionString = configuration.GetConnectionString("AppConfig");
+                configBuilder.AddAzureAppConfiguration(appConfigConnectionString);
+            })
+            .ConfigureServices(services => AddServices(services, configuration));
+
+        // build the app and configure the request pipeline
+        var app = appBuilder.Build().ConfigureRequestPipeline();
 
         // run the application
         app.Run();
     }
 
-    private static WebApplicationBuilder AddServices(this WebApplicationBuilder builder)
+    /// <summary>
+    /// Add application services to the service collection.
+    /// </summary>
+    private static void AddServices(IServiceCollection services, IConfigurationRoot configuration)
     {
-        var services = builder.Services;
-        var configuration = builder.Configuration;
-
         // set up routing options
         services.AddRouting(options =>
         {
@@ -50,20 +60,20 @@ public static class Program
         // signalR services
         services.AddSignalR()
             .AddJsonProtocol(options =>
-                options.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase))
+                options.PayloadSerializerOptions.Converters.Add(
+                    new JsonStringEnumConverter(JsonNamingPolicy.CamelCase))
             );
 
         // game services
         services.AddGameServices(configuration);
 
         // object mapping service
-        services.AddAutoMapper(mapperConfiguration => mapperConfiguration.AddProfiles(MappingProfiles.GetProfiles()));
+        services.AddAutoMapper(mapperConfiguration =>
+            mapperConfiguration.AddProfiles(MappingProfiles.GetProfiles()));
 
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
-
-        return builder;
     }
 
     private static WebApplication ConfigureRequestPipeline(this WebApplication app)
