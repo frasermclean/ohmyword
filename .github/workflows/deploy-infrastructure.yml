@@ -1,0 +1,47 @@
+name: Deploy infrastructure
+
+on:
+  workflow_call:
+    inputs:
+      resource-group:
+        type: string
+        required: true
+      template-file:
+        type: string
+        required: true
+    secrets:
+      client-id:
+        required: true
+      tenant-id:
+        required: true
+      subscription-id:
+        required: true
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy-infrastructure:
+    name: Deploy infrastructure
+    runs-on: ubuntu-latest
+    environment: Test
+    steps:
+      # Check out the repository
+      - uses: actions/checkout@v3
+        name: Checkout repository
+        with:
+          lfs: true
+
+      # Login to Azure
+      - uses: azure/login@v1
+        name: Login to Azure
+        with:
+          client-id: ${{ secrets.client-id }}
+          tenant-id: ${{ secrets.tenant-id }}
+          subscription-id: ${{ secrets.subscription-id }}
+
+      # Deploy Bicep template
+      - name: Deploy Bicep template
+        working-directory: ./Infrastructure
+        run: az deployment group create --resource-group ${{ inputs.resource-group }} --template-file ${{ inputs.template-file }}

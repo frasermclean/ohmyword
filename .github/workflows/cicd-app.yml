@@ -5,6 +5,17 @@ on:
     branches: [feature/bicep-pipeline]
 
 jobs:
-  build:
+  build-app:
     name: Build
-    uses: ./.github/workflows/build.yml
+    uses: ./.github/workflows/build-app.yml
+
+  deploy-infrastructure:
+    name: Deploy Infrastructure
+    uses: ./.github/workflows/deploy-infrastructure.yml
+    with:
+      resource-group: OhMyWord-Test
+      template-file: main.bicep
+    secrets:
+      client-id: ${{ secrets.AZURE_CLIENT_ID }}
+      tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+      subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
