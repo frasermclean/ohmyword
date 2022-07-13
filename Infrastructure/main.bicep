@@ -20,3 +20,12 @@ module appService 'appService.bicep' = {
     environment: environment
   }
 }
+
+module appConfig 'appConfig.bicep' = {
+  name: 'appConfig'
+  params: {
+    appName: appName
+    location: location
+    environment: environment
+  }
+}
