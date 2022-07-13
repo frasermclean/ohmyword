@@ -3,7 +3,6 @@ name: Bicep Deploy Test
 on:
   push:
     branches: [feature/bicep-pipeline]
-  workflow_dispatch:
 
 permissions:
   id-token: write
@@ -36,3 +35,8 @@ jobs:
       - name: Deploy Bicep template
         working-directory: ./Infrastructure
         run: az deployment group create --resource-group $RESOURCE_GROUP --template-file main.bicep
+
+  build-app:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./.github/workflows/build-app.yml
