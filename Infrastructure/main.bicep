@@ -33,3 +33,12 @@ module appService 'appService.bicep' = {
     appConfigConnectionString: appConfigConnectionString
   }
 }
+
+module cosmosDb 'cosmosDb.bicep' = {
+  name: 'cosmosDb'
+  params: {
+    appName: appName
+    location: location
+    environment: environment
+  }
+}
