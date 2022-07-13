@@ -40,4 +40,9 @@ jobs:
     name: Build application
     runs-on: ubuntu-latest
     steps:
-      - uses: .github/workflows/build-app.yml
+      - uses: actions/checkout@v3
+        name: Checkout repository
+        with:
+          lfs: true
+          
+      - uses: ./.github/workflows/build-app.yml
