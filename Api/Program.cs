@@ -13,14 +13,14 @@ public static class Program
     public static void Main(string[] args)
     {
         var appBuilder = WebApplication.CreateBuilder(args);
+        var configuration = appBuilder.Configuration;
 
         // configure app host
         appBuilder.Host
             .ConfigureAppConfiguration(builder =>
             {
                 // add azure app configuration store via managed identity
-                var configuration = builder.Build();
-                var endpoint = configuration.GetValue<string>("AppConfig:Endpoint");
+                var endpoint = configuration.GetValue<string>("AppConfigEndpoint");
                 if (string.IsNullOrEmpty(endpoint)) return;
                 builder.AddAzureAppConfiguration(options =>
                 {
@@ -28,7 +28,7 @@ public static class Program
                     options.Connect(uri, new ManagedIdentityCredential());
                 });
             })
-            .ConfigureServices(services => AddServices(services, appBuilder.Configuration));
+            .ConfigureServices(services => AddServices(services, configuration));
 
         // build the app and configure the request pipeline
         var app = appBuilder.Build().ConfigureRequestPipeline();
