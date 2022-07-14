@@ -1,0 +1,26 @@
+name: Publish application
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        type: string
+        required: true
+      resource-group:
+        type: string
+        required: true
+    secrets:
+      client-id:
+        required: true
+      tenant-id:
+        required: true
+      subscription-id:
+        required: true
+
+jobs:
+  deploy:
+    name: Deploy to Azure
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Deploying to resouce group ${{ inputs.resource-group }}, environment ${{ inputs.environment }}"
+      
