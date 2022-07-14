@@ -1,5 +1,3 @@
-targetScope = 'resourceGroup'
-
 @description('Name of the application')
 param appName string = 'OhMyWord'
 
@@ -12,9 +10,40 @@ param environment string = 'Test'
 @description('Location of the resource group in which to deploy')
 param location string = resourceGroup().location
 
+@description('Throughput of the database measured in R/U')
+@minValue(400)
+param databaseThroughput int = 1000
+
+// cosmos db account
+resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-05-15' = {
+  name: toLower('DB-${appName}-${environment}')
+  location: location
+  properties: {
+    databaseAccountOfferType: 'Standard'
+    enableFreeTier: environment == 'Test' // enable free tier in test environment
+    locations: [
+      {
+        locationName: location
+        failoverPriority: 0
+      }
+    ]
+  }
+  resource database 'sqlDatabases@2022-05-15' = {
+    name: appName
+    properties: {
+      resource: {
+        id: appName
+      }
+      options: {
+        throughput: databaseThroughput
+      }
+    }
+  }
+}
+
 // azure app configuration service
 resource appConfig 'Microsoft.AppConfiguration/configurationStores@2022-05-01' = {
-  name: 'AC-${appName}-${environment}'
+  name: toLower('AC-${appName}-${environment}')
   location: location
   sku: {
     name: 'standard'
@@ -31,26 +60,54 @@ resource appConfig 'Microsoft.AppConfiguration/configurationStores@2022-05-01' =
       value: '5'
     }
   }
-}
-
-// get read only connection string from app config
-var appConfigConnectionString = appConfig.listKeys().value[2].connectionString
-
-module appService 'appService.bicep' = {
-  name: 'appService'
-  params: {
-    appName: appName
-    location: location
-    environment: environment
-    appConfigConnectionString: appConfigConnectionString
+  resource cosmosDbDatabaseId 'keyValues@2022-05-01' = {
+    name: 'CosmosDb:DatabaseId'
+    properties: {
+      value: appName
+    }
+  }
+  resource cosmosDbEndpoint 'keyValues@2022-05-01' = {
+    name: 'CosmosDb:Endpoint'
+    properties: {
+      value: cosmosDbAccount.properties.documentEndpoint
+    }
+  }
+  resource cosmosDbPrimaryKey 'keyValues@2022-05-01' = {
+    name: 'CosmosDb:PrimaryKey'
+    properties: {
+      value: cosmosDbAccount.listKeys().primaryMasterKey
+    }
   }
 }
 
-module cosmosDb 'cosmosDb.bicep' = {
-  name: 'cosmosDb'
-  params: {
-    appName: appName
-    location: location
-    environment: environment
+// app service plan
+resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
+  name: toLower('ASP-${appName}-${environment}')
+  location: location
+  properties: {
+    reserved: true
+  }
+  sku: {
+    name: 'B1'
+  }
+  kind: 'linux'
+}
+
+// app service
+resource appService 'Microsoft.Web/sites@2022-03-01' = {
+  name: toLower('APP-${appName}-${environment}')
+  location: location
+  properties: {
+    serverFarmId: appServicePlan.id
+    siteConfig: {
+      linuxFxVersion: 'DOTNETCORE|6.0'
+      connectionStrings: [
+        {
+          name: 'AppConfig'
+          connectionString: appConfig.listKeys().value[2].connectionString
+          type: 'Custom'
+        }
+      ]
+    }
   }
 }
