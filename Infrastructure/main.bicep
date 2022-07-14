@@ -101,11 +101,10 @@ resource appService 'Microsoft.Web/sites@2022-03-01' = {
     serverFarmId: appServicePlan.id
     siteConfig: {
       linuxFxVersion: 'DOTNETCORE|6.0'
-      connectionStrings: [
+      appSettings: [
         {
-          name: 'AppConfig'
-          connectionString: appConfig.listKeys().value[2].connectionString
-          type: 'Custom'
+          name: 'AppConfig:Endpoint'
+          value: appConfig.properties.endpoint
         }
       ]
     }

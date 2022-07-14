@@ -4,6 +4,7 @@ using OhMyWord.Api.Mapping;
 using OhMyWord.Api.Registration;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Azure.Identity;
 
 namespace OhMyWord.Api;
 
@@ -12,18 +13,22 @@ public static class Program
     public static void Main(string[] args)
     {
         var appBuilder = WebApplication.CreateBuilder(args);
-        var configuration = appBuilder.Configuration;
 
         // configure app host
         appBuilder.Host
-            .ConfigureAppConfiguration(configBuilder =>
+            .ConfigureAppConfiguration(builder =>
             {
-                // add azure app configuration store
-                var appConfigConnectionString = configuration.GetConnectionString("AppConfig");
-                if (string.IsNullOrEmpty(appConfigConnectionString)) return;
-                configBuilder.AddAzureAppConfiguration(appConfigConnectionString);
+                // add azure app configuration store via managed identity
+                var configuration = builder.Build();
+                var endpoint = configuration.GetValue<string>("AppConfig:Endpoint");
+                if (string.IsNullOrEmpty(endpoint)) return;
+                builder.AddAzureAppConfiguration(options =>
+                {
+                    var uri = new Uri(endpoint);
+                    options.Connect(uri, new ManagedIdentityCredential());
+                });
             })
-            .ConfigureServices(services => AddServices(services, configuration));
+            .ConfigureServices(services => AddServices(services, appBuilder.Configuration));
 
         // build the app and configure the request pipeline
         var app = appBuilder.Build().ConfigureRequestPipeline();
