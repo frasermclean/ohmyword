@@ -6,7 +6,7 @@ on:
       environment:
         type: string
         required: true
-      resource-group:
+      app-name:
         type: string
         required: true
     secrets:
@@ -22,5 +22,26 @@ jobs:
     name: Deploy to Azure
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Deploying to resouce group ${{ inputs.resource-group }}, environment ${{ inputs.environment }}"
+       # Login to Azure
+      - uses: azure/login@v1
+        name: Login to Azure
+        with:
+          client-id: ${{ secrets.client-id }}
+          tenant-id: ${{ secrets.tenant-id }}
+          subscription-id: ${{ secrets.subscription-id }}
+      
+      # Download published application from build job
+      - name: Download published application artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: published-app
+
+      # Deploy to Azure app service
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ inputs.app-name }}
+          slot-name: Production
+          package: .
       
