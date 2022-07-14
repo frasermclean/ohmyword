@@ -6,6 +6,12 @@ namespace OhMyWord.Services.Game;
 
 public interface IWordsService
 {
+    /// <summary>
+    /// Set to true to instruct the service to reload all words from the database
+    /// the next time that SelectRandomWordAsync is called.
+    /// </summary>
+    bool ShouldReloadWords { get; set; }
+
     Task<Word> SelectRandomWordAsync(CancellationToken cancellationToken);
 }
 
@@ -16,6 +22,8 @@ public class WordsService : IWordsService
     private readonly List<Word> words = new();
     private readonly List<int> previousIndices = new();
 
+    public bool ShouldReloadWords { get; set; } = true;
+
     public WordsService(ILogger<WordsService> logger, IWordsRepository wordsRepository)
     {
         this.logger = logger;
@@ -24,8 +32,14 @@ public class WordsService : IWordsService
 
     public async Task<Word> SelectRandomWordAsync(CancellationToken cancellationToken)
     {
-        if (words.Count == 0) await LoadWordsFromRepositoryAsync(cancellationToken);
+        // check if we should load words from the database
+        if (ShouldReloadWords)
+        {
+            await LoadWordsFromRepositoryAsync(cancellationToken);
+            ShouldReloadWords = false;
+        }
 
+        // we've gone through all words so start again
         if (previousIndices.Count == words.Count)
             previousIndices.Clear();
 
@@ -43,6 +57,7 @@ public class WordsService : IWordsService
 
     private async Task LoadWordsFromRepositoryAsync(CancellationToken cancellationToken)
     {
+        words.Clear();
         words.AddRange(await wordsRepository.GetAllWordsAsync(cancellationToken));
 
         if (words.Count == 0)

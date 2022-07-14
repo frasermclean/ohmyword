@@ -10,11 +10,13 @@ public sealed class GameController : AuthorizedControllerBase
 {
     private readonly IGameService gameService;
     private readonly IMapper mapper;
+    private readonly IWordsService wordsService;
 
-    public GameController(IGameService gameService, IMapper mapper)
+    public GameController(IGameService gameService, IMapper mapper, IWordsService wordsService)
     {
         this.gameService = gameService;
         this.mapper = mapper;
+        this.wordsService = wordsService;
     }
 
     [HttpGet("state")]
@@ -25,4 +27,11 @@ public sealed class GameController : AuthorizedControllerBase
 
     [HttpGet("current-word")]
     public ActionResult<WordResponse> GetCurrentWord() => Ok(mapper.Map<WordResponse>(gameService.Round.Word));
+
+    [HttpPost("reload-words")]
+    public IActionResult UpdateShouldReloadWords()
+    {
+        wordsService.ShouldReloadWords = true;
+        return NoContent();
+    }
 }

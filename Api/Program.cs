@@ -20,6 +20,7 @@ public static class Program
             {
                 // add azure app configuration store
                 var appConfigConnectionString = configuration.GetConnectionString("AppConfig");
+                if (string.IsNullOrEmpty(appConfigConnectionString)) return;
                 configBuilder.AddAzureAppConfiguration(appConfigConnectionString);
             })
             .ConfigureServices(services => AddServices(services, configuration));
