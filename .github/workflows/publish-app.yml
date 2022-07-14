@@ -17,6 +17,10 @@ on:
       subscription-id:
         required: true
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   deploy:
     name: Deploy to Azure
@@ -42,6 +46,4 @@ jobs:
         uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ inputs.app-name }}
-          slot-name: Production
-          package: .
       
