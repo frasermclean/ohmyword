@@ -23,8 +23,9 @@ permissions:
 
 jobs:
   deploy:
-    name: Deploy to Azure
+    name: Publish to ${{ inputs.environment }}
     runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
     steps:
        # Login to Azure
       - uses: azure/login@v1
