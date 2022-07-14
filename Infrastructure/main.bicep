@@ -19,6 +19,18 @@ resource appConfig 'Microsoft.AppConfiguration/configurationStores@2022-05-01' =
   sku: {
     name: 'standard'
   }
+  resource letterHintDelay 'keyValues@2022-05-01' = {
+    name: 'Game:LetterHintDelay'
+    properties: {
+      value: '3'
+    }
+  }
+  resource postRoundDelay 'keyValues@2022-05-01' = {
+    name: 'Game:PostRoundDelay'
+    properties: {
+      value: '5'
+    }
+  }
 }
 
 // get read only connection string from app config
