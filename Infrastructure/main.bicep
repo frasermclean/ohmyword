@@ -16,7 +16,7 @@ param databaseThroughput int = 1000
 
 // cosmos db account
 resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-05-15' = {
-  name: toLower('DB-${appName}-${environment}')
+  name: toLower('DB-${appName}-${environment}') // cosmos db account names need to be lowercase
   location: location
   properties: {
     databaseAccountOfferType: 'Standard'
@@ -43,7 +43,7 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-05-15' = {
 
 // azure app configuration service
 resource appConfig 'Microsoft.AppConfiguration/configurationStores@2022-05-01' = {
-  name: toLower('AC-${appName}-${environment}')
+  name: 'AC-${appName}-${environment}'
   location: location
   sku: {
     name: 'standard'
@@ -82,7 +82,7 @@ resource appConfig 'Microsoft.AppConfiguration/configurationStores@2022-05-01' =
 
 // app service plan
 resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
-  name: toLower('ASP-${appName}-${environment}')
+  name: 'ASP-${appName}-${environment}'
   location: location
   properties: {
     reserved: true
@@ -95,7 +95,7 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
 
 // app service
 resource appService 'Microsoft.Web/sites@2022-03-01' = {
-  name: toLower('APP-${appName}-${environment}')
+  name: '${appName}-${environment}'
   location: location
   properties: {
     serverFarmId: appServicePlan.id
