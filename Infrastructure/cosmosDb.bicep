@@ -25,16 +25,16 @@ resource account 'Microsoft.DocumentDB/databaseAccounts@2022-05-15' = {
       }
     ]
   }
-}
 
-resource database 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2022-05-15' = {
-  name: '${account.name}/${appName}'
-  properties: {
-    resource: {
-      id: appName
-    }
-    options: {
-      throughput: databaseThroughput
+  resource database 'sqlDatabases@2022-05-15'= {
+    name: appName
+    properties: {
+      resource: {
+        id: appName
+      }
+      options: {
+        throughput: databaseThroughput
+      }
     }
   }
 }
