@@ -2,7 +2,7 @@ name: CI/CD Test environment
 
 on:
   push:
-    branches: [develop, feature/bicep-pipeline]
+    branches: [develop]
 
 jobs:
   build-app:
