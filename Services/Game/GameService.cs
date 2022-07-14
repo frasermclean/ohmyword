@@ -11,6 +11,7 @@ public interface IGameService
     Round Round { get; }
     bool RoundActive { get; }
     DateTime Expiry { get; }
+    GameServiceOptions Options { get; }
 
     event EventHandler<RoundStartedEventArgs> RoundStarted;
     event EventHandler<RoundEndedEventArgs> RoundEnded;
@@ -25,11 +26,11 @@ public class GameService : IGameService
     private readonly ILogger<GameService> logger;
     private readonly IWordsService wordsService;
     private readonly IPlayerService playerService;
-    private readonly GameServiceOptions options;
 
     public Round Round { get; private set; } = Round.Default;
     public bool RoundActive { get; private set; }
     public DateTime Expiry { get; private set; }
+    public GameServiceOptions Options { get; }
 
     public event Action<LetterHint>? LetterHintAdded;
     public event EventHandler<RoundStartedEventArgs>? RoundStarted;
@@ -40,7 +41,8 @@ public class GameService : IGameService
         this.logger = logger;
         this.wordsService = wordsService;
         this.playerService = playerService;
-        this.options = options.Value;
+
+        Options = options.Value;
 
         playerService.PlayerAdded += OnPlayerAdded;
         playerService.PlayerRemoved += OnPlayerRemoved;
@@ -77,7 +79,7 @@ public class GameService : IGameService
             }
 
             // end current round
-            var postRoundDelay = TimeSpan.FromSeconds(options.PostRoundDelay);
+            var postRoundDelay = TimeSpan.FromSeconds(Options.PostRoundDelay);
             var nextRoundStart = DateTime.UtcNow + postRoundDelay;
             RoundActive = false;
             Expiry = nextRoundStart;
@@ -93,7 +95,7 @@ public class GameService : IGameService
     private async Task<Round> CreateRoundAsync(CancellationToken cancellationToken)
     {
         var word = await wordsService.SelectRandomWordAsync(cancellationToken);
-        var duration = TimeSpan.FromSeconds(word.Value.Length * options.LetterHintDelay);
+        var duration = TimeSpan.FromSeconds(word.Value.Length * Options.LetterHintDelay);
         var roundNumber = Round.Number + 1;
         
         return new Round(roundNumber, word, duration, playerService.PlayerIds);

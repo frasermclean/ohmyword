@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using OhMyWord.Api.Responses.Words;
 using OhMyWord.Core.Models;
 using OhMyWord.Services.Game;
+using OhMyWord.Services.Options;
 
 namespace OhMyWord.Api.Controllers;
 
@@ -21,6 +22,9 @@ public sealed class GameController : AuthorizedControllerBase
 
     [HttpGet("state")]
     public IActionResult GetState() => Ok(gameService);
+
+    [HttpGet("options")]
+    public ActionResult<GameServiceOptions> GetOptions() => Ok(gameService.Options);
 
     [HttpGet("word-hint")]
     public ActionResult<WordHint> GetWordHint() => Ok(gameService.Round.WordHint);
