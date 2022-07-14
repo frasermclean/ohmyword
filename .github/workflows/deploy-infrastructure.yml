@@ -48,6 +48,7 @@ jobs:
       - name: Deploy Bicep template
         working-directory: ./Infrastructure
         run: az deployment group create
+          --name CI/CD ${{ inputs.environment }}
           --resource-group ${{ inputs.resource-group }}
           --template-file ${{ inputs.template-file }}
           --parameters environment=${{ inputs.environment }}
