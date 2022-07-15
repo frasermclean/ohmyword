@@ -51,7 +51,6 @@ public class PlayerService : IPlayerService
             await playerRepository.IncrementPlayerRegistrationCountAsync(player.Id);
             logger.LogDebug("Found existing player with visitorId: {visitorId}.", visitorId);
         }
-            
 
         // create new player if existing player not found
         player ??= await playerRepository.CreatePlayerAsync(new Player
@@ -61,11 +60,13 @@ public class PlayerService : IPlayerService
 
         var wasAdded = playerCache.TryAdd(connectionId, player);
         if (!wasAdded)
-            logger.LogWarning("Player with connection ID: {connectionId} already exists in the local cache.", connectionId);
+            logger.LogWarning("Player with connection ID: {connectionId} already exists in the local cache.",
+                connectionId);
 
         PlayerAdded?.Invoke(this, new PlayerEventArgs(player.Id, PlayerCount, connectionId));
 
-        logger.LogInformation("Player with ID: {playerId} joined the game. Player count: {playerCount}", player.Id, PlayerCount);
+        logger.LogInformation("Player with ID: {playerId} joined the game. Player count: {playerCount}", player.Id,
+            PlayerCount);
         return player;
     }
 
@@ -74,7 +75,8 @@ public class PlayerService : IPlayerService
         if (playerCache.TryRemove(connectionId, out var player))
         {
             PlayerRemoved?.Invoke(this, new PlayerEventArgs(player.Id, PlayerCount, connectionId));
-            logger.LogInformation("Player with ID: {playerId} left the game. Player count: {playerCount}", player.Id, PlayerCount);
+            logger.LogInformation("Player with ID: {playerId} left the game. Player count: {playerCount}", player.Id,
+                PlayerCount);
         }
         else
         {
@@ -84,5 +86,6 @@ public class PlayerService : IPlayerService
 
     public Player GetPlayer(string connectionId) => playerCache[connectionId];
 
-    public Task<bool> IncrementPlayerScoreAsync(string playerId, int points) => playerRepository.IncrementPlayerScoreAsync(playerId, points); // TODO: Update local cache to keep points in sync
+    public Task<bool> IncrementPlayerScoreAsync(string playerId, int points) =>
+        playerRepository.IncrementPlayerScoreAsync(playerId, points); // TODO: Update local cache to keep points in sync
 }
