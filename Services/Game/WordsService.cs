@@ -7,12 +7,12 @@ namespace OhMyWord.Services.Game;
 public interface IWordsService
 {
     /// <summary>
-    /// Set to true to instruct the service to reload all words from the database
-    /// the next time that SelectRandomWordAsync is called.
+    ///     Set to true to instruct the service to reload all words from the database
+    ///     the next time that SelectRandomWordAsync is called.
     /// </summary>
-    bool ShouldReloadWords { get; set; }
+    bool ShouldReloadWords { set; }
 
-    Task<Word> GetNextWordAsync(CancellationToken cancellationToken);
+    Task<Word> GetNextWordAsync(CancellationToken cancellationToken = default);
 }
 
 public class WordsService : IWordsService
@@ -22,18 +22,18 @@ public class WordsService : IWordsService
 
     private Stack<Word> shuffledWords = new();
 
-    public bool ShouldReloadWords { get; set; }
-
     public WordsService(ILogger<WordsService> logger, IWordsRepository wordsRepository)
     {
         this.logger = logger;
         this.wordsRepository = wordsRepository;
     }
 
-    public async Task<Word> GetNextWordAsync(CancellationToken cancellationToken)
+    public bool ShouldReloadWords { private get; set; }
+
+    public async Task<Word> GetNextWordAsync(CancellationToken cancellationToken = default)
     {
         // reload words from database
-        if (shuffledWords.Count == 0 || ShouldReloadWords)
+        if (ShouldReloadWords || shuffledWords.Count == 0)
         {
             shuffledWords = await GetShuffledWordsAsync(cancellationToken);
             ShouldReloadWords = false;
@@ -55,7 +55,9 @@ public class WordsService : IWordsService
             allWords.Add(Word.Default);
         }
         else
+        {
             logger.LogInformation("Retrieved: {count} words from database.", allWords.Count);
+        }
 
         // create a stack of randomly shuffled words
         var stack = new Stack<Word>();
@@ -63,8 +65,8 @@ public class WordsService : IWordsService
         while (stack.Count < allWords.Count)
         {
             var index = Random.Shared.Next(allWords.Count);
-            if (previousIndices.Contains(index)) continue;            
-            previousIndices.Add(index);            
+            if (previousIndices.Contains(index)) continue;
+            previousIndices.Add(index);
             stack.Push(allWords[index]);
         }
 
