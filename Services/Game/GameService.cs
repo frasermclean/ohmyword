@@ -94,7 +94,7 @@ public class GameService : IGameService
 
     private async Task<Round> CreateRoundAsync(CancellationToken cancellationToken)
     {
-        var word = await wordsService.SelectRandomWordAsync(cancellationToken);
+        var word = await wordsService.GetNextWordAsync(cancellationToken);
         var duration = TimeSpan.FromSeconds(word.Value.Length * Options.LetterHintDelay);
         var roundNumber = Round.Number + 1;
         

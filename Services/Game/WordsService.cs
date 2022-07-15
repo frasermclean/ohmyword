@@ -12,17 +12,17 @@ public interface IWordsService
     /// </summary>
     bool ShouldReloadWords { get; set; }
 
-    Task<Word> SelectRandomWordAsync(CancellationToken cancellationToken);
+    Task<Word> GetNextWordAsync(CancellationToken cancellationToken);
 }
 
 public class WordsService : IWordsService
 {
     private readonly ILogger<WordsService> logger;
     private readonly IWordsRepository wordsRepository;
-    private readonly List<Word> words = new();
-    private readonly List<int> previousIndices = new();
 
-    public bool ShouldReloadWords { get; set; } = true;
+    private Stack<Word> shuffledWords = new();
+
+    public bool ShouldReloadWords { get; set; }
 
     public WordsService(ILogger<WordsService> logger, IWordsRepository wordsRepository)
     {
@@ -30,42 +30,44 @@ public class WordsService : IWordsService
         this.wordsRepository = wordsRepository;
     }
 
-    public async Task<Word> SelectRandomWordAsync(CancellationToken cancellationToken)
+    public async Task<Word> GetNextWordAsync(CancellationToken cancellationToken)
     {
-        // check if we should load words from the database
-        if (ShouldReloadWords)
+        // reload words from database
+        if (shuffledWords.Count == 0 || ShouldReloadWords)
         {
-            await LoadWordsFromRepositoryAsync(cancellationToken);
+            shuffledWords = await GetShuffledWordsAsync(cancellationToken);
             ShouldReloadWords = false;
         }
 
-        // we've gone through all words so start again
-        if (previousIndices.Count == words.Count)
-            previousIndices.Clear();
+        var word = shuffledWords.Pop();
+        logger.LogDebug("Randomly selected word: {word}.", word);
 
-        int index;
-        do index = Random.Shared.Next(words.Count);
-        while (previousIndices.Contains(index));
-
-        var randomWord = words[index];
-        previousIndices.Add(index);
-
-        logger.LogDebug("Randomly selected word: {word}. Previous indices count: {count}", randomWord, previousIndices.Count);
-
-        return randomWord;
+        return word;
     }
 
-    private async Task LoadWordsFromRepositoryAsync(CancellationToken cancellationToken)
+    private async Task<Stack<Word>> GetShuffledWordsAsync(CancellationToken cancellationToken)
     {
-        words.Clear();
-        words.AddRange(await wordsRepository.GetAllWordsAsync(cancellationToken));
-
-        if (words.Count == 0)
+        // load all words from the database
+        var allWords = new List<Word>(await wordsRepository.GetAllWordsAsync(cancellationToken));
+        if (allWords.Count == 0)
         {
             logger.LogWarning("No words were retrieved from the database!");
-            words.Add(Word.Default);
+            allWords.Add(Word.Default);
         }
         else
-            logger.LogInformation("Retrieved: {count} words from database.", words.Count);
+            logger.LogInformation("Retrieved: {count} words from database.", allWords.Count);
+
+        // create a stack of randomly shuffled words
+        var stack = new Stack<Word>();
+        var previousIndices = new List<int>();
+        while (stack.Count < allWords.Count)
+        {
+            var index = Random.Shared.Next(allWords.Count);
+            if (previousIndices.Contains(index)) continue;            
+            previousIndices.Add(index);            
+            stack.Push(allWords[index]);
+        }
+
+        return stack;
     }
 }
