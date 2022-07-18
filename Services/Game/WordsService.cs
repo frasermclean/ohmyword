@@ -67,13 +67,12 @@ public class WordsService : IWordsService
 
         // create a stack of randomly shuffled words
         var stack = new Stack<Word>();
-        var previousIndices = new List<int>();
-        while (stack.Count < allWords.Count)
+        var allWordsIndices = new List<int>(Enumerable.Range(0, allWords.Count));
+        while (allWordsIndices.Count > 0)
         {
-            var index = Random.Shared.Next(allWords.Count);
-            if (previousIndices.Contains(index)) continue;
-            previousIndices.Add(index);
-            stack.Push(allWords[index]);
+            var index = Random.Shared.Next(allWordsIndices.Count);
+            stack.Push(allWords[allWordsIndices[index]]);
+            allWordsIndices.RemoveAt(index);
         }
 
         return stack;
