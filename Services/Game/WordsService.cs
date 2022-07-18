@@ -7,8 +7,13 @@ namespace OhMyWord.Services.Game;
 public interface IWordsService
 {
     /// <summary>
-    ///     Set to true to instruct the service to reload all words from the database
-    ///     the next time that SelectRandomWordAsync is called.
+    /// The number of words that are remaining before a reload.
+    /// </summary>
+    int RemainingWordCount { get; }
+
+    /// <summary>
+    /// Set to true to instruct the service to reload all words from the database
+    /// the next time that SelectRandomWordAsync is called.
     /// </summary>
     bool ShouldReloadWords { set; }
 
@@ -28,6 +33,7 @@ public class WordsService : IWordsService
         this.wordsRepository = wordsRepository;
     }
 
+    public int RemainingWordCount => shuffledWords.Count;
     public bool ShouldReloadWords { private get; set; }
 
     public async Task<Word> GetNextWordAsync(CancellationToken cancellationToken = default)

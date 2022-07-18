@@ -36,6 +36,7 @@ public class WordsServiceTests
         // assert
         word.Should().NotBe(Word.Default);
         word.Should().BeOfType<Word>();
+        wordsService.RemainingWordCount.Should().Be(TestWords.Length - 1);
         TestWords.Should().Contain(word);
         wordsRepositoryMock.Verify(repository => repository.GetAllWordsAsync(default), Times.Once);
     }
