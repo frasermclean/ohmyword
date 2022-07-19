@@ -5,7 +5,7 @@ namespace OhMyWord.Api.Registration;
 
 public static class GameServicesRegistration
 {
-    public static void AddGameServices(this IServiceCollection services, IConfigurationRoot configuration)
+    public static void AddGameServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddOptions<GameServiceOptions>()
             .Bind(configuration.GetSection(GameServiceOptions.SectionName))

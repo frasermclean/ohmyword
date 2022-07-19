@@ -5,7 +5,7 @@ namespace OhMyWord.Api.Registration;
 
 public static class DataServicesRegistration
 {
-    public static IServiceCollection AddCosmosDbService(this IServiceCollection services, IConfigurationRoot configuration)
+    public static IServiceCollection AddCosmosDbService(this IServiceCollection services, IConfiguration configuration)
     {
         // add configuration options
         services.AddOptions<CosmosDbOptions>()

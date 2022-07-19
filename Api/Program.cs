@@ -8,6 +8,7 @@ using OhMyWord.Core.Behaviours;
 using OhMyWord.Core.Handlers.Words;
 using OhMyWord.Core.Mapping;
 using OhMyWord.Core.Validators.Words;
+using Serilog;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -15,37 +16,57 @@ namespace OhMyWord.Api;
 
 public static class Program
 {
-    public static void Main(string[] args)
+    public static int Main(string[] args)
     {
-        var appBuilder = WebApplication.CreateBuilder(args);
-        var configuration = appBuilder.Configuration;
+        try
+        {
+            var appBuilder = WebApplication.CreateBuilder(args);
 
-        // configure app host
-        appBuilder.Host
-            .ConfigureAppConfiguration(builder =>
-            {
-                // add azure app configuration store via managed identity
-                var endpoint = configuration.GetValue<string>("AppConfigEndpoint");
-                if (string.IsNullOrEmpty(endpoint)) return;
-                builder.AddAzureAppConfiguration(options =>
-                {
-                    var uri = new Uri(endpoint);
-                    options.Connect(uri, new ManagedIdentityCredential());
-                });
-            })
-            .ConfigureServices(services => AddServices(services, configuration));
+            // configure app host
+            appBuilder.Host
+                .ConfigureAppConfiguration((context, builder) => AddAzureAppConfiguration(builder, context.Configuration))
+                .UseSerilog((context, config) => config.ReadFrom.Configuration(context.Configuration))
+                .ConfigureServices((context, collection) => collection.AddServices(context.Configuration));
 
-        // build the app and configure the request pipeline
-        var app = appBuilder.Build().ConfigureRequestPipeline();
+            // build the app and configure the request pipeline
+            var app = appBuilder.Build().ConfigureRequestPipeline();
 
-        // run the application
-        app.Run();
+            // run the application
+            Log.Information("Starting web application");
+            app.Run();
+
+            return 0;
+        }
+        catch (Exception exception)
+        {
+            Log.Fatal(exception, "Host terminated unexpectedly");
+            return 1;
+        }
+        finally
+        {
+            Log.CloseAndFlush();
+        }
+    }
+
+    /// <summary>
+    /// Add Azure application configuration service.
+    /// </summary>   
+    private static void AddAzureAppConfiguration(IConfigurationBuilder builder, IConfiguration configuration)
+    {
+        var endpoint = configuration.GetValue<string>("AppConfigEndpoint");
+        if (string.IsNullOrEmpty(endpoint)) return;
+
+        builder.AddAzureAppConfiguration(options =>
+        {
+            var uri = new Uri(endpoint);
+            options.Connect(uri, new ManagedIdentityCredential());
+        });
     }
 
     /// <summary>
     /// Add application services to the service collection.
     /// </summary>
-    private static void AddServices(IServiceCollection services, IConfigurationRoot configuration)
+    private static void AddServices(this IServiceCollection services, IConfiguration configuration)
     {
         // set up routing options
         services.AddRouting(options =>
