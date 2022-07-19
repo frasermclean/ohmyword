@@ -3,9 +3,9 @@ using FluentAssertions;
 using OhMyWord.Api.Mapping;
 using OhMyWord.Api.Responses.Game;
 using OhMyWord.Api.Responses.Words;
-using OhMyWord.Core.Models;
-using OhMyWord.Services.Events;
 using System;
+using OhMyWord.Core.Events;
+using OhMyWord.Data.Models;
 using Xunit;
 
 namespace Api.Tests;

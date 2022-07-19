@@ -1,5 +1,5 @@
-﻿using OhMyWord.Core.Models;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using OhMyWord.Data.Models;
 
 namespace OhMyWord.Api.Requests.Words;
 

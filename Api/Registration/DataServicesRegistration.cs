@@ -1,6 +1,5 @@
-﻿using OhMyWord.Services.Data;
-using OhMyWord.Services.Data.Repositories;
-using OhMyWord.Services.Options;
+﻿using OhMyWord.Data.Options;
+using OhMyWord.Data.Services;
 
 namespace OhMyWord.Api.Registration;
 

@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using OhMyWord.Services.Data.Repositories;
+using OhMyWord.Data.Services;
 
 namespace OhMyWord.Seeder;
 

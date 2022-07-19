@@ -5,19 +5,19 @@ VisualStudioVersion = 17.1.32210.238
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Api", "Api\Api.csproj", "{C1FBBEA6-A759-4757-9DD8-FE692A47D3DA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "Core\Core.csproj", "{6C70E124-3AAE-4FDB-9E88-66C51C404508}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Data", "Data\Data.csproj", "{6C70E124-3AAE-4FDB-9E88-66C51C404508}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Services", "Services\Services.csproj", "{356AB163-758F-4756-B232-8652C48B449E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "Core\Core.csproj", "{356AB163-758F-4756-B232-8652C48B449E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Api.Tests", "Tests\Api.Tests\Api.Tests.csproj", "{9E2752A9-6B04-427D-A75B-6EEE9C9738D6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{65A9F0A0-A2B9-4DA7-82B0-3074020819D8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Services.Tests", "Tests\Services.Tests\Services.Tests.csproj", "{364D82CA-C9A8-4FAF-8DD0-E13F4828E69D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.Tests", "Tests\Core.Tests\Core.Tests.csproj", "{364D82CA-C9A8-4FAF-8DD0-E13F4828E69D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Seeder", "Seeder\Seeder.csproj", "{7CD68BB6-755E-4552-B69E-16EAFF7A9803}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core.Tests", "Tests\Core.Tests\Core.Tests.csproj", "{356445A2-B36B-46EC-B30C-CD318B59B268}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Data.Tests", "Tests\Data.Tests\Data.Tests.csproj", "{356445A2-B36B-46EC-B30C-CD318B59B268}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

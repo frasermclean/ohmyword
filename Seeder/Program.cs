@@ -1,8 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using OhMyWord.Services.Data;
-using OhMyWord.Services.Data.Repositories;
-using OhMyWord.Services.Options;
+using OhMyWord.Data.Options;
+using OhMyWord.Data.Services;
 
 namespace OhMyWord.Seeder;
 

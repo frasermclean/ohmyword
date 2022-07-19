@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.SignalR;
 using OhMyWord.Api.Hubs;
 using OhMyWord.Api.Responses.Game;
-using OhMyWord.Services.Game;
+using OhMyWord.Core.Game;
 
 namespace OhMyWord.Api;
 
