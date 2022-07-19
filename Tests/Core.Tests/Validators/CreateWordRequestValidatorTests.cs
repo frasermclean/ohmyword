@@ -37,7 +37,7 @@ public class CreateWordRequestValidatorTests
         // act
         var result = validator.TestValidate(request);
 
-        // assert
+        // assert        
         result.ShouldHaveValidationErrorFor(r => r.Value);
         result.ShouldHaveValidationErrorFor(r => r.Definition);
         result.ShouldHaveValidationErrorFor(r => r.PartOfSpeech);

@@ -97,7 +97,7 @@ public class GameService : IGameService
         var word = await wordsService.GetNextWordAsync(cancellationToken);
         var duration = TimeSpan.FromSeconds(word.Value.Length * Options.LetterHintDelay);
         var roundNumber = Round.Number + 1;
-        
+
         return new Round(roundNumber, word, duration, playerService.PlayerIds);
     }
 

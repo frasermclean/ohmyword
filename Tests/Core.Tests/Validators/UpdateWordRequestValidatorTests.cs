@@ -1,6 +1,8 @@
-﻿using FluentValidation.TestHelper;
+﻿using System;
+using FluentValidation.TestHelper;
 using OhMyWord.Core.Requests.Words;
 using OhMyWord.Core.Validators.Requests;
+using OhMyWord.Data.Models;
 using Xunit;
 
 namespace Core.Tests.Validators;
@@ -15,8 +17,10 @@ public class UpdateWordRequestValidatorTests
         // arrange
         var request = new UpdateWordRequest
         {
+            Id = Guid.NewGuid(),
             Value = "dog",
-            Definition = "Man's best friend"            
+            Definition = "Man's best friend",
+            PartOfSpeech = PartOfSpeech.Noun
         };
 
         // act
@@ -36,7 +40,9 @@ public class UpdateWordRequestValidatorTests
         var result = validator.TestValidate(request);
 
         // assert
+        result.ShouldHaveValidationErrorFor(r => r.Id);
         result.ShouldHaveValidationErrorFor(r => r.Value);
-        result.ShouldHaveValidationErrorFor(r => r.Definition);        
+        result.ShouldHaveValidationErrorFor(r => r.Definition);
+        result.ShouldHaveValidationErrorFor(r => r.PartOfSpeech);
     }
 }

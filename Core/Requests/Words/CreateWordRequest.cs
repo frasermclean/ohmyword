@@ -1,17 +1,13 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using MediatR;
+using OhMyWord.Core.Responses.Words;
 using OhMyWord.Data.Models;
 
 namespace OhMyWord.Core.Requests.Words;
 
-public class CreateWordRequest
+public class CreateWordRequest : IRequest<WordResponse>
 {
-    [Required]
     public string Value { get; init; } = string.Empty;
-
-    [Required]
     public string Definition { get; init; } = string.Empty;
-
-    [Required]
     public PartOfSpeech? PartOfSpeech { get; init; }
 
     public Word ToWord() => new()

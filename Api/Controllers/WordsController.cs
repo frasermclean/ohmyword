@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using OhMyWord.Core.Requests.Words;
 using OhMyWord.Core.Responses.Words;
@@ -9,11 +10,13 @@ namespace OhMyWord.Api.Controllers;
 
 public sealed class WordsController : AuthorizedControllerBase
 {
-    private readonly IWordsRepository wordsRepository;
     private readonly IMapper mapper;
+    private readonly IMediator mediator;
+    private readonly IWordsRepository wordsRepository;
 
-    public WordsController(IWordsRepository wordsRepository, IMapper mapper)
+    public WordsController(IMediator mediator, IWordsRepository wordsRepository, IMapper mapper)
     {
+        this.mediator = mediator;
         this.wordsRepository = wordsRepository;
         this.mapper = mapper;
     }
@@ -37,21 +40,15 @@ public sealed class WordsController : AuthorizedControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateWord(CreateWordRequest request)
     {
-        var result = await wordsRepository.CreateWordAsync(request.ToWord());
-        var word = result.Resource ?? Word.Default;
-        return result.Success
-            ? CreatedAtAction(nameof(GetWord), new { word.PartOfSpeech, word.Id },
-                mapper.Map<WordResponse>(word))
-            : GetErrorResult(result.StatusCode, result.Message);
+        var response = await mediator.Send(request);
+        return CreatedAtAction(nameof(GetWord), new { response.PartOfSpeech, response.Id }, response);
     }
 
-    [HttpPut("{partOfSpeech}/{id:guid}")]
-    public async Task<IActionResult> UpdateWord(PartOfSpeech partOfSpeech, Guid id, UpdateWordRequest request)
+    [HttpPut]
+    public async Task<IActionResult> UpdateWord(UpdateWordRequest request)
     {
-        var result = await wordsRepository.UpdateWordAsync(request.ToWord(partOfSpeech, id));
-        return result.Success
-           ? Ok(mapper.Map<WordResponse>(result.Resource))
-           : GetErrorResult(result.StatusCode, result.Message);
+        var response = await mediator.Send(request);
+        return Ok(response);
     }
 
     [HttpDelete("{partOfSpeech}/{id:guid}")]

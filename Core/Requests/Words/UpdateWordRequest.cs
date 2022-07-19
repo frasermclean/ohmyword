@@ -1,21 +1,21 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using MediatR;
+using OhMyWord.Core.Responses.Words;
 using OhMyWord.Data.Models;
 
 namespace OhMyWord.Core.Requests.Words;
 
-public class UpdateWordRequest
+public class UpdateWordRequest : IRequest<WordResponse>
 {
-    [Required]
-    public string Value { get; init; } = string.Empty;
-    
-    [Required]
-    public string Definition { get; init; } = string.Empty;
+    public Guid? Id { get; init; }
+    public string? Value { get; init; }
+    public string? Definition { get; init; }
+    public PartOfSpeech? PartOfSpeech { get; init; }
 
-    public Word ToWord(PartOfSpeech partOfSpeech, Guid id) => new()
+    public Word ToWord() => new()
     {
-        Id = id,
-        Value = Value,
-        Definition = Definition,
-        PartOfSpeech = partOfSpeech,
+        Id = Id ?? default,
+        Value = Value ?? string.Empty,
+        Definition = Definition ?? string.Empty,
+        PartOfSpeech = PartOfSpeech ?? default,
     };
 }

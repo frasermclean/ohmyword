@@ -1,10 +1,14 @@
+using Azure.Identity;
+using FluentValidation;
+using MediatR;
 using Microsoft.Identity.Web;
 using OhMyWord.Api.Hubs;
 using OhMyWord.Api.Mapping;
 using OhMyWord.Api.Registration;
+using OhMyWord.Core.Handlers.Words;
+using OhMyWord.Core.Validators.Requests;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Azure.Identity;
 
 namespace OhMyWord.Api;
 
@@ -72,6 +76,12 @@ public static class Program
 
         // game services
         services.AddGameServices(configuration);
+
+        // add fluent validation validators
+        services.AddValidatorsFromAssemblyContaining<CreateWordRequestValidator>();
+
+        // add mediatr service
+        services.AddMediatR(typeof(CreateWordHandler));
 
         // object mapping service
         services.AddAutoMapper(mapperConfiguration =>
