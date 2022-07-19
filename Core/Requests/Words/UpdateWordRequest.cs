@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using OhMyWord.Data.Models;
 
-namespace OhMyWord.Api.Requests.Words;
+namespace OhMyWord.Core.Requests.Words;
 
 public class UpdateWordRequest
 {

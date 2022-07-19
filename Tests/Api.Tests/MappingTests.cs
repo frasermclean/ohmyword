@@ -1,10 +1,10 @@
 using AutoMapper;
 using FluentAssertions;
 using OhMyWord.Api.Mapping;
-using OhMyWord.Api.Responses.Game;
-using OhMyWord.Api.Responses.Words;
 using System;
 using OhMyWord.Core.Events;
+using OhMyWord.Core.Responses.Game;
+using OhMyWord.Core.Responses.Words;
 using OhMyWord.Data.Models;
 using Xunit;
 

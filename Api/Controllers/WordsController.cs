@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using OhMyWord.Api.Requests.Words;
-using OhMyWord.Api.Responses.Words;
+using OhMyWord.Core.Requests.Words;
+using OhMyWord.Core.Responses.Words;
 using OhMyWord.Data.Models;
 using OhMyWord.Data.Services;
 

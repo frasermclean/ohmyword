@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
-using OhMyWord.Api.Responses.Game;
-using OhMyWord.Api.Responses.Words;
 using OhMyWord.Core.Events;
+using OhMyWord.Core.Responses.Game;
+using OhMyWord.Core.Responses.Words;
 using OhMyWord.Data.Models;
 
 namespace OhMyWord.Api.Mapping;

@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using OhMyWord.Api.Responses.Words;
 using OhMyWord.Core.Game;
 using OhMyWord.Core.Options;
+using OhMyWord.Core.Responses.Words;
 using OhMyWord.Data.Models;
 
 namespace OhMyWord.Api.Controllers;

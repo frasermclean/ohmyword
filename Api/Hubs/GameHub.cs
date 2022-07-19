@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR;
-using OhMyWord.Api.Requests.Game;
-using OhMyWord.Api.Responses.Game;
 using OhMyWord.Core.Game;
+using OhMyWord.Core.Requests.Game;
+using OhMyWord.Core.Responses.Game;
 using OhMyWord.Data.Models;
 
 namespace OhMyWord.Api.Hubs;

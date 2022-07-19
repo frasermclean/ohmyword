@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.SignalR;
 using OhMyWord.Api.Hubs;
-using OhMyWord.Api.Responses.Game;
 using OhMyWord.Core.Game;
+using OhMyWord.Core.Responses.Game;
 
 namespace OhMyWord.Api;
 

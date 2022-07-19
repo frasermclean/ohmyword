@@ -1,6 +1,6 @@
 ﻿using OhMyWord.Data.Models;
 
-namespace OhMyWord.Api.Responses.Game;
+namespace OhMyWord.Core.Responses.Game;
 
 public class RoundEndResponse
 {

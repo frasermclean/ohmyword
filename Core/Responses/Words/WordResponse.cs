@@ -1,6 +1,6 @@
 ﻿using OhMyWord.Data.Models;
 
-namespace OhMyWord.Api.Responses.Words;
+namespace OhMyWord.Core.Responses.Words;
 
 public class WordResponse
 {
