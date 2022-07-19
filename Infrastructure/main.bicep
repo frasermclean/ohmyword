@@ -38,6 +38,41 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-05-15' = {
         throughput: databaseThroughput
       }
     }
+    resource wordsContainer 'containers@2022-05-15' = {
+      name: 'Words'
+      properties: {
+        resource: {
+          id: 'Words'
+          partitionKey: {
+            paths: [
+              '/partOfSpeech'
+            ]
+          }
+          uniqueKeyPolicy: {
+            uniqueKeys: [
+              {
+                paths: [
+                  '/value'
+                ]
+              }
+            ]
+          }
+        }
+      }
+    }
+    resource playersContainer 'containers@2022-05-15' = {
+      name: 'Players'
+      properties: {
+        resource: {
+          id: 'Players'
+          partitionKey: {
+            paths: [
+              '/id'
+            ]
+          }
+        }
+      }
+    }
   }
 }
 
