@@ -16,7 +16,7 @@ public class GetAllWordsHandler : IRequestHandler<GetAllWordsRequest, IEnumerabl
         this.wordsRepository = wordsRepository;
         this.mapper = mapper;
     }
-    
+
     public async Task<IEnumerable<WordResponse>> Handle(GetAllWordsRequest request, CancellationToken cancellationToken)
     {
         var words = await wordsRepository.GetAllWordsAsync(cancellationToken);

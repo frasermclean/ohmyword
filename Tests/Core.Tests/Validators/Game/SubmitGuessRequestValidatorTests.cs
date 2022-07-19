@@ -1,7 +1,7 @@
-﻿using System;
-using FluentValidation.TestHelper;
+﻿using FluentValidation.TestHelper;
 using OhMyWord.Core.Requests.Game;
 using OhMyWord.Core.Validators.Game;
+using System;
 using Xunit;
 
 namespace Core.Tests.Validators.Game;

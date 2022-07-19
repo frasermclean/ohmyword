@@ -1,4 +1,3 @@
-using System;
 using AutoMapper;
 using FluentAssertions;
 using OhMyWord.Core.Events;
@@ -6,6 +5,7 @@ using OhMyWord.Core.Mapping;
 using OhMyWord.Core.Responses.Game;
 using OhMyWord.Core.Responses.Words;
 using OhMyWord.Data.Models;
+using System;
 using Xunit;
 
 namespace Core.Tests;
@@ -20,7 +20,7 @@ public class MappingTests
         configuration = new MapperConfiguration(config =>
         {
             config.AddProfile<EntitiesProfile>();
-            config.AddProfile<EventsProfile>();            
+            config.AddProfile<EventsProfile>();
         });
         mapper = configuration.CreateMapper();
     }

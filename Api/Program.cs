@@ -5,10 +5,10 @@ using Microsoft.Identity.Web;
 using OhMyWord.Api.Hubs;
 using OhMyWord.Api.Registration;
 using OhMyWord.Core.Handlers.Words;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using OhMyWord.Core.Mapping;
 using OhMyWord.Core.Validators.Words;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace OhMyWord.Api;
 

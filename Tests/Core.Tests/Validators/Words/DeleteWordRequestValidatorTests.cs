@@ -1,8 +1,8 @@
-﻿using System;
-using FluentValidation.TestHelper;
+﻿using FluentValidation.TestHelper;
 using OhMyWord.Core.Requests.Words;
 using OhMyWord.Core.Validators.Words;
 using OhMyWord.Data.Models;
+using System;
 using Xunit;
 
 namespace Core.Tests.Validators.Words;
@@ -17,7 +17,7 @@ public class DeleteWordRequestValidatorTests
         // arrange
         var request = new DeleteWordRequest
         {
-            Id = Guid.NewGuid(),            
+            Id = Guid.NewGuid(),
             PartOfSpeech = PartOfSpeech.Noun
         };
 
@@ -38,7 +38,7 @@ public class DeleteWordRequestValidatorTests
         var result = validator.TestValidate(request);
 
         // assert        
-        result.ShouldHaveValidationErrorFor(r => r.Id);        
+        result.ShouldHaveValidationErrorFor(r => r.Id);
         result.ShouldHaveValidationErrorFor(r => r.PartOfSpeech);
     }
 }

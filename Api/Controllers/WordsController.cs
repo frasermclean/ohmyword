@@ -7,12 +7,12 @@ using OhMyWord.Data.Models;
 namespace OhMyWord.Api.Controllers;
 
 public sealed class WordsController : AuthorizedControllerBase
-{    
-    private readonly IMediator mediator;    
+{
+    private readonly IMediator mediator;
 
     public WordsController(IMediator mediator)
     {
-        this.mediator = mediator;        
+        this.mediator = mediator;
     }
 
     [HttpGet]
@@ -26,7 +26,7 @@ public sealed class WordsController : AuthorizedControllerBase
     public async Task<ActionResult<WordResponse>> GetWord(PartOfSpeech partOfSpeech, Guid id)
     {
         var word = await mediator.Send(new GetWordRequest { Id = id, PartOfSpeech = partOfSpeech });
-        return Ok(word);        
+        return Ok(word);
     }
 
     [HttpPost]

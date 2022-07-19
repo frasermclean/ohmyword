@@ -1,8 +1,8 @@
-﻿using System.Collections.Concurrent;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using OhMyWord.Core.Events;
 using OhMyWord.Data.Models;
 using OhMyWord.Data.Services;
+using System.Collections.Concurrent;
 
 namespace OhMyWord.Core.Services;
 

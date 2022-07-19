@@ -8,14 +8,14 @@ namespace Core.Tests.Validators.Game;
 public class RemovePlayerRequestValidatorTests
 {
     private readonly RemovePlayerRequestValidator validator = new();
-    
+
     [Fact]
     public void ValidRequest_Should_NotHaveAnyErrors()
     {
         // arrange
         var request = new RemovePlayerRequest
         {
-            ConnectionId = "abc",                        
+            ConnectionId = "abc",
         };
 
         // act
@@ -35,6 +35,6 @@ public class RemovePlayerRequestValidatorTests
         var result = validator.TestValidate(request);
 
         // assert        
-        result.ShouldHaveValidationErrorFor(r => r.ConnectionId);               
+        result.ShouldHaveValidationErrorFor(r => r.ConnectionId);
     }
 }

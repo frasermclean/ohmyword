@@ -1,7 +1,7 @@
-﻿using System.Text.Json;
-using System.Text.Json.Serialization;
-using Azure.Core.Serialization;
+﻿using Azure.Core.Serialization;
 using Microsoft.Azure.Cosmos;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace OhMyWord.Data;
 

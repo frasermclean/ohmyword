@@ -1,6 +1,6 @@
-﻿using System.Text.Json;
+﻿using OhMyWord.Data.Models;
+using System.Text.Json;
 using System.Text.Json.Serialization;
-using OhMyWord.Data.Models;
 
 namespace OhMyWord.Seeder;
 

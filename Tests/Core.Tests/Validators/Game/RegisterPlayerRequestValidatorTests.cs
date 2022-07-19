@@ -8,7 +8,7 @@ namespace Core.Tests.Validators.Game;
 public class RegisterPlayerRequestValidatorTests
 {
     private readonly RegisterPlayerRequestValidator validator = new();
-    
+
     [Fact]
     public void ValidRequest_Should_NotHaveAnyErrors()
     {
@@ -16,7 +16,7 @@ public class RegisterPlayerRequestValidatorTests
         var request = new RegisterPlayerRequest
         {
             ConnectionId = "abc",
-            VisitorId = "123"            
+            VisitorId = "123"
         };
 
         // act
@@ -37,6 +37,6 @@ public class RegisterPlayerRequestValidatorTests
 
         // assert        
         result.ShouldHaveValidationErrorFor(r => r.ConnectionId);
-        result.ShouldHaveValidationErrorFor(r => r.VisitorId);        
+        result.ShouldHaveValidationErrorFor(r => r.VisitorId);
     }
 }

@@ -1,10 +1,10 @@
-﻿using System.Threading.Tasks;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using OhMyWord.Core.Services;
 using OhMyWord.Data.Models;
 using OhMyWord.Data.Services;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Core.Tests.Services;

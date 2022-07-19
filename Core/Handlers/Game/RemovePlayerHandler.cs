@@ -15,7 +15,7 @@ public class RemovePlayerHandler : RequestHandler<RemovePlayerRequest, RemovePla
     {
         this.playerService = playerService;
         this.validator = validator;
-    }    
+    }
 
     protected override RemovePlayerResponse Handle(RemovePlayerRequest request)
     {

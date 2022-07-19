@@ -64,7 +64,7 @@ public class ModelTests
     }
 
     private static Player GetTestPlayer(long timestamp = default) => new()
-    {        
+    {
         VisitorId = "123",
         RegistrationCount = 3,
         Score = 400,

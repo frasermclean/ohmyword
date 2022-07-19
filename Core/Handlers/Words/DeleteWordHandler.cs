@@ -1,9 +1,6 @@
-﻿using AutoMapper;
-using FluentValidation;
+﻿using FluentValidation;
 using MediatR;
 using OhMyWord.Core.Requests.Words;
-using OhMyWord.Core.Responses.Words;
-using OhMyWord.Data.Models;
 using OhMyWord.Data.Services;
 
 namespace OhMyWord.Core.Handlers.Words;

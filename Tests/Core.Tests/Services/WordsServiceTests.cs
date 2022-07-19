@@ -1,11 +1,11 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using OhMyWord.Core.Services;
 using OhMyWord.Data.Models;
 using OhMyWord.Data.Services;
+using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Core.Tests.Services;
@@ -62,11 +62,11 @@ public class WordsServiceTests
         // arrange
         wordsRepositoryMock.Setup(repository => repository.GetAllWordsAsync(default))
             .ReturnsAsync(TestWords);
-        
+
         // act
         wordsService.ShouldReloadWords = true;
         var word = await wordsService.GetNextWordAsync();
-        
+
         // assert
         word.Should().NotBe(Word.Default);
         word.Should().BeOfType<Word>();
