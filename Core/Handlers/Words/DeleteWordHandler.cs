@@ -1,5 +1,4 @@
-﻿using FluentValidation;
-using MediatR;
+﻿using MediatR;
 using OhMyWord.Core.Requests.Words;
 using OhMyWord.Data.Services;
 
