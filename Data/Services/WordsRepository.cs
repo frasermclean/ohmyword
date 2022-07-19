@@ -7,10 +7,10 @@ namespace OhMyWord.Data.Services;
 public interface IWordsRepository
 {
     Task<IEnumerable<Word>> GetAllWordsAsync(CancellationToken cancellationToken = default);
-    Task<RepositoryActionResult<Word>> GetWordAsync(PartOfSpeech partOfSpeech, Guid id);
-    Task<RepositoryActionResult<Word>> CreateWordAsync(Word word);
-    Task<RepositoryActionResult<Word>> UpdateWordAsync(Word word);
-    Task<RepositoryActionResult<Word>> DeleteWordAsync(PartOfSpeech partOfSpeech, Guid id);
+    Task<Word?> GetWordAsync(PartOfSpeech partOfSpeech, Guid id);
+    Task<Word> CreateWordAsync(Word word);
+    Task<Word> UpdateWordAsync(Word word);
+    Task DeleteWordAsync(PartOfSpeech partOfSpeech, Guid id);
 }
 
 public class WordsRepository : Repository<Word>, IWordsRepository
@@ -21,13 +21,13 @@ public class WordsRepository : Repository<Word>, IWordsRepository
     public Task<IEnumerable<Word>> GetAllWordsAsync(CancellationToken cancellationToken = default)
         => ReadAllItemsAsync(cancellationToken);
 
-    public Task<RepositoryActionResult<Word>> GetWordAsync(PartOfSpeech partOfSpeech, Guid id)
+    public Task<Word?> GetWordAsync(PartOfSpeech partOfSpeech, Guid id)
         => ReadItemAsync(id, partOfSpeech.ToPartitionKey());
 
-    public Task<RepositoryActionResult<Word>> CreateWordAsync(Word word) => CreateItemAsync(word);
+    public Task<Word> CreateWordAsync(Word word) => CreateItemAsync(word);
 
-    public Task<RepositoryActionResult<Word>> UpdateWordAsync(Word word) => UpdateItemAsync(word);
+    public Task<Word> UpdateWordAsync(Word word) => UpdateItemAsync(word);
 
-    public Task<RepositoryActionResult<Word>> DeleteWordAsync(PartOfSpeech partOfSpeech, Guid id)
+    public Task DeleteWordAsync(PartOfSpeech partOfSpeech, Guid id)
         => DeleteItemAsync(id, partOfSpeech.ToPartitionKey());
 }

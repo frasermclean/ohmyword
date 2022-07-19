@@ -21,7 +21,7 @@ public interface IPlayerService
     Task<Player> AddPlayerAsync(string visitorId, string connectionId);
     void RemovePlayer(string connectionId);
     Player GetPlayer(string connectionId);
-    Task<bool> IncrementPlayerScoreAsync(Guid playerId, int points);
+    Task IncrementPlayerScoreAsync(Guid playerId, int points);
 }
 
 public class PlayerService : IPlayerService
@@ -86,6 +86,6 @@ public class PlayerService : IPlayerService
 
     public Player GetPlayer(string connectionId) => playerCache[connectionId];
 
-    public Task<bool> IncrementPlayerScoreAsync(Guid playerId, int points) =>
+    public Task IncrementPlayerScoreAsync(Guid playerId, int points) =>
         playerRepository.IncrementPlayerScoreAsync(playerId, points); // TODO: Update local cache to keep points in sync
 }

@@ -22,16 +22,18 @@ internal class MainService : BackgroundService
         var wordCreationCount = 0;
         foreach (var word in dataReader.Words)
         {
-            var result = await wordsRepository.CreateWordAsync(word);
-            if (result.Success)
+            try
             {
-                logger.LogInformation("Successfully created word: {word}", word);
+                await wordsRepository.CreateWordAsync(word);
                 wordCreationCount++;
+                logger.LogInformation("Successfully created word: {word}", word);
             }
-            else
-                logger.LogError("{message}", result.Message);
+            catch (Exception exception)
+            {
+                logger.LogError(exception, "Error occurred while trying to create word: {word}", word);
+            }
         }
 
-        logger.LogInformation("Operations completed. Created {count} words.", wordCreationCount);
+        logger.LogInformation("All operations completed. Created {count} words.", wordCreationCount);
     }
 }

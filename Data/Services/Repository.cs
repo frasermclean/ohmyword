@@ -8,87 +8,81 @@ public abstract class Repository<TEntity> where TEntity : Entity
 {
     private readonly ILogger<Repository<TEntity>> logger;
     private readonly Task<Container> containerTask;
+    private readonly string entityTypeName;
 
     protected Repository(ICosmosDbService cosmosDbService, ILogger<Repository<TEntity>> logger, string containerId,
         string partitionKeyPath = "/id")
     {
         this.logger = logger;
         containerTask = cosmosDbService.GetContainerAsync(containerId, partitionKeyPath);
+        entityTypeName = typeof(TEntity).Name;
     }
 
-    protected async Task<RepositoryActionResult<TEntity>> CreateItemAsync(TEntity item, CancellationToken cancellationToken = default)
+    protected async Task<TEntity> CreateItemAsync(TEntity item, CancellationToken cancellationToken = default)
     {
-        var container = await containerTask.ConfigureAwait(false);
-
-        var partitionKey = new PartitionKey(item.GetPartition());
-        await using var stream = EntitySerializer.ConvertToStream(item);
-        var response =
-            await container.CreateItemStreamAsync(stream, partitionKey, cancellationToken: cancellationToken);
-
-        LogResponseMessage(response, RepositoryAction.Create, item.Id, item.GetPartition());
-
-        return new RepositoryActionResult<TEntity>(response, RepositoryAction.Create, item.Id);
-    }
-
-    protected async Task<RepositoryActionResult<TEntity>> ReadItemAsync(Guid id, string partition, CancellationToken cancellationToken = default)
-    {
-        var container = await containerTask.ConfigureAwait(false);
-
-        var partitionKey = new PartitionKey(partition);
-        using var response =
-            await container.ReadItemStreamAsync(id.ToString(), partitionKey, cancellationToken: cancellationToken);
-
-        LogResponseMessage(response, RepositoryAction.Read, id, partition);
-
-        return new RepositoryActionResult<TEntity>(response, RepositoryAction.Read, id);
-    }
-
-    protected async Task<RepositoryActionResult<TEntity>> UpdateItemAsync(TEntity item,
-        CancellationToken cancellationToken = default)
-    {
-        var container = await containerTask.ConfigureAwait(false);
-
-        var partitionKey = new PartitionKey(item.GetPartition());
-        await using var stream = EntitySerializer.ConvertToStream(item);
-        var response = await container.ReplaceItemStreamAsync(stream, item.Id.ToString(), partitionKey,
+        var container = await GetContainerAsync();
+        var response = await container.CreateItemAsync(item, new PartitionKey(item.GetPartition()),
             cancellationToken: cancellationToken);
 
-        LogResponseMessage(response, RepositoryAction.Update, item.Id, item.GetPartition());
+        logger.LogInformation("Created {typeName} on partition: /{partition}, request charge: {charge} RU",
+            entityTypeName, item.GetPartition(), response.RequestCharge);
 
-        return new RepositoryActionResult<TEntity>(response, RepositoryAction.Update, item.Id);
+        return response.Resource;
+    }
+
+    protected async Task<TEntity?> ReadItemAsync(Guid id, string partition,
+        CancellationToken cancellationToken = default)
+    {
+        var container = await GetContainerAsync();
+        var response = await container.ReadItemAsync<TEntity>(id.ToString(), new PartitionKey(partition),
+            cancellationToken: cancellationToken);
+
+        logger.LogInformation("Read {typeName} on partition: /{partition}, request charge: {charge} RU",
+            entityTypeName, partition, response.RequestCharge);
+
+        return response.Resource;
+    }
+
+    protected async Task<TEntity> UpdateItemAsync(TEntity item,
+        CancellationToken cancellationToken = default)
+    {
+        var container = await GetContainerAsync();
+        var response = await container.ReplaceItemAsync(item, item.Id.ToString(), new PartitionKey(item.GetPartition()),
+            cancellationToken: cancellationToken);
+
+        logger.LogInformation("Replaced {typeName} on partition: /{partition}, request charge: {charge} RU",
+            entityTypeName, item.GetPartition(), response.RequestCharge);
+
+        return response.Resource;
     }
 
     protected Task DeleteItemAsync(TEntity item) => DeleteItemAsync(item.Id, item.GetPartition());
 
-    protected async Task<RepositoryActionResult<TEntity>> DeleteItemAsync(Guid id, string partition,
+    protected async Task DeleteItemAsync(Guid id, string partition,
         CancellationToken cancellationToken = default)
     {
-        var container = await containerTask.ConfigureAwait(false);
+        var container = await GetContainerAsync();
+        var response = await container.DeleteItemAsync<TEntity>(id.ToString(), new PartitionKey(partition),
+            cancellationToken: cancellationToken);
 
-        var partitionKey = new PartitionKey(partition);
-        var response =
-            await container.DeleteItemStreamAsync(id.ToString(), partitionKey, cancellationToken: cancellationToken);
-
-        LogResponseMessage(response, RepositoryAction.Delete, id, partition);
-
-        return new RepositoryActionResult<TEntity>(response, RepositoryAction.Delete, id);
+        logger.LogInformation("Deleted {typeName} on partition: /{partition}, request charge: {charge} RU",
+            entityTypeName, partition, response.RequestCharge);
     }
 
-    protected async Task<RepositoryActionResult<TEntity>> PatchItemAsync(
+    protected async Task<TEntity> PatchItemAsync(
         Guid id,
         string partition,
         PatchOperation[] operations,
         CancellationToken cancellationToken = default)
     {
-        var container = await containerTask.ConfigureAwait(false);
-
-        var partitionKey = new PartitionKey(partition);
-        var response = await container.PatchItemStreamAsync(id.ToString(), partitionKey, operations,
+        var container = await GetContainerAsync();
+        var response = await container.PatchItemAsync<TEntity>(id.ToString(), new PartitionKey(partition), operations,
             cancellationToken: cancellationToken);
 
-        LogResponseMessage(response, RepositoryAction.Patch, id, partition);
+        logger.LogInformation("Patched {typeName} on partition: /{partition}, request charge: {charge} RU",
+            entityTypeName, partition, response.RequestCharge);
 
-        return new RepositoryActionResult<TEntity>(response, RepositoryAction.Patch, id);
+        return response.Resource;
     }
 
     /// <summary>
@@ -105,7 +99,7 @@ public abstract class Repository<TEntity> where TEntity : Entity
         string? partition = null,
         CancellationToken cancellationToken = default)
     {
-        var container = await containerTask.ConfigureAwait(false);
+        var container = await GetContainerAsync();
 
         using var iterator = container.GetItemQueryIterator<TResponse>(queryDefinition,
             requestOptions: new QueryRequestOptions
@@ -133,27 +127,5 @@ public abstract class Repository<TEntity> where TEntity : Entity
         return items;
     }
 
-    private void LogResponseMessage(ResponseMessage response, RepositoryAction action, Guid id, string partition)
-    {
-        var entityTypeName = typeof(TEntity).Name.ToLowerInvariant();
-
-        if (!response.IsSuccessStatusCode)
-        {
-            logger.LogError("Could not {action} {typeName} with ID: {id} on partition: {partition}.",
-                action.ToString().ToLowerInvariant(), entityTypeName, id, partition);
-            return;
-        }
-
-        var actionPastTense = action switch
-        {
-            RepositoryAction.Create => "Created",
-            RepositoryAction.Update => "Updated",
-            RepositoryAction.Delete => "Deleted",
-            RepositoryAction.Patch => "Patched",
-            _ => action.ToString()
-        };
-
-        logger.LogInformation("{ActionPastTense} {typeName} with ID: {id} on partition: {partition}.",
-            actionPastTense, entityTypeName, id, partition);
-    }
+    private async Task<Container> GetContainerAsync() => await containerTask.ConfigureAwait(false);
 }

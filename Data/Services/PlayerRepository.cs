@@ -10,8 +10,8 @@ public interface IPlayerRepository
     Task DeletePlayerAsync(Player player);
     Task<Player?> FindPlayerByPlayerIdAsync(Guid playerId);
     Task<Player?> FindPlayerByVisitorIdAsync(string visitorId);
-    Task IncrementPlayerRegistrationCountAsync(Guid playerId);
-    Task<bool> IncrementPlayerScoreAsync(Guid playerId, long value);
+    Task<Player> IncrementPlayerRegistrationCountAsync(Guid playerId);
+    Task<Player> IncrementPlayerScoreAsync(Guid playerId, long value);
 }
 
 public class PlayerRepository : Repository<Player>, IPlayerRepository
@@ -24,19 +24,12 @@ public class PlayerRepository : Repository<Player>, IPlayerRepository
         this.logger = logger;
     }
 
-    public async Task<Player> CreatePlayerAsync(Player player)
-    {
-        var result = await CreateItemAsync(player);
-        return result.Resource ?? throw new InvalidOperationException("Could not create player");
-    }
+    public async Task<Player> CreatePlayerAsync(Player player) => await CreateItemAsync(player);
 
     public Task DeletePlayerAsync(Player player) => DeleteItemAsync(player);
 
-    public async Task<Player?> FindPlayerByPlayerIdAsync(Guid playerId)
-    {
-        var result = await ReadItemAsync(playerId, playerId.ToString());
-        return result.Resource;
-    }
+    public async Task<Player?> FindPlayerByPlayerIdAsync(Guid playerId) =>
+        await ReadItemAsync(playerId, playerId.ToString());
 
     public async Task<Player?> FindPlayerByVisitorIdAsync(string visitorId)
     {
@@ -47,26 +40,19 @@ public class PlayerRepository : Repository<Player>, IPlayerRepository
         return results.FirstOrDefault();
     }
 
-    public async Task IncrementPlayerRegistrationCountAsync(Guid playerId)
+    public async Task<Player> IncrementPlayerRegistrationCountAsync(Guid playerId)
     {
-        var patchOperations = new[] { PatchOperation.Increment("/registrationCount", 1) };
-        var result = await PatchItemAsync(playerId, playerId.ToString(), patchOperations);
-
-        if (!result.Success)
-            logger.LogWarning("Could not increment player registration count. Message: '{message}'", result.Message);
+        return await PatchItemAsync(playerId, playerId.ToString(), new[]
+        {
+            PatchOperation.Increment("/registrationCount", 1)
+        });
     }
 
-    public async Task<bool> IncrementPlayerScoreAsync(Guid playerId, long value)
+    public async Task<Player> IncrementPlayerScoreAsync(Guid playerId, long value)
     {
-        var patchOperations = new[] { PatchOperation.Increment("/score", value) };
-        var result = await PatchItemAsync(playerId, playerId.ToString(), patchOperations);
-        if (!result.Success)
+        return await PatchItemAsync(playerId, playerId.ToString(), new[]
         {
-            logger.LogWarning("Could not increment player score. Message: '{message}'", result.Message);
-            return false;
-        }
-
-        logger.LogDebug("Incremented player with ID: {playerId} score by: {value}", playerId, value);
-        return true;
+            PatchOperation.Increment("/score", value)
+        });
     }
 }

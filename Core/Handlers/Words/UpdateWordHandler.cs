@@ -3,7 +3,6 @@ using FluentValidation;
 using MediatR;
 using OhMyWord.Core.Requests.Words;
 using OhMyWord.Core.Responses.Words;
-using OhMyWord.Data.Models;
 using OhMyWord.Data.Services;
 
 namespace OhMyWord.Core.Handlers.Words;
@@ -24,8 +23,7 @@ public class UpdateWordHandler : IRequestHandler<UpdateWordRequest, WordResponse
     public async Task<WordResponse> Handle(UpdateWordRequest request, CancellationToken cancellationToken)
     {
         await validator.ValidateAndThrowAsync(request, cancellationToken);
-        var result = await wordsRepository.UpdateWordAsync(request.ToWord());
-        var word = result.Resource ?? Word.Default;
+        var word = await wordsRepository.UpdateWordAsync(request.ToWord());
         return mapper.Map<WordResponse>(word);
     }
 }
