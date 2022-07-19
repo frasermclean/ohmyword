@@ -1,40 +1,32 @@
-﻿using AutoMapper;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using OhMyWord.Core.Requests.Words;
 using OhMyWord.Core.Responses.Words;
 using OhMyWord.Data.Models;
-using OhMyWord.Data.Services;
 
 namespace OhMyWord.Api.Controllers;
 
 public sealed class WordsController : AuthorizedControllerBase
-{
-    private readonly IMapper mapper;
-    private readonly IMediator mediator;
-    private readonly IWordsRepository wordsRepository;
+{    
+    private readonly IMediator mediator;    
 
-    public WordsController(IMediator mediator, IWordsRepository wordsRepository, IMapper mapper)
+    public WordsController(IMediator mediator)
     {
-        this.mediator = mediator;
-        this.wordsRepository = wordsRepository;
-        this.mapper = mapper;
+        this.mediator = mediator;        
     }
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<WordResponse>>> GetAllWordsAsync()
     {
-        var words = await wordsRepository.GetAllWordsAsync();
-        return Ok(mapper.Map<IEnumerable<WordResponse>>(words));
+        var words = await mediator.Send(new GetAllWordsRequest());
+        return Ok(words);
     }
 
     [HttpGet("{partOfSpeech}/{id:guid}")]
     public async Task<ActionResult<WordResponse>> GetWord(PartOfSpeech partOfSpeech, Guid id)
     {
-        var result = await wordsRepository.GetWordAsync(partOfSpeech, id);
-        return result.Success
-            ? Ok(mapper.Map<WordResponse>(result.Resource))
-            : GetErrorResult(result.StatusCode, result.Message);
+        var word = await mediator.Send(new GetWordRequest { Id = id, PartOfSpeech = partOfSpeech });
+        return Ok(word);        
     }
 
     [HttpPost]
@@ -54,9 +46,7 @@ public sealed class WordsController : AuthorizedControllerBase
     [HttpDelete("{partOfSpeech}/{id:guid}")]
     public async Task<IActionResult> DeleteWord(PartOfSpeech partOfSpeech, Guid id)
     {
-        var result = await wordsRepository.DeleteWordAsync(partOfSpeech, id);
-        return result.Success
-            ? NoContent()
-            : GetErrorResult(result.StatusCode, result.Message);
+        await mediator.Send(new DeleteWordRequest { PartOfSpeech = partOfSpeech, Id = id });
+        return NoContent();
     }
 }

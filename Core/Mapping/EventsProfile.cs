@@ -1,17 +1,13 @@
 ﻿using AutoMapper;
 using OhMyWord.Core.Events;
 using OhMyWord.Core.Responses.Game;
-using OhMyWord.Core.Responses.Words;
-using OhMyWord.Data.Models;
 
-namespace OhMyWord.Api.Mapping;
+namespace OhMyWord.Core.Mapping;
 
-public class ResponsesProfile : Profile
+public class EventsProfile : Profile
 {
-    public ResponsesProfile()
+    public EventsProfile()
     {
-        CreateMap<Word, WordResponse>();
-
         CreateMap<RoundStartedEventArgs, RoundStartResponse>()
             .ForMember(response => response.RoundNumber, options => options.MapFrom(args => args.Round.Number))
             .ForMember(response => response.RoundId, options => options.MapFrom(args => args.Round.Id))

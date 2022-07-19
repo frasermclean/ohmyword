@@ -3,12 +3,12 @@ using FluentValidation;
 using MediatR;
 using Microsoft.Identity.Web;
 using OhMyWord.Api.Hubs;
-using OhMyWord.Api.Mapping;
 using OhMyWord.Api.Registration;
 using OhMyWord.Core.Handlers.Words;
 using OhMyWord.Core.Validators.Requests;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using OhMyWord.Core.Mapping;
 
 namespace OhMyWord.Api;
 
@@ -83,9 +83,8 @@ public static class Program
         // add mediatr service
         services.AddMediatR(typeof(CreateWordHandler));
 
-        // object mapping service
-        services.AddAutoMapper(mapperConfiguration =>
-            mapperConfiguration.AddProfiles(MappingProfiles.GetProfiles()));
+        // automapper service
+        services.AddAutoMapper(typeof(EntitiesProfile));
 
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         services.AddEndpointsApiExplorer();

@@ -8,7 +8,7 @@ using OhMyWord.Data.Models;
 using OhMyWord.Data.Services;
 using Xunit;
 
-namespace Core.Tests;
+namespace Core.Tests.Services;
 
 public class WordsServiceTests
 {

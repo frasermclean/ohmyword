@@ -1,8 +1,8 @@
 using AutoMapper;
 using FluentAssertions;
-using OhMyWord.Api.Mapping;
 using System;
 using OhMyWord.Core.Events;
+using OhMyWord.Core.Mapping;
 using OhMyWord.Core.Responses.Game;
 using OhMyWord.Core.Responses.Words;
 using OhMyWord.Data.Models;
@@ -12,19 +12,23 @@ namespace Api.Tests;
 
 public class MappingTests
 {
-    private readonly MapperConfiguration mapperConfiguration;
+    private readonly MapperConfiguration configuration;
     private readonly IMapper mapper;
 
     public MappingTests()
     {
-        mapperConfiguration = new MapperConfiguration(config => config.AddProfiles(MappingProfiles.GetProfiles()));
-        mapper = mapperConfiguration.CreateMapper();
+        configuration = new MapperConfiguration(config =>
+        {
+            config.AddProfile<EntitiesProfile>();
+            config.AddProfile<EventsProfile>();            
+        });
+        mapper = configuration.CreateMapper();
     }
 
     [Fact]
     public void MappingConfigurationShouldBeValid()
     {
-        mapperConfiguration.AssertConfigurationIsValid();
+        configuration.AssertConfigurationIsValid();
     }
 
     [Fact]
