@@ -18,15 +18,13 @@ public interface IGameHub
 public class GameHub : Hub<IGameHub>
 {
     private readonly ILogger<GameHub> logger;
-    private readonly IMediator mediator;
-    private readonly IGameService gameService;
+    private readonly IMediator mediator;    
     private readonly IPlayerService playerService;
 
-    public GameHub(ILogger<GameHub> logger, IMediator mediator, IGameService gameService, IPlayerService playerService)
+    public GameHub(ILogger<GameHub> logger, IMediator mediator, IPlayerService playerService)
     {
         this.logger = logger;
-        this.mediator = mediator;
-        this.gameService = gameService;
+        this.mediator = mediator;        
         this.playerService = playerService;
     }
 
@@ -40,34 +38,13 @@ public class GameHub : Hub<IGameHub>
     public async Task<RegisterPlayerResponse> RegisterPlayer(string visitorId)
     {
         logger.LogInformation("Attempting to register client with visitor ID: {visitorId}", visitorId);
-        var player = await playerService.AddPlayerAsync(visitorId, Context.ConnectionId);
-        await Clients.Others.SendPlayerCount(playerService.PlayerCount);
-        return new RegisterPlayerResponse
+        var response = await mediator.Send(new RegisterPlayerRequest
         {
-            RoundActive = gameService.RoundActive,
-            PlayerCount = playerService.PlayerCount,
-            Score = player.Score,
-            RoundStart = gameService.RoundActive
-                ? new RoundStartResponse
-                {
-                    RoundNumber = gameService.Round.Number,
-                    RoundId = gameService.Round.Id,
-                    RoundStarted = gameService.Round.StartTime,
-                    RoundEnds = gameService.Round.EndTime,
-                    WordHint = gameService.Round.WordHint,
-                }
-                : null,
-            RoundEnd = !gameService.RoundActive
-                ? new RoundEndResponse
-                {
-                    RoundNumber = gameService.Round.Number,
-                    RoundId = gameService.Round.Id,
-                    Word = gameService.Round.Word.Value,
-                    EndReason = gameService.Round.EndReason,
-                    NextRoundStart = gameService.Expiry,
-                }
-                : null,
-        };
+            VisitorId = visitorId,
+            ConnectionId = Context.ConnectionId
+        });
+        await Clients.Others.SendPlayerCount(response.PlayerCount);
+        return response;
     }
 
     public async Task<SubmitGuessResponse> SubmitGuess(Guid roundId, string value)

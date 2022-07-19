@@ -1,23 +1,23 @@
-﻿using System;
-using FluentValidation.TestHelper;
+﻿using FluentValidation.TestHelper;
 using OhMyWord.Core.Requests.Words;
-using OhMyWord.Core.Validators.Requests;
+using OhMyWord.Core.Validators.Words;
 using OhMyWord.Data.Models;
 using Xunit;
 
-namespace Core.Tests.Validators;
+namespace Core.Tests.Validators.Words;
 
-public class GetWordRequestValidatorTests
+public class CreateWordRequestValidatorTests
 {
-    private readonly GetWordRequestValidator validator = new();
+    private readonly CreateWordRequestValidator validator = new();
 
     [Fact]
     public void ValidRequest_Should_NotHaveAnyErrors()
     {
         // arrange
-        var request = new GetWordRequest
+        var request = new CreateWordRequest
         {
-            Id = Guid.NewGuid(),            
+            Value = "dog",
+            Definition = "Man's best friend",
             PartOfSpeech = PartOfSpeech.Noun
         };
 
@@ -32,13 +32,14 @@ public class GetWordRequestValidatorTests
     public void InvalidRequest_Should_HaveErrors()
     {
         // arrange
-        var request = new GetWordRequest();
+        var request = new CreateWordRequest();
 
         // act
         var result = validator.TestValidate(request);
 
         // assert        
-        result.ShouldHaveValidationErrorFor(r => r.Id);        
+        result.ShouldHaveValidationErrorFor(r => r.Value);
+        result.ShouldHaveValidationErrorFor(r => r.Definition);
         result.ShouldHaveValidationErrorFor(r => r.PartOfSpeech);
     }
 }

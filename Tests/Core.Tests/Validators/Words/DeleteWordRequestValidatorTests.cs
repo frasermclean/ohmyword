@@ -1,11 +1,11 @@
 ﻿using System;
 using FluentValidation.TestHelper;
 using OhMyWord.Core.Requests.Words;
-using OhMyWord.Core.Validators.Requests;
+using OhMyWord.Core.Validators.Words;
 using OhMyWord.Data.Models;
 using Xunit;
 
-namespace Core.Tests.Validators;
+namespace Core.Tests.Validators.Words;
 
 public class DeleteWordRequestValidatorTests
 {

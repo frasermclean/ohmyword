@@ -1,11 +1,11 @@
 ﻿using FluentValidation;
 using OhMyWord.Core.Requests.Words;
 
-namespace OhMyWord.Core.Validators.Requests;
+namespace OhMyWord.Core.Validators.Words;
 
-public class GetWordRequestValidator : AbstractValidator<GetWordRequest>
+public class DeleteWordRequestValidator : AbstractValidator<DeleteWordRequest>
 {
-    public GetWordRequestValidator()
+    public DeleteWordRequestValidator()
     {
         RuleFor(request => request.Id).NotEmpty();
         RuleFor(request => request.PartOfSpeech).NotEmpty();

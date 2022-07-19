@@ -1,6 +1,6 @@
+using System;
 using AutoMapper;
 using FluentAssertions;
-using System;
 using OhMyWord.Core.Events;
 using OhMyWord.Core.Mapping;
 using OhMyWord.Core.Responses.Game;
@@ -8,7 +8,7 @@ using OhMyWord.Core.Responses.Words;
 using OhMyWord.Data.Models;
 using Xunit;
 
-namespace Api.Tests;
+namespace Core.Tests;
 
 public class MappingTests
 {

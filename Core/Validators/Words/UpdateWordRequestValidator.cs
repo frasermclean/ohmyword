@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
 using OhMyWord.Core.Requests.Words;
 
-namespace OhMyWord.Core.Validators.Requests;
+namespace OhMyWord.Core.Validators.Words;
 
 public class UpdateWordRequestValidator : AbstractValidator<UpdateWordRequest>
 {
