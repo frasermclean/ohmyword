@@ -12,7 +12,7 @@ public class ModelTests
         var timestamp = GetCurrentTimestamp();
         var word = GetTestWord(timestamp);
 
-        word.Id.Should().Be("happy");
+        word.Value.Should().Be("happy");
         word.Definition.Should().Be("A warm fuzzy feeling");
         word.PartOfSpeech.Should().Be(PartOfSpeech.Adjective);
         word.Timestamp.Should().Be(timestamp);
@@ -60,12 +60,11 @@ public class ModelTests
         player.RegistrationCount.Should().Be(3);
         player.Score.Should().Be(400);
         player.Timestamp.Should().Be(timestamp);
-        player.GetPartition().Should().Be(player.Id);
+        player.GetPartition().Should().Be(player.Id.ToString());
     }
 
     private static Player GetTestPlayer(long timestamp = default) => new()
-    {
-        Id = Guid.NewGuid().ToString(),
+    {        
         VisitorId = "123",
         RegistrationCount = 3,
         Score = 400,
@@ -74,7 +73,7 @@ public class ModelTests
 
     private static Word GetTestWord(long timestamp = default) => new()
     {
-        Id = "happy",
+        Value = "happy",
         Definition = "A warm fuzzy feeling",
         PartOfSpeech = PartOfSpeech.Adjective,
         Timestamp = timestamp

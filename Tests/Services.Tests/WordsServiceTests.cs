@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
@@ -79,17 +78,17 @@ public class WordsServiceTests
     {
         new()
         {
-            Id = "dog",
+            Value = "dog",
             Definition = "Man's best friend",
         },
         new()
         {
-            Id = "tree",
+            Value = "tree",
             Definition = "Green and leafy"
         },
         new()
         {
-            Id = "house",
+            Value = "house",
             Definition = "Building where you live"
         }
     };

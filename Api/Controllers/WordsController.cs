@@ -25,10 +25,10 @@ public sealed class WordsController : AuthorizedControllerBase
         return Ok(mapper.Map<IEnumerable<WordResponse>>(words));
     }
 
-    [HttpGet("{partOfSpeech}/{value}")]
-    public async Task<ActionResult<WordResponse>> GetWordByValue(PartOfSpeech partOfSpeech, string value)
+    [HttpGet("{partOfSpeech}/{id:guid}")]
+    public async Task<ActionResult<WordResponse>> GetWord(PartOfSpeech partOfSpeech, Guid id)
     {
-        var result = await wordsRepository.GetWordByValueAsync(partOfSpeech, value);
+        var result = await wordsRepository.GetWordAsync(partOfSpeech, id);
         return result.Success
             ? Ok(mapper.Map<WordResponse>(result.Resource))
             : GetErrorResult(result.StatusCode, result.Message);
@@ -40,24 +40,24 @@ public sealed class WordsController : AuthorizedControllerBase
         var result = await wordsRepository.CreateWordAsync(request.ToWord());
         var word = result.Resource ?? Word.Default;
         return result.Success
-            ? CreatedAtAction(nameof(GetWordByValue), new { word.PartOfSpeech, word.Value },
+            ? CreatedAtAction(nameof(GetWord), new { word.PartOfSpeech, word.Id },
                 mapper.Map<WordResponse>(word))
             : GetErrorResult(result.StatusCode, result.Message);
     }
 
-    [HttpPut("{partOfSpeech}/{value}")]
-    public async Task<IActionResult> UpdateWord(PartOfSpeech partOfSpeech, string value, UpdateWordRequest request)
+    [HttpPut("{partOfSpeech}/{id:guid}")]
+    public async Task<IActionResult> UpdateWord(PartOfSpeech partOfSpeech, Guid id, UpdateWordRequest request)
     {
-        var result = await wordsRepository.UpdateWordAsync(request.ToWord(partOfSpeech, value));
+        var result = await wordsRepository.UpdateWordAsync(request.ToWord(partOfSpeech, id));
         return result.Success
            ? Ok(mapper.Map<WordResponse>(result.Resource))
            : GetErrorResult(result.StatusCode, result.Message);
     }
 
-    [HttpDelete("{partOfSpeech}/{value}")]
-    public async Task<IActionResult> DeleteWord(PartOfSpeech partOfSpeech, string value)
+    [HttpDelete("{partOfSpeech}/{id:guid}")]
+    public async Task<IActionResult> DeleteWord(PartOfSpeech partOfSpeech, Guid id)
     {
-        var result = await wordsRepository.DeleteWordAsync(partOfSpeech, value);
+        var result = await wordsRepository.DeleteWordAsync(partOfSpeech, id);
         return result.Success
             ? NoContent()
             : GetErrorResult(result.StatusCode, result.Message);

@@ -16,6 +16,4 @@ public class Player : Entity
     /// Number of times this player has registered with the game server.
     /// </summary>
     public int RegistrationCount { get; init; } = 1;
-
-    public override string GetPartition() => Id;
 }

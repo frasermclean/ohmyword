@@ -13,7 +13,7 @@ public interface IPlayerService
     /// <summary>
     /// Currently connected player IDs.
     /// </summary>
-    IEnumerable<string> PlayerIds { get; }
+    IEnumerable<Guid> PlayerIds { get; }
 
     event EventHandler<PlayerEventArgs> PlayerAdded;
     event EventHandler<PlayerEventArgs> PlayerRemoved;
@@ -21,7 +21,7 @@ public interface IPlayerService
     Task<Player> AddPlayerAsync(string visitorId, string connectionId);
     void RemovePlayer(string connectionId);
     Player GetPlayer(string connectionId);
-    Task<bool> IncrementPlayerScoreAsync(string playerId, int points);
+    Task<bool> IncrementPlayerScoreAsync(Guid playerId, int points);
 }
 
 public class PlayerService : IPlayerService
@@ -31,7 +31,7 @@ public class PlayerService : IPlayerService
     private readonly ConcurrentDictionary<string, Player> playerCache = new();
 
     public int PlayerCount => playerCache.Count;
-    public IEnumerable<string> PlayerIds => playerCache.Values.Select(player => player.Id);
+    public IEnumerable<Guid> PlayerIds => playerCache.Values.Select(player => player.Id);
 
     public event EventHandler<PlayerEventArgs>? PlayerAdded;
     public event EventHandler<PlayerEventArgs>? PlayerRemoved;
@@ -86,6 +86,6 @@ public class PlayerService : IPlayerService
 
     public Player GetPlayer(string connectionId) => playerCache[connectionId];
 
-    public Task<bool> IncrementPlayerScoreAsync(string playerId, int points) =>
+    public Task<bool> IncrementPlayerScoreAsync(Guid playerId, int points) =>
         playerRepository.IncrementPlayerScoreAsync(playerId, points); // TODO: Update local cache to keep points in sync
 }

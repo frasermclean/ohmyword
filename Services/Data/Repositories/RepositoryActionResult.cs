@@ -11,7 +11,7 @@ public class RepositoryActionResult<T> where T : Entity
     public string Message { get; }
     public T? Resource { get; }
 
-    public RepositoryActionResult(ResponseMessage response, RepositoryAction action, string id)
+    public RepositoryActionResult(ResponseMessage response, RepositoryAction action, Guid id)
     {
         Action = action;
         Success = response.IsSuccessStatusCode;

@@ -6,7 +6,7 @@ namespace OhMyWord.Core.Models;
 public class Round : IDisposable
 {
     private readonly CancellationTokenSource cancellationTokenSource = new();
-    private readonly ConcurrentDictionary<string, RoundPlayerData> players = new();
+    private readonly ConcurrentDictionary<Guid, RoundPlayerData> players = new();
 
     public Guid Id { get; } = Guid.NewGuid();
     public int Number { get; }
@@ -22,7 +22,7 @@ public class Round : IDisposable
     [JsonIgnore]
     public CancellationToken CancellationToken => cancellationTokenSource.Token;
 
-    public Round(int number, Word word, TimeSpan duration, IEnumerable<string>? playerIds = default)
+    public Round(int number, Word word, TimeSpan duration, IEnumerable<Guid>? playerIds = default)
     {
         Number = number;
         Word = word;
@@ -36,10 +36,10 @@ public class Round : IDisposable
             AddPlayer(playerId);
     }
 
-    public bool AddPlayer(string playerId) => players.TryAdd(playerId, new RoundPlayerData());
-    public bool RemovePlayer(string playerId) => players.TryRemove(playerId, out _);
+    public bool AddPlayer(Guid playerId) => players.TryAdd(playerId, new RoundPlayerData());
+    public bool RemovePlayer(Guid playerId) => players.TryRemove(playerId, out _);
 
-    public bool IncrementGuessCount(string playerId)
+    public bool IncrementGuessCount(Guid playerId)
     {
         if (!players.TryGetValue(playerId, out var playerData))
             return false;
@@ -48,7 +48,7 @@ public class Round : IDisposable
         return true;
     }
 
-    public int AwardPlayer(string playerId)
+    public int AwardPlayer(Guid playerId)
     {
         if (!players.TryGetValue(playerId, out var playerData))
             return 0;

@@ -13,7 +13,7 @@ public interface IWordsService
 
     /// <summary>
     /// Set to true to instruct the service to reload all words from the database
-    /// the next time that SelectRandomWordAsync is called.
+    /// the next time that <see cref="GetNextWordAsync"/> is called.
     /// </summary>
     bool ShouldReloadWords { set; }
 

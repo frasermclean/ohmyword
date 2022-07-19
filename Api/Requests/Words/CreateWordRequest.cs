@@ -16,7 +16,7 @@ public class CreateWordRequest
 
     public Word ToWord() => new()
     {
-        Id = Value,
+        Value = Value,
         Definition = Definition,
         PartOfSpeech = PartOfSpeech.GetValueOrDefault()
     };

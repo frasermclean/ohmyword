@@ -75,7 +75,7 @@ public class MappingTests
 
     private static Word TestWord => new()
     {
-        Id = "cat",
+        Value = "cat",
         Definition = "Small furry creature",
         PartOfSpeech = PartOfSpeech.Noun,
         Timestamp = 123

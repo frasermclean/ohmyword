@@ -8,10 +8,10 @@ public interface IPlayerRepository
 {
     Task<Player> CreatePlayerAsync(Player player);
     Task DeletePlayerAsync(Player player);
-    Task<Player?> FindPlayerByPlayerIdAsync(string playerId);
+    Task<Player?> FindPlayerByPlayerIdAsync(Guid playerId);
     Task<Player?> FindPlayerByVisitorIdAsync(string visitorId);
-    Task IncrementPlayerRegistrationCountAsync(string playerId);
-    Task<bool> IncrementPlayerScoreAsync(string playerId, long value);
+    Task IncrementPlayerRegistrationCountAsync(Guid playerId);
+    Task<bool> IncrementPlayerScoreAsync(Guid playerId, long value);
 }
 
 public class PlayerRepository : Repository<Player>, IPlayerRepository
@@ -32,9 +32,9 @@ public class PlayerRepository : Repository<Player>, IPlayerRepository
 
     public Task DeletePlayerAsync(Player player) => DeleteItemAsync(player);
 
-    public async Task<Player?> FindPlayerByPlayerIdAsync(string playerId)
+    public async Task<Player?> FindPlayerByPlayerIdAsync(Guid playerId)
     {
-        var result = await ReadItemAsync(playerId, playerId);
+        var result = await ReadItemAsync(playerId, playerId.ToString());
         return result.Resource;
     }
 
@@ -47,19 +47,19 @@ public class PlayerRepository : Repository<Player>, IPlayerRepository
         return results.FirstOrDefault();
     }
 
-    public async Task IncrementPlayerRegistrationCountAsync(string playerId)
+    public async Task IncrementPlayerRegistrationCountAsync(Guid playerId)
     {
         var patchOperations = new[] { PatchOperation.Increment("/registrationCount", 1) };
-        var result = await PatchItemAsync(playerId, playerId, patchOperations);
+        var result = await PatchItemAsync(playerId, playerId.ToString(), patchOperations);
 
         if (!result.Success)
             logger.LogWarning("Could not increment player registration count. Message: '{message}'", result.Message);
     }
 
-    public async Task<bool> IncrementPlayerScoreAsync(string playerId, long value)
+    public async Task<bool> IncrementPlayerScoreAsync(Guid playerId, long value)
     {
         var patchOperations = new[] { PatchOperation.Increment("/score", value) };
-        var result = await PatchItemAsync(playerId, playerId, patchOperations);
+        var result = await PatchItemAsync(playerId, playerId.ToString(), patchOperations);
         if (!result.Success)
         {
             logger.LogWarning("Could not increment player score. Message: '{message}'", result.Message);

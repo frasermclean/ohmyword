@@ -28,12 +28,12 @@ public abstract class Repository<TEntity> where TEntity : Entity
         return new RepositoryActionResult<TEntity>(response, RepositoryAction.Create, item.Id);
     }
 
-    protected async Task<RepositoryActionResult<TEntity>> ReadItemAsync(string id, string partition, CancellationToken cancellationToken = default)
+    protected async Task<RepositoryActionResult<TEntity>> ReadItemAsync(Guid id, string partition, CancellationToken cancellationToken = default)
     {
         var container = await containerTask.ConfigureAwait(false);
 
         var partitionKey = new PartitionKey(partition);
-        using var response = await container.ReadItemStreamAsync(id, partitionKey, cancellationToken: cancellationToken);
+        using var response = await container.ReadItemStreamAsync(id.ToString(), partitionKey, cancellationToken: cancellationToken);
 
         LogResponseMessage(response, RepositoryAction.Read, id, partition);
 
@@ -46,7 +46,7 @@ public abstract class Repository<TEntity> where TEntity : Entity
 
         var partitionKey = new PartitionKey(item.GetPartition());
         await using var stream = EntitySerializer.ConvertToStream(item);
-        var response = await container.ReplaceItemStreamAsync(stream, item.Id, partitionKey, cancellationToken: cancellationToken);
+        var response = await container.ReplaceItemStreamAsync(stream, item.Id.ToString(), partitionKey, cancellationToken: cancellationToken);
 
         LogResponseMessage(response, RepositoryAction.Update, item.Id, item.GetPartition());
 
@@ -55,24 +55,24 @@ public abstract class Repository<TEntity> where TEntity : Entity
 
     protected Task DeleteItemAsync(TEntity item) => DeleteItemAsync(item.Id, item.GetPartition());
 
-    protected async Task<RepositoryActionResult<TEntity>> DeleteItemAsync(string id, string partition, CancellationToken cancellationToken = default)
+    protected async Task<RepositoryActionResult<TEntity>> DeleteItemAsync(Guid id, string partition, CancellationToken cancellationToken = default)
     {
         var container = await containerTask.ConfigureAwait(false);
 
         var partitionKey = new PartitionKey(partition);
-        var response = await container.DeleteItemStreamAsync(id, partitionKey, cancellationToken: cancellationToken);
+        var response = await container.DeleteItemStreamAsync(id.ToString(), partitionKey, cancellationToken: cancellationToken);
 
         LogResponseMessage(response, RepositoryAction.Delete, id, partition);
 
         return new RepositoryActionResult<TEntity>(response, RepositoryAction.Delete, id);
     }
 
-    protected async Task<RepositoryActionResult<TEntity>> PatchItemAsync(string id, string partition, PatchOperation[] operations, CancellationToken cancellationToken = default)
+    protected async Task<RepositoryActionResult<TEntity>> PatchItemAsync(Guid id, string partition, PatchOperation[] operations, CancellationToken cancellationToken = default)
     {
         var container = await containerTask.ConfigureAwait(false);
 
         var partitionKey = new PartitionKey(partition);
-        var response = await container.PatchItemStreamAsync(id, partitionKey, operations, cancellationToken: cancellationToken);
+        var response = await container.PatchItemStreamAsync(id.ToString(), partitionKey, operations, cancellationToken: cancellationToken);
 
         LogResponseMessage(response, RepositoryAction.Patch, id, partition);
 
@@ -122,7 +122,7 @@ public abstract class Repository<TEntity> where TEntity : Entity
 
     #endregion
 
-    private void LogResponseMessage(ResponseMessage response, RepositoryAction action, string id, string partition)
+    private void LogResponseMessage(ResponseMessage response, RepositoryAction action, Guid id, string partition)
     {
         var entityTypeName = typeof(TEntity).Name.ToLowerInvariant();
 

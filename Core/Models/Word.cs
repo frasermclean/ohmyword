@@ -4,7 +4,7 @@ namespace OhMyWord.Core.Models;
 
 public class Word : Entity
 {
-    public string Value => Id;
+    public string Value { get; init; } = string.Empty;
     public string Definition { get; init; } = string.Empty;
     public PartOfSpeech PartOfSpeech { get; init; }
 
@@ -17,7 +17,7 @@ public class Word : Entity
 
     public static readonly Word Default = new()
     {
-        Id = "default",
+        Value = "default",
         Definition = "Default word"
     };
 }

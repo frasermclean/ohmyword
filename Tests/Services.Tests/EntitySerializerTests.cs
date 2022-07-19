@@ -15,7 +15,8 @@ public class EntitySerializerTests
     [Fact]
     public void ConvertToStream_ShouldPass()
     {
-        using var stream = EntitySerializer.ConvertToStream(TestWord);
+        var word = GetTestWord();
+        using var stream = EntitySerializer.ConvertToStream(word);
 
         stream.Should().BeOfType<MemoryStream>();
         stream.Should().BeReadable();
@@ -29,7 +30,8 @@ public class EntitySerializerTests
 
         var word = EntitySerializer.ConvertFromStream<Word>(stream);
 
-        word.Id.Should().Be("rooster");
+        word.Id.Should().Be("672d788e-ac53-416b-938d-f9903526c1a7");
+        word.Value.Should().Be("rooster");
         word.Definition.Should().Be("A male domestic chicken.");
         word.PartOfSpeech.Should().Be(PartOfSpeech.Noun);
         word.Timestamp.Should().Be(OneTwoThree);
@@ -39,19 +41,21 @@ public class EntitySerializerTests
     [Fact]
     public void ConversionMethods_ShouldMatch()
     {
-        using var stream = EntitySerializer.ConvertToStream(TestWord);
+        var testWord = GetTestWord();
+
+        using var stream = EntitySerializer.ConvertToStream(testWord);
         var word = EntitySerializer.ConvertFromStream<Word>(stream);
 
-        word.Id.Should().Be(TestWord.Id);
-        word.Definition.Should().Be(TestWord.Definition);
-        word.PartOfSpeech.Should().Be(TestWord.PartOfSpeech);
-        word.Timestamp.Should().Be(OneTwoThree);
-        word.LastModifiedTime.Should().Be(oneTwoThreeSecondsPastEpoch);
+        word.Id.Should().Be(testWord.Id);
+        word.Definition.Should().Be(testWord.Definition);
+        word.PartOfSpeech.Should().Be(testWord.PartOfSpeech);
+        word.Timestamp.Should().Be(testWord.Timestamp);
+        word.LastModifiedTime.Should().Be(testWord.LastModifiedTime);
     }
 
-    private static Word TestWord => new()
+    private static Word GetTestWord() => new()
     {
-        Id = "cat",
+        Value = "cat",
         Definition = "Small furry creature",
         PartOfSpeech = PartOfSpeech.Noun,
         Timestamp = OneTwoThree,
