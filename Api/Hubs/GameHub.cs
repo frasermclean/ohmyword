@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.SignalR;
 using OhMyWord.Core.Requests.Game;
 using OhMyWord.Core.Responses.Game;
-using OhMyWord.Core.Services;
 using OhMyWord.Data.Models;
 
 namespace OhMyWord.Api.Hubs;
@@ -19,13 +18,11 @@ public class GameHub : Hub<IGameHub>
 {
     private readonly ILogger<GameHub> logger;
     private readonly IMediator mediator;
-    private readonly IPlayerService playerService;
 
-    public GameHub(ILogger<GameHub> logger, IMediator mediator, IPlayerService playerService)
+    public GameHub(ILogger<GameHub> logger, IMediator mediator)
     {
         this.logger = logger;
         this.mediator = mediator;
-        this.playerService = playerService;
     }
 
     public override async Task OnDisconnectedAsync(Exception? ex)
@@ -33,10 +30,11 @@ public class GameHub : Hub<IGameHub>
         if (ex is null)
             logger.LogDebug("Client disconnected. Connection ID: {connectionId}", Context.ConnectionId);
         else
-            logger.LogError(ex, "Client disconnected. Connection ID: {connectionId}", Context.ConnectionId);        
+            logger.LogError(ex, "Client disconnected. Connection ID: {connectionId}", Context.ConnectionId);
 
-        playerService.RemovePlayer(Context.ConnectionId);
-        await Clients.Others.SendPlayerCount(playerService.PlayerCount);
+        var response = await mediator.Send(new RemovePlayerRequest { ConnectionId = Context.ConnectionId });
+
+        await Clients.Others.SendPlayerCount(response.PlayerCount);
     }
 
     public async Task<RegisterPlayerResponse> RegisterPlayer(string visitorId)
