@@ -7,20 +7,18 @@ namespace OhMyWord.Data.Services;
 public abstract class Repository<TEntity> where TEntity : Entity
 {
     private readonly ILogger<Repository<TEntity>> logger;
-    private readonly Task<Container> containerTask;
+    private readonly Container container;
     private readonly string entityTypeName;
 
-    protected Repository(ICosmosDbService cosmosDbService, ILogger<Repository<TEntity>> logger, string containerId,
-        string partitionKeyPath = "/id")
+    protected Repository(ICosmosDbService cosmosDbService, ILogger<Repository<TEntity>> logger, string containerId)
     {
         this.logger = logger;
-        containerTask = cosmosDbService.GetContainerAsync(containerId, partitionKeyPath);
+        container = cosmosDbService.GetContainer(containerId);
         entityTypeName = typeof(TEntity).Name;
     }
 
     protected async Task<TEntity> CreateItemAsync(TEntity item, CancellationToken cancellationToken = default)
     {
-        var container = await GetContainerAsync();
         var response = await container.CreateItemAsync(item, new PartitionKey(item.GetPartition()),
             cancellationToken: cancellationToken);
 
@@ -33,7 +31,6 @@ public abstract class Repository<TEntity> where TEntity : Entity
     protected async Task<TEntity?> ReadItemAsync(Guid id, string partition,
         CancellationToken cancellationToken = default)
     {
-        var container = await GetContainerAsync();
         var response = await container.ReadItemAsync<TEntity>(id.ToString(), new PartitionKey(partition),
             cancellationToken: cancellationToken);
 
@@ -46,7 +43,6 @@ public abstract class Repository<TEntity> where TEntity : Entity
     protected async Task<TEntity> UpdateItemAsync(TEntity item,
         CancellationToken cancellationToken = default)
     {
-        var container = await GetContainerAsync();
         var response = await container.ReplaceItemAsync(item, item.Id.ToString(), new PartitionKey(item.GetPartition()),
             cancellationToken: cancellationToken);
 
@@ -61,7 +57,6 @@ public abstract class Repository<TEntity> where TEntity : Entity
     protected async Task DeleteItemAsync(Guid id, string partition,
         CancellationToken cancellationToken = default)
     {
-        var container = await GetContainerAsync();
         var response = await container.DeleteItemAsync<TEntity>(id.ToString(), new PartitionKey(partition),
             cancellationToken: cancellationToken);
 
@@ -75,7 +70,6 @@ public abstract class Repository<TEntity> where TEntity : Entity
         PatchOperation[] operations,
         CancellationToken cancellationToken = default)
     {
-        var container = await GetContainerAsync();
         var response = await container.PatchItemAsync<TEntity>(id.ToString(), new PartitionKey(partition), operations,
             cancellationToken: cancellationToken);
 
@@ -99,8 +93,6 @@ public abstract class Repository<TEntity> where TEntity : Entity
         string? partition = null,
         CancellationToken cancellationToken = default)
     {
-        var container = await GetContainerAsync();
-
         using var iterator = container.GetItemQueryIterator<TResponse>(queryDefinition,
             requestOptions: new QueryRequestOptions
             {
@@ -126,6 +118,4 @@ public abstract class Repository<TEntity> where TEntity : Entity
 
         return items;
     }
-
-    private async Task<Container> GetContainerAsync() => await containerTask.ConfigureAwait(false);
 }

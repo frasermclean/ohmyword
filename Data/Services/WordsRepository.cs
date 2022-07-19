@@ -16,7 +16,7 @@ public interface IWordsRepository
 public class WordsRepository : Repository<Word>, IWordsRepository
 {
     public WordsRepository(ICosmosDbService cosmosDbService, ILogger<WordsRepository> logger)
-        : base(cosmosDbService, logger, "Words", "/partOfSpeech") { }
+        : base(cosmosDbService, logger, "Words") { }
 
     public Task<IEnumerable<Word>> GetAllWordsAsync(CancellationToken cancellationToken = default)
         => ReadAllItemsAsync(cancellationToken);
