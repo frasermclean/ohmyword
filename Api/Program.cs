@@ -82,8 +82,9 @@ public static class Program
         services.AddValidatorsFromAssemblyContaining<CreateWordRequestValidator>();
 
         // add mediatr service
-        services.AddMediatR(typeof(CreateWordHandler));
-        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehaviour<,>));
+        services.AddMediatR(typeof(CreateWordHandler))
+            .AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehaviour<,>))
+            .AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehaviour<,>));
 
         // automapper service
         services.AddAutoMapper(typeof(EntitiesProfile));
