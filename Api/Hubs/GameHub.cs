@@ -18,19 +18,23 @@ public interface IGameHub
 public class GameHub : Hub<IGameHub>
 {
     private readonly ILogger<GameHub> logger;
-    private readonly IMediator mediator;    
+    private readonly IMediator mediator;
     private readonly IPlayerService playerService;
 
     public GameHub(ILogger<GameHub> logger, IMediator mediator, IPlayerService playerService)
     {
         this.logger = logger;
-        this.mediator = mediator;        
+        this.mediator = mediator;
         this.playerService = playerService;
     }
 
-    public override async Task OnDisconnectedAsync(Exception? exception)
+    public override async Task OnDisconnectedAsync(Exception? ex)
     {
-        logger.LogDebug("Client disconnected. Connection ID: {connectionId}", Context.ConnectionId);
+        if (ex is null)
+            logger.LogDebug("Client disconnected. Connection ID: {connectionId}", Context.ConnectionId);
+        else
+            logger.LogError(ex, "Client disconnected. Connection ID: {connectionId}", Context.ConnectionId);        
+
         playerService.RemovePlayer(Context.ConnectionId);
         await Clients.Others.SendPlayerCount(playerService.PlayerCount);
     }
@@ -54,6 +58,6 @@ public class GameHub : Hub<IGameHub>
             RoundId = roundId,
             Value = value,
             ConnectionId = Context.ConnectionId
-        });        
+        });
     }
 }
