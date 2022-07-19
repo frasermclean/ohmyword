@@ -1,5 +1,5 @@
-﻿using OhMyWord.Core.Game;
-using OhMyWord.Core.Options;
+﻿using OhMyWord.Core.Options;
+using OhMyWord.Core.Services;
 
 namespace OhMyWord.Api.Registration;
 

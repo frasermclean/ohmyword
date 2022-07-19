@@ -2,7 +2,7 @@
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
-using OhMyWord.Core.Game;
+using OhMyWord.Core.Services;
 using OhMyWord.Data.Models;
 using OhMyWord.Data.Services;
 using Xunit;

@@ -4,7 +4,7 @@ using OhMyWord.Core.Events;
 using OhMyWord.Core.Options;
 using OhMyWord.Data.Models;
 
-namespace OhMyWord.Core.Game;
+namespace OhMyWord.Core.Services;
 
 public interface IGameService
 {
@@ -18,7 +18,7 @@ public interface IGameService
     event Action<LetterHint> LetterHintAdded;
 
     Task ExecuteGameAsync(CancellationToken gameCancellationToken);
-    Task<int> ProcessGuessAsync(string connectionId, string roundId, string value);
+    Task<int> ProcessGuessAsync(string connectionId, Guid roundId, string value);
 }
 
 public class GameService : IGameService
@@ -124,12 +124,12 @@ public class GameService : IGameService
         }
     }
 
-    public async Task<int> ProcessGuessAsync(string connectionId, string roundId, string value)
+    public async Task<int> ProcessGuessAsync(string connectionId, Guid roundId, string value)
     {
         var player = playerService.GetPlayer(connectionId);
 
         // if round is not active then immediately return false
-        if (!RoundActive || roundId != Round.Id.ToString()) return 0;
+        if (!RoundActive || roundId != Round.Id) return 0;
 
         // compare value to current word value
         if (!string.Equals(value, Round.Word.Value, StringComparison.InvariantCultureIgnoreCase))

@@ -86,7 +86,7 @@ export class GameService {
    * @param value The value of the guess to submit.
    */
   public async submitGuess(roundId: string, value: string) {
-    const response = await this.hubConnection.invoke<GuessResponse>('SubmitGuess', { roundId, value });
+    const response = await this.hubConnection.invoke<GuessResponse>('SubmitGuess', roundId, value);
     this.store.dispatch(response.correct ? new Guess.Succeeded(response.points) : new Guess.Failed());
   }
 }

@@ -2,7 +2,7 @@
 using OhMyWord.Data.Models;
 using OhMyWord.Data.Services;
 
-namespace OhMyWord.Core.Game;
+namespace OhMyWord.Core.Services;
 
 public interface IWordsService
 {

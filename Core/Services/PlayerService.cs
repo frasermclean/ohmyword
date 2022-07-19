@@ -1,10 +1,10 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Collections.Concurrent;
+using Microsoft.Extensions.Logging;
 using OhMyWord.Core.Events;
 using OhMyWord.Data.Models;
 using OhMyWord.Data.Services;
-using System.Collections.Concurrent;
 
-namespace OhMyWord.Core.Game;
+namespace OhMyWord.Core.Services;
 
 public interface IPlayerService
 {
