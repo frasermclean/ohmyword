@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using FluentValidation;
 using MediatR;
 using OhMyWord.Core.Requests.Words;
 using OhMyWord.Core.Responses.Words;
@@ -11,18 +10,15 @@ public class CreateWordHandler : IRequestHandler<CreateWordRequest, WordResponse
 {
     private readonly IWordsRepository wordsRepository;
     private readonly IMapper mapper;
-    private readonly IValidator<CreateWordRequest> validator;
 
-    public CreateWordHandler(IWordsRepository wordsRepository, IMapper mapper, IValidator<CreateWordRequest> validator)
+    public CreateWordHandler(IWordsRepository wordsRepository, IMapper mapper)
     {
         this.wordsRepository = wordsRepository;
         this.mapper = mapper;
-        this.validator = validator;
     }
 
     public async Task<WordResponse> Handle(CreateWordRequest request, CancellationToken cancellationToken)
     {
-        await validator.ValidateAndThrowAsync(request, cancellationToken);
         var word = await wordsRepository.CreateWordAsync(request.ToWord());
         return mapper.Map<WordResponse>(word);
     }

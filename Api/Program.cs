@@ -4,6 +4,7 @@ using MediatR;
 using Microsoft.Identity.Web;
 using OhMyWord.Api.Hubs;
 using OhMyWord.Api.Registration;
+using OhMyWord.Core.Behaviours;
 using OhMyWord.Core.Handlers.Words;
 using OhMyWord.Core.Mapping;
 using OhMyWord.Core.Validators.Words;
@@ -82,6 +83,7 @@ public static class Program
 
         // add mediatr service
         services.AddMediatR(typeof(CreateWordHandler));
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehaviour<,>));
 
         // automapper service
         services.AddAutoMapper(typeof(EntitiesProfile));
