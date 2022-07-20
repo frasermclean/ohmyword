@@ -15,12 +15,13 @@ import { MatButtonModule } from '@angular/material/button';
 
 import { MsalModule, MsalGuard, MsalInterceptor, MsalRedirectComponent } from '@azure/msal-angular';
 
-import { msalInstance, guardConfig, interceptorConfig } from './auth-config';
+import { msalInstance, guardConfig, interceptorConfig } from './auth/auth.config';
 
 import { environment } from 'src/environments/environment';
 import { AppComponent } from './app.component';
 import { ToolbarComponent } from './toolbar/toolbar.component';
 import { Game } from './game/game.actions';
+import { AuthState } from './auth/auth.state';
 
 
 const routes: Routes = [
@@ -36,7 +37,7 @@ const routes: Routes = [
     BrowserAnimationsModule,
     HttpClientModule,
     RouterModule.forRoot(routes),
-    NgxsModule.forRoot([], { 
+    NgxsModule.forRoot([AuthState], { 
       developmentMode: !environment.production
     }),
     NgxsLoggerPluginModule.forRoot({

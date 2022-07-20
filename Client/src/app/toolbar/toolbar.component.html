@@ -2,11 +2,16 @@
   <a routerLink="/">
     <h1>{{ appName }}</h1>
   </a>
-  
+
   <span class="spacer"></span>
 
-  <ng-container *ngIf="isLoggedIn">
+  <div *ngIf="loggedIn$ | async; else login" class="user-info">
+    <span>{{ displayName$ | async }}</span>
+    <button *ngIf="(role$ | async) === 'admin'" mat-raised-button color="accent" routerLink="/admin">ADMIN</button>
     <button mat-raised-button color="accent" (click)="onLogout()">LOGOUT</button>
-  </ng-container>
-  <button *ngIf="!isLoggedIn" mat-raised-button color="accent" (click)="onLogin()">LOGIN / REGISTER</button>
+  </div>
+
+  <ng-template #login>
+    <button mat-raised-button color="accent" (click)="onLogin()">LOGIN / REGISTER</button>
+  </ng-template>
 </mat-toolbar>

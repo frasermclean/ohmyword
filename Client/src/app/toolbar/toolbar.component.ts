@@ -1,47 +1,30 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { MsalBroadcastService, MsalService } from '@azure/msal-angular';
-import { InteractionStatus } from '@azure/msal-browser';
-import { Subject } from 'rxjs';
-import { filter, takeUntil } from 'rxjs/operators';
-import { scopes } from '../auth-config';
+import { Component, Input, OnInit } from '@angular/core';
+import { Store } from '@ngxs/store';
+import { Auth } from '../auth/auth.actions';
+import { AuthState } from '../auth/auth.state';
 
 @Component({
   selector: 'app-toolbar',
   templateUrl: './toolbar.component.html',
   styleUrls: ['./toolbar.component.scss'],
 })
-export class ToolbarComponent implements OnInit, OnDestroy {
+export class ToolbarComponent implements OnInit {
   @Input() appName = 'Oh My Word!';
-  isLoggedIn = false;
-  private readonly destroyingSubject = new Subject<void>();
+  loggedIn$ = this.store.select(AuthState.loggedIn);
+  displayName$ = this.store.select(AuthState.displayName);
+  role$ = this.store.select(AuthState.role);
 
-  constructor(private authService: MsalService, private broadcastService: MsalBroadcastService) {}
+  constructor(private store: Store) {}
 
   ngOnInit(): void {
-    this.broadcastService.inProgress$
-      .pipe(
-        filter((status) => status === InteractionStatus.None),
-        takeUntil(this.destroyingSubject)
-      )
-      .subscribe(() => {
-        this.isLoggedIn = this.authService.instance.getAllAccounts().length > 0;
-      });
+    this.store.dispatch(new Auth.Initialize());
   }
-
-  ngOnDestroy(): void {
-    this.destroyingSubject.next(undefined);
-    this.destroyingSubject.complete();
-  }
-
+  
   onLogin() {
-    this.authService.loginRedirect({
-      scopes: scopes,
-    });
+    this.store.dispatch(new Auth.Login());
   }
 
-  onLogout() {
-    this.authService.logoutRedirect({
-      postLogoutRedirectUri: window.location.origin,
-    });
-  }
+  onLogout = () => {
+    this.store.dispatch(new Auth.Logout());
+  };
 }
