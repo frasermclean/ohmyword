@@ -7,6 +7,7 @@ import { RouterModule, Routes } from '@angular/router';
 // ngxs modules
 import { getActionTypeFromInstance, NgxsModule } from '@ngxs/store';
 import { NgxsLoggerPluginModule } from '@ngxs/logger-plugin';
+import { NgxsReduxDevtoolsPluginModule } from '@ngxs/devtools-plugin';
 
 // angular material modules
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -48,6 +49,9 @@ const routes: Routes = [
         ]
         return filteredActions.indexOf(actionType) === -1;
       }
+    }),
+    NgxsReduxDevtoolsPluginModule.forRoot({
+      disabled: environment.production // disable devtools in production
     }),
     MatToolbarModule,
     MatButtonModule,
