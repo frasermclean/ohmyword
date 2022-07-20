@@ -138,7 +138,7 @@ resource appService 'Microsoft.Web/sites@2022-03-01' = {
       linuxFxVersion: 'DOTNETCORE|6.0'
       appSettings: [
         {
-          name: 'AppConfigEndpoint'
+          name: 'AppConfig__Endpoint'
           value: appConfig.properties.endpoint
         }
       ]

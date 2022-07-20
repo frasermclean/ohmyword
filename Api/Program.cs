@@ -53,11 +53,21 @@ public static class Program
     /// </summary>   
     private static void AddAzureAppConfiguration(IConfigurationBuilder builder, IConfiguration configuration)
     {
-        var endpoint = configuration.GetValue<string>("AppConfigEndpoint");
-        if (string.IsNullOrEmpty(endpoint)) return;
-
         builder.AddAzureAppConfiguration(options =>
         {
+            var connectionString = configuration.GetValue<string>("AppConfig:ConnectionString");
+            var endpoint = configuration.GetValue<string>("AppConfig:Endpoint");
+
+            if (!string.IsNullOrEmpty(connectionString))
+            {
+                // connect using connection string
+                options.Connect(connectionString);
+                return;
+            }
+
+            if (string.IsNullOrEmpty(endpoint)) return;
+
+            // connect using managed identity                
             var uri = new Uri(endpoint);
             options.Connect(uri, new ManagedIdentityCredential());
         });
