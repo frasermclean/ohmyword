@@ -16,10 +16,10 @@ public class CosmosDbService : ICosmosDbService, IDisposable
     private readonly Database database;
 
     public CosmosDbService(IOptions<CosmosDbOptions> options, IHttpClientFactory httpClientFactory)
-    {
-        cosmosClient = new CosmosClientBuilder(options.Value.Endpoint, options.Value.PrimaryKey)
-            .WithApplicationName("OhMyWord API")
-            .WithHttpClientFactory(httpClientFactory.CreateClient)
+    {            
+        cosmosClient = new CosmosClientBuilder(options.Value.ConnectionString)
+            .WithApplicationName(options.Value.ApplicationName)
+            .WithHttpClientFactory(() => httpClientFactory.CreateClient("CosmosDb"))
             .WithCustomSerializer(new EntitySerializer())
             .Build();
 

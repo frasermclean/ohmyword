@@ -107,10 +107,16 @@ resource appConfig 'Microsoft.AppConfiguration/configurationStores@2022-05-01' =
       value: cosmosDbAccount.properties.documentEndpoint
     }
   }
-  resource cosmosDbPrimaryKey 'keyValues@2022-05-01' = {
-    name: 'CosmosDb:PrimaryKey'
+  resource cosmosDbConnectionString 'keyValues@2022-05-01' = {
+    name: 'CosmosDb:ConnectionString'
     properties: {
-      value: cosmosDbAccount.listKeys().primaryMasterKey
+      value: cosmosDbAccount.listConnectionStrings().connectionStrings[0].connectionString
+    }
+  }
+  resource cosmosDbContainerIds 'keyValues@2022-05-01' = {
+    name: 'CosmosDb:ContainerIds'
+    properties: {
+      value: '["Words","Players"]'
     }
   }
   resource azureAdClientId 'keyValues@2022-05-01' = {
@@ -172,6 +178,7 @@ resource appService 'Microsoft.Web/sites@2022-03-01' = {
           value: appConfig.properties.endpoint
         }
       ]
+      healthCheckPath: '/api/health'
     }
   }
 }

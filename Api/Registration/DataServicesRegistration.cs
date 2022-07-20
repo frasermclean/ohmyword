@@ -1,11 +1,12 @@
-﻿using OhMyWord.Data.Options;
+﻿using Microsoft.Extensions.Options;
+using OhMyWord.Data.Options;
 using OhMyWord.Data.Services;
 
 namespace OhMyWord.Api.Registration;
 
 public static class DataServicesRegistration
 {
-    public static IServiceCollection AddCosmosDbService(this IServiceCollection services, IConfiguration configuration)
+    public static void AddCosmosDbService(this IServiceCollection services, IConfiguration configuration)
     {
         // add configuration options
         services.AddOptions<CosmosDbOptions>()
@@ -15,8 +16,6 @@ public static class DataServicesRegistration
 
         services.AddHttpClient();
         services.AddSingleton<ICosmosDbService, CosmosDbService>();
-
-        return services;
     }
 
     public static IServiceCollection AddRepositoryServices(this IServiceCollection services)

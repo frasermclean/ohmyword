@@ -24,7 +24,8 @@ public static class Program
 
             // configure app host
             appBuilder.Host
-                .ConfigureAppConfiguration((context, builder) => AddAzureAppConfiguration(builder, context.Configuration))
+                .ConfigureAppConfiguration((context, builder) =>
+                    AddAzureAppConfiguration(builder, context.Configuration))
                 .UseSerilog((context, config) => config.ReadFrom.Configuration(context.Configuration))
                 .ConfigureServices((context, collection) => collection.AddServices(context.Configuration));
 
@@ -123,6 +124,12 @@ public static class Program
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
+
+        // health checks        
+        services.AddHealthChecks()            
+            .AddCosmosDbCollection(configuration.GetValue<string>("CosmosDb:ConnectionString"),
+                configuration.GetValue<string>("CosmosDb:DatabaseId"),
+                configuration.GetValue<string[]>("CosmosDb:ContainerIds"));
     }
 
     private static WebApplication ConfigureRequestPipeline(this WebApplication app)
@@ -146,8 +153,10 @@ public static class Program
         app.MapControllers();
         app.MapHub<GameHub>("/hub");
 
+        app.UseHealthChecks("/api/health");
+
         // fall back to SPA index file on unhandled route
-        app.UseEndpoints(configure => configure.MapFallbackToFile("/index.html"));
+        app.UseEndpoints(routeBuilder => routeBuilder.MapFallbackToFile("/index.html"));
 
         return app;
     }
