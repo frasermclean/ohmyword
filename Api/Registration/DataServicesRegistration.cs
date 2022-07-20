@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Options;
-using OhMyWord.Data.Options;
+﻿using OhMyWord.Data.Options;
 using OhMyWord.Data.Services;
 
 namespace OhMyWord.Api.Registration;

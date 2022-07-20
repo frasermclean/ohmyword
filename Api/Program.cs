@@ -126,7 +126,7 @@ public static class Program
         services.AddSwaggerGen();
 
         // health checks        
-        services.AddHealthChecks()            
+        services.AddHealthChecks()
             .AddCosmosDbCollection(configuration.GetValue<string>("CosmosDb:ConnectionString"),
                 configuration.GetValue<string>("CosmosDb:DatabaseId"),
                 configuration.GetValue<string[]>("CosmosDb:ContainerIds"));
