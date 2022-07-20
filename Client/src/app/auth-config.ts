@@ -1,5 +1,5 @@
 import { MsalGuardConfiguration, MsalInterceptorConfiguration } from '@azure/msal-angular';
-import { PublicClientApplication, InteractionType, BrowserCacheLocation } from '@azure/msal-browser';
+import { PublicClientApplication, InteractionType, BrowserCacheLocation, LogLevel } from '@azure/msal-browser';
 
 import { environment } from 'src/environments/environment';
 
@@ -11,8 +11,7 @@ const policyNames = {
 };
 
 export const scopes = [
-  'https://ohmyword.live/api/words.read',
-  'https://ohmyword.live/api/words.write'
+  'https://ohmywordb2c.onmicrosoft.com/api/access',
 ]
 
 /**
@@ -34,7 +33,7 @@ export const msalInstance = new PublicClientApplication({
       loggerCallback: (logLevel, message, containsPii) => {
         console.log(message);
       },
-      logLevel: environment.authLogLevel,
+      logLevel: environment.production ? LogLevel.Error : LogLevel.Warning,
       piiLoggingEnabled: false,
     },
   },
@@ -52,5 +51,7 @@ export const guardConfig: MsalGuardConfiguration = {
  */
 export const interceptorConfig: MsalInterceptorConfiguration = {
   interactionType: InteractionType.Redirect,
-  protectedResourceMap: new Map([]),
+  protectedResourceMap: new Map([
+    [`${environment.api.baseUrl}/*`, [scopes[0]]],
+  ]),
 };

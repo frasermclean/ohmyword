@@ -1,5 +1,3 @@
-import { LogLevel } from "@azure/msal-browser";
-
 /**
  * Development environment settings - will be replaced by the build process
  */
@@ -9,5 +7,4 @@ export const environment = {
     baseUrl: 'http://localhost:5000/api',
     hubUrl: 'http://localhost:5000/hub',
   },
-  authLogLevel: LogLevel.Info
 };
