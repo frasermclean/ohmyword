@@ -113,6 +113,36 @@ resource appConfig 'Microsoft.AppConfiguration/configurationStores@2022-05-01' =
       value: cosmosDbAccount.listKeys().primaryMasterKey
     }
   }
+  resource azureAdClientId 'keyValues@2022-05-01' = {
+    name: 'AzureAd:ClientId'
+    properties: {
+      value: 'da1cf4ec-9558-4f92-a8d3-f3c7ec0f5fa2'
+    }
+  }
+  resource azureAdDomain 'keyValues@2022-05-01' = {
+    name: 'AzureAd:Domain'
+    properties: {
+      value: 'ohmywordb2c.onmicrosoft.com'
+    }
+  }
+  resource azureAdInstance 'keyValues@2022-05-01' = {
+    name: 'AzureAd:Instance'
+    properties: {
+      value: 'https://ohmywordb2c.b2clogin.com'
+    }
+  }
+  resource azureAdSignUpSignInPolicyId 'keyValues@2022-05-01' = {
+    name: 'AzureAd:SignUpSignInPolicyId'
+    properties: {
+      value: 'B2C_1_signup_signin'
+    }
+  }
+  resource azureAdTenantId 'keyValues@2022-05-01' = {
+    name: 'AzureAd:TenantId'
+    properties: {
+      value: '670c3284-1150-41e2-b323-9297ac9e5f53'
+    }
+  }
 }
 
 // app service plan
