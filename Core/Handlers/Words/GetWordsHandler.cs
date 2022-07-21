@@ -6,20 +6,20 @@ using OhMyWord.Data.Services;
 
 namespace OhMyWord.Core.Handlers.Words;
 
-public class GetAllWordsHandler : IRequestHandler<GetAllWordsRequest, IEnumerable<WordResponse>>
+public class GetWordsHandler : IRequestHandler<GetWordsRequest, IEnumerable<WordResponse>>
 {
     private readonly IWordsRepository wordsRepository;
     private readonly IMapper mapper;
 
-    public GetAllWordsHandler(IWordsRepository wordsRepository, IMapper mapper)
+    public GetWordsHandler(IWordsRepository wordsRepository, IMapper mapper)
     {
         this.wordsRepository = wordsRepository;
         this.mapper = mapper;
     }
 
-    public async Task<IEnumerable<WordResponse>> Handle(GetAllWordsRequest request, CancellationToken cancellationToken)
+    public async Task<IEnumerable<WordResponse>> Handle(GetWordsRequest request, CancellationToken cancellationToken)
     {
-        var words = await wordsRepository.GetAllWordsAsync(cancellationToken);
+        var words = await wordsRepository.GetWordsAsync(request.Offset, request.Limit, cancellationToken);
         return mapper.Map<IEnumerable<WordResponse>>(words);
     }
 }

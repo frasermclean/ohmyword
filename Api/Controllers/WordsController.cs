@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using OhMyWord.Core.Requests.Words;
 using OhMyWord.Core.Responses.Words;
 using OhMyWord.Data.Models;
+using OhMyWord.Data.Services;
 
 namespace OhMyWord.Api.Controllers;
 
@@ -16,9 +17,11 @@ public sealed class WordsController : AuthorizedControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<WordResponse>>> GetAllWordsAsync()
+    public async Task<ActionResult<IEnumerable<WordResponse>>> GetWordsAsync(
+        [FromQuery] int offset = WordsRepository.OffsetMinimum,
+        [FromQuery] int limit = WordsRepository.LimitDefault)
     {
-        var words = await mediator.Send(new GetAllWordsRequest());
+        var words = await mediator.Send(new GetWordsRequest { Limit = limit, Offset = offset });
         return Ok(words);
     }
 

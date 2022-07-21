@@ -6,23 +6,23 @@ namespace OhMyWord.Data.Services;
 
 public abstract class Repository<TEntity> where TEntity : Entity
 {
+    protected readonly Container Container;
     private readonly ILogger<Repository<TEntity>> logger;
-    private readonly Container container;
     private readonly string entityTypeName;
 
     protected Repository(ICosmosDbService cosmosDbService, ILogger<Repository<TEntity>> logger, string containerId)
     {
+        Container = cosmosDbService.GetContainer(containerId);
         this.logger = logger;
-        container = cosmosDbService.GetContainer(containerId);
         entityTypeName = typeof(TEntity).Name;
     }
 
     protected async Task<TEntity> CreateItemAsync(TEntity item, CancellationToken cancellationToken = default)
     {
-        var response = await container.CreateItemAsync(item, new PartitionKey(item.GetPartition()),
+        var response = await Container.CreateItemAsync(item, new PartitionKey(item.GetPartition()),
             cancellationToken: cancellationToken);
 
-        logger.LogInformation("Created {typeName} on partition: /{partition}, request charge: {charge} RU",
+        logger.LogInformation("Created {TypeName} on partition: /{Partition}, request charge: {Charge} RU",
             entityTypeName, item.GetPartition(), response.RequestCharge);
 
         return response.Resource;
@@ -31,10 +31,10 @@ public abstract class Repository<TEntity> where TEntity : Entity
     protected async Task<TEntity?> ReadItemAsync(Guid id, string partition,
         CancellationToken cancellationToken = default)
     {
-        var response = await container.ReadItemAsync<TEntity>(id.ToString(), new PartitionKey(partition),
+        var response = await Container.ReadItemAsync<TEntity>(id.ToString(), new PartitionKey(partition),
             cancellationToken: cancellationToken);
 
-        logger.LogInformation("Read {typeName} on partition: /{partition}, request charge: {charge} RU",
+        logger.LogInformation("Read {TypeName} on partition: /{Partition}, request charge: {Charge} RU",
             entityTypeName, partition, response.RequestCharge);
 
         return response.Resource;
@@ -43,10 +43,10 @@ public abstract class Repository<TEntity> where TEntity : Entity
     protected async Task<TEntity> UpdateItemAsync(TEntity item,
         CancellationToken cancellationToken = default)
     {
-        var response = await container.ReplaceItemAsync(item, item.Id.ToString(), new PartitionKey(item.GetPartition()),
+        var response = await Container.ReplaceItemAsync(item, item.Id.ToString(), new PartitionKey(item.GetPartition()),
             cancellationToken: cancellationToken);
 
-        logger.LogInformation("Replaced {typeName} on partition: /{partition}, request charge: {charge} RU",
+        logger.LogInformation("Replaced {TypeName} on partition: /{Partition}, request charge: {Charge} RU",
             entityTypeName, item.GetPartition(), response.RequestCharge);
 
         return response.Resource;
@@ -57,10 +57,10 @@ public abstract class Repository<TEntity> where TEntity : Entity
     protected async Task DeleteItemAsync(Guid id, string partition,
         CancellationToken cancellationToken = default)
     {
-        var response = await container.DeleteItemAsync<TEntity>(id.ToString(), new PartitionKey(partition),
+        var response = await Container.DeleteItemAsync<TEntity>(id.ToString(), new PartitionKey(partition),
             cancellationToken: cancellationToken);
 
-        logger.LogInformation("Deleted {typeName} on partition: /{partition}, request charge: {charge} RU",
+        logger.LogInformation("Deleted {TypeName} on partition: /{Partition}, request charge: {Charge} RU",
             entityTypeName, partition, response.RequestCharge);
     }
 
@@ -70,10 +70,10 @@ public abstract class Repository<TEntity> where TEntity : Entity
         PatchOperation[] operations,
         CancellationToken cancellationToken = default)
     {
-        var response = await container.PatchItemAsync<TEntity>(id.ToString(), new PartitionKey(partition), operations,
+        var response = await Container.PatchItemAsync<TEntity>(id.ToString(), new PartitionKey(partition), operations,
             cancellationToken: cancellationToken);
 
-        logger.LogInformation("Patched {typeName} on partition: /{partition}, request charge: {charge} RU",
+        logger.LogInformation("Patched {TypeName} on partition: /{Partition}, request charge: {Charge} RU",
             entityTypeName, partition, response.RequestCharge);
 
         return response.Resource;
@@ -93,28 +93,27 @@ public abstract class Repository<TEntity> where TEntity : Entity
         string? partition = null,
         CancellationToken cancellationToken = default)
     {
-        using var iterator = container.GetItemQueryIterator<TResponse>(queryDefinition,
+        using var iterator = Container.GetItemQueryIterator<TResponse>(queryDefinition,
             requestOptions: new QueryRequestOptions
             {
                 PartitionKey = partition is not null ? new PartitionKey(partition) : null
             });
 
-        logger.LogInformation("Executing SQL query: {queryText}, on partition: {partition}.", queryDefinition.QueryText,
+        logger.LogInformation("Executing SQL query: {QueryText}, on partition: {Partition}", queryDefinition.QueryText,
             partition);
 
         List<TResponse> items = new();
         double totalCharge = 0;
-
         while (iterator.HasMoreResults)
         {
             var response = await iterator.ReadNextAsync(cancellationToken);
-            logger.LogInformation("Read {count} items, charge was: {charge} RU.", response.Count,
+            logger.LogInformation("Read {Count} items, charge was: {Charge} RU", response.Count,
                 response.RequestCharge);
             totalCharge += response.RequestCharge;
             items.AddRange(response);
         }
 
-        logger.LogInformation("Completed query. Total charge: {total} RU.", totalCharge);
+        logger.LogInformation("Completed query. Total charge: {Total} RU", totalCharge);
 
         return items;
     }
