@@ -36,7 +36,7 @@
   </table>
 </ng-container>
 
-<div id="actions-container" *ngIf="(status$ | async) !== 'loading'">
+<div id="actions-container" *ngIf="(status$ | async) !== 'busy'">
   <button mat-fab (click)="createWord()" matTooltip="Add a new word">
     <mat-icon>add</mat-icon>
   </button>

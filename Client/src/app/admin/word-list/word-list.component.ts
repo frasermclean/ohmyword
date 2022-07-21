@@ -32,7 +32,7 @@ export class WordListComponent implements OnInit {
       .afterClosed()
       .subscribe((result) => {
         if (!result) return;
-        console.log(result);
+        this.store.dispatch(new Words.CreateWord(result));
       });
   }
 
@@ -42,9 +42,11 @@ export class WordListComponent implements OnInit {
       .afterClosed()
       .subscribe((result) => {
         if (!result) return;
-        console.log(result);
+        this.store.dispatch(new Words.UpdateWord({ ...result, id: word.id }));
       });
   }
 
-  deleteWord(word: Word) {}
+  deleteWord(word: Word) {
+    this.store.dispatch(new Words.DeleteWord(word.partOfSpeech, word.id));
+  }
 }
