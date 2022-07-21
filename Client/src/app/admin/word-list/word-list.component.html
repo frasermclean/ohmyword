@@ -1,0 +1,46 @@
+<ng-container *ngIf="words$ | async as words">
+  <table *ngIf="words.length > 0" mat-table [dataSource]="words" class="mat-elevation-z8">
+    <!-- value column -->
+    <ng-container matColumnDef="value">
+      <th mat-header-cell *matHeaderCellDef>Value</th>
+      <td mat-cell *matCellDef="let word">{{ word.value }}</td>
+    </ng-container>
+
+    <!-- part of speech column -->
+    <ng-container matColumnDef="partOfSpeech">
+      <th mat-header-cell *matHeaderCellDef>Part of Speech</th>
+      <td mat-cell *matCellDef="let word">{{ word.partOfSpeech }}</td>
+    </ng-container>
+
+    <!-- definition column -->
+    <ng-container matColumnDef="definition">
+      <th mat-header-cell *matHeaderCellDef>Definition</th>
+      <td mat-cell *matCellDef="let word">{{ word.definition }}</td>
+    </ng-container>
+
+    <!-- actions column -->
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef>Actions</th>
+      <td mat-cell *matCellDef="let word">
+        <button mat-icon-button (click)="editWord(word)">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button mat-icon-button (click)="deleteWord(word)">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+  </table>
+</ng-container>
+
+<div id="actions-container" *ngIf="(status$ | async) !== 'loading'">
+  <button mat-fab (click)="createWord()" matTooltip="Add a new word">
+    <mat-icon>add</mat-icon>
+  </button>
+  <button mat-fab (click)="reloadWords()" matTooltip="Reload words from database">
+    <mat-icon>refresh</mat-icon>
+  </button>
+</div>

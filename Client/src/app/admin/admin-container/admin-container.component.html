@@ -1,8 +1,6 @@
-<h1>Administration Container</h1>
-<p>Status: {{ status$ | async }}</p>
-<ul *ngIf="words$ | async as words">
-  <li *ngFor="let word of words">
-    {{ word.value }}
-  </li>
-</ul>
-<button *ngIf="(status$ | async) !== 'loading'" (click)="onReload()">Reload Words</button>
+<div id="container">
+  <div id="content">
+    <h1>Administration</h1>
+    <app-word-list></app-word-list>
+  </div>
+</div>
