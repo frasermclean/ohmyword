@@ -1,4 +1,5 @@
 ﻿using Microsoft.Azure.Cosmos;
+using Microsoft.Azure.Cosmos.Linq;
 using Microsoft.Extensions.Logging;
 using OhMyWord.Data.Extensions;
 using OhMyWord.Data.Models;
@@ -12,9 +13,10 @@ public interface IWordsRepository
     Task<IEnumerable<Word>> GetWordsAsync(
         int offset = WordsRepository.OffsetMinimum,
         int limit = WordsRepository.LimitDefault,
+        string? filter = null,
         CancellationToken cancellationToken = default);
 
-    Task<int> GetTotalWordCountAsync(CancellationToken cancellationToken = default);
+    Task<int> GetWordCountAsync(CancellationToken cancellationToken = default);
 
     Task<Word?> GetWordAsync(PartOfSpeech partOfSpeech, Guid id);
     Task<Word> CreateWordAsync(Word word);
@@ -33,21 +35,27 @@ public class WordsRepository : Repository<Word>, IWordsRepository
         : base(cosmosDbService, logger, "Words")
     {
     }
-    
+
     public Task<IEnumerable<Word>> GetAllWordsAsync(CancellationToken cancellationToken = default)
         => ReadAllItemsAsync(cancellationToken);
 
-    public Task<IEnumerable<Word>> GetWordsAsync(int offset, int limit, CancellationToken cancellationToken)
+    public Task<IEnumerable<Word>> GetWordsAsync(int offset, int limit, string? filter,
+        CancellationToken cancellationToken = default)
     {
-        var queryDefinition = new QueryDefinition("SELECT * FROM words w OFFSET @offset LIMIT @limit")
-            .WithParameter("@offset", offset)
-            .WithParameter("@limit", limit);
+        var queryable = GetLinqQueryable<Word>();
 
-        return ExecuteQueryAsync<Word>(queryDefinition, cancellationToken: cancellationToken);
+        // apply filter if it is defined
+        if (!string.IsNullOrEmpty(filter))
+            queryable = queryable.Where(word => word.Definition.Contains(filter) || word.Value.Contains(filter));
+
+        // apply offset and limit
+        queryable = queryable.Skip(offset).Take(limit);
+
+        return ExecuteQueryAsync(queryable, cancellationToken);        
     }
 
-    public Task<int> GetTotalWordCountAsync(CancellationToken cancellationToken) =>
-        GetItemCountAsync(cancellationToken: cancellationToken);    
+    public Task<int> GetWordCountAsync(CancellationToken cancellationToken) =>
+        GetItemCountAsync(cancellationToken: cancellationToken);
 
     public Task<Word?> GetWordAsync(PartOfSpeech partOfSpeech, Guid id)
         => ReadItemAsync(id, partOfSpeech.ToPartitionKey());

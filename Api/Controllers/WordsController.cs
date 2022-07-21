@@ -19,9 +19,10 @@ public sealed class WordsController : AuthorizedControllerBase
     [HttpGet]
     public async Task<ActionResult<GetWordsResponse>> GetWordsAsync(
         [FromQuery] int offset = WordsRepository.OffsetMinimum,
-        [FromQuery] int limit = WordsRepository.LimitDefault)
+        [FromQuery] int limit = WordsRepository.LimitDefault,
+        [FromQuery] string? filter = null)
     {
-        var response = await mediator.Send(new GetWordsRequest { Limit = limit, Offset = offset });
+        var response = await mediator.Send(new GetWordsRequest { Limit = limit, Offset = offset, Filter = filter });
         return Ok(response);
     }
 

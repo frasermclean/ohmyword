@@ -1,4 +1,5 @@
 ﻿using Microsoft.Azure.Cosmos;
+using Microsoft.Azure.Cosmos.Linq;
 using Microsoft.Extensions.Logging;
 using OhMyWord.Data.Models;
 
@@ -6,20 +7,20 @@ namespace OhMyWord.Data.Services;
 
 public abstract class Repository<TEntity> where TEntity : Entity
 {
-    protected readonly Container Container;
+    private readonly Container container;
     private readonly ILogger<Repository<TEntity>> logger;
     private readonly string entityTypeName;
 
     protected Repository(ICosmosDbService cosmosDbService, ILogger<Repository<TEntity>> logger, string containerId)
     {
-        Container = cosmosDbService.GetContainer(containerId);
+        container = cosmosDbService.GetContainer(containerId);
         this.logger = logger;
         entityTypeName = typeof(TEntity).Name;
     }
 
     protected async Task<TEntity> CreateItemAsync(TEntity item, CancellationToken cancellationToken = default)
     {
-        var response = await Container.CreateItemAsync(item, new PartitionKey(item.GetPartition()),
+        var response = await container.CreateItemAsync(item, new PartitionKey(item.GetPartition()),
             cancellationToken: cancellationToken);
 
         logger.LogInformation("Created {TypeName} on partition: /{Partition}, request charge: {Charge} RU",
@@ -31,7 +32,7 @@ public abstract class Repository<TEntity> where TEntity : Entity
     protected async Task<TEntity?> ReadItemAsync(Guid id, string partition,
         CancellationToken cancellationToken = default)
     {
-        var response = await Container.ReadItemAsync<TEntity>(id.ToString(), new PartitionKey(partition),
+        var response = await container.ReadItemAsync<TEntity>(id.ToString(), new PartitionKey(partition),
             cancellationToken: cancellationToken);
 
         logger.LogInformation("Read {TypeName} on partition: /{Partition}, request charge: {Charge} RU",
@@ -43,7 +44,7 @@ public abstract class Repository<TEntity> where TEntity : Entity
     protected async Task<TEntity> UpdateItemAsync(TEntity item,
         CancellationToken cancellationToken = default)
     {
-        var response = await Container.ReplaceItemAsync(item, item.Id.ToString(), new PartitionKey(item.GetPartition()),
+        var response = await container.ReplaceItemAsync(item, item.Id.ToString(), new PartitionKey(item.GetPartition()),
             cancellationToken: cancellationToken);
 
         logger.LogInformation("Replaced {TypeName} on partition: /{Partition}, request charge: {Charge} RU",
@@ -57,7 +58,7 @@ public abstract class Repository<TEntity> where TEntity : Entity
     protected async Task DeleteItemAsync(Guid id, string partition,
         CancellationToken cancellationToken = default)
     {
-        var response = await Container.DeleteItemAsync<TEntity>(id.ToString(), new PartitionKey(partition),
+        var response = await container.DeleteItemAsync<TEntity>(id.ToString(), new PartitionKey(partition),
             cancellationToken: cancellationToken);
 
         logger.LogInformation("Deleted {TypeName} on partition: /{Partition}, request charge: {Charge} RU",
@@ -70,7 +71,7 @@ public abstract class Repository<TEntity> where TEntity : Entity
         PatchOperation[] operations,
         CancellationToken cancellationToken = default)
     {
-        var response = await Container.PatchItemAsync<TEntity>(id.ToString(), new PartitionKey(partition), operations,
+        var response = await container.PatchItemAsync<TEntity>(id.ToString(), new PartitionKey(partition), operations,
             cancellationToken: cancellationToken);
 
         logger.LogInformation("Patched {TypeName} on partition: /{Partition}, request charge: {Charge} RU",
@@ -87,6 +88,12 @@ public abstract class Repository<TEntity> where TEntity : Entity
         return response.Count;
     }
 
+    protected IQueryable<TResponse> GetLinqQueryable<TResponse>() =>
+        container.GetItemLinqQueryable<TResponse>(linqSerializerOptions: new CosmosLinqSerializerOptions
+        {
+            PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase
+        });
+
     /// <summary>
     /// Read all items across all partitions. This is an expensive operation and should be avoided if possible.
     /// </summary>
@@ -96,12 +103,12 @@ public abstract class Repository<TEntity> where TEntity : Entity
         return await ExecuteQueryAsync<TEntity>(queryDefinition, cancellationToken: cancellationToken);
     }
 
-    protected async Task<IEnumerable<TResponse>> ExecuteQueryAsync<TResponse>(
+    protected Task<IEnumerable<TResponse>> ExecuteQueryAsync<TResponse>(
         QueryDefinition queryDefinition,
         string? partition = null,
         CancellationToken cancellationToken = default)
     {
-        using var iterator = Container.GetItemQueryIterator<TResponse>(queryDefinition,
+        using var iterator = container.GetItemQueryIterator<TResponse>(queryDefinition,
             requestOptions: new QueryRequestOptions
             {
                 PartitionKey = partition is not null ? new PartitionKey(partition) : null
@@ -110,6 +117,21 @@ public abstract class Repository<TEntity> where TEntity : Entity
         logger.LogInformation("Executing SQL query: {QueryText}, on partition: {Partition}", queryDefinition.QueryText,
             partition);
 
+        return IterateFeedAsync(iterator, cancellationToken);
+    }
+
+    protected Task<IEnumerable<TResponse>> ExecuteQueryAsync<TResponse>(
+        IQueryable<TResponse> queryable,
+        CancellationToken cancellationToken = default)
+    {
+        logger.LogInformation("Executing queryable: {Queryable}", queryable);
+        using var iterator = queryable.ToFeedIterator();
+        return IterateFeedAsync(iterator, cancellationToken);
+    }
+
+    private async Task<IEnumerable<TResponse>> IterateFeedAsync<TResponse>(FeedIterator<TResponse> iterator,
+        CancellationToken cancellationToken = default)
+    {
         List<TResponse> items = new();
         double totalCharge = 0;
         while (iterator.HasMoreResults)

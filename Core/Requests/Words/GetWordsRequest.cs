@@ -8,4 +8,5 @@ public class GetWordsRequest : IRequest<GetWordsResponse>
 {
     public int Offset { get; init; } = WordsRepository.OffsetMinimum;
     public int Limit { get; init; } = WordsRepository.LimitDefault;
+    public string? Filter { get; init; }
 }
