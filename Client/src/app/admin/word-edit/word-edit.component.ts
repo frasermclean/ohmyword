@@ -9,7 +9,7 @@ const partOfSpeechOptions = [
   { value: PartOfSpeech.Verb, label: 'Verb' },
   { value: PartOfSpeech.Adjective, label: 'Adjective' },
   { value: PartOfSpeech.Adverb, label: 'Adverb' },
-]
+];
 
 @Component({
   selector: 'app-word-edit',
@@ -33,12 +33,9 @@ export class WordEditComponent implements OnInit {
     this.isEditing = !!data?.word;
   }
 
-  ngOnInit(): void {
-    console.log(this.formGroup);
-  }
+  ngOnInit(): void {}
 
   submit() {
-    console.log(this.formGroup.value);
     this.dialogRef.close(this.formGroup.value);
   }
 }

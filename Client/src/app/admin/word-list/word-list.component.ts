@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
+import { PageEvent } from '@angular/material/paginator';
 import { Store } from '@ngxs/store';
+import { map, withLatestFrom } from 'rxjs/operators';
 import { Word } from 'src/app/models/word.model';
 import { WordEditComponent } from '../word-edit/word-edit.component';
 import { Words } from '../words.actions';
@@ -14,16 +16,28 @@ import { WordsState } from '../words.state';
 export class WordListComponent implements OnInit {
   status$ = this.store.select(WordsState.status);
   words$ = this.store.select(WordsState.words);
+  totalWords$ = this.store.select(WordsState.total);
+  pageSize$ = this.store.select(WordsState.limit);
+  pageIndex$ = this.store.select(WordsState.offset).pipe(
+    withLatestFrom(this.pageSize$),
+    map(([offset, pageSize]) => offset / pageSize)
+  );
+
   readonly displayedColumns = ['value', 'partOfSpeech', 'definition', 'actions'];
 
   constructor(private store: Store, private dialog: MatDialog) {}
 
   ngOnInit(): void {
-    this.store.dispatch(new Words.GetAllWords());
+    this.getWords();
   }
 
-  reloadWords() {
-    this.store.dispatch(new Words.GetAllWords());
+  onPageEvent(event: PageEvent) {
+    const offset = event.pageIndex * event.pageSize;
+    this.getWords(offset, event.pageSize);
+  }
+
+  getWords(offset?: number, limit?: number) {
+    this.store.dispatch(new Words.GetWords(offset, limit));
   }
 
   createWord() {

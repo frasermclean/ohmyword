@@ -3,8 +3,9 @@ import { CreateWordRequest } from '../models/requests/create-word.request';
 import { UpdateWordRequest } from '../models/requests/update-word.request';
 
 export namespace Words {
-  export class GetAllWords {
-    static readonly type = '[Words List] Get All Words';
+  export class GetWords {
+    static readonly type = '[Words List] Get Words';
+    constructor(public offset?: number, public limit?: number) {}
   }
 
   export class CreateWord {

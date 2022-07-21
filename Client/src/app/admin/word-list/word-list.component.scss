@@ -8,3 +8,10 @@ table {
   justify-content: center;
   gap: 16px;
 }
+
+.definition {
+  max-width: 600px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
