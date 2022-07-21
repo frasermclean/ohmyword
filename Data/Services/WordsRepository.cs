@@ -14,6 +14,8 @@ public interface IWordsRepository
         int offset = WordsRepository.OffsetMinimum,
         int limit = WordsRepository.LimitDefault,
         string? filter = null,
+        string? orderBy = null,
+        bool desc = false,
         CancellationToken cancellationToken = default);
 
     Task<int> GetWordCountAsync(CancellationToken cancellationToken = default);
@@ -39,7 +41,7 @@ public class WordsRepository : Repository<Word>, IWordsRepository
     public Task<IEnumerable<Word>> GetAllWordsAsync(CancellationToken cancellationToken = default)
         => ReadAllItemsAsync(cancellationToken);
 
-    public Task<IEnumerable<Word>> GetWordsAsync(int offset, int limit, string? filter,
+    public Task<IEnumerable<Word>> GetWordsAsync(int offset, int limit, string? filter, string? orderBy, bool desc,
         CancellationToken cancellationToken = default)
     {
         var queryable = GetLinqQueryable<Word>();
@@ -48,10 +50,30 @@ public class WordsRepository : Repository<Word>, IWordsRepository
         if (!string.IsNullOrEmpty(filter))
             queryable = queryable.Where(word => word.Definition.Contains(filter) || word.Value.Contains(filter));
 
+        // apply ordering
+        if (orderBy is not null)
+            queryable = desc
+                ? orderBy switch
+                {
+                    "value" => queryable.OrderByDescending(word => word.Value),
+                    "definition" => queryable.OrderByDescending(word => word.Definition),
+                    "partOfSpeech" => queryable.OrderByDescending(word => word.PartOfSpeech),
+                    "lastModifiedTime" => queryable.OrderByDescending(word => word.Timestamp),
+                    _ => queryable
+                }
+                : orderBy switch
+                {
+                    "value" => queryable.OrderBy(word => word.Value),
+                    "definition" => queryable.OrderBy(word => word.Definition),
+                    "partOfSpeech" => queryable.OrderBy(word => word.PartOfSpeech),
+                    "lastModifiedTime" => queryable.OrderBy(word => word.Timestamp),
+                    _ => queryable
+                };
+
         // apply offset and limit
         queryable = queryable.Skip(offset).Take(limit);
 
-        return ExecuteQueryAsync(queryable, cancellationToken);        
+        return ExecuteQueryAsync(queryable, cancellationToken);
     }
 
     public Task<int> GetWordCountAsync(CancellationToken cancellationToken) =>

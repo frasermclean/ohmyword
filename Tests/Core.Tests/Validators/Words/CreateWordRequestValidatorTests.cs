@@ -1,4 +1,5 @@
-﻿using FluentValidation.TestHelper;
+﻿using FluentAssertions;
+using FluentValidation.TestHelper;
 using OhMyWord.Core.Requests.Words;
 using OhMyWord.Core.Validators.Words;
 using OhMyWord.Data.Models;
@@ -23,9 +24,13 @@ public class CreateWordRequestValidatorTests
 
         // act
         var result = validator.TestValidate(request);
+        var word = request.ToWord();
 
         // assert
         result.ShouldNotHaveAnyValidationErrors();
+        word.Value.Should().Be(request.Value);
+        word.Definition.Should().Be(request.Definition);
+        word.PartOfSpeech.Should().Be(request.PartOfSpeech);
     }
 
     [Fact]

@@ -19,7 +19,8 @@ public class GetWordsHandler : IRequestHandler<GetWordsRequest, GetWordsResponse
 
     public async Task<GetWordsResponse> Handle(GetWordsRequest request, CancellationToken cancellationToken)
     {
-        var wordsTask = wordsRepository.GetWordsAsync(request.Offset, request.Limit, request.Filter, cancellationToken);
+        var wordsTask = wordsRepository.GetWordsAsync(request.Offset, request.Limit, request.Filter, request.OrderBy,
+            request.Desc, cancellationToken);
         var totalTask = wordsRepository.GetWordCountAsync(cancellationToken);
 
         await Task.WhenAll(wordsTask, totalTask);
@@ -30,6 +31,8 @@ public class GetWordsHandler : IRequestHandler<GetWordsRequest, GetWordsResponse
             Limit = request.Limit,
             Total = totalTask.Result,
             Filter = request.Filter,
+            OrderBy = request.OrderBy,
+            Desc = request.Desc,
             Words = mapper.Map<IEnumerable<WordResponse>>(wordsTask.Result)
         };
     }
