@@ -1,6 +1,4 @@
-﻿using Microsoft.Azure.Cosmos;
-using Microsoft.Azure.Cosmos.Linq;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using OhMyWord.Data.Extensions;
 using OhMyWord.Data.Models;
 
@@ -29,7 +27,7 @@ public interface IWordsRepository
 public class WordsRepository : Repository<Word>, IWordsRepository
 {
     public const int OffsetMinimum = 0;
-    public const int LimitDefault = 20;
+    public const int LimitDefault = 10;
     public const int LimitMinimum = 1;
     public const int LimitMaximum = 100;
 
