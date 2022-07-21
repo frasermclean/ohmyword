@@ -22,7 +22,7 @@
     <ng-container matColumnDef="actions">
       <th mat-header-cell *matHeaderCellDef>Actions</th>
       <td mat-cell *matCellDef="let word">
-        <button mat-icon-button (click)="editWord(word)">
+        <button mat-icon-button (click)="editWord(word)" matTooltip="{{ 'Edit ' + word.value }}">
           <mat-icon>edit</mat-icon>
         </button>
         <button mat-icon-button (click)="deleteWord(word)">

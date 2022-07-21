@@ -8,11 +8,11 @@ export class Word {
   readonly definition: string;
   readonly lastModifiedTime: Date;
 
-  constructor(response: WordResponse) {
-    this.id = response.id;
-    this.value = response.value;
-    this.partOfSpeech = response.partOfSpeech;
-    this.definition = response.definition;
-    this.lastModifiedTime = new Date(response.lastModifiedTime);
+  constructor(init?: Partial<WordResponse>) {
+    this.id = init?.id || '';
+    this.value = init?.value || '';
+    this.partOfSpeech = init?.partOfSpeech || PartOfSpeech.Noun;
+    this.definition = init?.definition || '';
+    this.lastModifiedTime = init?.lastModifiedTime ? new Date(init.lastModifiedTime) : new Date();
   }
 }

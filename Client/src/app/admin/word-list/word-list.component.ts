@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngxs/store';
 import { Word } from 'src/app/models/word.model';
+import { WordEditComponent } from '../word-edit/word-edit.component';
 import { Words } from '../words.actions';
 import { WordsState } from '../words.state';
 
@@ -14,7 +16,7 @@ export class WordListComponent implements OnInit {
   words$ = this.store.select(WordsState.words);
   readonly displayedColumns = ['value', 'partOfSpeech', 'definition', 'actions'];
 
-  constructor(private store: Store) {}
+  constructor(private store: Store, private dialog: MatDialog) {}
 
   ngOnInit(): void {
     this.store.dispatch(new Words.GetAllWords());
@@ -24,9 +26,25 @@ export class WordListComponent implements OnInit {
     this.store.dispatch(new Words.GetAllWords());
   }
 
-  createWord() {}
+  createWord() {
+    this.dialog
+      .open(WordEditComponent)
+      .afterClosed()
+      .subscribe((result) => {
+        if (!result) return;
+        console.log(result);
+      });
+  }
 
-  editWord(word: Word) {}
+  editWord(word: Word) {
+    this.dialog
+      .open(WordEditComponent, { data: { word } })
+      .afterClosed()
+      .subscribe((result) => {
+        if (!result) return;
+        console.log(result);
+      });
+  }
 
   deleteWord(word: Word) {}
 }
