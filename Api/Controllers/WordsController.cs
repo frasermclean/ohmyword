@@ -17,19 +17,19 @@ public sealed class WordsController : AuthorizedControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<WordResponse>>> GetWordsAsync(
+    public async Task<ActionResult<GetWordsResponse>> GetWordsAsync(
         [FromQuery] int offset = WordsRepository.OffsetMinimum,
         [FromQuery] int limit = WordsRepository.LimitDefault)
     {
-        var words = await mediator.Send(new GetWordsRequest { Limit = limit, Offset = offset });
-        return Ok(words);
+        var response = await mediator.Send(new GetWordsRequest { Limit = limit, Offset = offset });
+        return Ok(response);
     }
 
     [HttpGet("{partOfSpeech}/{id:guid}")]
     public async Task<ActionResult<WordResponse>> GetWord(PartOfSpeech partOfSpeech, Guid id)
     {
-        var word = await mediator.Send(new GetWordRequest { Id = id, PartOfSpeech = partOfSpeech });
-        return Ok(word);
+        var response = await mediator.Send(new GetWordRequest { Id = id, PartOfSpeech = partOfSpeech });
+        return Ok(response);
     }
 
     [HttpPost]

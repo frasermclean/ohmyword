@@ -79,6 +79,14 @@ public abstract class Repository<TEntity> where TEntity : Entity
         return response.Resource;
     }
 
+    protected async Task<int> GetItemCountAsync(string? partition = null, CancellationToken cancellationToken = default)
+    {
+        QueryDefinition queryDefinition = new("SELECT COUNT(1) FROM c");
+        var enumerable = await ExecuteQueryAsync<CountResponse>(queryDefinition, partition, cancellationToken);
+        var response = enumerable.First();
+        return response.Count;
+    }
+
     /// <summary>
     /// Read all items across all partitions. This is an expensive operation and should be avoided if possible.
     /// </summary>

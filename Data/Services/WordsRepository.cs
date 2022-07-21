@@ -14,6 +14,8 @@ public interface IWordsRepository
         int limit = WordsRepository.LimitDefault,
         CancellationToken cancellationToken = default);
 
+    Task<int> GetTotalWordCountAsync(CancellationToken cancellationToken = default);
+
     Task<Word?> GetWordAsync(PartOfSpeech partOfSpeech, Guid id);
     Task<Word> CreateWordAsync(Word word);
     Task<Word> UpdateWordAsync(Word word);
@@ -42,7 +44,10 @@ public class WordsRepository : Repository<Word>, IWordsRepository
             .WithParameter("@limit", limit);
 
         return ExecuteQueryAsync<Word>(queryDefinition, cancellationToken: cancellationToken);
-    }    
+    }
+
+    public Task<int> GetTotalWordCountAsync(CancellationToken cancellationToken) =>
+        GetItemCountAsync(cancellationToken: cancellationToken);    
 
     public Task<Word?> GetWordAsync(PartOfSpeech partOfSpeech, Guid id)
         => ReadItemAsync(id, partOfSpeech.ToPartitionKey());
