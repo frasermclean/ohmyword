@@ -23,4 +23,9 @@ export namespace Words {
     static readonly type = '[Words List] Delete Word';
     constructor(public partOfSpeech: PartOfSpeech, public id: string) {}
   }
+
+  export class Search {
+    static readonly type = '[Words List] Search';
+    constructor(public filter: string) {}
+  }
 }

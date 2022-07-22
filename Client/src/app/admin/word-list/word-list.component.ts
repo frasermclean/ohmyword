@@ -1,9 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { FormControl } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { PageEvent } from '@angular/material/paginator';
 import { Sort } from '@angular/material/sort';
 import { Store } from '@ngxs/store';
-import { map, withLatestFrom } from 'rxjs/operators';
+import { Subject } from 'rxjs';
+import { debounceTime, map, tap, takeUntil, withLatestFrom } from 'rxjs/operators';
+import { GetWordsOrderBy } from 'src/app/models/enums/get-words-order-by.enum';
+import { SortDirection } from 'src/app/models/enums/sort-direction.enum';
 import { GetWordsRequest } from 'src/app/models/requests/get-words.request';
 import { Word } from 'src/app/models/word.model';
 import { WordEditComponent } from '../word-edit/word-edit.component';
@@ -15,7 +19,7 @@ import { WordsState } from '../words.state';
   templateUrl: './word-list.component.html',
   styleUrls: ['./word-list.component.scss'],
 })
-export class WordListComponent implements OnInit {
+export class WordListComponent implements OnInit, OnDestroy {
   status$ = this.store.select(WordsState.status);
   words$ = this.store.select(WordsState.words);
   totalWords$ = this.store.select(WordsState.total);
@@ -24,7 +28,9 @@ export class WordListComponent implements OnInit {
     withLatestFrom(this.pageSize$),
     map(([offset, pageSize]) => offset / pageSize)
   );
+  private readonly destroy$ = new Subject<void>();
 
+  searchInput = new FormControl('');
   highlightedWord: Word | null = null;
 
   readonly displayedColumns = ['value', 'partOfSpeech', 'definition', 'lastModifiedTime', 'actions'];
@@ -33,20 +39,36 @@ export class WordListComponent implements OnInit {
 
   ngOnInit(): void {
     this.getWords({});
+
+    this.searchInput.valueChanges
+      .pipe(
+        debounceTime(500),
+        takeUntil(this.destroy$),
+        tap((value) => {
+          if (typeof value !== 'string') return;
+          this.store.dispatch(new Words.Search(value));
+        })
+      )
+      .subscribe();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   onSortChange(event: Sort) {
     if (!event.direction) return; // no sort direction
-    this.getWords({ orderBy: event.active, desc: event.direction === 'desc' });
+    const orderBy = WordListComponent.parseOrderByString(event.active);
+    this.getWords({
+      orderBy,
+      direction: event.direction === 'asc' ? SortDirection.Ascending : SortDirection.Descending,
+    });
   }
 
   onPageEvent(event: PageEvent) {
     const offset = event.pageIndex * event.pageSize;
     this.getWords({ offset, limit: event.pageSize });
-  }
-
-  onClickWord(word: Word) {
-    console.log(word);
   }
 
   getWords(request: Partial<GetWordsRequest>) {
@@ -75,5 +97,18 @@ export class WordListComponent implements OnInit {
 
   deleteWord(word: Word) {
     this.store.dispatch(new Words.DeleteWord(word.partOfSpeech, word.id));
+  }
+
+  private static parseOrderByString(value: string) {
+    switch (value) {
+      case 'partOfSpeech':
+        return GetWordsOrderBy.PartOfSpeech;
+      case 'definition':
+        return GetWordsOrderBy.Definition;
+      case 'lastModifiedTime':
+        return GetWordsOrderBy.LastModifiedTime;
+      default:
+        return GetWordsOrderBy.Value;
+    }
   }
 }

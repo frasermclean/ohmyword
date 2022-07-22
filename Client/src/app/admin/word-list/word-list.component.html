@@ -1,4 +1,17 @@
-<h1>Words List</h1>
+<div id="header">
+  <h1>Words List</h1>
+  <div id="search-container">
+    <mat-form-field appearance="fill">
+      <mat-label>Search</mat-label>
+      <input type="search" matInput placeholder="Enter your search term" [formControl]="searchInput" />
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+    <button id="clear-button" mat-mini-fab (click)="searchInput.setValue('')" color="primary">
+      <mat-icon>backspace</mat-icon>
+    </button>
+  </div>
+</div>
+
 <table
   mat-table
   [dataSource]="(words$ | async) || []"
@@ -14,6 +27,7 @@
       mat-sort-header
       sortActionDescription="Sort by word value"
       disableClear="true"
+      start="desc"
     >
       Value
     </th>
@@ -82,7 +96,6 @@
     *matRowDef="let word; columns: displayedColumns"
     (mouseover)="this.highlightedWord = word"
     (mouseleave)="this.highlightedWord = null"
-    (click)="onClickWord(word)"
     [class.highlight-row]="highlightedWord === word"
   ></tr>
 </table>

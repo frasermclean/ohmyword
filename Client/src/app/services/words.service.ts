@@ -18,21 +18,20 @@ export class WordsService {
   constructor(private httpClient: HttpClient) {}
 
   public getWords(request: GetWordsRequest) {
-    return this.httpClient
-      .get<GetWordsResponse>(this.baseUrl, {
-        params: new HttpParams()
-          .set('offset', request.offset)
-          .set('limit', request.limit)
-          .set('filter', request.filter)
-          .set('orderBy', request.orderBy)
-          .set('desc', request.desc),
-      })
-      .pipe(
-        map((response) => ({
-          ...response,
-          words: response.words.map((word) => new Word(word)),
-        }))
-      );
+    let params = new HttpParams()
+      .set('offset', request.offset)
+      .set('limit', request.limit)
+      .set('orderBy', request.orderBy)
+      .set('direction', request.direction);
+
+    if (request.filter) params = params.append('filter', request.filter);
+
+    return this.httpClient.get<GetWordsResponse>(this.baseUrl, { params }).pipe(
+      map((response) => ({
+        ...response,
+        words: response.words.map((word) => new Word(word)),
+      }))
+    );
   }
 
   public createWord(request: CreateWordRequest) {
