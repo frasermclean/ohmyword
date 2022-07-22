@@ -13,12 +13,13 @@ public class GetWordsRequestValidatorTests
     private readonly GetWordsRequestValidator validator = new();
 
     [Theory]
-    [InlineData(0, 10, "", GetWordsOrderBy.Value, false)]
-    [InlineData(5, 15, "dog", GetWordsOrderBy.Value, true)]
-    [InlineData(0, 10, "cat", GetWordsOrderBy.Definition, false)]
-    [InlineData(0, 3, "chicken", GetWordsOrderBy.PartOfSpeech, true)]
-    [InlineData(25, 20, "mouse", GetWordsOrderBy.LastModifiedTime, false)]
-    public void ValidRequest_Should_NotHaveAnyErrors(int offset, int limit, string filter, GetWordsOrderBy orderBy, bool desc)
+    [InlineData(0, 10, "", GetWordsOrderBy.Value, SortDirection.Ascending)]
+    [InlineData(5, 15, "dog", GetWordsOrderBy.Value, SortDirection.Descending)]
+    [InlineData(0, 10, "cat", GetWordsOrderBy.Definition, SortDirection.Ascending)]
+    [InlineData(0, 3, "chicken", GetWordsOrderBy.PartOfSpeech, SortDirection.Descending)]
+    [InlineData(25, 20, "mouse", GetWordsOrderBy.LastModifiedTime, SortDirection.Ascending)]
+    public void ValidRequest_Should_NotHaveAnyErrors(int offset, int limit, string filter,
+        GetWordsOrderBy orderBy, SortDirection direction)
     {
         // arrange
         var request = new GetWordsRequest
@@ -27,7 +28,7 @@ public class GetWordsRequestValidatorTests
             Limit = limit,
             Filter = filter,
             OrderBy = orderBy,
-            Desc = desc
+            Direction = direction
         };
 
         // act
@@ -36,25 +37,20 @@ public class GetWordsRequestValidatorTests
         // assert
         result.ShouldNotHaveAnyValidationErrors();
         request.Filter.Should().Be(filter);
-        request.Desc.Should().Be(desc);
+        request.Direction.Should().Be(direction);
     }
 
     [Fact]
     public void InvalidRequest_Should_HaveErrors()
     {
         // arrange
-        var request = new GetWordsRequest
-        {
-            Offset = -1,
-            Limit = 0,
-            Filter = null!
-        };
-    
+        var request = new GetWordsRequest { Offset = -1, Limit = 0, Filter = null!, };
+
         // act
         var result = validator.TestValidate(request);
-    
+
         // assert        
         result.ShouldHaveValidationErrorFor(r => r.Offset);
-        result.ShouldHaveValidationErrorFor(r => r.Limit);            
+        result.ShouldHaveValidationErrorFor(r => r.Limit);
     }
 }

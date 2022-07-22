@@ -11,7 +11,8 @@ public class GetWordsRequestValidator : AbstractValidator<GetWordsRequest>
     public GetWordsRequestValidator()
     {
         RuleFor(request => request.Offset).GreaterThanOrEqualTo(WordsRepository.OffsetMinimum);
-        RuleFor(request => request.Limit).InclusiveBetween(WordsRepository.LimitMinimum, WordsRepository.LimitMaximum);        
+        RuleFor(request => request.Limit).InclusiveBetween(WordsRepository.LimitMinimum, WordsRepository.LimitMaximum);
+        RuleFor(request => request.Direction).IsInEnum();
         RuleFor(request => request.OrderBy).IsInEnum();
     }
 }

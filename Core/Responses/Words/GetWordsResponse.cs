@@ -9,6 +9,6 @@ public class GetWordsResponse
     public int Total { get; init; }
     public string Filter { get; init; } = String.Empty;
     public GetWordsOrderBy OrderBy { get; init; }
-    public bool Desc { get; init; }
+    public SortDirection Direction { get; init; }
     public IEnumerable<WordResponse> Words { get; init; } = Enumerable.Empty<WordResponse>();
 }

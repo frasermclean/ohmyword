@@ -14,7 +14,7 @@ public interface IWordsRepository
         int limit = WordsRepository.LimitDefault,
         string filter = "",
         GetWordsOrderBy orderBy = GetWordsOrderBy.Value,
-        bool desc = false,
+        SortDirection direction = SortDirection.Ascending,
         CancellationToken cancellationToken = default);
 
     Task<int> GetWordCountAsync(CancellationToken cancellationToken = default);
@@ -40,17 +40,17 @@ public class WordsRepository : Repository<Word>, IWordsRepository
     public Task<IEnumerable<Word>> GetAllWordsAsync(CancellationToken cancellationToken = default)
         => ReadAllItemsAsync(cancellationToken);
 
-    public async Task<(IEnumerable<Word>, int)> GetWordsAsync(int offset, int limit, string filter, GetWordsOrderBy orderBy,
-        bool desc, CancellationToken cancellationToken = default)
+    public async Task<(IEnumerable<Word>, int)> GetWordsAsync(int offset, int limit, string filter,
+        GetWordsOrderBy orderBy, SortDirection direction, CancellationToken cancellationToken = default)
     {
         var queryable = GetLinqQueryable<Word>()
             .Where(word => word.Definition.Contains(filter) || word.Value.Contains(filter));
-        
+
         // get count of words that match the filter
         var countTask = queryable.CountAsync(cancellationToken);
 
         // apply ordering
-        queryable = desc
+        queryable = direction == SortDirection.Descending
             ? orderBy switch
             {
                 GetWordsOrderBy.Definition => queryable.OrderByDescending(word => word.Definition),
@@ -64,11 +64,11 @@ public class WordsRepository : Repository<Word>, IWordsRepository
                 GetWordsOrderBy.PartOfSpeech => queryable.OrderBy(word => word.PartOfSpeech),
                 GetWordsOrderBy.LastModifiedTime => queryable.OrderBy(word => word.Timestamp),
                 _ => queryable.OrderBy(word => word.Value),
-            };        
+            };
 
         // apply offset and limit
         queryable = queryable.Skip(offset).Take(limit);
-        
+
         var queryTask = ExecuteQueryAsync(queryable, cancellationToken);
 
         await Task.WhenAll(queryTask, countTask);

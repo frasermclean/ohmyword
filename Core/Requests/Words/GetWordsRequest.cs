@@ -11,5 +11,5 @@ public class GetWordsRequest : IRequest<GetWordsResponse>
     public int Limit { get; init; } = WordsRepository.LimitDefault;
     public string? Filter { get; init; }
     public GetWordsOrderBy OrderBy { get; init; }
-    public bool Desc { get; init; }
+    public SortDirection Direction { get; init; }
 }
