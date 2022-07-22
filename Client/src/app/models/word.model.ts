@@ -1,4 +1,4 @@
-import { PartOfSpeech } from './part-of-speech.enum';
+import { PartOfSpeech } from './enums/part-of-speech.enum';
 import { WordResponse } from './responses/word.response';
 
 export class Word {

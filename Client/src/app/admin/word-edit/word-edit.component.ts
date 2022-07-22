@@ -1,7 +1,7 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { PartOfSpeech } from 'src/app/models/part-of-speech.enum';
+import { PartOfSpeech } from 'src/app/models/enums/part-of-speech.enum';
 import { Word } from 'src/app/models/word.model';
 
 const partOfSpeechOptions = [

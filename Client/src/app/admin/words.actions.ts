@@ -1,4 +1,4 @@
-import { PartOfSpeech } from '../models/part-of-speech.enum';
+import { PartOfSpeech } from '../models/enums/part-of-speech.enum';
 import { CreateWordRequest } from '../models/requests/create-word.request';
 import { GetWordsRequest } from '../models/requests/get-words.request';
 import { UpdateWordRequest } from '../models/requests/update-word.request';
