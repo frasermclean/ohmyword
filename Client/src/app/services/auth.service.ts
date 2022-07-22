@@ -30,7 +30,8 @@ export class AuthService {
 
         const account = accounts[0];
         const name = account.name || '';
-        const role = account.localAccountId === '377398a2-f436-4f5f-9076-89cca8435f34' ? Role.Admin : Role.User; // TODO: replace this with token claim
+        const role = account.localAccountId === '377398a2-f436-4f5f-9076-89cca8435f34' || // TODO: replace this with token claim
+          account.localAccountId === 'f803a3a2-9edc-485e-98f9-3b6fea804d91' ? Role.Admin : Role.User;
 
         this.store.dispatch(new Auth.LoggedIn(name, role));
       });
