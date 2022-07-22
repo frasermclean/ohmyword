@@ -25,6 +25,8 @@ export class WordListComponent implements OnInit {
     map(([offset, pageSize]) => offset / pageSize)
   );
 
+  highlightedWord: Word | null = null;
+
   readonly displayedColumns = ['value', 'partOfSpeech', 'definition', 'lastModifiedTime', 'actions'];
 
   constructor(private store: Store, private dialog: MatDialog) {}
@@ -41,6 +43,10 @@ export class WordListComponent implements OnInit {
   onPageEvent(event: PageEvent) {
     const offset = event.pageIndex * event.pageSize;
     this.getWords({ offset, limit: event.pageSize });
+  }
+
+  onClickWord(word: Word) {
+    console.log(word);
   }
 
   getWords(request: Partial<GetWordsRequest>) {

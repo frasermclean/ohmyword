@@ -70,7 +70,14 @@
     </ng-container>
 
     <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    <tr
+      mat-row
+      *matRowDef="let word; columns: displayedColumns"
+      (mouseover)="this.highlightedWord = word"
+      (mouseleave)="this.highlightedWord = null"
+      (click)="onClickWord(word)"
+      [class.highlight-row]="highlightedWord === word"
+    ></tr>
   </table>
 
   <!-- pagination controls -->
