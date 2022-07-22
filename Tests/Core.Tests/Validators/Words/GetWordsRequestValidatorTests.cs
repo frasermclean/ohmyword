@@ -55,7 +55,6 @@ public class GetWordsRequestValidatorTests
     
         // assert        
         result.ShouldHaveValidationErrorFor(r => r.Offset);
-        result.ShouldHaveValidationErrorFor(r => r.Limit);
-        result.ShouldHaveValidationErrorFor(r => r.Filter);        
+        result.ShouldHaveValidationErrorFor(r => r.Limit);            
     }
 }

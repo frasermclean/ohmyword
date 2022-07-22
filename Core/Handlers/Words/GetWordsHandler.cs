@@ -20,7 +20,7 @@ public class GetWordsHandler : IRequestHandler<GetWordsRequest, GetWordsResponse
     public async Task<GetWordsResponse> Handle(GetWordsRequest request, CancellationToken cancellationToken)
     {
         var (words, total) = await wordsRepository.GetWordsAsync(
-            request.Offset, request.Limit, request.Filter,
+            request.Offset, request.Limit, request.Filter ?? string.Empty,
             request.OrderBy, request.Desc, cancellationToken);
 
         return new GetWordsResponse
@@ -28,7 +28,7 @@ public class GetWordsHandler : IRequestHandler<GetWordsRequest, GetWordsResponse
             Offset = request.Offset,
             Limit = request.Limit,
             Total = total,
-            Filter = request.Filter,
+            Filter = request.Filter ?? string.Empty,
             OrderBy = request.OrderBy,
             Desc = request.Desc,
             Words = mapper.Map<IEnumerable<WordResponse>>(words)
