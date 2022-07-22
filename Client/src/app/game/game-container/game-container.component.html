@@ -13,12 +13,12 @@
         <ng-container *ngIf="round.guessed; else guess">
           <h2>You guessed it!</h2>
         </ng-container>
-  
+
         <!-- player is guessing the word -->
         <ng-template #guess>
           <app-hint></app-hint>
           <app-guess></app-guess>
-          <app-keyboard></app-keyboard>
+          <app-keyboard *ngIf="showKeyboard"></app-keyboard>
           <app-countdown [startDate]="round.startDate" [endDate]="round.endDate"></app-countdown>
         </ng-template>
       </ng-container>
@@ -28,7 +28,7 @@
         <app-round-end-summary></app-round-end-summary>
         <app-countdown [endDate]="round.endSummary.nextRoundStart"></app-countdown>
       </ng-template>
-      
+
     </ng-container>
   </div>
   <ng-template #notRegistered>
