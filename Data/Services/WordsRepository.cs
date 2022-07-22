@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Azure.Cosmos.Linq;
+using Microsoft.Extensions.Logging;
 using OhMyWord.Data.Extensions;
 using OhMyWord.Data.Models;
 
@@ -8,11 +9,11 @@ public interface IWordsRepository
 {
     Task<IEnumerable<Word>> GetAllWordsAsync(CancellationToken cancellationToken = default);
 
-    Task<IEnumerable<Word>> GetWordsAsync(
+    Task<(IEnumerable<Word>, int)> GetWordsAsync(
         int offset = WordsRepository.OffsetMinimum,
         int limit = WordsRepository.LimitDefault,
-        string? filter = null,
-        string? orderBy = null,
+        string filter = "",
+        GetWordsOrderBy orderBy = GetWordsOrderBy.Value,
         bool desc = false,
         CancellationToken cancellationToken = default);
 
@@ -39,39 +40,40 @@ public class WordsRepository : Repository<Word>, IWordsRepository
     public Task<IEnumerable<Word>> GetAllWordsAsync(CancellationToken cancellationToken = default)
         => ReadAllItemsAsync(cancellationToken);
 
-    public Task<IEnumerable<Word>> GetWordsAsync(int offset, int limit, string? filter, string? orderBy, bool desc,
-        CancellationToken cancellationToken = default)
+    public async Task<(IEnumerable<Word>, int)> GetWordsAsync(int offset, int limit, string filter, GetWordsOrderBy orderBy,
+        bool desc, CancellationToken cancellationToken = default)
     {
-        var queryable = GetLinqQueryable<Word>();
-
-        // apply filter if it is defined
-        if (!string.IsNullOrEmpty(filter))
-            queryable = queryable.Where(word => word.Definition.Contains(filter) || word.Value.Contains(filter));
+        var queryable = GetLinqQueryable<Word>()
+            .Where(word => word.Definition.Contains(filter) || word.Value.Contains(filter));
+        
+        // get count of words that match the filter
+        var countTask = queryable.CountAsync(cancellationToken);
 
         // apply ordering
-        if (orderBy is not null)
-            queryable = desc
-                ? orderBy switch
-                {
-                    "value" => queryable.OrderByDescending(word => word.Value),
-                    "definition" => queryable.OrderByDescending(word => word.Definition),
-                    "partOfSpeech" => queryable.OrderByDescending(word => word.PartOfSpeech),
-                    "lastModifiedTime" => queryable.OrderByDescending(word => word.Timestamp),
-                    _ => queryable
-                }
-                : orderBy switch
-                {
-                    "value" => queryable.OrderBy(word => word.Value),
-                    "definition" => queryable.OrderBy(word => word.Definition),
-                    "partOfSpeech" => queryable.OrderBy(word => word.PartOfSpeech),
-                    "lastModifiedTime" => queryable.OrderBy(word => word.Timestamp),
-                    _ => queryable
-                };
+        queryable = desc
+            ? orderBy switch
+            {
+                GetWordsOrderBy.Definition => queryable.OrderByDescending(word => word.Definition),
+                GetWordsOrderBy.PartOfSpeech => queryable.OrderByDescending(word => word.PartOfSpeech),
+                GetWordsOrderBy.LastModifiedTime => queryable.OrderByDescending(word => word.Timestamp),
+                _ => queryable.OrderByDescending(word => word.Value)
+            }
+            : orderBy switch
+            {
+                GetWordsOrderBy.Definition => queryable.OrderBy(word => word.Definition),
+                GetWordsOrderBy.PartOfSpeech => queryable.OrderBy(word => word.PartOfSpeech),
+                GetWordsOrderBy.LastModifiedTime => queryable.OrderBy(word => word.Timestamp),
+                _ => queryable.OrderBy(word => word.Value),
+            };        
 
         // apply offset and limit
         queryable = queryable.Skip(offset).Take(limit);
+        
+        var queryTask = ExecuteQueryAsync(queryable, cancellationToken);
 
-        return ExecuteQueryAsync(queryable, cancellationToken);
+        await Task.WhenAll(queryTask, countTask);
+
+        return (queryTask.Result, countTask.Result);
     }
 
     public Task<int> GetWordCountAsync(CancellationToken cancellationToken) =>

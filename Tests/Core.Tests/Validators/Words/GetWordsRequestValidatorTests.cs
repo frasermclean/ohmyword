@@ -13,12 +13,12 @@ public class GetWordsRequestValidatorTests
     private readonly GetWordsRequestValidator validator = new();
 
     [Theory]
-    [InlineData(0, 10, null, null, false)]
-    [InlineData(5, 15, "dog", "value", true)]
-    [InlineData(0, 10, "cat", "definition", false)]
-    [InlineData(0, 3, "chicken", "partOfSpeech", true)]
-    [InlineData(25, 20, "mouse", "lastModifiedTime", false)]
-    public void ValidRequest_Should_NotHaveAnyErrors(int offset, int limit, string? filter, string? orderBy, bool desc)
+    [InlineData(0, 10, "", GetWordsOrderBy.Value, false)]
+    [InlineData(5, 15, "dog", GetWordsOrderBy.Value, true)]
+    [InlineData(0, 10, "cat", GetWordsOrderBy.Definition, false)]
+    [InlineData(0, 3, "chicken", GetWordsOrderBy.PartOfSpeech, true)]
+    [InlineData(25, 20, "mouse", GetWordsOrderBy.LastModifiedTime, false)]
+    public void ValidRequest_Should_NotHaveAnyErrors(int offset, int limit, string filter, GetWordsOrderBy orderBy, bool desc)
     {
         // arrange
         var request = new GetWordsRequest
@@ -46,8 +46,8 @@ public class GetWordsRequestValidatorTests
         var request = new GetWordsRequest
         {
             Offset = -1,
-            Limit = 0,            
-            OrderBy = "something",            
+            Limit = 0,
+            Filter = null!
         };
     
         // act
@@ -56,6 +56,6 @@ public class GetWordsRequestValidatorTests
         // assert        
         result.ShouldHaveValidationErrorFor(r => r.Offset);
         result.ShouldHaveValidationErrorFor(r => r.Limit);
-        result.ShouldHaveValidationErrorFor(r => r.OrderBy);
+        result.ShouldHaveValidationErrorFor(r => r.Filter);        
     }
 }

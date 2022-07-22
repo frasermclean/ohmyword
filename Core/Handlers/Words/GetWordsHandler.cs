@@ -19,21 +19,19 @@ public class GetWordsHandler : IRequestHandler<GetWordsRequest, GetWordsResponse
 
     public async Task<GetWordsResponse> Handle(GetWordsRequest request, CancellationToken cancellationToken)
     {
-        var wordsTask = wordsRepository.GetWordsAsync(request.Offset, request.Limit, request.Filter, request.OrderBy,
-            request.Desc, cancellationToken);
-        var totalTask = wordsRepository.GetWordCountAsync(cancellationToken);
-
-        await Task.WhenAll(wordsTask, totalTask);
+        var (words, total) = await wordsRepository.GetWordsAsync(
+            request.Offset, request.Limit, request.Filter,
+            request.OrderBy, request.Desc, cancellationToken);
 
         return new GetWordsResponse
         {
             Offset = request.Offset,
             Limit = request.Limit,
-            Total = totalTask.Result,
+            Total = total,
             Filter = request.Filter,
             OrderBy = request.OrderBy,
             Desc = request.Desc,
-            Words = mapper.Map<IEnumerable<WordResponse>>(wordsTask.Result)
+            Words = mapper.Map<IEnumerable<WordResponse>>(words)
         };
     }
 }
