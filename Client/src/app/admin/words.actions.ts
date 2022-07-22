@@ -1,11 +1,12 @@
 import { PartOfSpeech } from '../models/part-of-speech.enum';
 import { CreateWordRequest } from '../models/requests/create-word.request';
+import { GetWordsRequest } from '../models/requests/get-words.request';
 import { UpdateWordRequest } from '../models/requests/update-word.request';
 
 export namespace Words {
   export class GetWords {
     static readonly type = '[Words List] Get Words';
-    constructor(public offset?: number, public limit?: number) {}
+    constructor(public request: Partial<GetWordsRequest>) {}
   }
 
   export class CreateWord {

@@ -13,6 +13,9 @@ interface WordsStateModel {
   offset: number;
   limit: number;
   total: number;
+  filter: string;
+  orderBy: 'value' | 'partOfSpeech' | 'definition' | 'lastModifiedTime';
+  desc: boolean;
 }
 
 const WORDS_STATE_TOKEN = new StateToken<WordsStateModel>('words');
@@ -26,6 +29,9 @@ const WORDS_STATE_TOKEN = new StateToken<WordsStateModel>('words');
     offset: 0,
     limit: 10,
     total: 0,
+    filter: '',
+    orderBy: 'value',
+    desc: false,
   },
 })
 @Injectable()
@@ -36,23 +42,29 @@ export class WordsState {
   getWords(context: StateContext<WordsStateModel>, action: Words.GetWords) {
     context.patchState({ status: 'busy', words: [] });
     const state = context.getState();
-    const offset = action.offset || state.offset;
-    const limit = action.limit || state.limit;
-    return this.wordsService.getWords(offset, limit).pipe(
-      tap((response) =>
-        context.patchState({
-          status: 'ready',
-          words: response.words,
-          offset: response.offset,
-          limit: response.limit,
-          total: response.total,
-        })
-      ),
-      catchError((error) => {
-        context.patchState({ status: 'error', error });
-        return of(error);
+    return this.wordsService
+      .getWords({
+        offset: action.request.offset || state.offset,
+        limit: action.request.limit || state.limit,
+        filter: action.request.filter || state.filter,
+        orderBy: action.request.orderBy || state.orderBy,
+        desc: action.request.desc || state.desc,
       })
-    );
+      .pipe(
+        tap((response) =>
+          context.patchState({
+            status: 'ready',
+            words: response.words,
+            offset: response.offset,
+            limit: response.limit,
+            total: response.total,
+          })
+        ),
+        catchError((error) => {
+          context.patchState({ status: 'error', error });
+          return of(error);
+        })
+      );
   }
 
   @Action(Words.CreateWord)

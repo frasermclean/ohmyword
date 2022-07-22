@@ -4,6 +4,7 @@ import { map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { PartOfSpeech } from '../models/part-of-speech.enum';
 import { CreateWordRequest } from '../models/requests/create-word.request';
+import { GetWordsRequest } from '../models/requests/get-words.request';
 import { UpdateWordRequest } from '../models/requests/update-word.request';
 import { GetWordsResponse } from '../models/responses/get-words.response';
 import { WordResponse } from '../models/responses/word.response';
@@ -16,9 +17,16 @@ export class WordsService {
   private readonly baseUrl = `${environment.api.baseUrl}/words`;
   constructor(private httpClient: HttpClient) {}
 
-  public getWords(offset = 0, limit = 10) {
+  public getWords(request: GetWordsRequest) {
     return this.httpClient
-      .get<GetWordsResponse>(this.baseUrl, { params: new HttpParams().set('limit', limit).set('offset', offset) })
+      .get<GetWordsResponse>(this.baseUrl, {
+        params: new HttpParams()
+          .set('offset', request.offset)
+          .set('limit', request.limit)
+          .set('filter', request.filter)
+          .set('orderBy', request.orderBy)
+          .set('desc', request.desc),
+      })
       .pipe(
         map((response) => ({
           ...response,

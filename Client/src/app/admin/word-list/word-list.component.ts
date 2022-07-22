@@ -1,8 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { PageEvent } from '@angular/material/paginator';
+import { Sort } from '@angular/material/sort';
 import { Store } from '@ngxs/store';
 import { map, withLatestFrom } from 'rxjs/operators';
+import { GetWordsRequest } from 'src/app/models/requests/get-words.request';
 import { Word } from 'src/app/models/word.model';
 import { WordEditComponent } from '../word-edit/word-edit.component';
 import { Words } from '../words.actions';
@@ -23,21 +25,26 @@ export class WordListComponent implements OnInit {
     map(([offset, pageSize]) => offset / pageSize)
   );
 
-  readonly displayedColumns = ['value', 'partOfSpeech', 'definition', 'actions'];
+  readonly displayedColumns = ['value', 'partOfSpeech', 'definition', 'lastModifiedTime', 'actions'];
 
   constructor(private store: Store, private dialog: MatDialog) {}
 
   ngOnInit(): void {
-    this.getWords();
+    this.getWords({});
+  }
+
+  onSortChange(event: Sort) {
+    if (!event.direction) return; // no sort direction
+    this.getWords({ orderBy: event.active, desc: event.direction === 'desc' });
   }
 
   onPageEvent(event: PageEvent) {
     const offset = event.pageIndex * event.pageSize;
-    this.getWords(offset, event.pageSize);
+    this.getWords({ offset, limit: event.pageSize });
   }
 
-  getWords(offset?: number, limit?: number) {
-    this.store.dispatch(new Words.GetWords(offset, limit));
+  getWords(request: Partial<GetWordsRequest>) {
+    this.store.dispatch(new Words.GetWords(request));
   }
 
   createWord() {
