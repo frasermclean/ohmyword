@@ -44,7 +44,8 @@ public class WordsRepository : Repository<Word>, IWordsRepository
         GetWordsOrderBy orderBy, SortDirection direction, CancellationToken cancellationToken = default)
     {
         var queryable = GetLinqQueryable<Word>()
-            .Where(word => word.Definition.Contains(filter) || word.Value.Contains(filter));
+            .Where(word => word.Definition.ToLower().Contains(filter.ToLower()) ||
+                           word.Value.ToLower().Contains(filter.ToLower()));
 
         // get count of words that match the filter
         var countTask = queryable.CountAsync(cancellationToken);
