@@ -68,9 +68,9 @@ public static class Program
 
             if (string.IsNullOrEmpty(endpoint)) return;
 
-            // connect using managed identity                
-            var uri = new Uri(endpoint);
-            options.Connect(uri, new ManagedIdentityCredential());
+            // attempt connect using default azure credential 
+            var uri = new Uri(endpoint);            
+            options.Connect(uri, new DefaultAzureCredential());
         });
     }
 
