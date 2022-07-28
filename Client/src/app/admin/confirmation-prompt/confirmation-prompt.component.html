@@ -1,0 +1,8 @@
+<h2 mat-dialog-title>{{ title }}</h2>
+<mat-dialog-content>
+  <p class="question">{{ question }}</p>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button mat-raised-button color="accent" [mat-dialog-close]="true">YES</button>
+  <button mat-raised-button color="warn" [mat-dialog-close]="false">NO</button>
+</mat-dialog-actions>

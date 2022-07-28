@@ -1,18 +1,22 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { FormControl } from '@angular/forms';
-import { MatDialog } from '@angular/material/dialog';
-import { PageEvent } from '@angular/material/paginator';
-import { Sort } from '@angular/material/sort';
-import { Store } from '@ngxs/store';
-import { Subject } from 'rxjs';
-import { debounceTime, map, tap, takeUntil, withLatestFrom } from 'rxjs/operators';
-import { GetWordsOrderBy } from 'src/app/models/enums/get-words-order-by.enum';
-import { SortDirection } from 'src/app/models/enums/sort-direction.enum';
-import { GetWordsRequest } from 'src/app/models/requests/get-words.request';
-import { Word } from 'src/app/models/word.model';
-import { WordEditComponent } from '../word-edit/word-edit.component';
-import { Words } from '../words.actions';
-import { WordsState } from '../words.state';
+import {Component, OnDestroy, OnInit} from '@angular/core';
+import {FormControl} from '@angular/forms';
+import {MatDialog} from '@angular/material/dialog';
+import {PageEvent} from '@angular/material/paginator';
+import {Sort} from '@angular/material/sort';
+import {Store} from '@ngxs/store';
+import {Subject} from 'rxjs';
+import {debounceTime, map, takeUntil, tap, withLatestFrom} from 'rxjs/operators';
+import {GetWordsOrderBy} from 'src/app/models/enums/get-words-order-by.enum';
+import {SortDirection} from 'src/app/models/enums/sort-direction.enum';
+import {GetWordsRequest} from 'src/app/models/requests/get-words.request';
+import {Word} from 'src/app/models/word.model';
+import {WordEditComponent} from '../word-edit/word-edit.component';
+import {Words} from '../words.actions';
+import {WordsState} from '../words.state';
+import {
+  ConfirmationPromptComponent,
+  ConfirmationPromptData
+} from "../confirmation-prompt/confirmation-prompt.component";
 
 @Component({
   selector: 'app-word-list',
@@ -35,7 +39,8 @@ export class WordListComponent implements OnInit, OnDestroy {
 
   readonly displayedColumns = ['value', 'partOfSpeech', 'definition', 'lastModifiedTime', 'actions'];
 
-  constructor(private store: Store, private dialog: MatDialog) {}
+  constructor(private store: Store, private dialog: MatDialog) {
+  }
 
   ngOnInit(): void {
     this.getWords({});
@@ -68,7 +73,7 @@ export class WordListComponent implements OnInit, OnDestroy {
 
   onPageEvent(event: PageEvent) {
     const offset = event.pageIndex * event.pageSize;
-    this.getWords({ offset, limit: event.pageSize });
+    this.getWords({offset, limit: event.pageSize});
   }
 
   getWords(request: Partial<GetWordsRequest>) {
@@ -87,16 +92,27 @@ export class WordListComponent implements OnInit, OnDestroy {
 
   editWord(word: Word) {
     this.dialog
-      .open(WordEditComponent, { data: { word } })
+      .open(WordEditComponent, {data: {word}})
       .afterClosed()
       .subscribe((result) => {
         if (!result) return;
-        this.store.dispatch(new Words.UpdateWord({ ...result, id: word.id }));
+        this.store.dispatch(new Words.UpdateWord({...result, id: word.id}));
       });
   }
 
   deleteWord(word: Word) {
-    this.store.dispatch(new Words.DeleteWord(word.partOfSpeech, word.id));
+    this.dialog
+      .open<ConfirmationPromptComponent, ConfirmationPromptData, boolean>(ConfirmationPromptComponent, {
+        data: {
+          title: `Delete word: ${word.value}`,
+          question: `Are you sure you wish to delete the word: ${word.value}?`
+        }
+      })
+      .afterClosed()
+      .subscribe(result => {
+        if (!result) return;
+        this.store.dispatch(new Words.DeleteWord(word.partOfSpeech, word.id));
+      });
   }
 
   private static parseOrderByString(value: string) {

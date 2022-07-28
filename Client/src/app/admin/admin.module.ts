@@ -23,11 +23,12 @@ import { AdminContainerComponent } from './admin-container/admin-container.compo
 import { WordsState } from './words.state';
 import { WordListComponent } from './word-list/word-list.component';
 import { WordEditComponent } from './word-edit/word-edit.component';
+import { ConfirmationPromptComponent } from './confirmation-prompt/confirmation-prompt.component';
 
 const routes: Routes = [{ path: '', component: AdminContainerComponent }];
 
 @NgModule({
-  declarations: [AdminContainerComponent, WordListComponent, WordEditComponent],
+  declarations: [AdminContainerComponent, WordListComponent, WordEditComponent, ConfirmationPromptComponent],
   imports: [
     CommonModule,
     RouterModule.forChild(routes),
