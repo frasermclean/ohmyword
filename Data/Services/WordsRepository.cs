@@ -90,3 +90,11 @@ public class WordsRepository : Repository<Word>, IWordsRepository
     public Task DeleteWordAsync(PartOfSpeech partOfSpeech, Guid id)
         => DeleteItemAsync(id, partOfSpeech.ToPartitionKey());
 }
+
+public enum GetWordsOrderBy
+{
+    Value,
+    PartOfSpeech,
+    Definition,
+    LastModifiedTime,
+}
