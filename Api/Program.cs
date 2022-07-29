@@ -54,11 +54,14 @@ public static class Program
     /// </summary>   
     private static void AddAzureAppConfiguration(IConfigurationBuilder builder, IConfiguration configuration)
     {
+        var disabled = configuration.GetValue<bool>("AppConfig:Disabled");
+        if (disabled) return;// do not attempt to use AzureAppConfiguration
+
+        var connectionString = configuration.GetValue<string>("AppConfig:ConnectionString");
+        var endpoint = configuration.GetValue<string>("AppConfig:Endpoint");
+
         builder.AddAzureAppConfiguration(options =>
         {
-            var connectionString = configuration.GetValue<string>("AppConfig:ConnectionString");
-            var endpoint = configuration.GetValue<string>("AppConfig:Endpoint");
-
             if (!string.IsNullOrEmpty(connectionString))
             {
                 // connect using connection string
@@ -69,7 +72,7 @@ public static class Program
             if (string.IsNullOrEmpty(endpoint)) return;
 
             // attempt connect using default azure credential 
-            var uri = new Uri(endpoint);            
+            var uri = new Uri(endpoint);
             options.Connect(uri, new DefaultAzureCredential());
         });
     }
