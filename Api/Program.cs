@@ -1,7 +1,6 @@
 using Azure.Identity;
 using FluentValidation;
 using MediatR;
-using Microsoft.Identity.Web;
 using OhMyWord.Api.Hubs;
 using OhMyWord.Api.Registration;
 using OhMyWord.Core.Behaviours;
@@ -96,8 +95,8 @@ public static class Program
                     new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
             });
 
-        // add microsoft identity authentication services
-        services.AddMicrosoftIdentityWebApiAuthentication(configuration);
+        // microsoft identity authentication services
+        services.AddMicrosoftIdentity(configuration);        
 
         // add database services
         services.AddCosmosDbService(configuration);
