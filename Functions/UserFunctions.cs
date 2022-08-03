@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using OhMyWord.Data.Services;
-using System.Threading.Tasks;
 
 namespace OhMyWord.Functions;
 
@@ -16,11 +15,14 @@ public sealed class UserFunctions
     }
 
     [FunctionName(nameof(GetUserRoles))]
-    public Task<IActionResult> GetUserRoles(
-        [HttpTrigger("get", "post", Route = "get-roles/{userId}")]
+    public async Task<IActionResult> GetUserRoles(
+        [HttpTrigger("get", "post", Route = "get-roles/{userId:guid}")]
         HttpRequest request,
-        string userId)
+        Guid userId)
     {
-        return Task.FromResult<IActionResult>(new OkObjectResult(new { userId, }));
+        var player = await playerRepository.FindPlayerByPlayerIdAsync(userId);
+        return player is not null
+            ? new OkObjectResult(player)
+            : new NotFoundResult();
     }
 }
