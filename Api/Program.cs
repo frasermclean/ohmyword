@@ -55,7 +55,7 @@ public static class Program
     private static void AddAzureAppConfiguration(IConfigurationBuilder builder, IConfiguration configuration)
     {
         var disabled = configuration.GetValue<bool>("AppConfig:Disabled");
-        if (disabled) return;// do not attempt to use AzureAppConfiguration
+        if (disabled) return; // do not attempt to use AzureAppConfiguration
 
         var connectionString = configuration.GetValue<string>("AppConfig:ConnectionString");
         var endpoint = configuration.GetValue<string>("AppConfig:Endpoint");

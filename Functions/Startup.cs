@@ -11,17 +11,19 @@ namespace OhMyWord.Functions;
 public class Startup : FunctionsStartup
 {
     public override void Configure(IFunctionsHostBuilder builder)
-    {        
-        var configuration = BuildConfiguration(builder.GetContext().ApplicationRootPath);
+    {
+        var appConfigConnectionString = builder.GetContext().Configuration.GetConnectionString("AzureAppConfiguration");
+        var configuration = BuildConfiguration(builder.GetContext().ApplicationRootPath, appConfigConnectionString);
         
-        builder.Services.Configure<CosmosDbOptions>(configuration.GetSection(CosmosDbOptions.SectionName) );
+        builder.Services.Configure<CosmosDbOptions>(configuration.GetSection(CosmosDbOptions.SectionName));
         builder.Services.AddSingleton<ICosmosDbService, CosmosDbService>();
         builder.Services.AddSingleton<IPlayerRepository, PlayerRepository>();
     }
 
-    private static IConfiguration BuildConfiguration(string applicationRootPath) =>
+    private static IConfiguration BuildConfiguration(string applicationRootPath, string appConfigConnectionString) =>
         new ConfigurationBuilder()
-            .SetBasePath(applicationRootPath)            
+            .SetBasePath(applicationRootPath)
             .AddJsonFile("local.settings.json", true, false)
+            .AddAzureAppConfiguration(appConfigConnectionString)            
             .Build();
 }
