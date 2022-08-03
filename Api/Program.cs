@@ -24,7 +24,11 @@ public static class Program
             // configure app host
             appBuilder.Host
                 .ConfigureAppConfiguration((context, builder) =>
-                    AddAzureAppConfiguration(builder, context.Configuration))
+                {                    
+                    var endpoint = context.Configuration.GetValue<string>("AppConfig:Endpoint");
+                    builder.AddAzureAppConfiguration(options =>
+                        options.Connect(new Uri(endpoint), new DefaultAzureCredential()));
+                })                    
                 .UseSerilog((context, config) => config.ReadFrom.Configuration(context.Configuration))
                 .ConfigureServices((context, collection) => collection.AddServices(context.Configuration));
 
@@ -46,35 +50,7 @@ public static class Program
         {
             Log.CloseAndFlush();
         }
-    }
-
-    /// <summary>
-    /// Add Azure application configuration service.
-    /// </summary>   
-    private static void AddAzureAppConfiguration(IConfigurationBuilder builder, IConfiguration configuration)
-    {
-        var disabled = configuration.GetValue<bool>("AppConfig:Disabled");
-        if (disabled) return; // do not attempt to use AzureAppConfiguration
-
-        var connectionString = configuration.GetValue<string>("AppConfig:ConnectionString");
-        var endpoint = configuration.GetValue<string>("AppConfig:Endpoint");
-
-        builder.AddAzureAppConfiguration(options =>
-        {
-            if (!string.IsNullOrEmpty(connectionString))
-            {
-                // connect using connection string
-                options.Connect(connectionString);
-                return;
-            }
-
-            if (string.IsNullOrEmpty(endpoint)) return;
-
-            // attempt connect using default azure credential 
-            var uri = new Uri(endpoint);
-            options.Connect(uri, new DefaultAzureCredential());
-        });
-    }
+    }    
 
     /// <summary>
     /// Add application services to the service collection.
