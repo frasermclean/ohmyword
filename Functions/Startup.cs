@@ -1,4 +1,5 @@
-﻿using Microsoft.Azure.Functions.Extensions.DependencyInjection;
+﻿using Azure.Identity;
+using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using OhMyWord.Data.Options;
@@ -12,18 +13,20 @@ public class Startup : FunctionsStartup
 {
     public override void Configure(IFunctionsHostBuilder builder)
     {
-        var appConfigConnectionString = builder.GetContext().Configuration.GetConnectionString("AzureAppConfiguration");
-        var configuration = BuildConfiguration(builder.GetContext().ApplicationRootPath, appConfigConnectionString);
-        
+        var appConfigEndpoint = builder.GetContext().Configuration.GetValue<string>("AppConfigEndpoint");
+        var configuration = BuildConfiguration(appConfigEndpoint);
+
         builder.Services.Configure<CosmosDbOptions>(configuration.GetSection(CosmosDbOptions.SectionName));
         builder.Services.AddSingleton<ICosmosDbService, CosmosDbService>();
         builder.Services.AddSingleton<IPlayerRepository, PlayerRepository>();
     }
 
-    private static IConfiguration BuildConfiguration(string applicationRootPath, string appConfigConnectionString) =>
+    private static IConfiguration BuildConfiguration(string endpoint) =>
         new ConfigurationBuilder()
-            .SetBasePath(applicationRootPath)
-            .AddJsonFile("local.settings.json", true, false)
-            .AddAzureAppConfiguration(appConfigConnectionString)            
+            .AddAzureAppConfiguration(options =>
+            {
+                var uri = new Uri(endpoint);
+                options.Connect(uri, new DefaultAzureCredential());
+            })
             .Build();
 }
