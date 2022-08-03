@@ -1,16 +1,26 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
+using OhMyWord.Data.Services;
+using System.Threading.Tasks;
 
 namespace OhMyWord.Functions;
 
-public class UserFunctions
+public sealed class UserFunctions
 {
-    [FunctionName(nameof(GetUserRoles))]
-    public IActionResult GetUserRoles(
-        [HttpTrigger(methods: "post", Route = "get-roles/{userId}")] HttpRequest request,
-        string userId) 
+    private readonly IPlayerRepository playerRepository;
+
+    public UserFunctions(IPlayerRepository playerRepository)
     {
-        return new OkObjectResult(userId);
+        this.playerRepository = playerRepository;
+    }
+
+    [FunctionName(nameof(GetUserRoles))]
+    public Task<IActionResult> GetUserRoles(
+        [HttpTrigger("get", "post", Route = "get-roles/{userId}")]
+        HttpRequest request,
+        string userId)
+    {
+        return Task.FromResult<IActionResult>(new OkObjectResult(new { userId, }));
     }
 }
