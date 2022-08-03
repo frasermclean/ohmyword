@@ -16,7 +16,7 @@ public static class Program
 
                 // cosmos db related services
                 services.AddHttpClient();
-                services.AddOptions<CosmosDbOptions>().Bind(configuration.GetSection("CosmosDb"));
+                services.Configure<CosmosDbOptions>(configuration.GetSection(CosmosDbOptions.SectionName));
                 services.AddSingleton<ICosmosDbService, CosmosDbService>();
                 services.AddSingleton<IWordsRepository, WordsRepository>();
 

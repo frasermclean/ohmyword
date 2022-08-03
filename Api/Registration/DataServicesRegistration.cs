@@ -9,7 +9,7 @@ public static class DataServicesRegistration
     {
         // add configuration options
         services.AddOptions<CosmosDbOptions>()
-            .Bind(configuration.GetSection("CosmosDb"))
+            .Bind(configuration.GetSection(CosmosDbOptions.SectionName))
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
