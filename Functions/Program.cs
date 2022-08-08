@@ -12,9 +12,9 @@ public static class Program
     public static void Main()
     {
         var host = new HostBuilder()
-            .ConfigureFunctionsWorkerDefaults()            
+            .ConfigureFunctionsWorkerDefaults()
             .ConfigureAppConfiguration((context, builder) =>
-            {                
+            {
                 // add Azure app configuration
                 builder.AddAzureAppConfiguration(options =>
                 {
@@ -26,9 +26,19 @@ public static class Program
             .ConfigureServices((context, collection) =>
             {
                 collection.AddHttpClient();
-                collection.Configure<CosmosDbOptions>(context.Configuration.GetSection(CosmosDbOptions.SectionName));                
+                collection.AddOptions<CosmosDbOptions>()
+                    .BindConfiguration(CosmosDbOptions.SectionName)
+                    .ValidateDataAnnotations();                    
+
                 collection.AddSingleton<ICosmosDbService, CosmosDbService>();
                 collection.AddSingleton<IPlayerRepository, PlayerRepository>();
+                
+                // health checks
+                var cosmosDbOptions = context.Configuration
+                    .GetSection(CosmosDbOptions.SectionName)
+                    .Get<CosmosDbOptions>();
+                collection.AddHealthChecks()
+                    .AddCosmosDb(cosmosDbOptions.ConnectionString);
             })
             .Build();
 
