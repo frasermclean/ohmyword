@@ -1,6 +1,7 @@
 name: CI/CD Test environment
 
 on:
+  workflow_dispatch:
   push:
     branches: [develop]
 
