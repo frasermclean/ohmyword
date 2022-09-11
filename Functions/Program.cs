@@ -13,26 +13,19 @@ public static class Program
     {
         var host = new HostBuilder()
             .ConfigureFunctionsWorkerDefaults()
-            .ConfigureAppConfiguration((context, builder) =>
-            {
-                // add Azure app configuration
-                builder.AddAzureAppConfiguration(options =>
-                {
-                    var endpoint = context.Configuration.GetValue<string>("APP_CONFIG_ENDPOINT");
-                    var uri = new Uri(endpoint);
-                    options.Connect(uri, new DefaultAzureCredential());
-                });
-            })
+            .ConfigureAppConfiguration(builder => builder.AddAzureAppConfiguration(options =>
+                options.Connect(new Uri("https://ac-ohmyword-test.azconfig.io"), new DefaultAzureCredential())
+            ))
             .ConfigureServices((context, collection) =>
             {
                 collection.AddHttpClient();
                 collection.AddOptions<CosmosDbOptions>()
                     .BindConfiguration(CosmosDbOptions.SectionName)
-                    .ValidateDataAnnotations();                    
+                    .ValidateDataAnnotations();
 
                 collection.AddSingleton<ICosmosDbService, CosmosDbService>();
                 collection.AddSingleton<IPlayerRepository, PlayerRepository>();
-                
+
                 // health checks
                 var cosmosDbOptions = context.Configuration
                     .GetSection(CosmosDbOptions.SectionName)
