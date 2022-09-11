@@ -7,7 +7,7 @@ const isIE = window.navigator.userAgent.indexOf('MSIE ') > -1 || window.navigato
 
 const authorityDomain = 'ohmywordb2c.b2clogin.com';
 const policyNames = {
-  signUpSignIn: 'B2C_1_signup_signin',
+  signUpSignIn: 'B2C_1A_signup_signin',
 };
 
 export const scopes = [

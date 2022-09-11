@@ -1,6 +1,7 @@
 using Azure.Identity;
 using FluentValidation;
 using MediatR;
+using Microsoft.IdentityModel.Logging;
 using OhMyWord.Api.Hubs;
 using OhMyWord.Api.Registration;
 using OhMyWord.Core.Behaviours;
@@ -24,11 +25,11 @@ public static class Program
             // configure app host
             appBuilder.Host
                 .ConfigureAppConfiguration((context, builder) =>
-                {                    
+                {
                     var endpoint = context.Configuration.GetValue<string>("AppConfig:Endpoint");
                     builder.AddAzureAppConfiguration(options =>
                         options.Connect(new Uri(endpoint), new DefaultAzureCredential()));
-                })                    
+                })
                 .UseSerilog((context, config) => config.ReadFrom.Configuration(context.Configuration))
                 .ConfigureServices((context, collection) => collection.AddServices(context.Configuration));
 
@@ -50,7 +51,7 @@ public static class Program
         {
             Log.CloseAndFlush();
         }
-    }    
+    }
 
     /// <summary>
     /// Add application services to the service collection.
@@ -72,7 +73,7 @@ public static class Program
             });
 
         // microsoft identity authentication services
-        services.AddMicrosoftIdentity(configuration);        
+        services.AddMicrosoftIdentity();
 
         // add database services
         services.AddCosmosDbService(configuration);
