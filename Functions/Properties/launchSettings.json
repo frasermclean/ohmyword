@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Functions": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7071",
+      "launchBrowser": false,
+      "environmentVariables": {
+        "AZURE_FUNCTIONS_APP_CONFIG_ENDPOINT": "https://ac-ohmyword-test.azconfig.io"
+      }
+    }
+  }
+}

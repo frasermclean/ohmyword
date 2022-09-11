@@ -1,7 +1,7 @@
 using Azure.Identity;
 using FluentValidation;
 using MediatR;
-using Microsoft.Identity.Web;
+using Microsoft.IdentityModel.Logging;
 using OhMyWord.Api.Hubs;
 using OhMyWord.Api.Registration;
 using OhMyWord.Core.Behaviours;
@@ -25,7 +25,11 @@ public static class Program
             // configure app host
             appBuilder.Host
                 .ConfigureAppConfiguration((context, builder) =>
-                    AddAzureAppConfiguration(builder, context.Configuration))
+                {
+                    var endpoint = context.Configuration.GetValue<string>("AppConfig:Endpoint");
+                    builder.AddAzureAppConfiguration(options =>
+                        options.Connect(new Uri(endpoint), new DefaultAzureCredential()));
+                })
                 .UseSerilog((context, config) => config.ReadFrom.Configuration(context.Configuration))
                 .ConfigureServices((context, collection) => collection.AddServices(context.Configuration));
 
@@ -50,31 +54,6 @@ public static class Program
     }
 
     /// <summary>
-    /// Add Azure application configuration service.
-    /// </summary>   
-    private static void AddAzureAppConfiguration(IConfigurationBuilder builder, IConfiguration configuration)
-    {
-        builder.AddAzureAppConfiguration(options =>
-        {
-            var connectionString = configuration.GetValue<string>("AppConfig:ConnectionString");
-            var endpoint = configuration.GetValue<string>("AppConfig:Endpoint");
-
-            if (!string.IsNullOrEmpty(connectionString))
-            {
-                // connect using connection string
-                options.Connect(connectionString);
-                return;
-            }
-
-            if (string.IsNullOrEmpty(endpoint)) return;
-
-            // connect using managed identity                
-            var uri = new Uri(endpoint);
-            options.Connect(uri, new ManagedIdentityCredential());
-        });
-    }
-
-    /// <summary>
     /// Add application services to the service collection.
     /// </summary>
     private static void AddServices(this IServiceCollection services, IConfiguration configuration)
@@ -93,8 +72,8 @@ public static class Program
                     new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
             });
 
-        // add microsoft identity authentication services
-        services.AddMicrosoftIdentityWebApiAuthentication(configuration);
+        // microsoft identity authentication services
+        services.AddMicrosoftIdentity();
 
         // add database services
         services.AddCosmosDbService(configuration);
