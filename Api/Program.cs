@@ -1,7 +1,6 @@
 using Azure.Identity;
 using FluentValidation;
 using MediatR;
-using Microsoft.IdentityModel.Logging;
 using OhMyWord.Api.Hubs;
 using OhMyWord.Api.Registration;
 using OhMyWord.Core.Behaviours;

@@ -26,14 +26,14 @@ internal class MainService : BackgroundService
             {
                 await wordsRepository.CreateWordAsync(word);
                 wordCreationCount++;
-                logger.LogInformation("Successfully created word: {word}", word);
+                logger.LogInformation("Successfully created word: {Word}", word);
             }
             catch (Exception exception)
             {
-                logger.LogError(exception, "Error occurred while trying to create word: {word}", word);
+                logger.LogError(exception, "Error occurred while trying to create word: {Word}", word);
             }
         }
 
-        logger.LogInformation("All operations completed. Created {count} words.", wordCreationCount);
+        logger.LogInformation("All operations completed. Created {Count} words", wordCreationCount);
     }
 }

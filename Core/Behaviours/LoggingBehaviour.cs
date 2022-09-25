@@ -18,9 +18,9 @@ public class LoggingBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest,
     {
         using (logger.BeginScope(request))
         {
-            logger.LogInformation("Handling request: {requestType}", typeof(TRequest).Name);
+            logger.LogInformation("Handling request: {RequestType}", typeof(TRequest).Name);
             var response = await next();
-            logger.LogInformation("Received response: {responseType}", typeof(TResponse).Name);
+            logger.LogInformation("Received response: {ResponseType}", typeof(TResponse).Name);
             return response;
         }
     }

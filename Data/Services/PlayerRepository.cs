@@ -16,12 +16,9 @@ public interface IPlayerRepository
 
 public class PlayerRepository : Repository<Player>, IPlayerRepository
 {
-    private readonly ILogger<PlayerRepository> logger;
-
     public PlayerRepository(ICosmosDbService cosmosDbService, ILogger<PlayerRepository> logger)
         : base(cosmosDbService, logger, "Players")
     {
-        this.logger = logger;
     }
 
     public async Task<Player> CreatePlayerAsync(Player player) => await CreateItemAsync(player);
@@ -42,17 +39,12 @@ public class PlayerRepository : Repository<Player>, IPlayerRepository
 
     public async Task<Player> IncrementPlayerRegistrationCountAsync(Guid playerId)
     {
-        return await PatchItemAsync(playerId, playerId.ToString(), new[]
-        {
-            PatchOperation.Increment("/registrationCount", 1)
-        });
+        return await PatchItemAsync(playerId, playerId.ToString(),
+            new[] { PatchOperation.Increment("/registrationCount", 1) });
     }
 
     public async Task<Player> IncrementPlayerScoreAsync(Guid playerId, long value)
     {
-        return await PatchItemAsync(playerId, playerId.ToString(), new[]
-        {
-            PatchOperation.Increment("/score", value)
-        });
+        return await PatchItemAsync(playerId, playerId.ToString(), new[] { PatchOperation.Increment("/score", value) });
     }
 }

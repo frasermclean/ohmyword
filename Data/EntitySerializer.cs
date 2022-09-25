@@ -16,7 +16,7 @@ internal class EntitySerializer : CosmosSerializer
     });
 
     public override T FromStream<T>(Stream stream) => ConvertFromStream<T>(stream);
-    public override Stream ToStream<T>(T input) => ConvertToStream<T>(input);
+    public override Stream ToStream<T>(T input) => ConvertToStream(input);
 
     public static T ConvertFromStream<T>(Stream stream)
     {

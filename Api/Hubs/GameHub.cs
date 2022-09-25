@@ -28,9 +28,9 @@ public class GameHub : Hub<IGameHub>
     public override async Task OnDisconnectedAsync(Exception? ex)
     {
         if (ex is null)
-            logger.LogDebug("Client disconnected. Connection ID: {connectionId}", Context.ConnectionId);
+            logger.LogDebug("Client disconnected. Connection ID: {ConnectionId}", Context.ConnectionId);
         else
-            logger.LogError(ex, "Client disconnected. Connection ID: {connectionId}", Context.ConnectionId);
+            logger.LogError(ex, "Client disconnected. Connection ID: {ConnectionId}", Context.ConnectionId);
 
         var response = await mediator.Send(new RemovePlayerRequest { ConnectionId = Context.ConnectionId });
 
@@ -39,7 +39,7 @@ public class GameHub : Hub<IGameHub>
 
     public async Task<RegisterPlayerResponse> RegisterPlayer(string visitorId)
     {
-        logger.LogInformation("Attempting to register client with visitor ID: {visitorId}", visitorId);
+        logger.LogInformation("Attempting to register client with visitor ID: {VisitorId}", visitorId);
         var response = await mediator.Send(new RegisterPlayerRequest
         {
             VisitorId = visitorId,

@@ -1,6 +1,5 @@
 ﻿using MediatR;
 using OhMyWord.Core.Responses.Words;
-using OhMyWord.Data.Models;
 using OhMyWord.Data.Services;
 
 namespace OhMyWord.Core.Requests.Words;

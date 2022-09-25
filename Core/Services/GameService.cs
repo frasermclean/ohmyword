@@ -65,7 +65,7 @@ public class GameService : IGameService
             RoundStarted?.Invoke(this, new RoundStartedEventArgs(Round));
             Expiry = Round.EndTime;
 
-            logger.LogDebug("Round: {roundNumber} has started with {playerCount} players. Current word is: {word}. Round duration: {seconds} seconds.",
+            logger.LogDebug("Round: {RoundNumber} has started with {PlayerCount} players. Current word is: {Word}. Round duration: {Seconds} seconds",
                 Round.Number, Round.PlayerCount, Round.Word, Round.Duration.Seconds);
 
             // send all letter hints
@@ -86,7 +86,7 @@ public class GameService : IGameService
             RoundEnded?.Invoke(this, new RoundEndedEventArgs(Round, nextRoundStart));
             Round.Dispose();
 
-            logger.LogDebug("Round: {number} has ended. Post round delay is: {seconds} seconds", Round.Number, postRoundDelay.Seconds);
+            logger.LogDebug("Round: {Number} has ended. Post round delay is: {Seconds} seconds", Round.Number, postRoundDelay.Seconds);
 
             await Task.Delay(postRoundDelay, gameCancellationToken);
         }
@@ -137,11 +137,11 @@ public class GameService : IGameService
 
         var guessCountIncremented = Round.IncrementGuessCount(player.Id);
         if (!guessCountIncremented)
-            logger.LogWarning("Couldn't increment guess count of player with ID: {playerId}", player.Id);
+            logger.LogWarning("Couldn't increment guess count of player with ID: {PlayerId}", player.Id);
 
         var pointsAwarded = Round.AwardPlayer(player.Id);
         if (pointsAwarded == 0)
-            logger.LogWarning("Zero points were awarded to player with ID: {playerId}", player.Id);
+            logger.LogWarning("Zero points were awarded to player with ID: {PlayerId}", player.Id);
 
         await playerService.IncrementPlayerScoreAsync(player.Id, pointsAwarded);
 
@@ -160,7 +160,7 @@ public class GameService : IGameService
 
         var wasAdded = Round.AddPlayer(args.PlayerId);
         if (!wasAdded)
-            logger.LogError("Couldn't add player with ID {playerId} to round.", args.PlayerId);
+            logger.LogError("Couldn't add player with ID {PlayerId} to round", args.PlayerId);
     }
 
     private void OnPlayerRemoved(object? _, PlayerEventArgs args)
@@ -171,7 +171,7 @@ public class GameService : IGameService
 
         var wasRemoved = Round.RemovePlayer(args.PlayerId);
         if (!wasRemoved)
-            logger.LogError("Couldn't remove player with ID {playerId} from round.", args.PlayerId);
+            logger.LogError("Couldn't remove player with ID {PlayerId} from round", args.PlayerId);
 
         // last player left while round active
         if (args.PlayerCount == 0)

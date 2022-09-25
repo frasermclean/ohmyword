@@ -2,9 +2,7 @@
 using FluentValidation.TestHelper;
 using OhMyWord.Core.Requests.Words;
 using OhMyWord.Core.Validators.Words;
-using OhMyWord.Data.Models;
 using OhMyWord.Data.Services;
-using System;
 using Xunit;
 
 namespace Core.Tests.Validators.Words;

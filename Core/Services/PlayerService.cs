@@ -49,7 +49,7 @@ public class PlayerService : IPlayerService
         {
             // TODO: Handle multiple connections with same visitor ID
             await playerRepository.IncrementPlayerRegistrationCountAsync(player.Id);
-            logger.LogDebug("Found existing player with visitorId: {visitorId}.", visitorId);
+            logger.LogDebug("Found existing player with visitorId: {VisitorId}", visitorId);
         }
 
         // create new player if existing player not found
@@ -60,12 +60,12 @@ public class PlayerService : IPlayerService
 
         var wasAdded = playerCache.TryAdd(connectionId, player);
         if (!wasAdded)
-            logger.LogWarning("Player with connection ID: {connectionId} already exists in the local cache.",
+            logger.LogWarning("Player with connection ID: {ConnectionId} already exists in the local cache",
                 connectionId);
 
         PlayerAdded?.Invoke(this, new PlayerEventArgs(player.Id, PlayerCount, connectionId));
 
-        logger.LogInformation("Player with ID: {playerId} joined the game. Player count: {playerCount}", player.Id,
+        logger.LogInformation("Player with ID: {PlayerId} joined the game. Player count: {PlayerCount}", player.Id,
             PlayerCount);
         return player;
     }
@@ -75,12 +75,12 @@ public class PlayerService : IPlayerService
         if (playerCache.TryRemove(connectionId, out var player))
         {
             PlayerRemoved?.Invoke(this, new PlayerEventArgs(player.Id, PlayerCount, connectionId));
-            logger.LogInformation("Player with ID: {playerId} left the game. Player count: {playerCount}", player.Id,
+            logger.LogInformation("Player with ID: {PlayerId} left the game. Player count: {PlayerCount}", player.Id,
                 PlayerCount);
         }
         else
         {
-            logger.LogError("Couldn't remove player with connection ID: {connectionId} from cache.", connectionId);
+            logger.LogError("Couldn't remove player with connection ID: {ConnectionId} from cache", connectionId);
         }
     }
 

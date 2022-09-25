@@ -1,8 +1,6 @@
 ﻿using FluentValidation;
 using OhMyWord.Core.Requests.Words;
-using OhMyWord.Data.Models;
 using OhMyWord.Data.Services;
-using System.Text.RegularExpressions;
 
 namespace OhMyWord.Core.Validators.Words;
 

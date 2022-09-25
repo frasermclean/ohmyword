@@ -46,7 +46,7 @@ public class WordsService : IWordsService
         }
 
         var word = shuffledWords.Pop();
-        logger.LogDebug("Randomly selected word: {word}.", word);
+        logger.LogDebug("Randomly selected word: {Word}", word);
 
         return word;
     }
@@ -62,7 +62,7 @@ public class WordsService : IWordsService
         }
         else
         {
-            logger.LogInformation("Retrieved: {count} words from database.", allWords.Count);
+            logger.LogInformation("Retrieved: {Count} words from database", allWords.Count);
         }
 
         // create a stack of randomly shuffled words
