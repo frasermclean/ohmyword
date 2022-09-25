@@ -15,103 +15,80 @@ namespace OhMyWord.Api;
 
 public static class Program
 {
-    public static int Main(string[] args)
+    public static void Main(string[] args)
     {
-        try
-        {
-            var appBuilder = WebApplication.CreateBuilder(args);
+        var appBuilder = WebApplication.CreateBuilder(args);
 
-            // configure app host
-            appBuilder.Host
-                .ConfigureAppConfiguration((context, builder) =>
-                {
-                    var endpoint = context.Configuration.GetValue<string>("AppConfig:Endpoint");
-                    builder.AddAzureAppConfiguration(options =>
-                        options.Connect(new Uri(endpoint), new DefaultAzureCredential()));
-                })
-                .UseSerilog((context, config) => config.ReadFrom.Configuration(context.Configuration))
-                .ConfigureServices((context, collection) => collection.AddServices(context.Configuration));
-
-            // build the app and configure the request pipeline
-            var app = appBuilder.Build().ConfigureRequestPipeline();
-
-            // run the application
-            Log.Information("Starting web application");
-            app.Run();
-
-            return 0;
-        }
-        catch (Exception exception)
-        {
-            Log.Fatal(exception, "Host terminated unexpectedly");
-            return 1;
-        }
-        finally
-        {
-            Log.CloseAndFlush();
-        }
-    }
-
-    /// <summary>
-    /// Add application services to the service collection.
-    /// </summary>
-    private static void AddServices(this IServiceCollection services, IConfiguration configuration)
-    {
-        // set up routing options
-        services.AddRouting(options =>
-        {
-            options.LowercaseUrls = true;
-            options.LowercaseQueryStrings = true;
-        });
-
-        services.AddControllers()
-            .AddJsonOptions(options =>
+        // configure app host
+        appBuilder.Host
+            .ConfigureAppConfiguration((context, builder) =>
             {
-                options.JsonSerializerOptions.Converters.Add(
-                    new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
+                if (context.HostingEnvironment.IsDevelopment()) return;
+
+                var endpoint = context.Configuration.GetValue<string>("AppConfig:Endpoint");
+                builder.AddAzureAppConfiguration(options =>
+                    options.Connect(new Uri(endpoint), new DefaultAzureCredential()));
+            })
+            .UseSerilog((context, config) => config.ReadFrom.Configuration(context.Configuration))
+            .ConfigureServices((context, collection) =>
+            {
+                // set up routing options
+                collection.AddRouting(options =>
+                {
+                    options.LowercaseUrls = true;
+                    options.LowercaseQueryStrings = true;
+                });
+
+                collection.AddControllers()
+                    .AddJsonOptions(options =>
+                    {
+                        options.JsonSerializerOptions.Converters.Add(
+                            new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
+                    });
+
+                // microsoft identity authentication services
+                collection.AddMicrosoftIdentity();
+
+                // add database services
+                collection.AddCosmosDbService(context.Configuration);
+                collection.AddRepositoryServices();
+
+                // signalR services
+                collection.AddSignalR()
+                    .AddJsonProtocol(options =>
+                        options.PayloadSerializerOptions.Converters.Add(
+                            new JsonStringEnumConverter(JsonNamingPolicy.CamelCase))
+                    );
+
+                // game services
+                collection.AddGameServices(context.Configuration);
+
+                // add fluent validation validators
+                collection.AddValidatorsFromAssemblyContaining<CreateWordRequestValidator>();
+
+                // add mediatr service
+                collection.AddMediatR(typeof(CreateWordHandler))
+                    .AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehaviour<,>))
+                    .AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehaviour<,>));
+
+                // automapper service
+                collection.AddAutoMapper(typeof(EntitiesProfile));
+
+                // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+                collection.AddEndpointsApiExplorer();
+                collection.AddSwaggerGen();
+
+                // health checks        
+                collection.AddHealthChecks()
+                    .AddCosmosDbCollection(
+                        context.Configuration.GetValue<string>("CosmosDb:ConnectionString"),
+                        context.Configuration.GetValue<string>("CosmosDb:DatabaseId"),
+                        context.Configuration.GetValue<string[]>("CosmosDb:ContainerIds"));
             });
 
-        // microsoft identity authentication services
-        services.AddMicrosoftIdentity();
+        // build the application
+        var app = appBuilder.Build();
 
-        // add database services
-        services.AddCosmosDbService(configuration);
-        services.AddRepositoryServices();
-
-        // signalR services
-        services.AddSignalR()
-            .AddJsonProtocol(options =>
-                options.PayloadSerializerOptions.Converters.Add(
-                    new JsonStringEnumConverter(JsonNamingPolicy.CamelCase))
-            );
-
-        // game services
-        services.AddGameServices(configuration);
-
-        // add fluent validation validators
-        services.AddValidatorsFromAssemblyContaining<CreateWordRequestValidator>();
-
-        // add mediatr service
-        services.AddMediatR(typeof(CreateWordHandler))
-            .AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehaviour<,>))
-            .AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehaviour<,>));
-
-        // automapper service
-        services.AddAutoMapper(typeof(EntitiesProfile));
-
-        // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-        services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen();
-
-        // health checks        
-        services.AddHealthChecks()
-            .AddCosmosDbCollection(configuration.GetValue<string>("CosmosDb:ConnectionString"),
-                configuration.GetValue<string>("CosmosDb:DatabaseId"),
-                configuration.GetValue<string[]>("CosmosDb:ContainerIds"));
-    }
-
-    private static WebApplication ConfigureRequestPipeline(this WebApplication app)
-    {
         if (app.Environment.IsDevelopment())
         {
             app.UseSwagger();
@@ -133,9 +110,7 @@ public static class Program
 
         app.UseHealthChecks("/api/health");
 
-        // fall back to SPA index file on unhandled route
-        app.UseEndpoints(routeBuilder => routeBuilder.MapFallbackToFile("/index.html"));
-
-        return app;
+        // run the application
+        app.Run();
     }
 }
