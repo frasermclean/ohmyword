@@ -4,7 +4,7 @@ using OhMyWord.Api.Hubs;
 using OhMyWord.Core.Responses.Game;
 using OhMyWord.Core.Services;
 
-namespace OhMyWord.Api;
+namespace OhMyWord.Api.Services;
 
 public class GameCoordinator : BackgroundService
 {
