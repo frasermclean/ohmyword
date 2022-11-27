@@ -1,4 +1,3 @@
-using Azure.Identity;
 using FluentValidation;
 using MediatR;
 using OhMyWord.Api.Hubs;
@@ -20,14 +19,6 @@ public static class Program
 
         // configure app host
         appBuilder.Host
-            .ConfigureAppConfiguration((context, builder) =>
-            {
-                if (context.HostingEnvironment.IsDevelopment()) return;
-
-                var endpoint = context.Configuration.GetValue<string>("AppConfig:Endpoint");
-                builder.AddAzureAppConfiguration(options =>
-                    options.Connect(new Uri(endpoint), new DefaultAzureCredential()));
-            })
             .ConfigureServices((context, collection) =>
             {
                 // set up routing options
