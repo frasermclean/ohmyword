@@ -7,7 +7,6 @@ using OhMyWord.Core.Behaviours;
 using OhMyWord.Core.Handlers.Words;
 using OhMyWord.Core.Mapping;
 using OhMyWord.Core.Validators.Words;
-using Serilog;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -29,7 +28,6 @@ public static class Program
                 builder.AddAzureAppConfiguration(options =>
                     options.Connect(new Uri(endpoint), new DefaultAzureCredential()));
             })
-            .UseSerilog((context, config) => config.ReadFrom.Configuration(context.Configuration))
             .ConfigureServices((context, collection) =>
             {
                 // set up routing options
