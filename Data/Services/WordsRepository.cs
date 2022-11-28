@@ -1,4 +1,4 @@
-﻿using Microsoft.Azure.Cosmos.Linq;
+﻿using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using OhMyWord.Data.Extensions;
 using OhMyWord.Data.Models;
@@ -43,38 +43,37 @@ public class WordsRepository : Repository<Word>, IWordsRepository
     public async Task<(IEnumerable<Word>, int)> GetWordsAsync(int offset, int limit, string filter,
         GetWordsOrderBy orderBy, SortDirection direction, CancellationToken cancellationToken = default)
     {
-        var queryable = GetLinqQueryable<Word>()
-            .Where(word => word.Definition.ToLower().Contains(filter.ToLower()) ||
-                           word.Value.ToLower().Contains(filter.ToLower()));
+        var orderByClause = GetOrderByClause(orderBy, direction);
+        var queryDefinition = new QueryDefinition($"""
+            SELECT * FROM word
+            WHERE 
+                (CONTAINS(word["value"], LOWER(@filter))) OR 
+                (CONTAINS(word["definition"], LOWER(@filter)))
+            {orderByClause}  
+            OFFSET @offset LIMIT @limit
+            """ )
+            .WithParameter("@filter", filter)
+            .WithParameter("@offset", offset)
+            .WithParameter("@limit", limit);
 
-        // get count of words that match the filter
-        var countTask = queryable.CountAsync(cancellationToken);
+        var words = await ExecuteQueryAsync<Word>(queryDefinition, cancellationToken: cancellationToken);
 
-        // apply ordering
-        queryable = direction == SortDirection.Descending
-            ? orderBy switch
-            {
-                GetWordsOrderBy.Definition => queryable.OrderByDescending(word => word.Definition),
-                GetWordsOrderBy.PartOfSpeech => queryable.OrderByDescending(word => word.PartOfSpeech),
-                GetWordsOrderBy.LastModifiedTime => queryable.OrderByDescending(word => word.Timestamp),
-                _ => queryable.OrderByDescending(word => word.Value)
-            }
-            : orderBy switch
-            {
-                GetWordsOrderBy.Definition => queryable.OrderBy(word => word.Definition),
-                GetWordsOrderBy.PartOfSpeech => queryable.OrderBy(word => word.PartOfSpeech),
-                GetWordsOrderBy.LastModifiedTime => queryable.OrderBy(word => word.Timestamp),
-                _ => queryable.OrderBy(word => word.Value),
-            };
+        return (words, words.Count);
+    }
+    
+    private static string GetOrderByClause(GetWordsOrderBy orderBy, SortDirection direction)
+    {
+        var orderByString = orderBy switch
+        {
+            GetWordsOrderBy.Definition => "word.definition",
+            GetWordsOrderBy.PartOfSpeech => "word.partOfSpeech",
+            GetWordsOrderBy.LastModifiedTime => "word._ts",
+            _ => "word[\"value\"]"
+        };
 
-        // apply offset and limit
-        queryable = queryable.Skip(offset).Take(limit);
+        var directionString = direction == SortDirection.Ascending ? "ASC" : "DESC";
 
-        var queryTask = ExecuteQueryAsync(queryable, cancellationToken);
-
-        await Task.WhenAll(queryTask, countTask);
-
-        return (queryTask.Result, countTask.Result);
+        return $"ORDER BY {orderByString} {directionString}";
     }
 
     public Task<int> GetWordCountAsync(CancellationToken cancellationToken) =>

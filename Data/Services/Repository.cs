@@ -1,5 +1,4 @@
 ﻿using Microsoft.Azure.Cosmos;
-using Microsoft.Azure.Cosmos.Linq;
 using Microsoft.Extensions.Logging;
 using OhMyWord.Data.Models;
 
@@ -84,15 +83,8 @@ public abstract class Repository<TEntity> where TEntity : Entity
     {
         QueryDefinition queryDefinition = new("SELECT COUNT(1) FROM c");
         var enumerable = await ExecuteQueryAsync<CountResponse>(queryDefinition, partition, cancellationToken);
-        var response = enumerable.First();
-        return response.Count;
+        return enumerable.Count;
     }
-
-    protected IQueryable<TResponse> GetLinqQueryable<TResponse>() =>
-        container.GetItemLinqQueryable<TResponse>(linqSerializerOptions: new CosmosLinqSerializerOptions
-        {
-            PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase
-        });
 
     /// <summary>
     /// Read all items across all partitions. This is an expensive operation and should be avoided if possible.
@@ -103,7 +95,7 @@ public abstract class Repository<TEntity> where TEntity : Entity
         return await ExecuteQueryAsync<TEntity>(queryDefinition, cancellationToken: cancellationToken);
     }
 
-    protected Task<IEnumerable<TResponse>> ExecuteQueryAsync<TResponse>(
+    protected async Task<IReadOnlyCollection<TResponse>> ExecuteQueryAsync<TResponse>(
         QueryDefinition queryDefinition,
         string? partition = null,
         CancellationToken cancellationToken = default)
@@ -117,21 +109,6 @@ public abstract class Repository<TEntity> where TEntity : Entity
         logger.LogInformation("Executing SQL query: {QueryText}, on partition: {Partition}", queryDefinition.QueryText,
             partition);
 
-        return IterateFeedAsync(iterator, cancellationToken);
-    }
-
-    protected Task<IEnumerable<TResponse>> ExecuteQueryAsync<TResponse>(
-        IQueryable<TResponse> queryable,
-        CancellationToken cancellationToken = default)
-    {
-        logger.LogInformation("Executing queryable: {Queryable}", queryable);
-        using var iterator = queryable.ToFeedIterator();
-        return IterateFeedAsync(iterator, cancellationToken);
-    }
-
-    private async Task<IEnumerable<TResponse>> IterateFeedAsync<TResponse>(FeedIterator<TResponse> iterator,
-        CancellationToken cancellationToken = default)
-    {
         List<TResponse> items = new();
         double totalCharge = 0;
         while (iterator.HasMoreResults)
