@@ -1,0 +1,17 @@
+name: CI/CD FrontEnd
+
+on:
+  push:
+    branches:
+      - develop
+    paths:
+      - .github/workflows/cicd-frontend.yml
+      - FrontEnd/**
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
