@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "ohmyword-client": {
+    "ohmyword-frontend": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:application": {
@@ -25,7 +25,7 @@
             "tsConfig": "tsconfig.app.json",
             "assets": ["src/assets"],
             "styles": [
-              "./node_modules/@angular/material/prebuilt-themes/purple-green.css", 
+              "./node_modules/@angular/material/prebuilt-themes/purple-green.css",
               "src/styles.scss"
             ],
             "scripts": []
@@ -67,10 +67,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "ohmyword-client:build:production"
+              "browserTarget": "ohmyword-frontend:build:production"
             },
             "development": {
-              "browserTarget": "ohmyword-client:build:development"
+              "browserTarget": "ohmyword-frontend:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -78,7 +78,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "ohmyword-client:build"
+            "browserTarget": "ohmyword-frontend:build"
           }
         },
         "test": {
