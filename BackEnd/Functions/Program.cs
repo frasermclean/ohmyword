@@ -20,7 +20,7 @@ public static class Program
                     .BindConfiguration(CosmosDbOptions.SectionName)
                     .ValidateDataAnnotations();
 
-                collection.AddSingleton<ICosmosDbService, CosmosDbService>();
+                collection.AddSingleton<IDatabaseService, DatabaseService>();
                 collection.AddSingleton<IPlayerRepository, PlayerRepository>();
 
                 // health checks

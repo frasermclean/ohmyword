@@ -14,7 +14,7 @@ public static class DataServicesRegistration
             .ValidateOnStart();
 
         services.AddHttpClient();
-        services.AddSingleton<ICosmosDbService, CosmosDbService>();
+        services.AddSingleton<IDatabaseService, DatabaseService>();
     }
 
     public static IServiceCollection AddRepositoryServices(this IServiceCollection services)

@@ -10,9 +10,9 @@ public abstract class Repository<TEntity> where TEntity : Entity
     private readonly ILogger<Repository<TEntity>> logger;
     private readonly string entityTypeName;
 
-    protected Repository(ICosmosDbService cosmosDbService, ILogger<Repository<TEntity>> logger, string containerId)
+    protected Repository(IDatabaseService databaseService, ILogger<Repository<TEntity>> logger, string containerId)
     {
-        container = cosmosDbService.GetContainer(containerId);
+        container = databaseService.GetContainer(containerId);
         this.logger = logger;
         entityTypeName = typeof(TEntity).Name;
     }

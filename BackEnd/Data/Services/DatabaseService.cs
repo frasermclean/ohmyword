@@ -5,21 +5,21 @@ using OhMyWord.Data.Options;
 
 namespace OhMyWord.Data.Services;
 
-public interface ICosmosDbService
+public interface IDatabaseService
 {
     Container GetContainer(string containerId);
 }
 
-public class CosmosDbService : ICosmosDbService, IDisposable
+public sealed class DatabaseService : IDatabaseService, IDisposable
 {
     private readonly CosmosClient cosmosClient;
     private readonly Database database;
 
-    public CosmosDbService(IOptions<CosmosDbOptions> options, IHttpClientFactory httpClientFactory)
+    public DatabaseService(IOptions<CosmosDbOptions> options, IHttpClientFactory httpClientFactory)
     {
         cosmosClient = new CosmosClientBuilder(options.Value.ConnectionString)
             .WithApplicationName(options.Value.ApplicationName)
-            .WithHttpClientFactory(() => httpClientFactory.CreateClient("CosmosDb"))
+            .WithHttpClientFactory(() => httpClientFactory.CreateClient("CosmosDb"))            
             .WithCustomSerializer(new EntitySerializer())
             .Build();
 
@@ -30,7 +30,6 @@ public class CosmosDbService : ICosmosDbService, IDisposable
 
     public void Dispose()
     {
-        cosmosClient.Dispose();
-        GC.SuppressFinalize(this);
+        cosmosClient.Dispose();        
     }
 }

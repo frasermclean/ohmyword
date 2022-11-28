@@ -32,8 +32,8 @@ public class WordsRepository : Repository<Word>, IWordsRepository
     public const int LimitMinimum = 1;
     public const int LimitMaximum = 100;
 
-    public WordsRepository(ICosmosDbService cosmosDbService, ILogger<WordsRepository> logger)
-        : base(cosmosDbService, logger, "Words")
+    public WordsRepository(IDatabaseService databaseService, ILogger<WordsRepository> logger)
+        : base(databaseService, logger, "Words")
     {
     }
 
