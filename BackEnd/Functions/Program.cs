@@ -12,10 +12,7 @@ public static class Program
     public static void Main()
     {
         var host = new HostBuilder()
-            .ConfigureFunctionsWorkerDefaults()
-            .ConfigureAppConfiguration(builder => builder.AddAzureAppConfiguration(options =>
-                options.Connect(new Uri("https://ac-ohmyword-test.azconfig.io"), new DefaultAzureCredential())
-            ))
+            .ConfigureFunctionsWorkerDefaults()            
             .ConfigureServices((context, collection) =>
             {
                 collection.AddHttpClient();
