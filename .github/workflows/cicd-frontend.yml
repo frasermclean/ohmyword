@@ -8,13 +8,13 @@ on:
       - .github/workflows/cicd-frontend.yml
       - FrontEnd/**
 
-permissions:
-  id-token: write
-
 jobs:
   build:
     name: Build and deploy
     runs-on: ubuntu-latest
+    environment: Test
+    permissions:
+      id-token: write
     steps:
       # Checkout the repository
       - uses: actions/checkout@v3
