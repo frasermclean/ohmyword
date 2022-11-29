@@ -33,4 +33,14 @@ jobs:
         name: Deploy infrastructure
         with:
           resourceGroupName: rg-ohmyword
-          template: ./Deployment/Infrastructure/frontend.bicep
+          template: ./Deployment/Infrastructure/FrontEnd/main.bicep
+          parameters: ./Deployment/Infrastructure/FrontEnd/main.parameters.json
+      # Build and deploy the app
+      - uses: azure/static-web-apps-deploy@v1
+        name: Build and deploy app
+        with:
+          action: upload
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          app_location: FrontEnd
+          output_location: dist
