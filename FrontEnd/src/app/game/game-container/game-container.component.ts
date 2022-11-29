@@ -1,6 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngxs/store';
-import { DeviceDetectorService } from 'ngx-device-detector';
 import { Hub } from '../game.actions';
 import { GameState } from '../game.state';
 
@@ -13,9 +12,9 @@ export class GameContainerComponent implements OnInit, OnDestroy {
   registered$ = this.store.select(GameState.registered);
   connectionState$ = this.store.select(GameState.connectionState);
   round$ = this.store.select(GameState.round);
-  showKeyboard = this.deviceService.isMobile() || this.deviceService.isTablet();
+  showKeyboard = false
 
-  constructor(private store: Store, private deviceService: DeviceDetectorService) {}
+  constructor(private store: Store) {}
 
   ngOnInit(): void {
     this.store.dispatch(new Hub.Connect());
