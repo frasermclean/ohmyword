@@ -23,3 +23,29 @@ module cosmosDbAccount 'cosmosDbAccount.bicep' = {
     totalThroughputLimit: totalThroughputLimit
   }
 }
+
+// app service plan
+resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
+  name: toLower('asp-${appName}')
+  location: location
+  tags: tags
+  kind: 'linux'
+  sku: {
+    name: 'B1'
+  }
+  properties: {
+    reserved: true
+  }
+}
+
+// production app service
+module appService 'appService.bicep' = {
+  name: 'appService'
+  params: {
+    appName: appName
+    appEnv: 'prod'
+    location: location
+    tags: tags
+    appServicePlanId: appServicePlan.id
+  }
+}
