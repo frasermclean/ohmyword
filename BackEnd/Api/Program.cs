@@ -70,7 +70,7 @@ public static class Program
                 // health checks        
                 collection.AddHealthChecks()
                     .AddCosmosDbCollection(
-                        context.Configuration.GetValue<string>("CosmosDb:ConnectionString"),
+                        context.Configuration.GetValue<string>("CosmosDb:ConnectionString") ?? string.Empty,
                         context.Configuration.GetValue<string>("CosmosDb:DatabaseId"),
                         context.Configuration.GetValue<string[]>("CosmosDb:ContainerIds"));
             });
