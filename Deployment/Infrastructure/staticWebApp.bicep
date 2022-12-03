@@ -8,7 +8,7 @@ param repositoryUrl string
 
 @secure()
 @description('GitHub Personal Access Token')
-param repositoryToken string
+param repositoryToken string = ''
 
 @description('Git branch to use')
 param branch string
