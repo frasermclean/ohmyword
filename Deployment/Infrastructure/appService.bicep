@@ -16,6 +16,9 @@ param tags object
 @description('Resource ID of the App Service Plan')
 param appServicePlanId string
 
+@description('Resource ID for the log analytics workspace')
+param logAnalyticsWorkspaceId string
+
 @minValue(1)
 param letterHintDelay int
 
@@ -47,6 +50,18 @@ resource appService 'Microsoft.Web/sites@2022-03-01' = {
       }
       appSettings: [
         {
+          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+          value: appInsights.properties.ConnectionString
+        }
+        {
+          name: 'ApplicationInsightsAgent_EXTENSION_VERSION'
+          value: '~3'
+        }
+        {
+          name: 'XDT_MicrosoftApplicationInsights_Mode'
+          value: 'Recommended'
+        }
+        {
           name: 'Game__LetterHintDelay'
           value: string(letterHintDelay)
         }
@@ -70,3 +85,16 @@ resource appService 'Microsoft.Web/sites@2022-03-01' = {
     }
   }
 }
+
+// application insights
+resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
+  name: toLower('ai-${appName}-${appEnv}')
+  location: location
+  tags: tags
+  kind: 'web'
+  properties: {
+    Application_Type: 'web'
+    Request_Source: 'rest'
+    WorkspaceResourceId: logAnalyticsWorkspaceId
+  }
+} 

@@ -57,6 +57,22 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
   }
 }
 
+// log analytics workspace
+resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
+  name: toLower('law-${appName}')
+  location: location
+  tags: tags
+  properties: {
+    retentionInDays: 30
+    sku: {
+      name: 'PerGB2018'
+    }
+    workspaceCapping: {
+      dailyQuotaGb: 1
+    }
+  }
+}
+
 // production app service
 module appService 'appService.bicep' = {
   name: 'appService'
@@ -68,6 +84,7 @@ module appService 'appService.bicep' = {
     appServicePlanId: appServicePlan.id
     letterHintDelay: appSettings.letterHintDelay
     postRoundDelay: appSettings.postRoundDelay
+    logAnalyticsWorkspaceId: logAnalyticsWorkspace.id
   }
 }
 
