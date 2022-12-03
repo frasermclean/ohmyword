@@ -15,6 +15,12 @@ param domainName string
 @description('Application settings to be set for the web app')
 param appSettings object
 
+@description('Location to deploy static web app to')
+param staticWebAppLocation string
+
+@description('Custom domain name associated with the static web app')
+param staticWebAppCustomDomainName string
+
 var tags = {
   workload: appName
 }
@@ -62,5 +68,16 @@ module appService 'appService.bicep' = {
     appServicePlanId: appServicePlan.id
     letterHintDelay: appSettings.letterHintDelay
     postRoundDelay: appSettings.postRoundDelay
+  }
+}
+
+module staticWebApp 'staticWebApp.bicep' = {
+  name: 'staticWebApp'
+  params: {
+    location: staticWebAppLocation
+    appName: appName
+    branch: 'main'
+    repositoryUrl: 'https://github.com/frasermclean/ohmyword'
+    customDomainName: staticWebAppCustomDomainName
   }
 }

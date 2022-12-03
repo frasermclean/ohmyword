@@ -1,7 +1,7 @@
 param appName string
 
 @allowed([ 'centralus', 'eastus2', 'eastasia', 'westeurope', 'westus2' ])
-param location string
+param location string = 'centralus'
 
 @description('URL of the GitHub repository')
 param repositoryUrl string
@@ -12,6 +12,8 @@ param repositoryToken string = ''
 
 @description('Git branch to use')
 param branch string
+
+param customDomainName string
 
 var tags = {
   workload: toLower(appName)
@@ -33,6 +35,10 @@ resource swa 'Microsoft.Web/staticSites@2022-03-01' = {
       githubActionSecretNameOverride: 'AZURE_STATIC_WEB_APPS_API_TOKEN'
       skipGithubActionWorkflowGeneration: true
     }
+  }
+
+  resource customDomains 'customDomains' = {
+    name: customDomainName
   }
 }
 

@@ -12,10 +12,13 @@
       "value": "https://github.com/frasermclean/ohmyword"
     },
     "repositoryToken": {
-      "value": "**REDACTED**"
+      "value": ""
     },
     "branch": {
-      "value": "develop"
+      "value": "main"
+    },
+    "customDomainName": {
+      "value": "ohmyword.live"
     }
   }
 }

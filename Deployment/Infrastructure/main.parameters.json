@@ -19,6 +19,12 @@
         "letterHintDelay": 3,
         "postRoundDelay": 5
       }
+    },
+    "staticWebAppLocation": {
+      "value": "centralus"
+    },
+    "staticWebAppCustomDomainName": {
+      "value": "ohmyword.live"
     }
   }
 }

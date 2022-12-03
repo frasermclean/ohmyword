@@ -33,8 +33,8 @@ jobs:
         name: Deploy infrastructure
         with:
           resourceGroupName: rg-ohmyword
-          template: ./Deployment/Infrastructure/frontend/main.bicep
-          parameters: ./Deployment/Infrastructure/frontend/main.parameters.json
+          template: ./Deployment/Infrastructure/staticWebApp.bicep
+          parameters: ./Deployment/Infrastructure/staticWebApp.parameters.json
       # Build and deploy the app
       - uses: azure/static-web-apps-deploy@v1
         name: Build and deploy app
