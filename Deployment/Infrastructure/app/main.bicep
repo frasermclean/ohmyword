@@ -13,6 +13,9 @@ param location string
 @description('Apex domain name for the application')
 param domainName string
 
+@description('Database request units per second.')
+param databaseThroughput int
+
 @description('Application specific settings')
 param appSettings object
 
@@ -39,18 +42,29 @@ var tags = {
 var corsAllowedOrigins = appEnv == 'prod' ? [ 'https://${domainName}' ] : [ 'https://test.${domainName}' ]
 
 resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-08-15' existing = {
-  name: 'cosmos-${appName}'
+  name: 'cosmos-${appName}-shared'
   scope: resourceGroup(sharedResourceGroup)
 }
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' existing = {
-  name: 'asp-${appName}'
+  name: 'asp-${appName}-shared'
   scope: resourceGroup(sharedResourceGroup)
 }
 
 resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' existing = {
-  name: 'law-${appName}'
+  name: 'law-${appName}-shared'
   scope: resourceGroup(sharedResourceGroup)
+}
+
+// database
+module database 'database.bicep' = {
+  name: 'database'
+  scope: resourceGroup(sharedResourceGroup)
+  params: {
+    cosmosDbAccountName: cosmosDbAccount.name
+    databaseName: 'db-${appEnv}'
+    throughput: databaseThroughput
+  }
 }
 
 // application insights

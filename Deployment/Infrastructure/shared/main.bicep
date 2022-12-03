@@ -26,7 +26,7 @@ resource dnsZone 'Microsoft.Network/dnsZones@2018-05-01' = {
 
 // cosmos db account
 resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-08-15' = {
-  name: 'cosmos-${appName}'
+  name: 'cosmos-${appName}-shared'
   location: location
   tags: tags
   properties: {
@@ -46,29 +46,9 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-08-15' = {
   }
 }
 
-// production database
-module databaseProd 'database.bicep' = {
-  name: 'databaseProd'
-  params: {
-    cosmosDbAccountName: cosmosDbAccount.name
-    databaseName: 'db-prod'
-    throughput: totalThroughputLimit / 5 * 3
-  }
-}
-
-// test database
-module databaseTest 'database.bicep' = {
-  name: 'databaseTest'
-  params: {
-    cosmosDbAccountName: cosmosDbAccount.name
-    databaseName: 'db-test'
-    throughput: totalThroughputLimit / 5 * 2
-  }
-}
-
 // app service plan
 resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
-  name: 'asp-${appName}'
+  name: 'asp-${appName}-shared'
   location: location
   tags: tags
   kind: 'linux'
@@ -82,7 +62,7 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
 
 // log analytics workspace
 resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
-  name: 'law-${appName}'
+  name: 'law-${appName}-shared'
   location: location
   tags: tags
   properties: {
@@ -95,3 +75,5 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10
     }
   }
 }
+
+output dnsZoneNameServers array = dnsZone.properties.nameServers
