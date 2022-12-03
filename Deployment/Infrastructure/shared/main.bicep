@@ -46,6 +46,26 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-08-15' = {
   }
 }
 
+// production database
+module databaseProd 'database.bicep' = {
+  name: 'databaseProd'
+  params: {
+    cosmosDbAccountName: cosmosDbAccount.name
+    databaseName: 'db-prod'
+    throughput: totalThroughputLimit / 5 * 3
+  }
+}
+
+// test database
+module databaseTest 'database.bicep' = {
+  name: 'databaseTest'
+  params: {
+    cosmosDbAccountName: cosmosDbAccount.name
+    databaseName: 'db-test'
+    throughput: totalThroughputLimit / 5 * 2
+  }
+}
+
 // app service plan
 resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
   name: 'asp-${appName}'
