@@ -19,7 +19,7 @@ import { Game, Guess, Hub } from '../game/game.actions';
 })
 export class GameService {
   private readonly hubConnection = new HubConnectionBuilder()
-    .withUrl(environment.api.hubUrl)
+    .withUrl(`${environment.apiBaseUrl}/hub`)
     .configureLogging(environment.production ? LogLevel.Error : LogLevel.Information)
     .build();
 

@@ -52,6 +52,6 @@ export const guardConfig: MsalGuardConfiguration = {
 export const interceptorConfig: MsalInterceptorConfiguration = {
   interactionType: InteractionType.Redirect,
   protectedResourceMap: new Map([
-    [`${environment.api.baseUrl}/*`, [scopes[0]]],
+    [`${environment.apiBaseUrl}/*`, [scopes[0]]],
   ]),
 };

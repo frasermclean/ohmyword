@@ -97,7 +97,7 @@ public static class Program
         app.MapControllers();
         app.MapHub<GameHub>("/hub");
 
-        app.UseHealthChecks("/api/health");
+        app.UseHealthChecks("/health");
 
         // run the application
         app.Run();

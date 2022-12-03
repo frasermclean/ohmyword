@@ -1,7 +1,4 @@
 export const environment = {
   production: true,
-  api: {
-    baseUrl: `/api`,
-    hubUrl: `/hub`,
-  },
+  apiBaseUrl: 'https://api.ohmyword.live',
 };

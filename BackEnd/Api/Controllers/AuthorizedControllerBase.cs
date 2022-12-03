@@ -5,7 +5,7 @@ using Microsoft.Identity.Web.Resource;
 namespace OhMyWord.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("[controller]")]
 [Authorize]
 [RequiredScope("access")]
 public abstract class AuthorizedControllerBase : ControllerBase

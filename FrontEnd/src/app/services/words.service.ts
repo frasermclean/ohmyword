@@ -14,7 +14,7 @@ import { Word } from '../models/word.model';
   providedIn: 'root',
 })
 export class WordsService {
-  private readonly baseUrl = `${environment.api.baseUrl}/words`;
+  private readonly baseUrl = `${environment.apiBaseUrl}/words`;
   constructor(private httpClient: HttpClient) {}
 
   public getWords(request: GetWordsRequest) {

@@ -3,8 +3,5 @@
  */
 export const environment = {
   production: false,
-  api: {
-    baseUrl: 'http://localhost:5000/api',
-    hubUrl: 'http://localhost:5000/hub',
-  },
+  apiBaseUrl: 'http://localhost:5000'
 };
