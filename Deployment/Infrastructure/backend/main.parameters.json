@@ -8,6 +8,9 @@
     "location": {
       "value": "australiaeast"
     },
+    "domainName": {
+      "value": "ohmyword.live"
+    },
     "totalThroughputLimit": {
       "value": 1000
     }

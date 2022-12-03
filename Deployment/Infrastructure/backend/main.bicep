@@ -9,8 +9,18 @@ param location string = resourceGroup().location
 @description('Total throughput of the Cosmos DB account in measurement of Requests-per-Unit in the Azure Cosmos DB service')
 param totalThroughputLimit int
 
+@description('Apex domain name for the application')
+param domainName string
+
 var tags = {
   workload: appName
+}
+
+// dns zone for the application
+resource dnsZone 'Microsoft.Network/dnsZones@2018-05-01' = {
+  name: domainName
+  location: 'global'
+  tags: tags
 }
 
 // cosmosDb account, database and containers
