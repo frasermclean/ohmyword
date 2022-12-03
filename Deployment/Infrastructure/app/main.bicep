@@ -155,3 +155,26 @@ module dnsRecords 'dnsRecords.bicep' = {
     customDomainVerificationId: appService.properties.customDomainVerificationId
   }
 }
+
+var apiDomainName = appEnv == 'prod' ? 'api.${domainName}' : 'test.api.${domainName}'
+
+// host name bindings
+resource appServiceHostNameBinding 'Microsoft.Web/sites/hostNameBindings@2022-03-01' = {
+  name: apiDomainName
+  parent: appService
+  properties: {
+    siteName: appService.name
+    hostNameType: 'Verified'
+  }
+}
+
+// app service managed certificate
+resource managedCertificate 'Microsoft.Web/certificates@2022-03-01' = {
+  name: 'cert-${appName}-${appEnv}'
+  location: location
+  tags: tags
+  properties: {
+    serverFarmId: appServicePlan.id
+    canonicalName: apiDomainName
+  }
+}
