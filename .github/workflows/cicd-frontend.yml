@@ -3,7 +3,7 @@ name: CI/CD FrontEnd
 on:
   push:
     branches:
-      - develop
+      - main
     paths:
       - .github/workflows/cicd-frontend.yml
       - FrontEnd/**
@@ -12,7 +12,7 @@ jobs:
   build:
     name: Build and deploy
     runs-on: ubuntu-latest
-    environment: Test
+    environment: prod
     permissions:
       id-token: write
     steps:
