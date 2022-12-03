@@ -1,8 +1,8 @@
 targetScope = 'resourceGroup'
 
-@description('Name of the database')
+@description('Application environment')
 @allowed([ 'prod', 'test' ])
-param name string
+param appEnv string
 
 @description('Name of the the Cosmos DB account.')
 param cosmosDbAccountName string
@@ -11,16 +11,18 @@ param cosmosDbAccountName string
 @minValue(400)
 param throughput int
 
+var databaseName = 'db-${appEnv}'
+
 resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-08-15' existing = {
   name: cosmosDbAccountName
 }
 
 resource database 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2022-08-15' = {
-  name: name
+  name: databaseName
   parent: cosmosDbAccount
   properties: {
     resource: {
-      id: name
+      id: databaseName
     }
     options: {
       throughput: throughput

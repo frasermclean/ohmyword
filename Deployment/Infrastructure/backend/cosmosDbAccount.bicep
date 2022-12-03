@@ -42,7 +42,7 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-08-15' = {
 module cosmosDbDatabaseProd 'cosmosDbDatabase.bicep' = {
   name: 'cosmosDbDatabaseProd'
   params: {
-    name: 'prod'
+    appEnv: 'prod'
     cosmosDbAccountName: cosmosDbAccount.name
     throughput: prodDbThroughput
   }
@@ -52,7 +52,7 @@ module cosmosDbDatabaseProd 'cosmosDbDatabase.bicep' = {
 module cosmosDbDatabaseTest 'cosmosDbDatabase.bicep' = {
   name: 'cosmosDbDatabaseTest'
   params: {
-    name: 'test'
+    appEnv: 'test'
     cosmosDbAccountName: cosmosDbAccount.name
     throughput: testDbThroughput
   }
