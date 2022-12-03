@@ -1,4 +1,9 @@
+@description('Name of the application / workload')
 param appName string
+
+@description('Application environment')
+@allowed([ 'prod', 'test' ])
+param appEnv string
 
 @allowed([ 'centralus', 'eastus2', 'eastasia', 'westeurope', 'westus2' ])
 param location string = 'centralus'
@@ -17,10 +22,11 @@ param customDomainName string
 
 var tags = {
   workload: toLower(appName)
+  environment: toLower(appEnv)
 }
 
-resource swa 'Microsoft.Web/staticSites@2022-03-01' = {
-  name: 'swa-${toLower(appName)}'
+resource staticWebApp 'Microsoft.Web/staticSites@2022-03-01' = {
+  name: toLower('swa-${(appName)}-${appEnv}')
   location: location
   tags: tags
   sku: {
@@ -42,4 +48,4 @@ resource swa 'Microsoft.Web/staticSites@2022-03-01' = {
   }
 }
 
-output defaultHostname string = swa.properties.defaultHostname
+output defaultHostname string = staticWebApp.properties.defaultHostname

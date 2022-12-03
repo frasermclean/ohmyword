@@ -4,6 +4,9 @@
   "parameters": {
     "appName": {
       "value": "ohmyword"
+    },
+    "appEnv": {
+      "value": "prod"
     },    
     "location": {
       "value": "centralus"

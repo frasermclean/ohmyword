@@ -80,7 +80,6 @@ module appService 'appService.bicep' = {
     appName: appName
     appEnv: 'prod'
     location: location
-    tags: tags
     appServicePlanId: appServicePlan.id
     letterHintDelay: appSettings.letterHintDelay
     postRoundDelay: appSettings.postRoundDelay
@@ -93,6 +92,7 @@ module staticWebApp 'staticWebApp.bicep' = {
   params: {
     location: staticWebAppLocation
     appName: appName
+    appEnv: 'prod'
     branch: 'main'
     repositoryUrl: 'https://github.com/frasermclean/ohmyword'
     customDomainName: staticWebAppCustomDomainName
