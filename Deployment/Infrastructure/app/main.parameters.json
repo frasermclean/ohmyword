@@ -1,0 +1,33 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "appName": {
+      "value": "ohmyword"
+    },
+    "appEnv": {
+      "value": "prod"
+    },
+    "location": {
+      "value": "australiaeast"
+    },
+    "corsAllowedOrigins": {
+      "value": ["https://ohmyword.live"]
+    },
+    "appSettings": {
+      "value": {
+        "letterHintDelay": 3,
+        "postRoundDelay": 5
+      }
+    },
+    "repositoryUrl": {
+      "value": "https://github.com/frasermclean/ohmyword"
+    },
+    "repositoryToken": {
+      "value": ""
+    },
+    "repositoryBranch": {
+      "value": "main"
+    }
+  }
+}
