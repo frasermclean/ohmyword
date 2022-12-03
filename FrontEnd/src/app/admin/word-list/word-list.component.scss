@@ -1,0 +1,34 @@
+#header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  #search-container {
+    display: flex;
+    gap: 8px;
+    #clear-button {
+      margin-top: 8px;
+    }
+  }
+}
+
+table {
+  width: 100%;
+}
+
+#actions-container {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+.definition {
+  max-width: 600px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.highlight-row {
+  background: rgba(0, 0, 0, 0.2);
+}

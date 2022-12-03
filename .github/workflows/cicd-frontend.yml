@@ -1,0 +1,46 @@
+name: CI/CD FrontEnd
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/cicd-frontend.yml
+      - FrontEnd/**
+
+jobs:
+  build:
+    name: Build and deploy
+    runs-on: ubuntu-latest
+    environment: prod
+    permissions:
+      id-token: write
+    steps:
+      # Checkout the repository
+      - uses: actions/checkout@v3
+        name: Checkout repository
+        with:
+          submodules: true
+      # Login to Azure
+      - uses: azure/login@v1
+        name: Login to Azure
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      # Deploy infrastructure
+      - uses: azure/arm-deploy@v1
+        name: Deploy infrastructure
+        with:
+          resourceGroupName: rg-ohmyword
+          template: ./Deployment/Infrastructure/staticWebApp.bicep
+          parameters: ./Deployment/Infrastructure/staticWebApp.parameters.json
+      # Build and deploy the app
+      - uses: azure/static-web-apps-deploy@v1
+        name: Build and deploy app
+        with:
+          action: upload
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          app_location: FrontEnd
+          output_location: dist
