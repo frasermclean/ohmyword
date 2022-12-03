@@ -156,7 +156,15 @@ module dnsRecords 'dnsRecords.bicep' = {
   }
 }
 
-var apiDomainName = appEnv == 'prod' ? 'api.${domainName}' : 'test.api.${domainName}'
+// host name bindings
+resource appServiceHostNameBinding 'Microsoft.Web/sites/hostNameBindings@2022-03-01' = {
+  name: appEnv == 'prod' ? 'api.${domainName}' : 'test.api.${domainName}'
+  parent: appService
+  properties: {
+    siteName: appService.name
+    hostNameType: 'Verified'
+  }
+}
 
 // app service managed certificate
 resource managedCertificate 'Microsoft.Web/certificates@2022-03-01' = {
@@ -165,18 +173,16 @@ resource managedCertificate 'Microsoft.Web/certificates@2022-03-01' = {
   tags: tags
   properties: {
     serverFarmId: appServicePlan.id
-    canonicalName: apiDomainName
+    canonicalName: appServiceHostNameBinding.name
   }
 }
 
-// host name bindings
-resource appServiceHostNameBinding 'Microsoft.Web/sites/hostNameBindings@2022-03-01' = {
-  name: apiDomainName
-  parent: appService
-  properties: {
-    siteName: appService.name
-    hostNameType: 'Verified'
-    sslState: 'SniEnabled'
-    thumbprint: managedCertificate.properties.thumbprint
+// use module to enable hostname SNI binding
+module sniEnable 'sniEnable.bicep' = {
+  name: 'sniEnable-${appService.name}'
+  params: {
+    appServiceName: appService.name
+    hostname: appServiceHostNameBinding.name
+    certificateThumbprint: managedCertificate.properties.thumbprint
   }
 }
