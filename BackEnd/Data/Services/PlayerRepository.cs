@@ -17,7 +17,7 @@ public interface IPlayerRepository
 public class PlayerRepository : Repository<Player>, IPlayerRepository
 {
     public PlayerRepository(IDatabaseService databaseService, ILogger<PlayerRepository> logger)
-        : base(databaseService, logger, "Players")
+        : base(databaseService, logger, "players")
     {
     }
 

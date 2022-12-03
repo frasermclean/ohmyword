@@ -33,7 +33,7 @@ public class WordsRepository : Repository<Word>, IWordsRepository
     public const int LimitMaximum = 100;
 
     public WordsRepository(IDatabaseService databaseService, ILogger<WordsRepository> logger)
-        : base(databaseService, logger, "Words")
+        : base(databaseService, logger, "words")
     {
     }
 
