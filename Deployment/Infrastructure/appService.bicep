@@ -42,6 +42,7 @@ resource appService 'Microsoft.Web/sites@2022-03-01' = {
       linuxFxVersion: 'DOTNETCORE|7.0'
       healthCheckPath: '/health'
       cors: {
+        supportCredentials: true
         allowedOrigins: appEnv == 'prod' ? [ 'https://ohmyword.live' ] : [ 'https://test.ohmyword.live' ]
       }
       appSettings: [
