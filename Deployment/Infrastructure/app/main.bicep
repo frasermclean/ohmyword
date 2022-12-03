@@ -124,7 +124,7 @@ resource appService 'Microsoft.Web/sites@2022-03-01' = {
 
 // static web app
 resource staticWebApp 'Microsoft.Web/staticSites@2022-03-01' = {
-  name: 'swa-${(appName)}-${appEnv}'
+  name: 'swa-${appName}-${appEnv}'
   location: staticWebAppLocation
   tags: tags
   sku: {
