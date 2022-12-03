@@ -10,8 +10,8 @@ param appEnv string
 @description('The default Azure location to deploy the resources to')
 param location string
 
-@description('Allowed origins for CORS access')
-param corsAllowedOrigins array
+@description('Apex domain name for the application')
+param domainName string
 
 @description('Application specific settings')
 param appSettings object
@@ -35,6 +35,8 @@ var tags = {
   workload: appName
   environment: appEnv
 }
+
+var corsAllowedOrigins = appEnv == 'prod' ? [ 'https://${domainName}' ] : [ 'https://test.${domainName}' ]
 
 resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-08-15' existing = {
   name: 'cosmos-${appName}'
@@ -139,5 +141,17 @@ resource staticWebApp 'Microsoft.Web/staticSites@2022-03-01' = {
       githubActionSecretNameOverride: 'AZURE_STATIC_WEB_APPS_API_TOKEN'
       skipGithubActionWorkflowGeneration: true
     }
+  }
+}
+
+// dns records for custom domain validation
+module dnsRecords 'dnsRecords.bicep' = {
+  name: 'dnsRecords-${appEnv}'
+  scope: resourceGroup(sharedResourceGroup)
+  params: {
+    appName: appName
+    appEnv: appEnv
+    domainName: domainName
+    customDomainVerificationId: appService.properties.customDomainVerificationId
   }
 }

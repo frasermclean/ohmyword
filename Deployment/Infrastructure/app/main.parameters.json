@@ -6,13 +6,13 @@
       "value": "ohmyword"
     },
     "appEnv": {
-      "value": "prod"
+      "value": "test"
     },
     "location": {
       "value": "australiaeast"
     },
-    "corsAllowedOrigins": {
-      "value": ["https://ohmyword.live"]
+    "domainName": {
+      "value": "ohmyword.live"
     },
     "appSettings": {
       "value": {
