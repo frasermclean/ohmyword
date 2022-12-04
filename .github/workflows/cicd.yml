@@ -107,6 +107,7 @@ jobs:
     name: Deploy shared infrastructure
     runs-on: ubuntu-latest
     if: github.event_name != 'pull_request'
+    environment: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
     permissions:
       id-token: write
     steps:
