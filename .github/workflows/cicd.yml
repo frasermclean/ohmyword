@@ -31,8 +31,12 @@ jobs:
         with:
           node-version: "18"
 
+      # Install Angular CLI globally
+      - name: Install Angular CLI
+        run: npm install -g @angular/cli
+
       # Install dependencies
-      - name: Install dependencies
+      - name: Install project dependencies
         working-directory: ./FrontEnd
         run: npm ci
 
