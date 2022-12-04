@@ -175,7 +175,7 @@ jobs:
     permissions:
       id-token: write
     env:
-      APP_PATH: "${{ runner.temp }}/app"
+      APP_PATH: "${{ github.workspace }}/app"
 
     steps:
       # Login to Azure
