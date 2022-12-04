@@ -42,7 +42,7 @@ jobs:
 
       # Set production build configuration
       - name: Set production configuration
-        if: ${{ github.ref_name }} == 'main'
+        if: ${{ github.ref_name == 'main' }}
         run: echo "BUILD_CONFIGURATION=production"
 
       # Build the client
@@ -97,6 +97,7 @@ jobs:
   deploy-shared-infra:
     name: Deploy shared infrastructure
     runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'pull_request' }}
     permissions:
       id-token: write
     steps:
