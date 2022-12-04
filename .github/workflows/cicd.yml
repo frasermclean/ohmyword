@@ -58,6 +58,10 @@ jobs:
       - name: Build client application
         working-directory: ./FrontEnd
         run: ng build --configuration $BUILD_CONFIGURATION
+      
+      # Copy static web app config
+      - name: Copy static web app config
+        run: cp ./FrontEnd/staticwebapp.config.json ./FrontEnd/dist
 
       # Upload build artifact
       - name: Upload build artifact
