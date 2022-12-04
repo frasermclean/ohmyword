@@ -55,6 +55,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      # Install packages
+      - name: Install packages
+        run: dotnet restore
+
       # Build solution
       - name: Build solution
         run: dotnet build --configuration Release
@@ -66,14 +70,14 @@ jobs:
       # Publish application
       - name: Publish application
         working-directory: ./BackEnd/Api
-        run: dotnet publish --configuration Release --output ${{env.DOTNET_ROOT}}/app
+        run: dotnet publish --configuration Release --output /tmp/app
 
       # Upload published application artifact
       - name: Upload published application artifact
         uses: actions/upload-artifact@v3
         with:
           name: backend-app
-          path: ${{env.DOTNET_ROOT}}/app
+          path: /tmp/app
 
   # Deploy shared infrastructure
   deploy-shared-infra:
