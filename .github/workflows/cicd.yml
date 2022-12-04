@@ -1,5 +1,7 @@
 name: CI/CD
 
+run-name: "CI/CD from event: ${{ github.event_name }}, on branch: ${{ github.ref_name }}"
+
 on:
   push:
     branches:
@@ -17,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Build frontend application
     env:
-      BUILD_CONFIGURATION: production
+      BUILD_CONFIGURATION: testing
     steps:
       # Checkout the repository
       - uses: actions/checkout@v3
@@ -39,6 +41,11 @@ jobs:
       - name: Install project dependencies
         working-directory: ./FrontEnd
         run: npm ci
+
+      # Set production build configuration
+      - name: Set production configuration
+        if: ${{ github.ref_name }} == 'main'
+        run: echo "BUILD_CONFIGURATION=production"
 
       # Build the client
       - name: Build client application
