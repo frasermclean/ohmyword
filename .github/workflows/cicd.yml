@@ -12,7 +12,7 @@ on:
       - Deployment/**
 
 jobs:
-  # Build the frontend application
+  # Build frontend application
   build-frontend:
     runs-on: ubuntu-latest
     name: Build Frontend
@@ -46,6 +46,7 @@ jobs:
           name: frontend-app
           path: ./FrontEnd/dist
 
+  # Build backend application
   build-backend:
     runs-on: ubuntu-latest
     name: Build Backend
@@ -81,3 +82,29 @@ jobs:
         with:
           name: backend-app
           path: ${{env.DOTNET_ROOT}}/app
+
+  # Deploy shared infrastructure
+  deploy-shared-infra:
+    name: Deploy shared infrastructure
+    runs-on: ubuntu-latest
+    steps:
+      # Check out the repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
+      # Login to Azure
+      - uses: azure/login@v1
+        name: Login to Azure
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      
+      # Deploy infrastructure
+      - uses: azure/arm-deploy@v1
+        name: Deploy infrastructure
+        with:
+          resourceGroupName: rg-ohmyword-shared
+          template: ./Deployment/Infrastructure/shared/main.bicep
+          parameters: ./Deployment/Infrastructure/shared/main.parameters.json
+    
