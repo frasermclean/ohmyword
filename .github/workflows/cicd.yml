@@ -15,7 +15,7 @@ jobs:
   # Build frontend application
   build-frontend-app:
     runs-on: ubuntu-latest
-    name: Build Frontend Application
+    name: Build frontend application
     steps:
       # Checkout the repository
       - uses: actions/checkout@v3
@@ -49,17 +49,11 @@ jobs:
   # Build backend application
   build-backend-app:
     runs-on: ubuntu-latest
-    name: Build Backend Application
+    name: Build backend application
     steps:
       # Check out the repository
       - name: Checkout repository
         uses: actions/checkout@v3
-
-      # Setup .NET environment
-      - name: Set up .NET Core
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: "7.0.x"
 
       # Build solution
       - name: Build solution
