@@ -1,0 +1,31 @@
+name: CI/CD
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - .github/workflows/cicd.yml
+      - FrontEnd/**
+      - BackEnd/**
+      - Deployment/**
+
+jobs:
+  build-backend:
+    runs-on: ubuntu-latest
+    name: Build backend
+    steps:
+      - uses: actions/checkout@v3
+        name: Checkout repository
+        with:
+          submodules: true
+
+  build-frontend:
+    runs-on: ubuntu-latest
+    name: Build frontend
+    steps:
+      - uses: actions/checkout@v3
+        name: Checkout repository
+        with:
+          submodules: true
