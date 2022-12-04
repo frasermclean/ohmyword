@@ -50,6 +50,8 @@ jobs:
   build-backend-app:
     runs-on: ubuntu-latest
     name: Build backend application
+    env:
+      BUILD_CONFIGURATION: Release
     steps:
       # Check out the repository
       - name: Checkout repository
@@ -61,16 +63,16 @@ jobs:
 
       # Build solution
       - name: Build solution
-        run: dotnet build --configuration Release
+        run: dotnet build --configuration $BUILD_CONFIGURATION
 
       # Test solution
       - name: Test solution
-        run: dotnet test --configuration Release
+        run: dotnet test --configuration $BUILD_CONFIGURATION
 
       # Publish application
       - name: Publish application
         working-directory: ./BackEnd/Api
-        run: dotnet publish --configuration Release --output /tmp/app
+        run: dotnet publish --configuration $BUILD_CONFIGURATION --output /tmp/app
 
       # Upload published application artifact
       - name: Upload published application artifact
