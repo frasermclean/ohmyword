@@ -16,6 +16,8 @@ jobs:
   build-frontend-app:
     runs-on: ubuntu-latest
     name: Build frontend application
+    env:
+      BUILD_CONFIGURATION: production
     steps:
       # Checkout the repository
       - uses: actions/checkout@v3
@@ -37,7 +39,7 @@ jobs:
       # Build the client
       - name: Build client application
         working-directory: ./FrontEnd
-        run: npm run build
+        run: ng build --configuration $BUILD_CONFIGURATION
 
       # Upload build artifact
       - name: Upload build artifact
