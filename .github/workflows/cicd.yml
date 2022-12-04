@@ -138,7 +138,7 @@ jobs:
     needs:
       - build-frontend-app
       - deploy-shared-infra
-    environment: github.ref_name == 'main' && 'prod' || 'test'
+    environment: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
     permissions:
       id-token: write
     steps:
@@ -154,3 +154,12 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: frontend-app
+          path: /tmp/app
+      # Deploy application 
+      - uses: azure/static-web-apps-deploy@v1
+        name: Deploy application
+        with:
+          action: upload
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          app_location: /tmp/app
+          skip_app_build: true
