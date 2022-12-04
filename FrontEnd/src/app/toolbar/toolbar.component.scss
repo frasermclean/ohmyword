@@ -4,8 +4,14 @@ mat-toolbar {
     text-decoration: none;
   }
 
-  .app-name {
+  .app-name,
+  .app-env {
     margin: 0;
+  }
+
+  .app-env {
+    margin-left: 16px;
+    letter-spacing: 4px;
   }
 
   .spacer {
