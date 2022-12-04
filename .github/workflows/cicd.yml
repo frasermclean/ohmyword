@@ -52,6 +52,7 @@ jobs:
     name: Build backend application
     env:
       BUILD_CONFIGURATION: Release
+      PUBLISH_DIRECTORY: /tmp/app
     steps:
       # Check out the repository
       - name: Checkout repository
@@ -72,14 +73,14 @@ jobs:
       # Publish application
       - name: Publish application
         working-directory: ./BackEnd/Api
-        run: dotnet publish --configuration $BUILD_CONFIGURATION --output /tmp/app
+        run: dotnet publish --configuration $BUILD_CONFIGURATION --output $PUBLISH_DIRECTORY
 
       # Upload published application artifact
       - name: Upload published application artifact
         uses: actions/upload-artifact@v3
         with:
           name: backend-app
-          path: /tmp/app
+          path: ${{ env.PUBLISH_DIRECTORY }}
 
   # Deploy shared infrastructure
   deploy-shared-infra:
