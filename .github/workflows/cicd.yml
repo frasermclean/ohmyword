@@ -185,12 +185,15 @@ jobs:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
       # Download application artifact
       - name: Download application artifact
         uses: actions/download-artifact@v3
         with:
           name: frontend-app
-          path: ${{ env.APP_PATH }}
+
+      - name: Display structure of current directory
+        run: ls -R
 
       # Deploy application
       - uses: azure/static-web-apps-deploy@v1
@@ -198,7 +201,7 @@ jobs:
         with:
           action: upload
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
-          app_location: ${{ env.APP_PATH }}
+          app_location: ./frontend-app
           skip_app_build: true
 
   # Deploy backend application
@@ -212,7 +215,6 @@ jobs:
       id-token: write
     env:
       APP_NAME: ${{ github.ref_name == 'main' &&  'app-ohmyword-prod' || 'app-ohmyword-test' }}
-      PACKAGE_PATH: "~/app"
     steps:
       # Login to Azure
       - uses: azure/login@v1
@@ -221,12 +223,12 @@ jobs:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
       # Download application artifact
       - name: Download application artifact
         uses: actions/download-artifact@v3
         with:
           name: backend-app
-          path: ${{ env.PACKAGE_PATH }}
 
       # Deploy to Azure app service
       - name: Deploy to Azure Web App
@@ -234,4 +236,3 @@ jobs:
         uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ env.APP_NAME }}
-          package: ${{ env.PACKAGE_PATH }}
