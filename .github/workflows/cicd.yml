@@ -12,18 +12,43 @@ on:
       - Deployment/**
 
 jobs:
-  build-backend:
+  # Build the frontend application
+  build-frontend:
     runs-on: ubuntu-latest
-    name: Build backend
+    name: Build Frontend
     steps:
+      # Checkout the repository
       - uses: actions/checkout@v3
         name: Checkout repository
         with:
           submodules: true
 
-  build-frontend:
+      # Setup Node environment
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+
+      # Install dependencies
+      - name: Install dependencies
+        working-directory: ./FrontEnd
+        run: npm ci
+
+      # Build the client
+      - name: Build client application
+        working-directory: ./FrontEnd
+        run: npm run build
+
+      # Upload build artifact
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: frontend-app
+          path: ./FrontEnd/dist
+
+  build-backend:
     runs-on: ubuntu-latest
-    name: Build frontend
+    name: Build Backend
     steps:
       - uses: actions/checkout@v3
         name: Checkout repository
