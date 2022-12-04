@@ -51,7 +51,7 @@ jobs:
 
       # Set production build configuration
       - name: Set production configuration
-        if: ${{ github.ref_name == 'main' }}
+        if: github.ref_name == 'main'
         run: echo "BUILD_CONFIGURATION=production"
 
       # Build the client
@@ -106,7 +106,7 @@ jobs:
   deploy-shared-infra:
     name: Deploy shared infrastructure
     runs-on: ubuntu-latest
-    if: ${{ github.event_name != 'pull_request' }}
+    if: github.event_name != 'pull_request'
     permissions:
       id-token: write
     steps:
@@ -134,11 +134,11 @@ jobs:
   deploy-frontend-app:
     name: Deploy frontend application
     runs-on: ubuntu-latest
-    if: ${{ github.event_name != 'pull_request' }}
+    if: github.event_name != 'pull_request'
     needs:
       - build-frontend-app
       - deploy-shared-infra
-    environment: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
+    environment: github.ref_name == 'main' && 'prod' || 'test'
     permissions:
       id-token: write
     steps:
@@ -149,3 +149,8 @@ jobs:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      # Download application artifact
+      - name: Download application artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: frontend-app
