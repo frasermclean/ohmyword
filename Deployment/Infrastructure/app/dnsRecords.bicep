@@ -11,41 +11,56 @@ param appEnv string
 param domainName string
 
 @description('Domain ownership ID')
-param customDomainVerificationId string
+param appServiceVerificationId string
+
+@description('Default hostname of the static web app')
+param staticWebAppDefaultHostname string
 
 // dns zone for the application
 resource dnsZone 'Microsoft.Network/dnsZones@2018-05-01' existing = {
   name: domainName
 }
 
-var cnameRecordName = appEnv == 'prod' ? 'api' : 'test.api'
-var cnameRecordValue = 'app-${appName}-${appEnv}.azurewebsites.net'
-var txtRecordName = appEnv == 'prod' ? 'asuid.api' : 'asuid.test.api'
+var apiCnameRecordName = appEnv == 'prod' ? 'api' : 'test.api'
+var apiCnameRecordValue = 'app-${appName}-${appEnv}.azurewebsites.net'
+var apiTxtRecordName = appEnv == 'prod' ? 'asuid.api' : 'asuid.test.api'
+var staticWebAppCnameRecordName = appEnv == 'prod' ? '@' : 'test'
 
 // CNAME record for the app service API
-resource cnameRecord 'Microsoft.Network/dnsZones/CNAME@2018-05-01' = {
-  name: cnameRecordName
+resource apiCnameRecord 'Microsoft.Network/dnsZones/CNAME@2018-05-01' = {
+  name: apiCnameRecordName
   parent: dnsZone
   properties: {
     TTL: 3600
     CNAMERecord: {
-      cname: cnameRecordValue
+      cname: apiCnameRecordValue
     }
   }
 }
 
 // TXT record for the app service API
-resource txtRecord 'Microsoft.Network/dnsZones/TXT@2018-05-01' = {
-  name: txtRecordName
+resource apiTxtRecord 'Microsoft.Network/dnsZones/TXT@2018-05-01' = {
+  name: apiTxtRecordName
   parent: dnsZone
   properties: {
     TTL: 3600
     TXTRecords: [
       {
         value: [
-          customDomainVerificationId
+          appServiceVerificationId
         ]
       }
     ]
+  }
+}
+
+resource staticWebAppCnameRecord 'Microsoft.Network/dnsZones/CNAME@2018-05-01' = {
+  name: staticWebAppCnameRecordName
+  parent: dnsZone
+  properties: {
+    TTL: 3600
+    CNAMERecord: {
+      cname: staticWebAppDefaultHostname
+    }
   }
 }

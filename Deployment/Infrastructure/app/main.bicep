@@ -19,16 +19,6 @@ param databaseThroughput int
 @description('Application specific settings')
 param appSettings object
 
-@description('URL of the GitHub repository')
-param repositoryUrl string
-
-@secure()
-@description('GitHub Personal Access Token')
-param repositoryToken string = ''
-
-@description('Git branch to use')
-param repositoryBranch string
-
 @description('Location for the static web app')
 param staticWebAppLocation string = 'centralus'
 
@@ -39,7 +29,7 @@ var tags = {
   environment: appEnv
 }
 
-var corsAllowedOrigins = appEnv == 'prod' ? [ 'https://${domainName}' ] : [ 'https://test.${domainName}' ]
+var frontendHostname = appEnv == 'prod' ? domainName : 'test.${domainName}'
 
 resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-08-15' existing = {
   name: 'cosmos-${appName}-shared'
@@ -98,7 +88,7 @@ resource appService 'Microsoft.Web/sites@2022-03-01' = {
       healthCheckPath: '/health'
       cors: {
         supportCredentials: true
-        allowedOrigins: corsAllowedOrigins
+        allowedOrigins: [ 'https://${frontendHostname}' ]
       }
       appSettings: [
         {
@@ -148,13 +138,8 @@ resource staticWebApp 'Microsoft.Web/staticSites@2022-03-01' = {
     size: 'Free'
   }
   properties: {
-    repositoryUrl: repositoryUrl
-    repositoryToken: repositoryToken
-    branch: repositoryBranch
-    buildProperties: {
-      githubActionSecretNameOverride: 'AZURE_STATIC_WEB_APPS_API_TOKEN'
-      skipGithubActionWorkflowGeneration: true
-    }
+    stagingEnvironmentPolicy: 'Enabled'
+    allowConfigFileUpdates: true
   }
 }
 
@@ -166,7 +151,8 @@ module dnsRecords 'dnsRecords.bicep' = {
     appName: appName
     appEnv: appEnv
     domainName: domainName
-    customDomainVerificationId: appService.properties.customDomainVerificationId
+    appServiceVerificationId: appService.properties.customDomainVerificationId
+    staticWebAppDefaultHostname: staticWebApp.properties.defaultHostname
   }
 }
 
@@ -199,4 +185,10 @@ module sniEnable 'sniEnable.bicep' = {
     hostname: appServiceHostNameBinding.name
     certificateThumbprint: managedCertificate.properties.thumbprint
   }
+}
+
+// static web app custom domain
+resource staticWebAppCustomDomain 'Microsoft.Web/staticSites/customDomains@2022-03-01' = {
+  name: frontendHostname
+  parent: staticWebApp
 }

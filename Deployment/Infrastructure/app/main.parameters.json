@@ -22,15 +22,6 @@
         "letterHintDelay": 3,
         "postRoundDelay": 5
       }
-    },
-    "repositoryUrl": {
-      "value": "https://github.com/frasermclean/ohmyword"
-    },
-    "repositoryToken": {
-      "value": ""
-    },
-    "repositoryBranch": {
-      "value": "main"
     }
   }
 }
