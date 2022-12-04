@@ -1,7 +1,5 @@
 name: CI/CD
 
-run-name: "CI/CD from event: ${{ github.event_name }}, on branch: ${{ github.ref_name }}"
-
 on:
   push:
     branches:
