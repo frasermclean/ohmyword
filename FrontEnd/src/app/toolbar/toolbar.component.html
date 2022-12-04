@@ -2,6 +2,7 @@
   <a routerLink="/">
     <h1 class="app-name">{{ appName }}</h1>
   </a>
+  <h5 *ngIf="environmentName" class="app-env">{{ environmentName | uppercase }}</h5>
 
   <span class="spacer"></span>
 
