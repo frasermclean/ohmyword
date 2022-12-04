@@ -205,6 +205,7 @@ jobs:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
           app_location: ${{ env.APP_PATH }}
           skip_app_build: true
+          skip_api_build: true
 
   # Deploy backend application
   deploy-backend-app:
