@@ -10,9 +10,7 @@ const policyNames = {
   signUpSignIn: 'B2C_1A_signup_signin',
 };
 
-export const scopes = [
-  'https://ohmywordb2c.onmicrosoft.com/api/access',
-]
+export const scopes = ['https://ohmywordb2c.onmicrosoft.com/api/access'];
 
 /**
  * MSAL client application
@@ -33,7 +31,7 @@ export const msalInstance = new PublicClientApplication({
       loggerCallback: (logLevel, message, containsPii) => {
         console.log(message);
       },
-      logLevel: environment.production ? LogLevel.Error : LogLevel.Warning,
+      logLevel: environment.name !== 'development' ? LogLevel.Error : LogLevel.Warning,
       piiLoggingEnabled: false,
     },
   },
@@ -51,7 +49,5 @@ export const guardConfig: MsalGuardConfiguration = {
  */
 export const interceptorConfig: MsalInterceptorConfiguration = {
   interactionType: InteractionType.Redirect,
-  protectedResourceMap: new Map([
-    [`${environment.apiBaseUrl}/*`, [scopes[0]]],
-  ]),
+  protectedResourceMap: new Map([[`${environment.apiBaseUrl}/*`, [scopes[0]]]]),
 };

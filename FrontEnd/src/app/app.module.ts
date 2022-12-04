@@ -37,11 +37,11 @@ const routes: Routes = [
     BrowserAnimationsModule,
     HttpClientModule,
     RouterModule.forRoot(routes),
-    NgxsModule.forRoot([AuthState], { 
-      developmentMode: !environment.production
+    NgxsModule.forRoot([AuthState], {
+      developmentMode: environment.name === 'development'
     }),
     NgxsLoggerPluginModule.forRoot({
-      disabled: environment.production, // disable logger in production
+      disabled: environment.name !== 'development', // disable logger in production
       filter: (action) => {
         const actionType = getActionTypeFromInstance(action);
         if (!actionType) return true;
@@ -52,14 +52,14 @@ const routes: Routes = [
       }
     }),
     NgxsReduxDevtoolsPluginModule.forRoot({
-      disabled: environment.production // disable devtools in production
+      disabled: environment.name !== 'development' // disable devtools in production
     }),
     MatToolbarModule,
     MatButtonModule,
     MsalModule.forRoot(msalInstance, guardConfig, interceptorConfig),
   ],
   providers: [
-    { provide: HTTP_INTERCEPTORS, useClass: MsalInterceptor, multi: true }, 
+    { provide: HTTP_INTERCEPTORS, useClass: MsalInterceptor, multi: true },
     MsalGuard
   ],
   bootstrap: [AppComponent, MsalRedirectComponent],
