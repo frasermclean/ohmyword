@@ -174,6 +174,9 @@ jobs:
     environment: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
     permissions:
       id-token: write
+    env:
+      APP_PATH: "~/app"
+
     steps:
       # Login to Azure
       - uses: azure/login@v1
@@ -187,11 +190,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: frontend-app
-          path: "~/app"
-
-      - name: Display structure of downloaded files
-        run: ls -R
-        working-directory: "~/app"
+          path: ${{ env.APP_PATH }}
 
       # Deploy application
       - uses: azure/static-web-apps-deploy@v1
@@ -199,7 +198,7 @@ jobs:
         with:
           action: upload
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
-          app_location: "~/app"
+          app_location: ${{ env.APP_PATH }}
           skip_app_build: true
 
   # Deploy backend application
@@ -211,6 +210,9 @@ jobs:
     environment: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
     permissions:
       id-token: write
+    env:
+      APP_NAME: ${{ github.ref_name == 'main' &&  'app-ohmyword-prod' || 'app-ohmyword-test' }}
+      PACKAGE_PATH: "~/app"
     steps:
       # Login to Azure
       - uses: azure/login@v1
@@ -224,10 +226,12 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: backend-app
+          path: ${{ env.PACKAGE_PATH }}
 
       # Deploy to Azure app service
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
-          app-name: ${{ github.ref_name == 'main' &&  'app-ohmyword-prod' || 'app-ohmyword-test' }}
+          app-name: ${{ env.APP_NAME }}
+          package: ${{ env.PACKAGE_PATH }}
