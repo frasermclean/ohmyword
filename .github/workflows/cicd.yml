@@ -175,7 +175,7 @@ jobs:
     permissions:
       id-token: write
     env:
-      APP_PATH: "~/app"
+      APP_PATH: "${{ runner.temp }}/app"
 
     steps:
       # Login to Azure
@@ -191,9 +191,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: frontend-app
-
-      - name: Display structure of current directory
-        run: ls -R
+          path: ${{ env.APP_PATH }}
 
       # Deploy application
       - uses: azure/static-web-apps-deploy@v1
@@ -201,7 +199,7 @@ jobs:
         with:
           action: upload
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
-          app_location: ./frontend-app
+          app_location: ${{ env.APP_PATH }}
           skip_app_build: true
 
   # Deploy backend application
