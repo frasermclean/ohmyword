@@ -11,6 +11,16 @@ on:
       - BackEnd/**
       - Deployment/**
 
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths:
+      - .github/workflows/cicd.yml
+      - FrontEnd/**
+      - BackEnd/**
+      - Deployment/**
+
 jobs:
   # Build frontend application
   build-frontend-app:
