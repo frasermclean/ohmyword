@@ -50,7 +50,34 @@ jobs:
     runs-on: ubuntu-latest
     name: Build Backend
     steps:
-      - uses: actions/checkout@v3
-        name: Checkout repository
+      # Check out the repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
         with:
-          submodules: true
+          lfs: true
+
+      # Setup .NET environment
+      - name: Set up .NET Core
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '7.0.x'
+
+      # Build solution
+      - name: Build solution
+        run: dotnet build --configuration Release
+
+      # Test solution
+      - name: Test solution
+        run: dotnet test --configuration Release
+
+      # Publish application
+      - name: Publish application
+        working-directory: ./Api
+        run: dotnet publish --configuration Release --output ${{env.DOTNET_ROOT}}/app
+
+      # Upload published application artifact
+      - name: Upload published application artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: backend-app
+          path: ${{env.DOTNET_ROOT}}/app
