@@ -139,6 +139,7 @@ jobs:
       - build-frontend-app
       - build-backend-app
       - deploy-shared-infra
+    environment: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
     permissions:
       id-token: write
     env:
@@ -162,7 +163,7 @@ jobs:
         with:
           resourceGroupName: ${{ env.RESOURCE_GROUP_NAME }}
           template: ./Deployment/Infrastructure/app/main.bicep
-          parameters: ./Deployment/Infrastructure/shared/main.parameters.json
+          parameters: ./Deployment/Infrastructure/app/main.parameters.json
 
   # Deploy frontend application
   deploy-frontend-app:
