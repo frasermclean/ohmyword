@@ -188,7 +188,10 @@ module sniEnable 'sniEnable.bicep' = {
 }
 
 // static web app custom domain
-resource staticWebAppCustomDomain 'Microsoft.Web/staticSites/customDomains@2022-03-01' = {
-  name: frontendHostname
-  parent: staticWebApp
+module swaCustomDomain 'swaCustomDomain.bicep' = {
+  name: 'swaCustomDomain'
+  params: {
+    hostname: frontendHostname
+    staticWebAppName: staticWebApp.name
+  }
 }
