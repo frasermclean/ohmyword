@@ -1,0 +1,131 @@
+name: CI/CD
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - .github/workflows/cicd.yml
+      - FrontEnd/**
+      - BackEnd/**
+      - Deployment/**
+
+  pull_request:
+    branches:
+      - main
+    paths:
+      - .github/workflows/cicd.yml
+      - FrontEnd/**
+      - BackEnd/**
+      - Deployment/**
+
+jobs:
+  # Build frontend application
+  build-frontend-app:
+    runs-on: ubuntu-latest
+    name: Build frontend application
+    env:
+      BUILD_CONFIGURATION: testing
+    steps:
+      # Checkout the repository
+      - uses: actions/checkout@v3
+        name: Checkout repository
+        with:
+          submodules: true
+
+      # Setup Node environment
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+
+      # Install Angular CLI globally
+      - name: Install Angular CLI
+        run: npm install -g @angular/cli
+
+      # Install dependencies
+      - name: Install project dependencies
+        working-directory: ./FrontEnd
+        run: npm ci
+
+      # Set production build configuration
+      - name: Set production configuration
+        if: ${{ github.ref_name == 'main' }}
+        run: echo "BUILD_CONFIGURATION=production"
+
+      # Build the client
+      - name: Build client application
+        working-directory: ./FrontEnd
+        run: ng build --configuration $BUILD_CONFIGURATION
+
+      # Upload build artifact
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: frontend-app
+          path: ./FrontEnd/dist
+
+  # Build backend application
+  build-backend-app:
+    runs-on: ubuntu-latest
+    name: Build backend application
+    env:
+      BUILD_CONFIGURATION: Release
+      PUBLISH_DIRECTORY: /tmp/app
+    steps:
+      # Check out the repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Install packages
+      - name: Install packages
+        run: dotnet restore
+
+      # Build solution
+      - name: Build solution
+        run: dotnet build --configuration $BUILD_CONFIGURATION
+
+      # Test solution
+      - name: Test solution
+        run: dotnet test --configuration $BUILD_CONFIGURATION
+
+      # Publish application
+      - name: Publish application
+        working-directory: ./BackEnd/Api
+        run: dotnet publish --configuration $BUILD_CONFIGURATION --output $PUBLISH_DIRECTORY
+
+      # Upload published application artifact
+      - name: Upload published application artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: backend-app
+          path: ${{ env.PUBLISH_DIRECTORY }}
+
+  # Deploy shared infrastructure
+  deploy-shared-infra:
+    name: Deploy shared infrastructure
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'pull_request' }}
+    permissions:
+      id-token: write
+    steps:
+      # Check out the repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Login to Azure
+      - uses: azure/login@v1
+        name: Login to Azure
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      # Deploy infrastructure
+      - uses: azure/arm-deploy@v1
+        name: Deploy infrastructure
+        with:
+          resourceGroupName: rg-ohmyword-shared
+          template: ./Deployment/Infrastructure/shared/main.bicep
+          parameters: ./Deployment/Infrastructure/shared/main.parameters.json

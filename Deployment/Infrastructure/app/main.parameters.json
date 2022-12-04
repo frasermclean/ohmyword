@@ -5,26 +5,23 @@
     "appName": {
       "value": "ohmyword"
     },
+    "appEnv": {
+      "value": "test"
+    },
     "location": {
       "value": "australiaeast"
     },
     "domainName": {
       "value": "ohmyword.live"
     },
-    "totalThroughputLimit": {
-      "value": 1000
+    "databaseThroughput": {
+      "value": 400
     },
     "appSettings": {
       "value": {
         "letterHintDelay": 3,
         "postRoundDelay": 5
       }
-    },
-    "staticWebAppLocation": {
-      "value": "centralus"
-    },
-    "staticWebAppCustomDomainName": {
-      "value": "ohmyword.live"
     }
   }
 }
