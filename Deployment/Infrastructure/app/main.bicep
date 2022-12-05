@@ -141,6 +141,11 @@ resource staticWebApp 'Microsoft.Web/staticSites@2022-03-01' = {
     stagingEnvironmentPolicy: 'Enabled'
     allowConfigFileUpdates: true
   }
+
+  resource staticWebAppCustomDomain 'customDomains' = {
+    name: frontendHostname
+    dependsOn: [ dnsRecords ]
+  }
 }
 
 // dns records for custom domain validation
@@ -184,14 +189,5 @@ module sniEnable 'sniEnable.bicep' = {
     appServiceName: appService.name
     hostname: appServiceHostNameBinding.name
     certificateThumbprint: managedCertificate.properties.thumbprint
-  }
-}
-
-// static web app custom domain
-module swaCustomDomain 'swaCustomDomain.bicep' = {
-  name: 'swaCustomDomain'
-  params: {
-    hostname: frontendHostname
-    staticWebAppName: staticWebApp.name
   }
 }
