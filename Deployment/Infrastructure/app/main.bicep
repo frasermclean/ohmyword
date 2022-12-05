@@ -30,6 +30,7 @@ var tags = {
 }
 
 var frontendHostname = appEnv == 'prod' ? domainName : 'test.${domainName}'
+var backendHostname = appEnv == 'prod' ? 'api.${domainName}' : 'test.api.${domainName}'
 
 resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-08-15' existing = {
   name: 'cosmos-${appName}-shared'
@@ -86,6 +87,8 @@ resource appService 'Microsoft.Web/sites@2022-03-01' = {
     siteConfig: {
       linuxFxVersion: 'DOTNETCORE|7.0'
       healthCheckPath: '/health'
+      http20Enabled: true
+      ftpsState: 'Disabled'
       cors: {
         supportCredentials: true
         allowedOrigins: [ 'https://${frontendHostname}' ]
@@ -126,6 +129,14 @@ resource appService 'Microsoft.Web/sites@2022-03-01' = {
       ]
     }
   }
+
+  resource hostNameBinding 'hostNameBindings' = {
+    name: backendHostname
+    properties: {
+      siteName: appService.name
+      hostNameType: 'Verified'
+    }
+  }
 }
 
 // static web app
@@ -142,7 +153,7 @@ resource staticWebApp 'Microsoft.Web/staticSites@2022-03-01' = {
     allowConfigFileUpdates: true
   }
 
-  resource staticWebAppCustomDomain 'customDomains' = {
+  resource customDomains 'customDomains' = {
     name: frontendHostname
     dependsOn: [ dnsRecords ]
   }
@@ -161,16 +172,6 @@ module dnsRecords 'dnsRecords.bicep' = {
   }
 }
 
-// host name bindings
-resource appServiceHostNameBinding 'Microsoft.Web/sites/hostNameBindings@2022-03-01' = {
-  name: appEnv == 'prod' ? 'api.${domainName}' : 'test.api.${domainName}'
-  parent: appService
-  properties: {
-    siteName: appService.name
-    hostNameType: 'Verified'
-  }
-}
-
 // app service managed certificate
 resource managedCertificate 'Microsoft.Web/certificates@2022-03-01' = {
   name: 'cert-${appName}-${appEnv}'
@@ -178,16 +179,16 @@ resource managedCertificate 'Microsoft.Web/certificates@2022-03-01' = {
   tags: tags
   properties: {
     serverFarmId: appServicePlan.id
-    canonicalName: appServiceHostNameBinding.name
+    canonicalName: appService::hostNameBinding.name
   }
 }
 
 // use module to enable hostname SNI binding
 module sniEnable 'sniEnable.bicep' = {
-  name: 'sniEnable-${appService.name}'
+  name: 'sniEnable'
   params: {
     appServiceName: appService.name
-    hostname: appServiceHostNameBinding.name
+    hostname: appService::hostNameBinding.name
     certificateThumbprint: managedCertificate.properties.thumbprint
   }
 }
