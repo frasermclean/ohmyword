@@ -1,5 +1,7 @@
 using FluentValidation;
 using MediatR;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Identity.Web;
 using OhMyWord.Api.Hubs;
 using OhMyWord.Api.Registration;
 using OhMyWord.Core.Behaviours;
@@ -36,7 +38,8 @@ public static class Program
                     });
 
                 // microsoft identity authentication services
-                collection.AddMicrosoftIdentity();
+                collection.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                    .AddMicrosoftIdentityWebApi(context.Configuration);
 
                 // add database services
                 collection.AddCosmosDbService(context.Configuration);
@@ -85,10 +88,6 @@ public static class Program
             app.UseLocalCorsPolicy();
             app.UseDeveloperExceptionPage();
         }
-
-        // enable serving static content
-        app.UseDefaultFiles();
-        app.UseStaticFiles();
 
         app.UseRouting();
         app.UseAuthentication();
