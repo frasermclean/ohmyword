@@ -1,4 +1,8 @@
 export interface Environment {
   name: 'development' | 'testing' | 'production';
-  apiBaseUrl: string;
+  apiHost: string;
+  auth: {
+    clientId: string;
+    redirectUri: string;
+  }
 }

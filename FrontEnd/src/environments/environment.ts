@@ -5,5 +5,9 @@ import { Environment } from './environment.interface';
  */
 export const environment: Environment = {
   name: 'development',
-  apiBaseUrl: 'http://localhost:5000',
+  apiHost: 'localhost:5001',
+  auth: {
+    clientId: '4c6638cf-bf1b-4c19-9948-2396f0148c59',
+    redirectUri: 'http://localhost:4200',
+  }
 };
