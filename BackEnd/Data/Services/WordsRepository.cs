@@ -13,7 +13,7 @@ public interface IWordsRepository
         int offset = WordsRepository.OffsetMinimum,
         int limit = WordsRepository.LimitDefault,
         string filter = "",
-        GetWordsOrderBy orderBy = GetWordsOrderBy.Value,
+        ListWordsOrderBy orderBy = ListWordsOrderBy.Value,
         SortDirection direction = SortDirection.Ascending,
         CancellationToken cancellationToken = default);
 
@@ -41,7 +41,7 @@ public class WordsRepository : Repository<Word>, IWordsRepository
         => ReadAllItemsAsync(cancellationToken);
 
     public async Task<(IEnumerable<Word>, int)> GetWordsAsync(int offset, int limit, string filter,
-        GetWordsOrderBy orderBy, SortDirection direction, CancellationToken cancellationToken = default)
+        ListWordsOrderBy orderBy, SortDirection direction, CancellationToken cancellationToken = default)
     {
         var orderByClause = GetOrderByClause(orderBy, direction);
         var queryDefinition = new QueryDefinition($"""
@@ -61,13 +61,13 @@ public class WordsRepository : Repository<Word>, IWordsRepository
         return (words, words.Count);
     }
     
-    private static string GetOrderByClause(GetWordsOrderBy orderBy, SortDirection direction)
+    private static string GetOrderByClause(ListWordsOrderBy orderBy, SortDirection direction)
     {
         var orderByString = orderBy switch
         {
-            GetWordsOrderBy.Definition => "word.definition",
-            GetWordsOrderBy.PartOfSpeech => "word.partOfSpeech",
-            GetWordsOrderBy.LastModifiedTime => "word._ts",
+            ListWordsOrderBy.Definition => "word.definition",
+            ListWordsOrderBy.PartOfSpeech => "word.partOfSpeech",
+            ListWordsOrderBy.LastModifiedTime => "word._ts",
             _ => "word[\"value\"]"
         };
 
@@ -90,7 +90,7 @@ public class WordsRepository : Repository<Word>, IWordsRepository
         => DeleteItemAsync(id, partOfSpeech.ToPartitionKey());
 }
 
-public enum GetWordsOrderBy
+public enum ListWordsOrderBy
 {
     Value,
     PartOfSpeech,

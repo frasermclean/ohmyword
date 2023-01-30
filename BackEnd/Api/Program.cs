@@ -1,13 +1,9 @@
-using FluentValidation;
-using MediatR;
+using FastEndpoints;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Web;
 using OhMyWord.Api.Hubs;
 using OhMyWord.Api.Registration;
-using OhMyWord.Core.Behaviours;
-using OhMyWord.Core.Handlers.Words;
 using OhMyWord.Core.Mapping;
-using OhMyWord.Core.Validators.Words;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -23,23 +19,12 @@ public static class Program
         appBuilder.Host
             .ConfigureServices((context, collection) =>
             {
-                // set up routing options
-                collection.AddRouting(options =>
-                {
-                    options.LowercaseUrls = true;
-                    options.LowercaseQueryStrings = true;
-                });
-
-                collection.AddControllers()
-                    .AddJsonOptions(options =>
-                    {
-                        options.JsonSerializerOptions.Converters.Add(
-                            new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
-                    });
-
                 // microsoft identity authentication services
                 collection.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                     .AddMicrosoftIdentityWebApi(context.Configuration);
+
+                // fast endpoints
+                collection.AddFastEndpoints();
 
                 // add database services
                 collection.AddCosmosDbService(context.Configuration);
@@ -54,14 +39,6 @@ public static class Program
 
                 // game services
                 collection.AddGameServices(context.Configuration);
-
-                // add fluent validation validators
-                collection.AddValidatorsFromAssemblyContaining<CreateWordRequestValidator>();
-
-                // add mediatr service
-                collection.AddMediatR(typeof(CreateWordHandler))
-                    .AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehaviour<,>))
-                    .AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehaviour<,>));
 
                 // automapper service
                 collection.AddAutoMapper(typeof(EntitiesProfile));
@@ -81,21 +58,12 @@ public static class Program
         // build the application
         var app = appBuilder.Build();
 
-        if (app.Environment.IsDevelopment())
-        {
-            app.UseSwagger();
-            app.UseSwaggerUI();
-            app.UseLocalCorsPolicy();
-            app.UseDeveloperExceptionPage();
-        }
-
-        app.UseRouting();
-        app.UseAuthentication();
         app.UseAuthorization();
-
-        app.MapControllers();
+        app.UseFastEndpoints(config =>
+        {
+            config.Endpoints.RoutePrefix = "api";
+        });
         app.MapHub<GameHub>("/hub");
-
         app.UseHealthChecks("/health");
 
         // run the application

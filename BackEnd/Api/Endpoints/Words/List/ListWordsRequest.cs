@@ -1,10 +1,8 @@
-﻿using MediatR;
-using OhMyWord.Core.Responses.Words;
-using OhMyWord.Data.Services;
+﻿using OhMyWord.Data.Services;
 
-namespace OhMyWord.Core.Requests.Words;
+namespace OhMyWord.Api.Endpoints.Words.List;
 
-public class GetWordsRequest : IRequest<GetWordsResponse>
+public class ListWordsRequest
 {
     public int Offset { get; init; } = WordsRepository.OffsetMinimum;
     public int Limit { get; init; } = WordsRepository.LimitDefault;

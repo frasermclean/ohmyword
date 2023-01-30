@@ -1,8 +1,9 @@
-﻿using OhMyWord.Data.Services;
+﻿using OhMyWord.Core.Responses.Words;
+using OhMyWord.Data.Services;
 
-namespace OhMyWord.Core.Responses.Words;
+namespace OhMyWord.Api.Endpoints.Words.List;
 
-public class GetWordsResponse
+public class ListWordsResponse
 {
     public int Offset { get; init; }
     public int Limit { get; init; }
