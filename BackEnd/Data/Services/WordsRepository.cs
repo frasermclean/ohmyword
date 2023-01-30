@@ -7,9 +7,9 @@ namespace OhMyWord.Data.Services;
 
 public interface IWordsRepository
 {
-    Task<IEnumerable<WordEntity>> GetAllWordsAsync(CancellationToken cancellationToken = default);
+    IAsyncEnumerable<WordEntity> GetAllWordsAsync(CancellationToken cancellationToken = default);
 
-    Task<IEnumerable<WordEntity>> GetWordsAsync(
+    IAsyncEnumerable<WordEntity> ListWords(
         int offset = WordsRepository.OffsetMinimum,
         int limit = WordsRepository.LimitDefault,
         string filter = "",
@@ -37,20 +37,21 @@ public class WordsRepository : Repository<WordEntity>, IWordsRepository
     {
     }
 
-    public Task<IEnumerable<WordEntity>> GetAllWordsAsync(CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<WordEntity> GetAllWordsAsync(CancellationToken cancellationToken = default)
         => ReadAllItemsAsync(cancellationToken);
 
-    public async Task<IEnumerable<WordEntity>> GetWordsAsync(int offset, int limit, string filter,
+    public IAsyncEnumerable<WordEntity> ListWords(int offset, int limit, string filter,
         ListWordsOrderBy orderBy, SortDirection direction, CancellationToken cancellationToken = default)
     {
         var orderByString = orderBy switch
-        {            
+        {
             ListWordsOrderBy.LastModifiedTime => "word._ts",
-            _ => "word[\"id\"]"
+            ListWordsOrderBy.Length => "word.id.length",
+            _ => "word.id"
         };
 
         var directionString = direction == SortDirection.Ascending ? "ASC" : "DESC";
-        
+
         var queryDefinition = new QueryDefinition($"""
             SELECT * FROM word
             WHERE (CONTAINS(word["id"], LOWER(@filter)))
@@ -61,8 +62,8 @@ public class WordsRepository : Repository<WordEntity>, IWordsRepository
             .WithParameter("@offset", offset)
             .WithParameter("@limit", limit);
 
-        return await ExecuteQueryAsync<WordEntity>(queryDefinition, cancellationToken: cancellationToken);        
-    }    
+        return ExecuteQueryAsync<WordEntity>(queryDefinition, cancellationToken: cancellationToken);
+    }
 
     public Task<int> GetWordCountAsync(CancellationToken cancellationToken) =>
         GetItemCountAsync(cancellationToken: cancellationToken);
@@ -75,6 +76,7 @@ public class WordsRepository : Repository<WordEntity>, IWordsRepository
 
 public enum ListWordsOrderBy
 {
-    Id,    
+    Id,
+    Length,
     LastModifiedTime,
 }

@@ -17,7 +17,7 @@ public interface IWordsService
     /// </summary>
     bool ShouldReloadWords { set; }
 
-    Task<IEnumerable<Word>> GetWordsAsync(int offset = WordsRepository.OffsetMinimum,
+    IAsyncEnumerable<Word> ListWordsAsync(int offset = WordsRepository.OffsetMinimum,
         int limit = WordsRepository.LimitDefault, string filter = "", ListWordsOrderBy orderBy = ListWordsOrderBy.Id,
         SortDirection direction = SortDirection.Ascending, CancellationToken cancellationToken = default);
 
@@ -28,27 +28,33 @@ public class WordsService : IWordsService
 {
     private readonly ILogger<WordsService> logger;
     private readonly IWordsRepository wordsRepository;
+    private readonly IDefinitionsRepository definitionsRepository;
 
     private Stack<Word> shuffledWords = new();
 
-    public WordsService(ILogger<WordsService> logger, IWordsRepository wordsRepository)
+    public WordsService(ILogger<WordsService> logger, IWordsRepository wordsRepository,
+        IDefinitionsRepository definitionsRepository)
     {
         this.logger = logger;
         this.wordsRepository = wordsRepository;
+        this.definitionsRepository = definitionsRepository;
     }
 
     public int RemainingWordCount => shuffledWords.Count;
     public bool ShouldReloadWords { private get; set; }
 
-    public async Task<IEnumerable<Word>> GetWordsAsync(int offset = WordsRepository.OffsetMinimum,
+    public IAsyncEnumerable<Word> ListWordsAsync(int offset = WordsRepository.OffsetMinimum,
         int limit = WordsRepository.LimitDefault, string filter = "", ListWordsOrderBy orderBy = ListWordsOrderBy.Id,
-        SortDirection direction = SortDirection.Ascending, CancellationToken cancellationToken = default)
-    {
-        var wordEntities =
-            await wordsRepository.GetWordsAsync(offset, limit, filter, orderBy, direction, cancellationToken);
-
-        return wordEntities.Select(entity => new Word() { Id = entity.Id });
-    }
+        SortDirection direction = SortDirection.Ascending, CancellationToken cancellationToken = default) =>
+        wordsRepository.ListWords(offset, limit, filter, orderBy, direction, cancellationToken)
+            .SelectAwait(async wordEntity => new Word
+            {
+                Id = wordEntity.Id,
+                Definitions = await definitionsRepository.GetDefinitionsAsync(wordEntity.Id, cancellationToken)
+                    .Select(Definition.FromEntity)
+                    .ToListAsync(cancellationToken),
+                LastModified = wordEntity.LastModifiedTime,
+            });
 
     public async Task<Word> GetNextWordAsync(CancellationToken cancellationToken = default)
     {

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using OhMyWord.Data.Entities;
+using OhMyWord.Data.Extensions;
 
 namespace OhMyWord.Data.Services;
 
@@ -78,20 +79,33 @@ public abstract class Repository<TEntity> where TEntity : Entity
     protected async Task<int> GetItemCountAsync(string? partition = null, CancellationToken cancellationToken = default)
     {
         QueryDefinition queryDefinition = new("SELECT COUNT(1) FROM c");
-        var enumerable = await ExecuteQueryAsync<CountResponse>(queryDefinition, partition, cancellationToken);
-        return enumerable.Count;
+        return await ExecuteQueryAsync<CountResponse>(queryDefinition, partition, cancellationToken)
+            .CountAsync(cancellationToken);
     }
 
     /// <summary>
     /// Read all items across all partitions. This is an expensive operation and should be avoided if possible.
     /// </summary>
-    protected async Task<IEnumerable<TEntity>> ReadAllItemsAsync(CancellationToken cancellationToken)
+    protected IAsyncEnumerable<TEntity> ReadAllItemsAsync(CancellationToken cancellationToken)
     {
         QueryDefinition queryDefinition = new("SELECT * FROM c");
-        return await ExecuteQueryAsync<TEntity>(queryDefinition, cancellationToken: cancellationToken);
+        return ExecuteQueryAsync<TEntity>(queryDefinition, cancellationToken: cancellationToken);
     }
 
-    protected async Task<IReadOnlyCollection<TResponse>> ExecuteQueryAsync<TResponse>(
+    /// <summary>
+    /// Read all items on the specified partition.
+    /// </summary>
+    /// <param name="partition">The partition to query items on.</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns></returns>
+    protected IAsyncEnumerable<TEntity> ReadPartitionItemsAsync(string partition,
+        CancellationToken cancellationToken = default)
+    {
+        QueryDefinition queryDefinition = new("SELECT * FROM c");
+        return ExecuteQueryAsync<TEntity>(queryDefinition, partition, cancellationToken);
+    }
+
+    protected IAsyncEnumerable<TResponse> ExecuteQueryAsync<TResponse>(
         QueryDefinition queryDefinition,
         string? partition = null,
         CancellationToken cancellationToken = default)
@@ -99,25 +113,12 @@ public abstract class Repository<TEntity> where TEntity : Entity
         using var iterator = container.GetItemQueryIterator<TResponse>(queryDefinition,
             requestOptions: new QueryRequestOptions
             {
-                PartitionKey = partition is not null ? new PartitionKey(partition) : null
+                PartitionKey = partition is not null ? new PartitionKey(partition) : null,                
             });
 
         logger.LogInformation("Executing SQL query: {QueryText}, on partition: {Partition}", queryDefinition.QueryText,
             partition);
 
-        List<TResponse> items = new();
-        double totalCharge = 0;
-        while (iterator.HasMoreResults)
-        {
-            var response = await iterator.ReadNextAsync(cancellationToken);
-            logger.LogInformation("Read {Count} items, charge was: {Charge} RU", response.Count,
-                response.RequestCharge);
-            totalCharge += response.RequestCharge;
-            items.AddRange(response);
-        }
-
-        logger.LogInformation("Completed query. Total charge: {Total} RU", totalCharge);
-
-        return items;
+        return iterator.ToAsyncEnumerable(cancellationToken);
     }
 }

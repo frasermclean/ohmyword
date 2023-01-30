@@ -21,7 +21,9 @@ public class ListWordsEndpoint : Endpoint<ListWordsRequest, IEnumerable<Word>>
     public override async Task<IEnumerable<Word>> ExecuteAsync(ListWordsRequest request,
         CancellationToken cancellationToken)
     {
-        return await wordsService.GetWordsAsync(request.Offset, request.Limit,
-            request.Filter, request.OrderBy, request.Direction, cancellationToken);
+        return await wordsService
+            .ListWordsAsync(request.Offset, request.Limit, request.Filter, request.OrderBy, request.Direction,
+                cancellationToken)
+            .ToListAsync(cancellationToken);
     }
 }
