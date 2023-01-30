@@ -2,28 +2,28 @@
 using OhMyWord.Core.Responses.Game;
 using OhMyWord.Core.Services;
 
-namespace OhMyWord.Api.Commands.RegisterPlayer;
+namespace OhMyWord.Api.Commands.RegisterVisitor;
 
-public class RegisterPlayerHandler : ICommandHandler<RegisterPlayerCommand, RegisterPlayerResponse>
+public class RegisterVisitorHandler : ICommandHandler<RegisterVisitorCommand, RegisterVisitorResponse>
 {
-    private readonly IPlayerService playerService;
+    private readonly IVisitorService visitorService;
     private readonly IGameService gameService;
 
-    public RegisterPlayerHandler(IPlayerService playerService, IGameService gameService)
+    public RegisterVisitorHandler(IVisitorService visitorService, IGameService gameService)
     {
-        this.playerService = playerService;
+        this.visitorService = visitorService;
         this.gameService = gameService;
     }
 
-    public async Task<RegisterPlayerResponse> ExecuteAsync(RegisterPlayerCommand command, CancellationToken cancellationToken)
+    public async Task<RegisterVisitorResponse> ExecuteAsync(RegisterVisitorCommand command, CancellationToken cancellationToken)
     {
-        var player = await playerService.AddPlayerAsync(command.VisitorId, command.ConnectionId);
+        var visitor = await visitorService.AddVisitorAsync(command.VisitorId, command.ConnectionId);
 
-        return new RegisterPlayerResponse
+        return new RegisterVisitorResponse
         {
             RoundActive = gameService.RoundActive,
-            PlayerCount = playerService.PlayerCount,
-            Score = player.Score,
+            VisitorCount = visitorService.VisitorCount,
+            Score = visitor.Score,
             RoundStart = gameService.RoundActive
                 ? new RoundStartResponse
                 {

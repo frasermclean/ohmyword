@@ -16,6 +16,6 @@ public static class GameServicesRegistration
         services.AddHostedService<GameCoordinator>();
         services.AddSingleton<IWordsService, WordsService>();
         services.AddSingleton<IGameService, GameService>();
-        services.AddSingleton<IPlayerService, PlayerService>();
+        services.AddSingleton<IVisitorService, VisitorService>();
     }
 }

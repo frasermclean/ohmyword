@@ -1,7 +1,7 @@
 ﻿using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using OhMyWord.Data.Entities;
-using OhMyWord.Data.Extensions;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -61,7 +61,7 @@ public abstract class Repository<TEntity> where TEntity : Entity
 
         response.EnsureSuccessStatusCode();
 
-        logger.LogInformation("Replaced {TypeName} on partition: /{Partition}", entityTypeName, item.GetPartition());        
+        logger.LogInformation("Replaced {TypeName} on partition: /{Partition}", entityTypeName, item.GetPartition());
     }
 
     protected Task DeleteItemAsync(TEntity item) => DeleteItemAsync(item.Id, item.GetPartition());
@@ -96,38 +96,26 @@ public abstract class Repository<TEntity> where TEntity : Entity
     }
 
     /// <summary>
-    /// Read all items across all partitions. This is an expensive operation and should be avoided if possible.
-    /// </summary>
-    protected IAsyncEnumerable<TEntity> ReadAllItems(CancellationToken cancellationToken)
-    {
-        QueryDefinition queryDefinition = new("SELECT * FROM c");
-        return ExecuteQuery<TEntity>(queryDefinition, cancellationToken: cancellationToken);
-    }
-
-    /// <summary>
     /// Read all items on the specified partition.
     /// </summary>
-    /// <param name="partition">The partition to query items on.</param>
+    /// <param name="partition">The partition to query items on. If null, will query all partitions</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns></returns>
-    protected IAsyncEnumerable<TEntity> ReadPartitionItems(string partition,
-        CancellationToken cancellationToken = default)
-    {
-        QueryDefinition queryDefinition = new("SELECT * FROM c");
-        return ExecuteQuery<TEntity>(queryDefinition, partition, cancellationToken);
-    }
+    protected IAsyncEnumerable<TEntity> ReadPartitionItems(string? partition = null,
+        CancellationToken cancellationToken = default) =>
+        ExecuteQuery<TEntity>("SELECT * FROM c", partition, cancellationToken);
 
-    protected IAsyncEnumerable<string> ReadItemIds(string partition,
-        CancellationToken cancellationToken = default)
-    {
-        QueryDefinition queryDefinition = new("SELECT * FROM c.id");
-        return ExecuteQuery<string>(queryDefinition, partition, cancellationToken);
-    }
+    protected IAsyncEnumerable<string> ReadItemIds(string? partition = null,
+        CancellationToken cancellationToken = default) =>
+        ExecuteQuery<string>("SELECT * FROM c.id", partition, cancellationToken);
 
-    protected IAsyncEnumerable<TResponse> ExecuteQuery<TResponse>(
-        QueryDefinition queryDefinition,
-        string? partition = null,
-        CancellationToken cancellationToken = default)
+    private IAsyncEnumerable<TResponse> ExecuteQuery<TResponse>(string queryText, string? partition = null,
+        CancellationToken cancellationToken = default) =>
+        ExecuteQuery<TResponse>(new QueryDefinition(queryText), partition, cancellationToken);
+
+
+    protected async IAsyncEnumerable<TResponse> ExecuteQuery<TResponse>(QueryDefinition queryDefinition,
+        string? partition = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         using var iterator = container.GetItemQueryIterator<TResponse>(queryDefinition,
             requestOptions: new QueryRequestOptions
@@ -138,6 +126,16 @@ public abstract class Repository<TEntity> where TEntity : Entity
         logger.LogInformation("Executing SQL query: {QueryText}, on partition: {Partition}", queryDefinition.QueryText,
             partition);
 
-        return iterator.ToAsyncEnumerable(cancellationToken);
+        int total = 0;
+        while (iterator.HasMoreResults)
+        {
+            var response = await iterator.ReadNextAsync(cancellationToken);
+            total += response.Count;
+            foreach (var item in response)
+                yield return item;
+        }
+        
+        logger.LogInformation("Executed SQL query: {QueryText}, on partition: {Partition}, total results: {Total}",
+            queryDefinition.QueryText, partition, total);
     }
 }

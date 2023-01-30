@@ -1,11 +1,11 @@
 ﻿using FastEndpoints;
 using FluentValidation;
 
-namespace OhMyWord.Api.Commands.RegisterPlayer;
+namespace OhMyWord.Api.Commands.RegisterVisitor;
 
-public class RegisterPlayerValidator : Validator<RegisterPlayerCommand>
+public class RegisterVisitorValidator : Validator<RegisterVisitorCommand>
 {
-    public RegisterPlayerValidator()
+    public RegisterVisitorValidator()
     {
         RuleFor(command => command.ConnectionId).NotEmpty();
         RuleFor(command => command.VisitorId).NotEmpty();

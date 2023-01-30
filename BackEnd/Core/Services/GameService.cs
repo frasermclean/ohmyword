@@ -26,7 +26,7 @@ public class GameService : IGameService
 {
     private readonly ILogger<GameService> logger;
     private readonly IWordsService wordsService;
-    private readonly IPlayerService playerService;
+    private readonly IVisitorService visitorService;
 
     public Round Round { get; private set; } = Round.Default;
     public bool RoundActive { get; private set; }
@@ -37,24 +37,25 @@ public class GameService : IGameService
     public event EventHandler<RoundStartedEventArgs>? RoundStarted;
     public event EventHandler<RoundEndedEventArgs>? RoundEnded;
 
-    public GameService(ILogger<GameService> logger, IWordsService wordsService, IPlayerService playerService, IOptions<GameServiceOptions> options)
+    public GameService(ILogger<GameService> logger, IWordsService wordsService, IVisitorService visitorService,
+        IOptions<GameServiceOptions> options)
     {
         this.logger = logger;
         this.wordsService = wordsService;
-        this.playerService = playerService;
+        this.visitorService = visitorService;
 
         Options = options.Value;
 
-        playerService.PlayerAdded += OnPlayerAdded;
-        playerService.PlayerRemoved += OnPlayerRemoved;
+        visitorService.VisitorAdded += OnVisitorAdded;
+        visitorService.VisitorRemoved += OnVisitorRemoved;
     }
 
     public async Task ExecuteGameAsync(CancellationToken gameCancellationToken)
     {
         while (!gameCancellationToken.IsCancellationRequested)
         {
-            // sleep while there are no players
-            if (playerService.PlayerCount == 0)
+            // sleep while there are no visitors
+            if (visitorService.VisitorCount == 0)
             {
                 await Task.Delay(1000, gameCancellationToken);
                 continue;
@@ -66,8 +67,9 @@ public class GameService : IGameService
             RoundStarted?.Invoke(this, new RoundStartedEventArgs(Round));
             Expiry = Round.EndTime;
 
-            logger.LogDebug("Round: {RoundNumber} has started with {PlayerCount} players. Current word is: {WordId}. Round duration: {Seconds} seconds",
-                Round.Number, Round.PlayerCount, Round.Word.Id, Round.Duration.Seconds);
+            logger.LogDebug(
+                "Round: {RoundNumber} has started with {VisitorCount} visitors. Current word is: {WordId}. Round duration: {Seconds} seconds",
+                Round.Number, Round.VisitorCount, Round.Word.Id, Round.Duration.Seconds);
 
             // send all letter hints
             try
@@ -87,7 +89,8 @@ public class GameService : IGameService
             RoundEnded?.Invoke(this, new RoundEndedEventArgs(Round, nextRoundStart));
             Round.Dispose();
 
-            logger.LogDebug("Round: {Number} has ended. Post round delay is: {Seconds} seconds", Round.Number, postRoundDelay.Seconds);
+            logger.LogDebug("Round: {Number} has ended. Post round delay is: {Seconds} seconds", Round.Number,
+                postRoundDelay.Seconds);
 
             await Task.Delay(postRoundDelay, gameCancellationToken);
         }
@@ -99,7 +102,7 @@ public class GameService : IGameService
         var duration = TimeSpan.FromSeconds(word.Length * Options.LetterHintDelay);
         var roundNumber = Round.Number + 1;
 
-        return new Round(roundNumber, word, duration, playerService.PlayerIds);
+        return new Round(roundNumber, word, duration, visitorService.VisitorIds);
     }
 
     private async Task SendLetterHintsAsync(Round round)
@@ -127,7 +130,7 @@ public class GameService : IGameService
 
     public async Task<int> ProcessGuessAsync(string connectionId, Guid roundId, string value)
     {
-        var player = playerService.GetPlayer(connectionId);
+        var visitor = visitorService.GetVisitor(connectionId);
 
         // if round is not active then immediately return false
         if (!RoundActive || roundId != Round.Id) return 0;
@@ -136,46 +139,46 @@ public class GameService : IGameService
         if (!string.Equals(value, Round.Word.Id, StringComparison.InvariantCultureIgnoreCase))
             return 0;
 
-        var guessCountIncremented = Round.IncrementGuessCount(player.Id);
+        var guessCountIncremented = Round.IncrementGuessCount(visitor.Id);
         if (!guessCountIncremented)
-            logger.LogWarning("Couldn't increment guess count of player with ID: {PlayerId}", player.Id);
+            logger.LogWarning("Couldn't increment guess count of visitor with ID: {VisitorId}", visitor.Id);
 
-        var pointsAwarded = Round.AwardPlayer(player.Id);
+        var pointsAwarded = Round.AwardVisitor(visitor.Id);
         if (pointsAwarded == 0)
-            logger.LogWarning("Zero points were awarded to player with ID: {PlayerId}", player.Id);
+            logger.LogWarning("Zero points were awarded to visitor with ID: {VisitorId}", visitor.Id);
 
-        await playerService.IncrementPlayerScoreAsync(player.Id, pointsAwarded);
+        await visitorService.IncrementVisitorScoreAsync(visitor.Id, pointsAwarded);
 
-        // end round if all players have been awarded points
-        if (Round.AllPlayersAwarded)
-            Round.EndRound(RoundEndReason.AllPlayersAwarded);
+        // end round if all visitors have been awarded points
+        if (Round.AllVisitorsAwarded)
+            Round.EndRound(RoundEndReason.AllVisitorsAwarded);
 
         return pointsAwarded;
     }
 
-    private void OnPlayerAdded(object? _, PlayerEventArgs args)
+    private void OnVisitorAdded(object? _, VisitorEventArgs args)
     {
-        // player joined while round wasn't active
+        // visitor joined while round wasn't active
         if (!RoundActive)
             return;
 
-        var wasAdded = Round.AddPlayer(args.PlayerId);
+        var wasAdded = Round.AddVisitor(args.VisitorId);
         if (!wasAdded)
-            logger.LogError("Couldn't add player with ID {PlayerId} to round", args.PlayerId);
+            logger.LogError("Couldn't add visitor with ID {VisitorId} to round", args.VisitorId);
     }
 
-    private void OnPlayerRemoved(object? _, PlayerEventArgs args)
+    private void OnVisitorRemoved(object? _, VisitorEventArgs args)
     {
-        // player left while round wasn't active
+        // visitor left while round wasn't active
         if (!RoundActive)
             return;
 
-        var wasRemoved = Round.RemovePlayer(args.PlayerId);
+        var wasRemoved = Round.RemoveVisitor(args.VisitorId);
         if (!wasRemoved)
-            logger.LogError("Couldn't remove player with ID {PlayerId} from round", args.PlayerId);
+            logger.LogError("Couldn't remove visitor with ID {VisitorId} from round", args.VisitorId);
 
-        // last player left while round active
-        if (args.PlayerCount == 0)
-            Round.EndRound(RoundEndReason.NoPlayersLeft);
+        // last visitor left while round active
+        if (args.VisitorCount == 0)
+            Round.EndRound(RoundEndReason.NoVisitorsLeft);
     }
 }

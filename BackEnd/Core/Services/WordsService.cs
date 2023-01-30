@@ -23,6 +23,14 @@ public interface IWordsService
         int limit = WordsRepository.LimitDefault, string filter = "", ListWordsOrderBy orderBy = ListWordsOrderBy.Id,
         SortDirection direction = SortDirection.Ascending, CancellationToken cancellationToken = default);
 
+
+    /// <summary>
+    /// Read all word IDs from the database.
+    /// </summary>
+    /// <param name="cancellationToken">Task cancellation token</param>
+    /// <returns>All unique word IDs</returns>
+    IAsyncEnumerable<string> GetAllWordIds(CancellationToken cancellationToken);
+
     Task<Word?> GetWordAsync(string wordId, CancellationToken cancellationToken = default);
 
     Task CreateWordAsync(Word word, CancellationToken cancellationToken = default);
@@ -56,6 +64,9 @@ public class WordsService : IWordsService
         SortDirection direction = SortDirection.Ascending, CancellationToken cancellationToken = default) =>
         wordsRepository.ListWords(offset, limit, filter, orderBy, direction, cancellationToken)
             .SelectAwait(async wordEntity => await MapToWordAsync(wordEntity, cancellationToken));
+
+    public IAsyncEnumerable<string> GetAllWordIds(CancellationToken cancellationToken) =>
+        wordsRepository.GetAllWordIds(cancellationToken);
 
     public async Task<Word?> GetWordAsync(string wordId, CancellationToken cancellationToken = default)
     {

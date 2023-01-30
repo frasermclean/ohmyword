@@ -3,9 +3,9 @@ using OhMyWord.Core.Requests.Game;
 
 namespace OhMyWord.Core.Validators.Game;
 
-public class RemovePlayerRequestValidator : AbstractValidator<RemovePlayerRequest>
+public class RemoveVisitorRequestValidator : AbstractValidator<RemoveVisitorRequest>
 {
-    public RemovePlayerRequestValidator()
+    public RemoveVisitorRequestValidator()
     {
         RuleFor(request => request.ConnectionId).NotEmpty();
     }

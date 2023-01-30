@@ -72,9 +72,9 @@ export class GameService {
   /**
    * Attempt to register with game service.
    */
-  public async registerPlayer() {
+  public async registerVisitor() {
     const visitorId = await this.fingerprintService.getVisitorId();
-    const response = await this.hubConnection.invoke<RegisterPlayerResponse>('RegisterPlayer', visitorId);
+    const response = await this.hubConnection.invoke<RegisterPlayerResponse>('RegisterVisitor', visitorId);
     this.store.dispatch(new Game.PlayerRegistered(response));
     if (response.roundStart) this.store.dispatch(new Game.RoundStarted(response.roundStart));
     else if (response.roundEnd) this.store.dispatch(new Game.RoundEnded(response.roundEnd));

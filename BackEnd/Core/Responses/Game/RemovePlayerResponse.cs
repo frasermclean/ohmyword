@@ -1,6 +1,6 @@
 ﻿namespace OhMyWord.Core.Responses.Game;
 
-public class RemovePlayerResponse
+public class RemoveVisitorResponse
 {
-    public int PlayerCount { get; init; }
+    public int VisitorCount { get; init; }
 }

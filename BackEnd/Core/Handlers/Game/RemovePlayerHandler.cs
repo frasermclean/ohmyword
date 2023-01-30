@@ -5,21 +5,21 @@ using OhMyWord.Core.Services;
 
 namespace OhMyWord.Core.Handlers.Game;
 
-public class RemovePlayerHandler : RequestHandler<RemovePlayerRequest, RemovePlayerResponse>
+public class RemoveVisitorHandler : RequestHandler<RemoveVisitorRequest, RemoveVisitorResponse>
 {
-    private readonly IPlayerService playerService;
+    private readonly IVisitorService visitorService;
 
-    public RemovePlayerHandler(IPlayerService playerService)
+    public RemoveVisitorHandler(IVisitorService visitorService)
     {
-        this.playerService = playerService;
+        this.visitorService = visitorService;
     }
 
-    protected override RemovePlayerResponse Handle(RemovePlayerRequest request)
+    protected override RemoveVisitorResponse Handle(RemoveVisitorRequest request)
     {
-        playerService.RemovePlayer(request.ConnectionId);
-        return new RemovePlayerResponse
+        visitorService.RemoveVisitor(request.ConnectionId);
+        return new RemoveVisitorResponse
         {
-            PlayerCount = playerService.PlayerCount
+            VisitorCount = visitorService.VisitorCount
         };
     }
 }

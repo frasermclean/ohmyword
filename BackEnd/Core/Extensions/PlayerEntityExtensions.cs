@@ -3,12 +3,11 @@ using OhMyWord.Data.Entities;
 
 namespace OhMyWord.Core.Extensions;
 
-public static class PlayerEntityExtensions
+public static class VisitorEntityExtensions
 {
-    public static Player ToModel(this PlayerEntity entity) => new()
-    {
-        Id = Guid.TryParse(entity.Id, out var id) ? id : Guid.Empty,
-        VisitorId = entity.VisitorId,
+    public static Visitor ToVisitor(this VisitorEntity entity) => new()
+    {        
+        Id = entity.Id,
         Score = entity.Score,
         RegistrationCount = entity.RegistrationCount,
     };

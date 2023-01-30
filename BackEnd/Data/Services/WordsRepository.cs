@@ -17,6 +17,8 @@ public interface IWordsRepository
         SortDirection direction = SortDirection.Ascending,
         CancellationToken cancellationToken = default);
 
+    IAsyncEnumerable<string> GetAllWordIds(CancellationToken cancellationToken = default);
+
     Task<int> GetWordCountAsync(CancellationToken cancellationToken = default);
 
     Task<WordEntity?> GetWordAsync(string id, CancellationToken cancellationToken = default);
@@ -38,7 +40,7 @@ public class WordsRepository : Repository<WordEntity>, IWordsRepository
     }
 
     public IAsyncEnumerable<WordEntity> GetAllWordsAsync(CancellationToken cancellationToken = default)
-        => ReadAllItems(cancellationToken);
+        => ReadPartitionItems(null, cancellationToken);
 
     public IAsyncEnumerable<WordEntity> ListWords(int offset, int limit, string filter,
         ListWordsOrderBy orderBy, SortDirection direction, CancellationToken cancellationToken = default)
@@ -64,6 +66,9 @@ public class WordsRepository : Repository<WordEntity>, IWordsRepository
 
         return ExecuteQuery<WordEntity>(queryDefinition, cancellationToken: cancellationToken);
     }
+
+    public IAsyncEnumerable<string> GetAllWordIds(CancellationToken cancellationToken = default) =>
+        ReadItemIds(null, cancellationToken);
 
     public Task<int> GetWordCountAsync(CancellationToken cancellationToken) =>
         GetItemCountAsync(cancellationToken: cancellationToken);
