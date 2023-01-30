@@ -1,8 +1,8 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace OhMyWord.Data.Models;
+namespace OhMyWord.Data.Entities;
 
-public abstract class Entity
+public abstract record Entity
 {
     public string Id { get; init; } = Guid.NewGuid().ToString();
 

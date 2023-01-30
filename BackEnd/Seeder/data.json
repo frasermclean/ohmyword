@@ -1,24 +1,40 @@
 {
   "words": [
     {
-      "value": "dog",
-      "definition": "A domesticated carnivorous mammal that typically has a long snout, an acute sense of smell, non-retractable claws, and a barking, howling, or whining voice.",
-      "partOfSpeech": "noun"
+      "id": "dog",
+      "definitions": [
+        {
+          "partOfSpeech": "noun",
+          "value": "A domesticated carnivorous mammal that typically has a long snout, an acute sense of smell, non-retractable claws, and a barking, howling, or whining voice."
+        }
+      ]
     },
     {
-      "value": "tree",
-      "definition": "A perennial woody plant, not exactly defined, but differentiated from a shrub by its larger size (typically over a few meters in height) or growth habit, usually having a single (or few) main axis or trunk unbranched for some distance above the ground and a head of branches and foliage.",
-      "partOfSpeech": "noun"
+      "id": "tree",
+      "definitions": [
+        {
+          "partOfSpeech": "noun",
+          "value": "A perennial woody plant, not exactly defined, but differentiated from a shrub by its larger size (typically over a few meters in height) or growth habit, usually having a single (or few) main axis or trunk unbranched for some distance above the ground and a head of branches and foliage."
+        }
+      ]
     },
     {
-      "value": "house",
-      "definition": "a building for human habitation, especially one that consists of a ground floor and one or more upper storeys.",
-      "partOfSpeech": "noun"
+      "id": "house",
+      "definitions": [
+        {
+          "partOfSpeech": "noun",
+          "value": "a building for human habitation, especially one that consists of a ground floor and one or more upper storeys."
+        }
+      ]
     },
     {
-      "value": "number",
-      "definition": "An arithmetical value, expressed by a word, symbol, or figure, representing a particular quantity and used in counting and making calculations.",
-      "partOfSpeech": "noun"
+      "id": "number",
+      "definitions": [
+        {
+          "partOfSpeech": "noun",
+          "value": "An arithmetical value, expressed by a word, symbol, or figure, representing a particular quantity and used in counting and making calculations."
+        }
+      ]
     }
   ]
 }

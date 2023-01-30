@@ -1,6 +1,6 @@
 ﻿using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
-using OhMyWord.Data.Models;
+using OhMyWord.Data.Entities;
 
 namespace OhMyWord.Data.Services;
 

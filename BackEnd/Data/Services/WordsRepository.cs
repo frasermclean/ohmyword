@@ -1,7 +1,7 @@
 ﻿using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
-using OhMyWord.Data.Extensions;
-using OhMyWord.Data.Models;
+using OhMyWord.Data.Entities;
+
 
 namespace OhMyWord.Data.Services;
 
@@ -19,10 +19,10 @@ public interface IWordsRepository
 
     Task<int> GetWordCountAsync(CancellationToken cancellationToken = default);
 
-    Task<WordEntity?> GetWordAsync(PartOfSpeech partOfSpeech, string id);
+    Task<WordEntity?> GetWordAsync(string id);
     Task<WordEntity> CreateWordAsync(WordEntity entity);
     Task<WordEntity> UpdateWordAsync(WordEntity entity);
-    Task DeleteWordAsync(PartOfSpeech partOfSpeech, string id);
+    Task DeleteWordAsync(string id);
 }
 
 public class WordsRepository : Repository<WordEntity>, IWordsRepository
@@ -51,7 +51,7 @@ public class WordsRepository : Repository<WordEntity>, IWordsRepository
                 (CONTAINS(word["definition"], LOWER(@filter)))
             {orderByClause}  
             OFFSET @offset LIMIT @limit
-            """ )
+            """)
             .WithParameter("@filter", filter)
             .WithParameter("@offset", offset)
             .WithParameter("@limit", limit);
@@ -60,7 +60,7 @@ public class WordsRepository : Repository<WordEntity>, IWordsRepository
 
         return (words, words.Count);
     }
-    
+
     private static string GetOrderByClause(ListWordsOrderBy orderBy, SortDirection direction)
     {
         var orderByString = orderBy switch
@@ -79,15 +79,10 @@ public class WordsRepository : Repository<WordEntity>, IWordsRepository
     public Task<int> GetWordCountAsync(CancellationToken cancellationToken) =>
         GetItemCountAsync(cancellationToken: cancellationToken);
 
-    public Task<WordEntity?> GetWordAsync(PartOfSpeech partOfSpeech, string id)
-        => ReadItemAsync(id, partOfSpeech.ToPartitionKey());
-
+    public Task<WordEntity?> GetWordAsync(string id) => ReadItemAsync(id, id);
     public Task<WordEntity> CreateWordAsync(WordEntity entity) => CreateItemAsync(entity);
-
     public Task<WordEntity> UpdateWordAsync(WordEntity entity) => UpdateItemAsync(entity);
-
-    public Task DeleteWordAsync(PartOfSpeech partOfSpeech, string id)
-        => DeleteItemAsync(id, partOfSpeech.ToPartitionKey());
+    public Task DeleteWordAsync(string id) => DeleteItemAsync(id, id);
 }
 
 public enum ListWordsOrderBy

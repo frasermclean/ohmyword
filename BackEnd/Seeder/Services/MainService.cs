@@ -2,19 +2,22 @@
 using Microsoft.Extensions.Logging;
 using OhMyWord.Data.Services;
 
-namespace OhMyWord.Seeder;
+namespace OhMyWord.Seeder.Services;
 
 internal class MainService : BackgroundService
 {
     private readonly ILogger<MainService> logger;
     private readonly IWordsRepository wordsRepository;
+    private readonly IDefinitionsRepository definitionsRepository;
     private readonly DataReader dataReader;
 
-    public MainService(ILogger<MainService> logger, IWordsRepository wordsRepository, DataReader dataReader)
+    public MainService(ILogger<MainService> logger, DataReader dataReader, IWordsRepository wordsRepository,
+        IDefinitionsRepository definitionsRepository)
     {
         this.logger = logger;
-        this.wordsRepository = wordsRepository;
         this.dataReader = dataReader;
+        this.wordsRepository = wordsRepository;
+        this.definitionsRepository = definitionsRepository;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -22,15 +25,21 @@ internal class MainService : BackgroundService
         var wordCreationCount = 0;
         foreach (var word in dataReader.Words)
         {
+            var definitions = dataReader.GetDefinitions(word.Id);
             try
             {
                 await wordsRepository.CreateWordAsync(word);
+                foreach (var definition in definitions)
+                {
+                    await definitionsRepository.CreateDefinitionAsync(definition);
+                }
+
                 wordCreationCount++;
-                logger.LogInformation("Successfully created word: {Word}", word);
+                logger.LogInformation("Successfully created word: {WordId}", word);
             }
             catch (Exception exception)
             {
-                logger.LogError(exception, "Error occurred while trying to create word: {Word}", word);
+                logger.LogError(exception, "Error occurred while trying to create word: {WordId}", word);
             }
         }
 
