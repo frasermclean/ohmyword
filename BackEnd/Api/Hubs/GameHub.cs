@@ -1,8 +1,8 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.SignalR;
+using OhMyWord.Core.Models;
 using OhMyWord.Core.Requests.Game;
 using OhMyWord.Core.Responses.Game;
-using OhMyWord.Data.Models;
 
 namespace OhMyWord.Api.Hubs;
 

@@ -40,7 +40,7 @@ public class RegisterPlayerHandler : IRequestHandler<RegisterPlayerRequest, Regi
                 {
                     RoundNumber = gameService.Round.Number,
                     RoundId = gameService.Round.Id,
-                    Word = gameService.Round.Word.Value,
+                    WordId = gameService.Round.Word.Id,
                     EndReason = gameService.Round.EndReason,
                     NextRoundStart = gameService.Expiry,
                 }

@@ -4,6 +4,7 @@ using Microsoft.Identity.Web;
 using OhMyWord.Api.Hubs;
 using OhMyWord.Api.Registration;
 using OhMyWord.Core.Mapping;
+using OhMyWord.Data.Extensions;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -17,38 +18,37 @@ public static class Program
 
         // configure app host
         appBuilder.Host
-            .ConfigureServices((context, collection) =>
+            .ConfigureServices((context, services) =>
             {
                 // microsoft identity authentication services
-                collection.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                     .AddMicrosoftIdentityWebApi(context.Configuration);
 
                 // fast endpoints
-                collection.AddFastEndpoints();
+                services.AddFastEndpoints();
 
-                // add database services
-                collection.AddCosmosDbService(context.Configuration);
-                collection.AddRepositoryServices();
+                // add data services
+                services.AddDataServices(context.Configuration);
 
                 // signalR services
-                collection.AddSignalR()
+                services.AddSignalR()
                     .AddJsonProtocol(options =>
                         options.PayloadSerializerOptions.Converters.Add(
                             new JsonStringEnumConverter(JsonNamingPolicy.CamelCase))
                     );
 
                 // game services
-                collection.AddGameServices(context.Configuration);
+                services.AddGameServices(context.Configuration);
 
                 // automapper service
-                collection.AddAutoMapper(typeof(EntitiesProfile));
+                services.AddAutoMapper(typeof(EventsProfile));
 
                 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-                collection.AddEndpointsApiExplorer();
-                collection.AddSwaggerGen();
+                services.AddEndpointsApiExplorer();
+                services.AddSwaggerGen();
 
                 // health checks        
-                collection.AddHealthChecks()
+                services.AddHealthChecks()
                     .AddCosmosDbCollection(
                         context.Configuration.GetValue<string>("CosmosDb:ConnectionString") ?? string.Empty,
                         context.Configuration.GetValue<string>("CosmosDb:DatabaseId"),

@@ -9,11 +9,11 @@ public interface IWordsRepository
 {
     Task<IEnumerable<WordEntity>> GetAllWordsAsync(CancellationToken cancellationToken = default);
 
-    Task<(IEnumerable<WordEntity>, int)> GetWordsAsync(
+    Task<IEnumerable<WordEntity>> GetWordsAsync(
         int offset = WordsRepository.OffsetMinimum,
         int limit = WordsRepository.LimitDefault,
         string filter = "",
-        ListWordsOrderBy orderBy = ListWordsOrderBy.Value,
+        ListWordsOrderBy orderBy = ListWordsOrderBy.Id,
         SortDirection direction = SortDirection.Ascending,
         CancellationToken cancellationToken = default);
 
@@ -40,41 +40,29 @@ public class WordsRepository : Repository<WordEntity>, IWordsRepository
     public Task<IEnumerable<WordEntity>> GetAllWordsAsync(CancellationToken cancellationToken = default)
         => ReadAllItemsAsync(cancellationToken);
 
-    public async Task<(IEnumerable<WordEntity>, int)> GetWordsAsync(int offset, int limit, string filter,
+    public async Task<IEnumerable<WordEntity>> GetWordsAsync(int offset, int limit, string filter,
         ListWordsOrderBy orderBy, SortDirection direction, CancellationToken cancellationToken = default)
     {
-        var orderByClause = GetOrderByClause(orderBy, direction);
+        var orderByString = orderBy switch
+        {            
+            ListWordsOrderBy.LastModifiedTime => "word._ts",
+            _ => "word[\"id\"]"
+        };
+
+        var directionString = direction == SortDirection.Ascending ? "ASC" : "DESC";
+        
         var queryDefinition = new QueryDefinition($"""
             SELECT * FROM word
-            WHERE 
-                (CONTAINS(word["value"], LOWER(@filter))) OR 
-                (CONTAINS(word["definition"], LOWER(@filter)))
-            {orderByClause}  
+            WHERE (CONTAINS(word["id"], LOWER(@filter)))
+            ORDER BY {orderByString} {directionString}
             OFFSET @offset LIMIT @limit
             """)
             .WithParameter("@filter", filter)
             .WithParameter("@offset", offset)
             .WithParameter("@limit", limit);
 
-        var words = await ExecuteQueryAsync<WordEntity>(queryDefinition, cancellationToken: cancellationToken);
-
-        return (words, words.Count);
-    }
-
-    private static string GetOrderByClause(ListWordsOrderBy orderBy, SortDirection direction)
-    {
-        var orderByString = orderBy switch
-        {
-            ListWordsOrderBy.Definition => "word.definition",
-            ListWordsOrderBy.PartOfSpeech => "word.partOfSpeech",
-            ListWordsOrderBy.LastModifiedTime => "word._ts",
-            _ => "word[\"value\"]"
-        };
-
-        var directionString = direction == SortDirection.Ascending ? "ASC" : "DESC";
-
-        return $"ORDER BY {orderByString} {directionString}";
-    }
+        return await ExecuteQueryAsync<WordEntity>(queryDefinition, cancellationToken: cancellationToken);        
+    }    
 
     public Task<int> GetWordCountAsync(CancellationToken cancellationToken) =>
         GetItemCountAsync(cancellationToken: cancellationToken);
@@ -87,8 +75,6 @@ public class WordsRepository : Repository<WordEntity>, IWordsRepository
 
 public enum ListWordsOrderBy
 {
-    Value,
-    PartOfSpeech,
-    Definition,
+    Id,    
     LastModifiedTime,
 }

@@ -1,6 +1,4 @@
-﻿using OhMyWord.Data.Entities;
-
-namespace OhMyWord.Seeder.Models;
+﻿namespace OhMyWord.Seeder.Models;
 
 internal class RootObject
 {

@@ -1,9 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using OhMyWord.Core.Models;
 using OhMyWord.Core.Options;
-using OhMyWord.Core.Responses.Words;
 using OhMyWord.Core.Services;
-using OhMyWord.Data.Models;
 
 namespace OhMyWord.Api.Controllers;
 
@@ -30,7 +29,7 @@ public sealed class GameController : AuthorizedControllerBase
     public ActionResult<WordHint> GetWordHint() => Ok(gameService.Round.WordHint);
 
     [HttpGet("current-word")]
-    public ActionResult<WordResponse> GetCurrentWord() => Ok(mapper.Map<WordResponse>(gameService.Round.Word));
+    public ActionResult<Word> GetCurrentWord() => Ok(mapper.Map<Word>(gameService.Round.Word));
 
     [HttpPost("reload-words")]
     public IActionResult UpdateShouldReloadWords()

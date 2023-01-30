@@ -21,7 +21,7 @@ public sealed class UserFunctions
     public async Task<HttpResponseData> GetUserRoles(
         [HttpTrigger("get", Route = "get-roles/{userId:guid}")]
         HttpRequestData request,
-        Guid userId
+        string userId
     )
     {
         try

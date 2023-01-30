@@ -1,4 +1,4 @@
-﻿using OhMyWord.Core.Responses.Words;
+﻿using OhMyWord.Core.Models;
 using OhMyWord.Data.Services;
 
 namespace OhMyWord.Api.Endpoints.Words.List;
@@ -11,5 +11,5 @@ public class ListWordsResponse
     public string Filter { get; init; } = String.Empty;
     public ListWordsOrderBy OrderBy { get; init; }
     public SortDirection Direction { get; init; }
-    public IEnumerable<WordResponse> Words { get; init; } = Enumerable.Empty<WordResponse>();
+    public IEnumerable<Word> Words { get; init; } = Enumerable.Empty<Word>();
 }

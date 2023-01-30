@@ -1,19 +1,16 @@
 ﻿using FastEndpoints;
-using OhMyWord.Core.Responses.Words;
-using OhMyWord.Data.Services;
-using IMapper = AutoMapper.IMapper;
+using OhMyWord.Core.Models;
+using OhMyWord.Core.Services;
 
 namespace OhMyWord.Api.Endpoints.Words.List;
 
-public class ListWordsEndpoint : Endpoint<ListWordsRequest, ListWordsResponse>
+public class ListWordsEndpoint : Endpoint<ListWordsRequest, IEnumerable<Word>>
 {
-    private readonly IWordsRepository wordsRepository;
-    private readonly IMapper mapper;
+    private readonly IWordsService wordsService;
 
-    public ListWordsEndpoint(IWordsRepository wordsRepository, IMapper mapper)
+    public ListWordsEndpoint(IWordsService wordsService)
     {
-        this.wordsRepository = wordsRepository;
-        this.mapper = mapper;
+        this.wordsService = wordsService;
     }
 
     public override void Configure()
@@ -21,21 +18,10 @@ public class ListWordsEndpoint : Endpoint<ListWordsRequest, ListWordsResponse>
         Get("words");
     }
 
-    public override async Task<ListWordsResponse> ExecuteAsync(ListWordsRequest request,
+    public override async Task<IEnumerable<Word>> ExecuteAsync(ListWordsRequest request,
         CancellationToken cancellationToken)
     {
-        var (words, total) = await wordsRepository.GetWordsAsync(request.Offset, request.Limit,
-            request.Filter ?? string.Empty, request.OrderBy, request.Direction, cancellationToken);
-
-        return new ListWordsResponse
-        {
-            Offset = request.Offset,
-            Limit = request.Limit,
-            Total = total,
-            Filter = request.Filter ?? string.Empty,
-            OrderBy = request.OrderBy,
-            Direction = request.Direction,
-            Words = mapper.Map<IEnumerable<WordResponse>>(words)
-        };
+        return await wordsService.GetWordsAsync(request.Offset, request.Limit,
+            request.Filter, request.OrderBy, request.Direction, cancellationToken);
     }
 }

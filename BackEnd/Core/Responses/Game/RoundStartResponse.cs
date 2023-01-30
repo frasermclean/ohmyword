@@ -1,4 +1,4 @@
-﻿using OhMyWord.Data.Models;
+﻿using OhMyWord.Core.Models;
 
 namespace OhMyWord.Core.Responses.Game;
 

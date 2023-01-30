@@ -1,8 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OhMyWord.Core.Events;
+using OhMyWord.Core.Models;
 using OhMyWord.Core.Options;
-using OhMyWord.Data.Models;
+using OhMyWord.Data.Enums;
 
 namespace OhMyWord.Core.Services;
 
@@ -65,8 +66,8 @@ public class GameService : IGameService
             RoundStarted?.Invoke(this, new RoundStartedEventArgs(Round));
             Expiry = Round.EndTime;
 
-            logger.LogDebug("Round: {RoundNumber} has started with {PlayerCount} players. Current word is: {Word}. Round duration: {Seconds} seconds",
-                Round.Number, Round.PlayerCount, Round.Word, Round.Duration.Seconds);
+            logger.LogDebug("Round: {RoundNumber} has started with {PlayerCount} players. Current word is: {WordId}. Round duration: {Seconds} seconds",
+                Round.Number, Round.PlayerCount, Round.Word.Id, Round.Duration.Seconds);
 
             // send all letter hints
             try
@@ -95,7 +96,7 @@ public class GameService : IGameService
     private async Task<Round> CreateRoundAsync(CancellationToken cancellationToken)
     {
         var word = await wordsService.GetNextWordAsync(cancellationToken);
-        var duration = TimeSpan.FromSeconds(word.Value.Length * Options.LetterHintDelay);
+        var duration = TimeSpan.FromSeconds(word.Length * Options.LetterHintDelay);
         var roundNumber = Round.Number + 1;
 
         return new Round(roundNumber, word, duration, playerService.PlayerIds);
@@ -105,15 +106,15 @@ public class GameService : IGameService
     {
         var word = round.Word;
         var wordHint = round.WordHint;
-        var letterDelay = round.Duration / word.Value.Length;
+        var letterDelay = round.Duration / word.Length;
         var previousIndices = new List<int>();
 
-        while (previousIndices.Count < word.Value.Length && !round.CancellationToken.IsCancellationRequested)
+        while (previousIndices.Count < word.Length && !round.CancellationToken.IsCancellationRequested)
         {
             await Task.Delay(letterDelay, round.CancellationToken);
 
             int index;
-            do index = Random.Shared.Next(word.Value.Length);
+            do index = Random.Shared.Next(word.Length);
             while (previousIndices.Contains(index));
             previousIndices.Add(index);
 
@@ -132,7 +133,7 @@ public class GameService : IGameService
         if (!RoundActive || roundId != Round.Id) return 0;
 
         // compare value to current word value
-        if (!string.Equals(value, Round.Word.Value, StringComparison.InvariantCultureIgnoreCase))
+        if (!string.Equals(value, Round.Word.Id, StringComparison.InvariantCultureIgnoreCase))
             return 0;
 
         var guessCountIncremented = Round.IncrementGuessCount(player.Id);

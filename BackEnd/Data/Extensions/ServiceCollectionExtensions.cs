@@ -13,8 +13,11 @@ public static class ServiceCollectionExtensions
         services.AddHttpClient();
         services.Configure<CosmosDbOptions>(configuration.GetSection(CosmosDbOptions.SectionName));
         services.AddSingleton<IDatabaseService, DatabaseService>();
-        services.AddSingleton<IWordsRepository, WordsRepository>();
+        
+        // repositories
         services.AddSingleton<IDefinitionsRepository, DefinitionsRepository>();
+        services.AddSingleton<IPlayerRepository, PlayerRepository>();
+        services.AddSingleton<IWordsRepository, WordsRepository>();        
         
         return services;
     }

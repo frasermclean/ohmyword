@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using OhMyWord.Core.Events;
-using OhMyWord.Data.Models;
+using OhMyWord.Core.Extensions;
+using OhMyWord.Core.Models;
+using OhMyWord.Data.Entities;
 using OhMyWord.Data.Services;
 using System.Collections.Concurrent;
 
@@ -44,19 +46,18 @@ public class PlayerService : IPlayerService
 
     public async Task<Player> AddPlayerAsync(string visitorId, string connectionId)
     {
-        var player = await playerRepository.FindPlayerByVisitorIdAsync(visitorId);
+        var player = (await playerRepository.FindPlayerByVisitorIdAsync(visitorId))?.ToModel();
         if (player is not null)
         {
             // TODO: Handle multiple connections with same visitor ID
-            await playerRepository.IncrementPlayerRegistrationCountAsync(player.Id);
+            await playerRepository.IncrementPlayerRegistrationCountAsync(player.Id.ToString());
             logger.LogDebug("Found existing player with visitorId: {VisitorId}", visitorId);
         }
 
         // create new player if existing player not found
-        player ??= await playerRepository.CreatePlayerAsync(new Player
-        {
-            VisitorId = visitorId,
-        });
+        player ??= (await playerRepository.CreatePlayerAsync(new PlayerEntity { VisitorId = visitorId, })).ToModel();
+                
+            
 
         var wasAdded = playerCache.TryAdd(connectionId, player);
         if (!wasAdded)
@@ -87,5 +88,5 @@ public class PlayerService : IPlayerService
     public Player GetPlayer(string connectionId) => playerCache[connectionId];
 
     public Task IncrementPlayerScoreAsync(Guid playerId, int points) =>
-        playerRepository.IncrementPlayerScoreAsync(playerId, points); // TODO: Update local cache to keep points in sync
+        playerRepository.IncrementPlayerScoreAsync(playerId.ToString(), points); // TODO: Update local cache to keep points in sync
 }

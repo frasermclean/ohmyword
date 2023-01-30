@@ -18,7 +18,7 @@ public class EventsProfile : Profile
         CreateMap<RoundEndedEventArgs, RoundEndResponse>()
             .ForMember(response => response.RoundNumber, options => options.MapFrom(args => args.Round.Number))
             .ForMember(response => response.RoundId, options => options.MapFrom(args => args.Round.Id))
-            .ForMember(response => response.Word, options => options.MapFrom(args => args.Round.Word.Value))
+            .ForMember(response => response.WordId, options => options.MapFrom(args => args.Round.Word.Id))
             .ForMember(response => response.EndReason, options => options.MapFrom(args => args.Round.EndReason))
             .ForMember(response => response.NextRoundStart, options => options.MapFrom(args => args.NextRoundStart));
     }
