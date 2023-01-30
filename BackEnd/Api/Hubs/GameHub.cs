@@ -1,5 +1,8 @@
-﻿using MediatR;
+﻿using FastEndpoints;
+using MediatR;
 using Microsoft.AspNetCore.SignalR;
+using OhMyWord.Api.Commands;
+using OhMyWord.Api.Commands.RegisterPlayer;
 using OhMyWord.Core.Models;
 using OhMyWord.Core.Requests.Game;
 using OhMyWord.Core.Responses.Game;
@@ -40,11 +43,11 @@ public class GameHub : Hub<IGameHub>
     public async Task<RegisterPlayerResponse> RegisterPlayer(string visitorId)
     {
         logger.LogInformation("Attempting to register client with visitor ID: {VisitorId}", visitorId);
-        var response = await mediator.Send(new RegisterPlayerRequest
+        var response = await new RegisterPlayerCommand
         {
             VisitorId = visitorId,
             ConnectionId = Context.ConnectionId
-        });
+        }.ExecuteAsync();
         await Clients.Others.SendPlayerCount(response.PlayerCount);
         return response;
     }

@@ -1,11 +1,10 @@
-﻿using MediatR;
-using OhMyWord.Core.Requests.Game;
+﻿using FastEndpoints;
 using OhMyWord.Core.Responses.Game;
 using OhMyWord.Core.Services;
 
-namespace OhMyWord.Core.Handlers.Game;
+namespace OhMyWord.Api.Commands.RegisterPlayer;
 
-public class RegisterPlayerHandler : IRequestHandler<RegisterPlayerRequest, RegisterPlayerResponse>
+public class RegisterPlayerHandler : ICommandHandler<RegisterPlayerCommand, RegisterPlayerResponse>
 {
     private readonly IPlayerService playerService;
     private readonly IGameService gameService;
@@ -16,9 +15,9 @@ public class RegisterPlayerHandler : IRequestHandler<RegisterPlayerRequest, Regi
         this.gameService = gameService;
     }
 
-    public async Task<RegisterPlayerResponse> Handle(RegisterPlayerRequest request, CancellationToken cancellationToken)
+    public async Task<RegisterPlayerResponse> ExecuteAsync(RegisterPlayerCommand command, CancellationToken cancellationToken)
     {
-        var player = await playerService.AddPlayerAsync(request.VisitorId, request.ConnectionId);
+        var player = await playerService.AddPlayerAsync(command.VisitorId, command.ConnectionId);
 
         return new RegisterPlayerResponse
         {

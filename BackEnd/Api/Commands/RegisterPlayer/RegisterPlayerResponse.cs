@@ -1,4 +1,6 @@
-﻿namespace OhMyWord.Core.Responses.Game;
+﻿using OhMyWord.Core.Responses.Game;
+
+namespace OhMyWord.Api.Commands.RegisterPlayer;
 
 public class RegisterPlayerResponse
 {
