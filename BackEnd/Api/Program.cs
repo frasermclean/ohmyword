@@ -62,6 +62,7 @@ public static class Program
         app.UseFastEndpoints(config =>
         {
             config.Endpoints.RoutePrefix = "api";
+            config.Serializer.Options.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
         });
         app.MapHub<GameHub>("/hub");
         app.UseHealthChecks("/health");
