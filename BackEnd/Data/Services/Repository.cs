@@ -2,6 +2,8 @@
 using Microsoft.Extensions.Logging;
 using OhMyWord.Data.Entities;
 using OhMyWord.Data.Extensions;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace OhMyWord.Data.Services;
 
@@ -10,6 +12,13 @@ public abstract class Repository<TEntity> where TEntity : Entity
     private readonly Container container;
     private readonly ILogger<Repository<TEntity>> logger;
     private readonly string entityTypeName;
+
+    private readonly JsonSerializerOptions serializerOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        DictionaryKeyPolicy = JsonNamingPolicy.CamelCase,
+        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
+    };
 
     protected Repository(IDatabaseService databaseService, ILogger<Repository<TEntity>> logger, string containerId)
     {
@@ -32,13 +41,12 @@ public abstract class Repository<TEntity> where TEntity : Entity
     protected async Task<TEntity?> ReadItemAsync(string id, string partition,
         CancellationToken cancellationToken = default)
     {
-        var response = await container.ReadItemAsync<TEntity>(id, new PartitionKey(partition),
+        using var response = await container.ReadItemStreamAsync(id, new PartitionKey(partition),
             cancellationToken: cancellationToken);
 
-        logger.LogInformation("Read {TypeName} on partition: /{Partition}, request charge: {Charge} RU",
-            entityTypeName, partition, response.RequestCharge);
-
-        return response.Resource;
+        return response.IsSuccessStatusCode
+            ? await JsonSerializer.DeserializeAsync<TEntity>(response.Content, serializerOptions, cancellationToken)
+            : default;
     }
 
     protected async Task<TEntity> UpdateItemAsync(TEntity item,
@@ -113,7 +121,7 @@ public abstract class Repository<TEntity> where TEntity : Entity
         using var iterator = container.GetItemQueryIterator<TResponse>(queryDefinition,
             requestOptions: new QueryRequestOptions
             {
-                PartitionKey = partition is not null ? new PartitionKey(partition) : null,                
+                PartitionKey = partition is not null ? new PartitionKey(partition) : null,
             });
 
         logger.LogInformation("Executing SQL query: {QueryText}, on partition: {Partition}", queryDefinition.QueryText,

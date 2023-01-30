@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using OhMyWord.Core.Models;
+using OhMyWord.Data.Entities;
 using OhMyWord.Data.Services;
 
 namespace OhMyWord.Core.Services;
@@ -20,6 +21,8 @@ public interface IWordsService
     IAsyncEnumerable<Word> ListWordsAsync(int offset = WordsRepository.OffsetMinimum,
         int limit = WordsRepository.LimitDefault, string filter = "", ListWordsOrderBy orderBy = ListWordsOrderBy.Id,
         SortDirection direction = SortDirection.Ascending, CancellationToken cancellationToken = default);
+
+    Task<Word?> GetWordAsync(string wordId, CancellationToken cancellationToken = default);
 
     Task<Word> GetNextWordAsync(CancellationToken cancellationToken = default);
 }
@@ -47,14 +50,22 @@ public class WordsService : IWordsService
         int limit = WordsRepository.LimitDefault, string filter = "", ListWordsOrderBy orderBy = ListWordsOrderBy.Id,
         SortDirection direction = SortDirection.Ascending, CancellationToken cancellationToken = default) =>
         wordsRepository.ListWords(offset, limit, filter, orderBy, direction, cancellationToken)
-            .SelectAwait(async wordEntity => new Word
-            {
-                Id = wordEntity.Id,
-                Definitions = await definitionsRepository.GetDefinitionsAsync(wordEntity.Id, cancellationToken)
-                    .Select(Definition.FromEntity)
-                    .ToListAsync(cancellationToken),
-                LastModified = wordEntity.LastModifiedTime,
-            });
+            .SelectAwait(async wordEntity => await MapToWordAsync(wordEntity, cancellationToken));
+
+    public async Task<Word?> GetWordAsync(string wordId, CancellationToken cancellationToken = default)
+    {
+        var wordEntity = await wordsRepository.GetWordAsync(wordId, cancellationToken);
+        return wordEntity is null ? default : await MapToWordAsync(wordEntity, cancellationToken);
+    }
+
+    private async Task<Word> MapToWordAsync(Entity wordEntity, CancellationToken cancellationToken) => new()
+    {
+        Id = wordEntity.Id,
+        Definitions = await definitionsRepository.GetDefinitionsAsync(wordEntity.Id, cancellationToken)
+            .Select(Definition.FromEntity)
+            .ToListAsync(cancellationToken),
+        LastModified = wordEntity.LastModifiedTime,
+    };
 
     public async Task<Word> GetNextWordAsync(CancellationToken cancellationToken = default)
     {
