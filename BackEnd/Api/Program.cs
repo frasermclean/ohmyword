@@ -43,6 +43,12 @@ public static class Program
                 // automapper service
                 services.AddAutoMapper(typeof(EventsProfile));
 
+                // development services
+                if (context.HostingEnvironment.IsDevelopment())
+                {
+                    services.AddCors();
+                }
+
                 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
                 services.AddEndpointsApiExplorer();
                 services.AddSwaggerGen();
@@ -59,11 +65,23 @@ public static class Program
         var app = appBuilder.Build();
 
         app.UseAuthorization();
+
+        // development pipeline
+        if (app.Environment.IsDevelopment())
+        {
+            // enable CORS policy
+            app.UseCors(builder => builder.WithOrigins("http://localhost:4200")
+                .AllowCredentials()
+                .AllowAnyHeader()
+                .AllowAnyMethod());
+        }
+
         app.UseFastEndpoints(config =>
         {
             config.Endpoints.RoutePrefix = "api";
             config.Serializer.Options.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
         });
+        
         app.MapHub<GameHub>("/hub");
         app.UseHealthChecks("/health");
 
