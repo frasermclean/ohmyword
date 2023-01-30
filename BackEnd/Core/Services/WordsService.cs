@@ -25,6 +25,7 @@ public interface IWordsService
     Task<Word?> GetWordAsync(string wordId, CancellationToken cancellationToken = default);
 
     Task CreateWordAsync(Word word, CancellationToken cancellationToken = default);
+    Task DeleteWordAsync(string wordId, CancellationToken cancellationToken = default);
 
     Task<Word> GetNextWordAsync(CancellationToken cancellationToken = default);
 }
@@ -76,6 +77,11 @@ public class WordsService : IWordsService
             })));
     }
 
+    public async Task DeleteWordAsync(string wordId, CancellationToken cancellationToken = default)
+    {
+        await wordsRepository.DeleteWordAsync(wordId, cancellationToken);
+        await definitionsRepository.DeleteDefinitionsAsync(wordId, cancellationToken);
+    }
 
     private async Task<Word> MapToWordAsync(Entity wordEntity, CancellationToken cancellationToken) => new()
     {

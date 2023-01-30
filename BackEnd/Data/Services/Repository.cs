@@ -67,11 +67,12 @@ public abstract class Repository<TEntity> where TEntity : Entity
 
     protected async Task DeleteItemAsync(string id, string partition, CancellationToken cancellationToken = default)
     {
-        var response = await container.DeleteItemAsync<TEntity>(id, new PartitionKey(partition),
+        var response = await container.DeleteItemStreamAsync(id, new PartitionKey(partition),
             cancellationToken: cancellationToken);
 
-        logger.LogInformation("Deleted {TypeName} on partition: /{Partition}, request charge: {Charge} RU",
-            entityTypeName, partition, response.RequestCharge);
+        response.EnsureSuccessStatusCode();
+
+        logger.LogInformation("Deleted item: {Id} on partition: /{Partition}", id, partition);
     }
 
     protected async Task<TEntity> PatchItemAsync(string id, string partition, PatchOperation[] operations,
@@ -89,17 +90,17 @@ public abstract class Repository<TEntity> where TEntity : Entity
     protected async Task<int> GetItemCountAsync(string? partition = null, CancellationToken cancellationToken = default)
     {
         QueryDefinition queryDefinition = new("SELECT COUNT(1) FROM c");
-        return await ExecuteQueryAsync<CountResponse>(queryDefinition, partition, cancellationToken)
+        return await ExecuteQuery<CountResponse>(queryDefinition, partition, cancellationToken)
             .CountAsync(cancellationToken);
     }
 
     /// <summary>
     /// Read all items across all partitions. This is an expensive operation and should be avoided if possible.
     /// </summary>
-    protected IAsyncEnumerable<TEntity> ReadAllItemsAsync(CancellationToken cancellationToken)
+    protected IAsyncEnumerable<TEntity> ReadAllItems(CancellationToken cancellationToken)
     {
         QueryDefinition queryDefinition = new("SELECT * FROM c");
-        return ExecuteQueryAsync<TEntity>(queryDefinition, cancellationToken: cancellationToken);
+        return ExecuteQuery<TEntity>(queryDefinition, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -108,14 +109,21 @@ public abstract class Repository<TEntity> where TEntity : Entity
     /// <param name="partition">The partition to query items on.</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns></returns>
-    protected IAsyncEnumerable<TEntity> ReadPartitionItemsAsync(string partition,
+    protected IAsyncEnumerable<TEntity> ReadPartitionItems(string partition,
         CancellationToken cancellationToken = default)
     {
         QueryDefinition queryDefinition = new("SELECT * FROM c");
-        return ExecuteQueryAsync<TEntity>(queryDefinition, partition, cancellationToken);
+        return ExecuteQuery<TEntity>(queryDefinition, partition, cancellationToken);
+    }
+    
+    protected IAsyncEnumerable<string> ReadItemIds(string partition,
+        CancellationToken cancellationToken = default)
+    {
+        QueryDefinition queryDefinition = new("SELECT * FROM c.id");
+        return ExecuteQuery<string>(queryDefinition, partition, cancellationToken);
     }
 
-    protected IAsyncEnumerable<TResponse> ExecuteQueryAsync<TResponse>(
+    protected IAsyncEnumerable<TResponse> ExecuteQuery<TResponse>(
         QueryDefinition queryDefinition,
         string? partition = null,
         CancellationToken cancellationToken = default)

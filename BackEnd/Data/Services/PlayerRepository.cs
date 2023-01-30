@@ -37,7 +37,7 @@ public class PlayerRepository : Repository<PlayerEntity>, IPlayerRepository
         var queryDefinition = new QueryDefinition("SELECT * FROM c WHERE c.visitorId = @visitorId")
             .WithParameter("@visitorId", visitorId);
 
-        return await ExecuteQueryAsync<PlayerEntity>(queryDefinition).FirstOrDefaultAsync();
+        return await ExecuteQuery<PlayerEntity>(queryDefinition).FirstOrDefaultAsync();
     }
 
     public async Task<PlayerEntity> IncrementPlayerRegistrationCountAsync(string playerId)

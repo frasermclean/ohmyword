@@ -9,6 +9,8 @@ public interface IDefinitionsRepository
 
     IAsyncEnumerable<DefinitionEntity> GetDefinitionsAsync(string wordId,
         CancellationToken cancellationToken = default);
+
+    Task DeleteDefinitionsAsync(string wordId, CancellationToken cancellationToken);
 }
 
 public class DefinitionsRepository : Repository<DefinitionEntity>, IDefinitionsRepository
@@ -23,5 +25,11 @@ public class DefinitionsRepository : Repository<DefinitionEntity>, IDefinitionsR
 
     public IAsyncEnumerable<DefinitionEntity> GetDefinitionsAsync(string wordId,
         CancellationToken cancellationToken = default) =>
-        ReadPartitionItemsAsync(wordId, cancellationToken);
+        ReadPartitionItems(wordId, cancellationToken);
+
+    public async Task DeleteDefinitionsAsync(string wordId, CancellationToken cancellationToken)
+    {
+        var itemIds = await ReadItemIds(wordId, cancellationToken).ToListAsync(cancellationToken);
+        await Task.WhenAll(itemIds.Select(id => DeleteItemAsync(id, wordId, cancellationToken)));
+    }
 }

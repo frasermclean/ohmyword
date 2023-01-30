@@ -21,8 +21,8 @@ public interface IWordsRepository
 
     Task<WordEntity?> GetWordAsync(string id, CancellationToken cancellationToken = default);
     Task CreateWordAsync(WordEntity entity, CancellationToken cancellationToken = default);
-    Task<WordEntity> UpdateWordAsync(WordEntity entity);
-    Task DeleteWordAsync(string id);
+    Task<WordEntity> UpdateWordAsync(WordEntity entity, CancellationToken cancellationToken = default);
+    Task DeleteWordAsync(string wordId, CancellationToken cancellationToken = default);
 }
 
 public class WordsRepository : Repository<WordEntity>, IWordsRepository
@@ -38,7 +38,7 @@ public class WordsRepository : Repository<WordEntity>, IWordsRepository
     }
 
     public IAsyncEnumerable<WordEntity> GetAllWordsAsync(CancellationToken cancellationToken = default)
-        => ReadAllItemsAsync(cancellationToken);
+        => ReadAllItems(cancellationToken);
 
     public IAsyncEnumerable<WordEntity> ListWords(int offset, int limit, string filter,
         ListWordsOrderBy orderBy, SortDirection direction, CancellationToken cancellationToken = default)
@@ -62,7 +62,7 @@ public class WordsRepository : Repository<WordEntity>, IWordsRepository
             .WithParameter("@offset", offset)
             .WithParameter("@limit", limit);
 
-        return ExecuteQueryAsync<WordEntity>(queryDefinition, cancellationToken: cancellationToken);
+        return ExecuteQuery<WordEntity>(queryDefinition, cancellationToken: cancellationToken);
     }
 
     public Task<int> GetWordCountAsync(CancellationToken cancellationToken) =>
@@ -74,8 +74,11 @@ public class WordsRepository : Repository<WordEntity>, IWordsRepository
     public Task CreateWordAsync(WordEntity entity, CancellationToken cancellationToken) =>
         CreateItemAsync(entity, cancellationToken);
 
-    public Task<WordEntity> UpdateWordAsync(WordEntity entity) => UpdateItemAsync(entity);
-    public Task DeleteWordAsync(string id) => DeleteItemAsync(id, id);
+    public Task<WordEntity> UpdateWordAsync(WordEntity entity, CancellationToken cancellationToken) =>
+        UpdateItemAsync(entity, cancellationToken);
+
+    public Task DeleteWordAsync(string wordId, CancellationToken cancellationToken) =>
+        DeleteItemAsync(wordId, wordId, cancellationToken);
 }
 
 public enum ListWordsOrderBy
