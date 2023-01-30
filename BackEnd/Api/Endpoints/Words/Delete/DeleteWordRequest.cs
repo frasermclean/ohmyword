@@ -1,6 +1,4 @@
-﻿using OhMyWord.Core.Services;
-
-namespace OhMyWord.Api.Endpoints.Words.Delete;
+﻿namespace OhMyWord.Api.Endpoints.Words.Delete;
 
 public class DeleteWordRequest
 {

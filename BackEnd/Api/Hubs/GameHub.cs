@@ -1,7 +1,6 @@
 ﻿using FastEndpoints;
 using MediatR;
 using Microsoft.AspNetCore.SignalR;
-using OhMyWord.Api.Commands;
 using OhMyWord.Api.Commands.RegisterPlayer;
 using OhMyWord.Core.Models;
 using OhMyWord.Core.Requests.Game;

@@ -5,12 +5,12 @@ namespace OhMyWord.Data.Services;
 
 public interface IDefinitionsRepository
 {
-    Task CreateDefinitionAsync(DefinitionEntity definitionEntity);
-
     IAsyncEnumerable<DefinitionEntity> GetDefinitionsAsync(string wordId,
         CancellationToken cancellationToken = default);
 
-    Task DeleteDefinitionsAsync(string wordId, CancellationToken cancellationToken);
+    Task CreateDefinitionAsync(DefinitionEntity definitionEntity, CancellationToken cancellationToken = default);
+    Task UpdateDefinitionAsync(DefinitionEntity definitionEntity, CancellationToken cancellationToken = default);
+    Task DeleteDefinitionsAsync(string wordId, CancellationToken cancellationToken = default);
 }
 
 public class DefinitionsRepository : Repository<DefinitionEntity>, IDefinitionsRepository
@@ -20,12 +20,14 @@ public class DefinitionsRepository : Repository<DefinitionEntity>, IDefinitionsR
     {
     }
 
-    public Task CreateDefinitionAsync(DefinitionEntity definitionEntity) =>
-        CreateItemAsync(definitionEntity);
-
-    public IAsyncEnumerable<DefinitionEntity> GetDefinitionsAsync(string wordId,
-        CancellationToken cancellationToken = default) =>
+    public IAsyncEnumerable<DefinitionEntity> GetDefinitionsAsync(string wordId, CancellationToken cancellationToken) =>
         ReadPartitionItems(wordId, cancellationToken);
+
+    public Task CreateDefinitionAsync(DefinitionEntity definitionEntity, CancellationToken cancellationToken) =>
+        CreateItemAsync(definitionEntity, cancellationToken);
+
+    public Task UpdateDefinitionAsync(DefinitionEntity definitionEntity, CancellationToken cancellationToken)
+        => UpdateItemAsync(definitionEntity, cancellationToken);
 
     public async Task DeleteDefinitionsAsync(string wordId, CancellationToken cancellationToken)
     {

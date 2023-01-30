@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using OhMyWord.Core.Extensions;
 using OhMyWord.Core.Models;
 using OhMyWord.Data.Entities;
 using OhMyWord.Data.Services;
@@ -25,6 +26,7 @@ public interface IWordsService
     Task<Word?> GetWordAsync(string wordId, CancellationToken cancellationToken = default);
 
     Task CreateWordAsync(Word word, CancellationToken cancellationToken = default);
+    Task UpdateWordAsync(Word word, CancellationToken cancellationToken = default);
     Task DeleteWordAsync(string wordId, CancellationToken cancellationToken = default);
 
     Task<Word> GetNextWordAsync(CancellationToken cancellationToken = default);
@@ -68,13 +70,17 @@ public class WordsService : IWordsService
             cancellationToken);
 
         await Task.WhenAll(word.Definitions.Select(definition =>
-            definitionsRepository.CreateDefinitionAsync(new DefinitionEntity
-            {
-                PartOfSpeech = definition.PartOfSpeech,
-                Value = definition.Value,
-                Example = definition.Example,
-                WordId = word.Id
-            })));
+            definitionsRepository.CreateDefinitionAsync(definition.ToEntity(word.Id), cancellationToken)));
+    }
+
+    public async Task UpdateWordAsync(Word word, CancellationToken cancellationToken = default)
+    {
+        await wordsRepository.UpdateWordAsync(
+            new WordEntity { Id = word.Id, DefinitionCount = word.Definitions.Count() },
+            cancellationToken);
+
+        await Task.WhenAll(word.Definitions.Select(definition =>
+            definitionsRepository.UpdateDefinitionAsync(definition.ToEntity(word.Id), cancellationToken)));
     }
 
     public async Task DeleteWordAsync(string wordId, CancellationToken cancellationToken = default)

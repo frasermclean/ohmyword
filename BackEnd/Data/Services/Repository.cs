@@ -51,16 +51,17 @@ public abstract class Repository<TEntity> where TEntity : Entity
             : default;
     }
 
-    protected async Task<TEntity> UpdateItemAsync(TEntity item,
+    protected async Task UpdateItemAsync(TEntity item,
         CancellationToken cancellationToken = default)
     {
-        var response = await container.ReplaceItemAsync(item, item.Id, new PartitionKey(item.GetPartition()),
+        using var stream = new MemoryStream();
+        await JsonSerializer.SerializeAsync(stream, item, serializerOptions, cancellationToken);
+        var response = await container.ReplaceItemStreamAsync(stream, item.Id, new PartitionKey(item.GetPartition()),
             cancellationToken: cancellationToken);
 
-        logger.LogInformation("Replaced {TypeName} on partition: /{Partition}, request charge: {Charge} RU",
-            entityTypeName, item.GetPartition(), response.RequestCharge);
+        response.EnsureSuccessStatusCode();
 
-        return response.Resource;
+        logger.LogInformation("Replaced {TypeName} on partition: /{Partition}", entityTypeName, item.GetPartition());        
     }
 
     protected Task DeleteItemAsync(TEntity item) => DeleteItemAsync(item.Id, item.GetPartition());
@@ -115,7 +116,7 @@ public abstract class Repository<TEntity> where TEntity : Entity
         QueryDefinition queryDefinition = new("SELECT * FROM c");
         return ExecuteQuery<TEntity>(queryDefinition, partition, cancellationToken);
     }
-    
+
     protected IAsyncEnumerable<string> ReadItemIds(string partition,
         CancellationToken cancellationToken = default)
     {

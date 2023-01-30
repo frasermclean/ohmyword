@@ -20,7 +20,7 @@ public sealed class DatabaseService : IDatabaseService, IDisposable
         cosmosClient = new CosmosClientBuilder(options.Value.ConnectionString)
             .WithApplicationName(options.Value.ApplicationName)
             .WithHttpClientFactory(() => httpClientFactory.CreateClient("CosmosDb"))            
-            .WithCustomSerializer(new EntitySerializer())
+            .WithContentResponseOnWrite(false)
             .Build();
 
         database = cosmosClient.GetDatabase(options.Value.DatabaseId);
