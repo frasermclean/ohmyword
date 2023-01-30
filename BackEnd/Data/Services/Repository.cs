@@ -28,10 +28,10 @@ public abstract class Repository<TEntity> where TEntity : Entity
         return response.Resource;
     }
 
-    protected async Task<TEntity?> ReadItemAsync(Guid id, string partition,
+    protected async Task<TEntity?> ReadItemAsync(string id, string partition,
         CancellationToken cancellationToken = default)
     {
-        var response = await container.ReadItemAsync<TEntity>(id.ToString(), new PartitionKey(partition),
+        var response = await container.ReadItemAsync<TEntity>(id, new PartitionKey(partition),
             cancellationToken: cancellationToken);
 
         logger.LogInformation("Read {TypeName} on partition: /{Partition}, request charge: {Charge} RU",
@@ -43,7 +43,7 @@ public abstract class Repository<TEntity> where TEntity : Entity
     protected async Task<TEntity> UpdateItemAsync(TEntity item,
         CancellationToken cancellationToken = default)
     {
-        var response = await container.ReplaceItemAsync(item, item.Id.ToString(), new PartitionKey(item.GetPartition()),
+        var response = await container.ReplaceItemAsync(item, item.Id, new PartitionKey(item.GetPartition()),
             cancellationToken: cancellationToken);
 
         logger.LogInformation("Replaced {TypeName} on partition: /{Partition}, request charge: {Charge} RU",
@@ -54,23 +54,19 @@ public abstract class Repository<TEntity> where TEntity : Entity
 
     protected Task DeleteItemAsync(TEntity item) => DeleteItemAsync(item.Id, item.GetPartition());
 
-    protected async Task DeleteItemAsync(Guid id, string partition,
-        CancellationToken cancellationToken = default)
+    protected async Task DeleteItemAsync(string id, string partition, CancellationToken cancellationToken = default)
     {
-        var response = await container.DeleteItemAsync<TEntity>(id.ToString(), new PartitionKey(partition),
+        var response = await container.DeleteItemAsync<TEntity>(id, new PartitionKey(partition),
             cancellationToken: cancellationToken);
 
         logger.LogInformation("Deleted {TypeName} on partition: /{Partition}, request charge: {Charge} RU",
             entityTypeName, partition, response.RequestCharge);
     }
 
-    protected async Task<TEntity> PatchItemAsync(
-        Guid id,
-        string partition,
-        PatchOperation[] operations,
+    protected async Task<TEntity> PatchItemAsync(string id, string partition, PatchOperation[] operations,
         CancellationToken cancellationToken = default)
     {
-        var response = await container.PatchItemAsync<TEntity>(id.ToString(), new PartitionKey(partition), operations,
+        var response = await container.PatchItemAsync<TEntity>(id, new PartitionKey(partition), operations,
             cancellationToken: cancellationToken);
 
         logger.LogInformation("Patched {TypeName} on partition: /{Partition}, request charge: {Charge} RU",

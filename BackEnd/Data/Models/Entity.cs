@@ -4,7 +4,7 @@ namespace OhMyWord.Data.Models;
 
 public abstract class Entity
 {
-    public Guid Id { get; init; } = Guid.NewGuid();
+    public string Id { get; init; } = Guid.NewGuid().ToString();
 
     /// <summary>
     /// UNIX timestamp of last modification date.
@@ -14,5 +14,5 @@ public abstract class Entity
 
     public DateTime LastModifiedTime => DateTimeOffset.FromUnixTimeSeconds(Timestamp).UtcDateTime;
 
-    public virtual string GetPartition() => Id.ToString();
+    public virtual string GetPartition() => Id;
 }

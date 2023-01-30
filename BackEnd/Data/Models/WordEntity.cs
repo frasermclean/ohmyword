@@ -2,7 +2,7 @@
 
 namespace OhMyWord.Data.Models;
 
-public class Word : Entity
+public sealed class WordEntity : Entity
 {
     public string Value { get; init; } = string.Empty;
     public string Definition { get; init; } = string.Empty;
@@ -15,9 +15,9 @@ public class Word : Entity
 
     public override string ToString() => Value;
 
-    public static readonly Word Default = new()
+    public static readonly WordEntity Default = new()
     {
-        Value = "default",
+        Id = "default",
         Definition = "Default word"
     };
 }

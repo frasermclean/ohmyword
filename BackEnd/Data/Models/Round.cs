@@ -6,11 +6,11 @@ namespace OhMyWord.Data.Models;
 public class Round : IDisposable
 {
     private readonly CancellationTokenSource cancellationTokenSource = new();
-    private readonly ConcurrentDictionary<Guid, RoundPlayerData> players = new();
+    private readonly ConcurrentDictionary<string, RoundPlayerData> players = new();
 
     public Guid Id { get; } = Guid.NewGuid();
     public int Number { get; }
-    public Word Word { get; }
+    public WordEntity WordEntity { get; } // TODO: Refactor this to Word object
     public WordHint WordHint { get; }
     public DateTime StartTime { get; }
     public TimeSpan Duration { get; }
@@ -22,11 +22,11 @@ public class Round : IDisposable
     [JsonIgnore]
     public CancellationToken CancellationToken => cancellationTokenSource.Token;
 
-    public Round(int number, Word word, TimeSpan duration, IEnumerable<Guid>? playerIds = default)
+    public Round(int number, WordEntity wordEntity, TimeSpan duration, IEnumerable<string>? playerIds = default)
     {
         Number = number;
-        Word = word;
-        WordHint = new WordHint(word);
+        this.WordEntity = wordEntity;
+        WordHint = new WordHint(wordEntity);
         StartTime = DateTime.UtcNow;
         Duration = duration;
 
@@ -36,10 +36,10 @@ public class Round : IDisposable
             AddPlayer(playerId);
     }
 
-    public bool AddPlayer(Guid playerId) => players.TryAdd(playerId, new RoundPlayerData());
-    public bool RemovePlayer(Guid playerId) => players.TryRemove(playerId, out _);
+    public bool AddPlayer(string playerId) => players.TryAdd(playerId, new RoundPlayerData());
+    public bool RemovePlayer(string playerId) => players.TryRemove(playerId, out _);
 
-    public bool IncrementGuessCount(Guid playerId)
+    public bool IncrementGuessCount(string playerId)
     {
         if (!players.TryGetValue(playerId, out var playerData))
             return false;
@@ -48,7 +48,7 @@ public class Round : IDisposable
         return true;
     }
 
-    public int AwardPlayer(Guid playerId)
+    public int AwardPlayer(string playerId)
     {
         if (!players.TryGetValue(playerId, out var playerData))
             return 0;
@@ -74,5 +74,5 @@ public class Round : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    public static readonly Round Default = new(0, Word.Default, TimeSpan.FromSeconds(10));
+    public static readonly Round Default = new(0, WordEntity.Default, TimeSpan.FromSeconds(10));
 }

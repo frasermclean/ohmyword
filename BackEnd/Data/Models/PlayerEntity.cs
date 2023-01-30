@@ -1,6 +1,6 @@
 ﻿namespace OhMyWord.Data.Models;
 
-public class Player : Entity
+public class PlayerEntity : Entity
 {
     /// <summary>
     /// Client side generated unique visitor ID.

@@ -2,19 +2,19 @@
 
 public class WordHint
 {
-    private readonly Word word;
+    private readonly WordEntity entity;
     private readonly List<LetterHint> letterHints = new();
 
-    public int Length => word.Value.Length;
-    public string Definition => word.Definition;
+    public int Length => entity.Value.Length;
+    public string Definition => entity.Definition;
     public IEnumerable<LetterHint> Letters => letterHints;
 
-    internal WordHint(Word word)
+    internal WordHint(WordEntity entity)
     {
-        this.word = word;
+        this.entity = entity;
     }
 
-    public static readonly WordHint Default = new(Word.Default);
+    public static readonly WordHint Default = new(WordEntity.Default);
 
     public void AddLetterHint(LetterHint letterHint) => letterHints.Add(letterHint);
 }

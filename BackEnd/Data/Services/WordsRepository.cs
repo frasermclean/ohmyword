@@ -7,9 +7,9 @@ namespace OhMyWord.Data.Services;
 
 public interface IWordsRepository
 {
-    Task<IEnumerable<Word>> GetAllWordsAsync(CancellationToken cancellationToken = default);
+    Task<IEnumerable<WordEntity>> GetAllWordsAsync(CancellationToken cancellationToken = default);
 
-    Task<(IEnumerable<Word>, int)> GetWordsAsync(
+    Task<(IEnumerable<WordEntity>, int)> GetWordsAsync(
         int offset = WordsRepository.OffsetMinimum,
         int limit = WordsRepository.LimitDefault,
         string filter = "",
@@ -19,13 +19,13 @@ public interface IWordsRepository
 
     Task<int> GetWordCountAsync(CancellationToken cancellationToken = default);
 
-    Task<Word?> GetWordAsync(PartOfSpeech partOfSpeech, Guid id);
-    Task<Word> CreateWordAsync(Word word);
-    Task<Word> UpdateWordAsync(Word word);
-    Task DeleteWordAsync(PartOfSpeech partOfSpeech, Guid id);
+    Task<WordEntity?> GetWordAsync(PartOfSpeech partOfSpeech, string id);
+    Task<WordEntity> CreateWordAsync(WordEntity entity);
+    Task<WordEntity> UpdateWordAsync(WordEntity entity);
+    Task DeleteWordAsync(PartOfSpeech partOfSpeech, string id);
 }
 
-public class WordsRepository : Repository<Word>, IWordsRepository
+public class WordsRepository : Repository<WordEntity>, IWordsRepository
 {
     public const int OffsetMinimum = 0;
     public const int LimitDefault = 10;
@@ -37,10 +37,10 @@ public class WordsRepository : Repository<Word>, IWordsRepository
     {
     }
 
-    public Task<IEnumerable<Word>> GetAllWordsAsync(CancellationToken cancellationToken = default)
+    public Task<IEnumerable<WordEntity>> GetAllWordsAsync(CancellationToken cancellationToken = default)
         => ReadAllItemsAsync(cancellationToken);
 
-    public async Task<(IEnumerable<Word>, int)> GetWordsAsync(int offset, int limit, string filter,
+    public async Task<(IEnumerable<WordEntity>, int)> GetWordsAsync(int offset, int limit, string filter,
         ListWordsOrderBy orderBy, SortDirection direction, CancellationToken cancellationToken = default)
     {
         var orderByClause = GetOrderByClause(orderBy, direction);
@@ -56,7 +56,7 @@ public class WordsRepository : Repository<Word>, IWordsRepository
             .WithParameter("@offset", offset)
             .WithParameter("@limit", limit);
 
-        var words = await ExecuteQueryAsync<Word>(queryDefinition, cancellationToken: cancellationToken);
+        var words = await ExecuteQueryAsync<WordEntity>(queryDefinition, cancellationToken: cancellationToken);
 
         return (words, words.Count);
     }
@@ -79,14 +79,14 @@ public class WordsRepository : Repository<Word>, IWordsRepository
     public Task<int> GetWordCountAsync(CancellationToken cancellationToken) =>
         GetItemCountAsync(cancellationToken: cancellationToken);
 
-    public Task<Word?> GetWordAsync(PartOfSpeech partOfSpeech, Guid id)
+    public Task<WordEntity?> GetWordAsync(PartOfSpeech partOfSpeech, string id)
         => ReadItemAsync(id, partOfSpeech.ToPartitionKey());
 
-    public Task<Word> CreateWordAsync(Word word) => CreateItemAsync(word);
+    public Task<WordEntity> CreateWordAsync(WordEntity entity) => CreateItemAsync(entity);
 
-    public Task<Word> UpdateWordAsync(Word word) => UpdateItemAsync(word);
+    public Task<WordEntity> UpdateWordAsync(WordEntity entity) => UpdateItemAsync(entity);
 
-    public Task DeleteWordAsync(PartOfSpeech partOfSpeech, Guid id)
+    public Task DeleteWordAsync(PartOfSpeech partOfSpeech, string id)
         => DeleteItemAsync(id, partOfSpeech.ToPartitionKey());
 }
 

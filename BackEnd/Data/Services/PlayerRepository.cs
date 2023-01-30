@@ -6,45 +6,44 @@ namespace OhMyWord.Data.Services;
 
 public interface IPlayerRepository
 {
-    Task<Player> CreatePlayerAsync(Player player);
-    Task DeletePlayerAsync(Player player);
-    Task<Player?> FindPlayerByPlayerIdAsync(Guid playerId);
-    Task<Player?> FindPlayerByVisitorIdAsync(string visitorId);
-    Task<Player> IncrementPlayerRegistrationCountAsync(Guid playerId);
-    Task<Player> IncrementPlayerScoreAsync(Guid playerId, long value);
+    Task<PlayerEntity> CreatePlayerAsync(PlayerEntity playerEntity);
+    Task DeletePlayerAsync(PlayerEntity playerEntity);
+    Task<PlayerEntity?> FindPlayerByPlayerIdAsync(string playerId);
+    Task<PlayerEntity?> FindPlayerByVisitorIdAsync(string visitorId);
+    Task<PlayerEntity> IncrementPlayerRegistrationCountAsync(string playerId);
+    Task<PlayerEntity> IncrementPlayerScoreAsync(string playerId, long value);
 }
 
-public class PlayerRepository : Repository<Player>, IPlayerRepository
+public class PlayerRepository : Repository<PlayerEntity>, IPlayerRepository
 {
     public PlayerRepository(IDatabaseService databaseService, ILogger<PlayerRepository> logger)
         : base(databaseService, logger, "players")
     {
     }
 
-    public async Task<Player> CreatePlayerAsync(Player player) => await CreateItemAsync(player);
+    public async Task<PlayerEntity> CreatePlayerAsync(PlayerEntity playerEntity) => await CreateItemAsync(playerEntity);
 
-    public Task DeletePlayerAsync(Player player) => DeleteItemAsync(player);
+    public Task DeletePlayerAsync(PlayerEntity playerEntity) => DeleteItemAsync(playerEntity);
 
-    public async Task<Player?> FindPlayerByPlayerIdAsync(Guid playerId) =>
-        await ReadItemAsync(playerId, playerId.ToString());
+    public async Task<PlayerEntity?> FindPlayerByPlayerIdAsync(string playerId) =>
+        await ReadItemAsync(playerId, playerId);
 
-    public async Task<Player?> FindPlayerByVisitorIdAsync(string visitorId)
+    public async Task<PlayerEntity?> FindPlayerByVisitorIdAsync(string visitorId)
     {
         var queryDefinition = new QueryDefinition("SELECT * FROM c WHERE c.visitorId = @visitorId")
             .WithParameter("@visitorId", visitorId);
 
-        var results = await ExecuteQueryAsync<Player>(queryDefinition);
+        var results = await ExecuteQueryAsync<PlayerEntity>(queryDefinition);
         return results.FirstOrDefault();
     }
 
-    public async Task<Player> IncrementPlayerRegistrationCountAsync(Guid playerId)
+    public async Task<PlayerEntity> IncrementPlayerRegistrationCountAsync(string playerId)
     {
-        return await PatchItemAsync(playerId, playerId.ToString(),
-            new[] { PatchOperation.Increment("/registrationCount", 1) });
+        return await PatchItemAsync(playerId, playerId, new[] { PatchOperation.Increment("/registrationCount", 1) });
     }
 
-    public async Task<Player> IncrementPlayerScoreAsync(Guid playerId, long value)
+    public async Task<PlayerEntity> IncrementPlayerScoreAsync(string playerId, long value)
     {
-        return await PatchItemAsync(playerId, playerId.ToString(), new[] { PatchOperation.Increment("/score", value) });
+        return await PatchItemAsync(playerId, playerId, new[] { PatchOperation.Increment("/score", value) });
     }
 }
