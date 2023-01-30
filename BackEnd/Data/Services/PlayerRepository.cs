@@ -21,7 +21,11 @@ public class PlayerRepository : Repository<PlayerEntity>, IPlayerRepository
     {
     }
 
-    public async Task<PlayerEntity> CreatePlayerAsync(PlayerEntity playerEntity) => await CreateItemAsync(playerEntity);
+    public async Task<PlayerEntity> CreatePlayerAsync(PlayerEntity playerEntity)
+    {
+        await CreateItemAsync(playerEntity);
+        return playerEntity;
+    }
 
     public Task DeletePlayerAsync(PlayerEntity playerEntity) => DeleteItemAsync(playerEntity);
 

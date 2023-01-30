@@ -15,6 +15,7 @@ public abstract class Repository<TEntity> where TEntity : Entity
 
     private readonly JsonSerializerOptions serializerOptions = new()
     {
+        IgnoreReadOnlyProperties = true,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         DictionaryKeyPolicy = JsonNamingPolicy.CamelCase,
         Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
@@ -27,15 +28,16 @@ public abstract class Repository<TEntity> where TEntity : Entity
         entityTypeName = typeof(TEntity).Name;
     }
 
-    protected async Task<TEntity> CreateItemAsync(TEntity item, CancellationToken cancellationToken = default)
+    protected async Task CreateItemAsync(TEntity item, CancellationToken cancellationToken = default)
     {
-        var response = await container.CreateItemAsync(item, new PartitionKey(item.GetPartition()),
+        using var stream = new MemoryStream();
+        await JsonSerializer.SerializeAsync(stream, item, serializerOptions, cancellationToken);
+        var response = await container.CreateItemStreamAsync(stream, new PartitionKey(item.GetPartition()),
             cancellationToken: cancellationToken);
 
-        logger.LogInformation("Created {TypeName} on partition: /{Partition}, request charge: {Charge} RU",
-            entityTypeName, item.GetPartition(), response.RequestCharge);
+        response.EnsureSuccessStatusCode();
 
-        return response.Resource;
+        logger.LogInformation("Created {TypeName} on partition: /{Partition}", entityTypeName, item.GetPartition());
     }
 
     protected async Task<TEntity?> ReadItemAsync(string id, string partition,

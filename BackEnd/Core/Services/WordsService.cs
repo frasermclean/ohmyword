@@ -24,6 +24,8 @@ public interface IWordsService
 
     Task<Word?> GetWordAsync(string wordId, CancellationToken cancellationToken = default);
 
+    Task CreateWordAsync(Word word, CancellationToken cancellationToken = default);
+
     Task<Word> GetNextWordAsync(CancellationToken cancellationToken = default);
 }
 
@@ -57,6 +59,23 @@ public class WordsService : IWordsService
         var wordEntity = await wordsRepository.GetWordAsync(wordId, cancellationToken);
         return wordEntity is null ? default : await MapToWordAsync(wordEntity, cancellationToken);
     }
+
+    public async Task CreateWordAsync(Word word, CancellationToken cancellationToken = default)
+    {
+        await wordsRepository.CreateWordAsync(
+            new WordEntity { Id = word.Id, DefinitionCount = word.Definitions.Count() },
+            cancellationToken);
+
+        await Task.WhenAll(word.Definitions.Select(definition =>
+            definitionsRepository.CreateDefinitionAsync(new DefinitionEntity
+            {
+                PartOfSpeech = definition.PartOfSpeech,
+                Value = definition.Value,
+                Example = definition.Example,
+                WordId = word.Id
+            })));
+    }
+
 
     private async Task<Word> MapToWordAsync(Entity wordEntity, CancellationToken cancellationToken) => new()
     {

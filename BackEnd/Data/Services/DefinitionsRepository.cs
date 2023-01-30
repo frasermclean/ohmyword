@@ -5,7 +5,7 @@ namespace OhMyWord.Data.Services;
 
 public interface IDefinitionsRepository
 {
-    Task<DefinitionEntity> CreateDefinitionAsync(DefinitionEntity definitionEntity);
+    Task CreateDefinitionAsync(DefinitionEntity definitionEntity);
 
     IAsyncEnumerable<DefinitionEntity> GetDefinitionsAsync(string wordId,
         CancellationToken cancellationToken = default);
@@ -18,7 +18,7 @@ public class DefinitionsRepository : Repository<DefinitionEntity>, IDefinitionsR
     {
     }
 
-    public Task<DefinitionEntity> CreateDefinitionAsync(DefinitionEntity definitionEntity) =>
+    public Task CreateDefinitionAsync(DefinitionEntity definitionEntity) =>
         CreateItemAsync(definitionEntity);
 
     public IAsyncEnumerable<DefinitionEntity> GetDefinitionsAsync(string wordId,

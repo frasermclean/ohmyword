@@ -5,9 +5,10 @@ namespace OhMyWord.Core.Models;
 
 public class Definition
 {
-    public PartOfSpeech PartOfSpeech { get; init; }
-    public string Value { get; init; } = string.Empty;
-    
+    public Guid Id { get; init; } = Guid.NewGuid();
+    public required PartOfSpeech PartOfSpeech { get; init; }
+    public required string Value { get; init; }
+
     /// <summary>
     /// Example of this <see cref="Definition"/> used in a sentence.
     /// </summary>
@@ -15,6 +16,9 @@ public class Definition
 
     public static Definition FromEntity(DefinitionEntity entity) => new()
     {
-        PartOfSpeech = entity.PartOfSpeech, Value = entity.Value, Example = entity.Example,
+        Id = Guid.TryParse(entity.Id, out var id) ? id : Guid.Empty,
+        PartOfSpeech = entity.PartOfSpeech,
+        Value = entity.Value,
+        Example = entity.Example,
     };
 }
