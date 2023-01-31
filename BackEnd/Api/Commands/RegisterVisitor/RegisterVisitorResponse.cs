@@ -1,12 +1,10 @@
-﻿using OhMyWord.Core.Responses.Game;
+﻿using OhMyWord.Core.Models;
 
 namespace OhMyWord.Api.Commands.RegisterVisitor;
 
 public class RegisterVisitorResponse
 {
-    public bool RoundActive { get; init; }
-    public int VisitorCount { get; init; }
-    public long Score { get; init; }
-    public RoundStartResponse? RoundStart { get; init; }
-    public RoundEndResponse? RoundEnd { get; init; }
+    public required int VisitorCount { get; init; }
+    public required long Score { get; init; }
+    public required GameState GameState { get; init; }
 }

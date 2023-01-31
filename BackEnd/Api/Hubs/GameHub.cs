@@ -5,15 +5,13 @@ using OhMyWord.Api.Commands.SubmitGuess;
 using OhMyWord.Api.Events.VisitorDisconnected;
 using OhMyWord.Api.Services;
 using OhMyWord.Core.Models;
-using OhMyWord.Core.Responses.Game;
 
 namespace OhMyWord.Api.Hubs;
 
 public interface IGameHub
 {
     Task SendLetterHint(LetterHint letterHint);
-    Task SendRoundStarted(RoundStartResponse response);
-    Task SendRoundEnded(RoundEndResponse response);
+    Task SendGameState(GameState gameState);    
     Task SendVisitorCount(int count);
 }
 

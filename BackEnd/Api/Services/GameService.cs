@@ -1,7 +1,7 @@
 ﻿using FastEndpoints;
 using Microsoft.Extensions.Options;
+using OhMyWord.Api.Events.GameStateChanged;
 using OhMyWord.Api.Events.LetterHintAdded;
-using OhMyWord.Core.Events;
 using OhMyWord.Core.Models;
 using OhMyWord.Core.Options;
 using OhMyWord.Data.Enums;
@@ -10,13 +10,13 @@ namespace OhMyWord.Api.Services;
 
 public interface IGameService
 {
-    Round Round { get; }
-    bool RoundActive { get; }
-    DateTime Expiry { get; }
-    GameServiceOptions Options { get; }
+    /// <summary>
+    /// Snapshot of the current game state
+    /// </summary>    
+    GameState State { get; }
 
-    event EventHandler<RoundStartedEventArgs> RoundStarted;
-    event EventHandler<RoundEndedEventArgs> RoundEnded;
+    Round Round { get; }
+    GameServiceOptions Options { get; }
 
     Task ExecuteGameAsync(CancellationToken gameCancellationToken);
     Task<int> ProcessGuessAsync(string connectionId, Guid roundId, string value);
@@ -33,13 +33,9 @@ public class GameService : IGameService
     private IReadOnlyList<string> allWordIds = new List<string>();
     private Stack<string> shuffledWordIds = new();
 
+    public GameState State { get; private set; } = new();
     public Round Round { get; private set; } = Round.Default;
-    public bool RoundActive { get; private set; }
-    public DateTime Expiry { get; private set; }
-    public GameServiceOptions Options { get; }
-
-    public event EventHandler<RoundStartedEventArgs>? RoundStarted;
-    public event EventHandler<RoundEndedEventArgs>? RoundEnded;
+    public GameServiceOptions Options { get; }    
 
     public GameService(ILogger<GameService> logger, IWordsService wordsService, IVisitorService visitorService,
         IOptions<GameServiceOptions> options)
@@ -64,9 +60,7 @@ public class GameService : IGameService
 
             // start new round
             Round = await CreateRoundAsync(gameCancellationToken);
-            RoundActive = true;
-            RoundStarted?.Invoke(this, new RoundStartedEventArgs(Round));
-            Expiry = Round.EndTime;
+            await UpdateStateAsync(true, Round.Number, Round.Id, Round.EndTime);
 
             logger.LogDebug(
                 "Round: {RoundNumber} has started with {VisitorCount} visitors. Current word is: {WordId}. Round duration: {Seconds} seconds",
@@ -85,9 +79,9 @@ public class GameService : IGameService
             // end current round
             var postRoundDelay = TimeSpan.FromSeconds(Options.PostRoundDelay);
             var nextRoundStart = DateTime.UtcNow + postRoundDelay;
-            RoundActive = false;
-            Expiry = nextRoundStart;
-            RoundEnded?.Invoke(this, new RoundEndedEventArgs(Round, nextRoundStart));
+            await UpdateStateAsync(false, Round.Number, Round.Id, nextRoundStart);
+
+
             Round.Dispose();
 
             logger.LogDebug("Round: {Number} has ended. Post round delay is: {Seconds} seconds", Round.Number,
@@ -161,7 +155,7 @@ public class GameService : IGameService
         var visitor = visitorService.GetVisitor(connectionId);
 
         // if round is not active then immediately return false
-        if (!RoundActive || roundId != Round.Id) return 0;
+        if (!State.RoundActive || roundId != Round.Id) return 0;
 
         // compare value to current word value
         if (!string.Equals(value, Round.Word.Id, StringComparison.InvariantCultureIgnoreCase))
@@ -187,7 +181,7 @@ public class GameService : IGameService
     public void AddVisitor(string visitorId)
     {
         // visitor joined while round wasn't active
-        if (!RoundActive)
+        if (!State.RoundActive)
             return;
 
         var wasAdded = Round.AddVisitor(visitorId);
@@ -198,7 +192,7 @@ public class GameService : IGameService
     public void RemoveVisitor(string visitorId)
     {
         // visitor left while round wasn't active
-        if (!RoundActive)
+        if (!State.RoundActive)
             return;
 
         var wasRemoved = Round.RemoveVisitor(visitorId);
@@ -208,5 +202,15 @@ public class GameService : IGameService
         // last visitor left while round active
         if (visitorService.VisitorCount == 0)
             Round.EndRound(RoundEndReason.NoVisitorsLeft);
+    }
+
+    private async Task UpdateStateAsync(bool roundActive, int roundNumber, Guid roundId, DateTime expiration)
+    {
+        State = new GameState
+        {
+            RoundActive = roundActive, RoundNumber = roundNumber, RoundId = roundId, Expiration = expiration,
+        };
+
+        await new GameStateChangedEvent(State).PublishAsync();
     }
 }

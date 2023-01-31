@@ -1,6 +1,9 @@
 ﻿namespace OhMyWord.Core.Models;
 
-public class GameState
+public record GameState
 {
-    
+    public bool RoundActive { get; init; }
+    public int RoundNumber { get; init; }
+    public Guid RoundId { get; init; }
+    public DateTime Expiration { get; init; }    
 }

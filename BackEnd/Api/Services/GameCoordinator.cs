@@ -12,11 +12,6 @@ public class GameCoordinator : BackgroundService
     public GameCoordinator(IGameService gameService, IHubContext<GameHub, IGameHub> gameHubContext, IMapper mapper)
     {
         this.gameService = gameService;
-
-        gameService.RoundStarted += async (_, args) =>
-            await gameHubContext.Clients.All.SendRoundStarted(mapper.Map<RoundStartResponse>(args));
-        gameService.RoundEnded += async (_, args) =>
-            await gameHubContext.Clients.All.SendRoundEnded(mapper.Map<RoundEndResponse>(args));
     }
 
     protected override Task ExecuteAsync(CancellationToken cancellationToken) =>
