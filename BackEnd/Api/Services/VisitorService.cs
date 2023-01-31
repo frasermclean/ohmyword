@@ -1,5 +1,4 @@
-﻿using OhMyWord.Core.Events;
-using OhMyWord.Core.Extensions;
+﻿using OhMyWord.Core.Extensions;
 using OhMyWord.Core.Models;
 using OhMyWord.Data.Entities;
 using OhMyWord.Data.Services;
@@ -29,10 +28,8 @@ public class VisitorService : IVisitorService
     private readonly ConcurrentDictionary<string, Visitor> visitors = new();
 
     public int VisitorCount => visitors.Count;
-    public IEnumerable<string> VisitorIds => visitors.Values.Select(visitor => visitor.Id);
+    public IEnumerable<string> VisitorIds => visitors.Values.Select(visitor => visitor.Id);    
 
-    public event EventHandler<VisitorEventArgs>? VisitorAdded;
-    
 
     public VisitorService(ILogger<VisitorService> logger, IVisitorRepository visitorRepository)
     {
@@ -57,8 +54,6 @@ public class VisitorService : IVisitorService
         if (!wasAdded)
             logger.LogWarning("Visitor with connection ID: {ConnectionId} already exists in the local cache",
                 connectionId);
-
-        VisitorAdded?.Invoke(this, new VisitorEventArgs(visitor.Id, VisitorCount, connectionId));
 
         logger.LogInformation("Visitor with ID: {VisitorId} joined the game. Visitor count: {VisitorCount}", visitor.Id,
             VisitorCount);

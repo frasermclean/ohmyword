@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Web;
 using OhMyWord.Api.Hubs;
 using OhMyWord.Api.Registration;
-using OhMyWord.Core.Mapping;
 using OhMyWord.Data.Extensions;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -39,9 +38,6 @@ public static class Program
 
                 // game services
                 services.AddGameServices(context.Configuration);
-
-                // automapper service
-                services.AddAutoMapper(typeof(EventsProfile));
 
                 // development services
                 if (context.HostingEnvironment.IsDevelopment())
@@ -81,7 +77,7 @@ public static class Program
             config.Endpoints.RoutePrefix = "api";
             config.Serializer.Options.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
         });
-        
+
         app.MapHub<GameHub>("/hub");
         app.UseHealthChecks("/health");
 
