@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace OhMyWord.Core.Options;
+namespace OhMyWord.Api.Options;
 
 public class GameServiceOptions
 {

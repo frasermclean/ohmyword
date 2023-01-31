@@ -1,5 +1,5 @@
 ﻿using FastEndpoints;
-using OhMyWord.Core.Models;
+using OhMyWord.Api.Models;
 
 namespace OhMyWord.Api.Events.GameStateChanged;
 

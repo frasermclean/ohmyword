@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.SignalR;
 using OhMyWord.Api.Commands.RegisterVisitor;
 using OhMyWord.Api.Commands.SubmitGuess;
 using OhMyWord.Api.Events.VisitorDisconnected;
+using OhMyWord.Api.Models;
 using OhMyWord.Api.Services;
-using OhMyWord.Core.Models;
 
 namespace OhMyWord.Api.Hubs;
 

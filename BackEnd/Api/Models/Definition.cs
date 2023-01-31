@@ -1,7 +1,7 @@
 ﻿using OhMyWord.Data.Entities;
 using OhMyWord.Data.Enums;
 
-namespace OhMyWord.Core.Models;
+namespace OhMyWord.Api.Models;
 
 public class Definition
 {

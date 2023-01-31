@@ -1,7 +1,7 @@
 ﻿using FastEndpoints;
 using OhMyWord.Api.Endpoints.Words.Get;
+using OhMyWord.Api.Models;
 using OhMyWord.Api.Services;
-using OhMyWord.Core.Models;
 
 namespace OhMyWord.Api.Endpoints.Words.Create;
 

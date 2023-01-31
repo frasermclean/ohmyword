@@ -1,7 +1,7 @@
-﻿using OhMyWord.Core.Models;
+﻿using OhMyWord.Api.Models;
 using OhMyWord.Data.Entities;
 
-namespace OhMyWord.Core.Extensions;
+namespace OhMyWord.Api.Extensions;
 
 public static class VisitorEntityExtensions
 {

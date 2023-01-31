@@ -1,5 +1,5 @@
-﻿using OhMyWord.Api.Services;
-using OhMyWord.Core.Options;
+﻿using OhMyWord.Api.Options;
+using OhMyWord.Api.Services;
 
 namespace OhMyWord.Api.Registration;
 

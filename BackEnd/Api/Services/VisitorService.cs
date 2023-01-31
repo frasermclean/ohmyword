@@ -1,5 +1,5 @@
-﻿using OhMyWord.Core.Extensions;
-using OhMyWord.Core.Models;
+﻿using OhMyWord.Api.Extensions;
+using OhMyWord.Api.Models;
 using OhMyWord.Data.Entities;
 using OhMyWord.Data.Services;
 using System.Collections.Concurrent;

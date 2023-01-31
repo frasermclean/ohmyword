@@ -1,4 +1,4 @@
-﻿using OhMyWord.Core.Models;
+﻿using OhMyWord.Api.Models;
 
 namespace OhMyWord.Api.Commands.RegisterVisitor;
 

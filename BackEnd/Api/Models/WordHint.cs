@@ -1,4 +1,4 @@
-﻿namespace OhMyWord.Core.Models;
+﻿namespace OhMyWord.Api.Models;
 
 public class WordHint
 {

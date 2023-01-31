@@ -2,8 +2,8 @@
 using Microsoft.Extensions.Options;
 using OhMyWord.Api.Events.GameStateChanged;
 using OhMyWord.Api.Events.LetterHintAdded;
-using OhMyWord.Core.Models;
-using OhMyWord.Core.Options;
+using OhMyWord.Api.Models;
+using OhMyWord.Api.Options;
 using OhMyWord.Data.Enums;
 
 namespace OhMyWord.Api.Services;
