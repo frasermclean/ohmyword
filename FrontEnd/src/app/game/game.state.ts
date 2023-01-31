@@ -10,25 +10,17 @@ import { Game, Guess, Hub } from './game.actions';
 interface GameStateModel {
   registered: boolean;
   playerCount: number;
-  state: {
-    roundActive: boolean;
-    roundNumber: number;
-    roundId: string;
-    intervalStart: Date;
-    intervalEnd: Date;
-  };
-  round: {
-    active: boolean;
-    number: number;
-    id: string;
-    guessed: boolean;
+  roundActive: boolean;
+  roundNumber: number;
+  roundId: string;
+  interval: {
     startDate: Date;
     endDate: Date;
-    endSummary: RoundEndSummary;
   };
   wordHint: WordHint;
   score: number;
   guessedWord: boolean;
+  roundEndSummary: RoundEndSummary;
   hub: {
     connectionState: HubConnectionState;
     error: any;
@@ -48,25 +40,17 @@ export const GUESS_DEFAULT_CHAR = '_';
   defaults: {
     registered: false,
     playerCount: 0,
-    state: {
-      roundActive: false,
-      roundNumber: 0,
-      roundId: '',
-      intervalStart: new Date(),
-      intervalEnd: new Date(),
-    },
-    round: {
-      active: false,
-      number: 0,
-      id: '',
-      guessed: false,
+    roundActive: false,
+    roundNumber: 0,
+    roundId: '',
+    interval: {
       startDate: new Date(),
       endDate: new Date(),
-      endSummary: RoundEndSummary.default,
     },
     wordHint: WordHint.default,
     score: 0,
     guessedWord: false,
+    roundEndSummary: RoundEndSummary.default,
     hub: {
       connectionState: HubConnectionState.Disconnected,
       error: null,
@@ -112,10 +96,12 @@ export class GameState {
   @Action(Game.GameStateUpdated)
   gameStateUpdated(context: StateContext<GameStateModel>, action: Game.GameStateUpdated) {
     context.patchState({
-      state: {
-        ...action.response,
-        intervalStart: new Date(action.response.intervalStart),
-        intervalEnd: new Date(action.response.intervalEnd),
+      roundActive: action.roundActive,
+      roundNumber: action.roundNumber,
+      roundId: action.roundId,
+      interval: {
+        startDate: new Date(action.intervalStart),
+        endDate: new Date(action.intervalEnd),
       },
     });
   }
@@ -212,7 +198,7 @@ export class GameState {
       },
     });
 
-    this.gameService.submitGuess(state.round.id, state.guess.value);
+    this.gameService.submitGuess(state.roundId, state.guess.value);
   }
 
   @Action(Guess.Succeeded)
@@ -220,10 +206,7 @@ export class GameState {
     const state = context.getState();
     context.patchState({
       score: state.score + action.points,
-      round: {
-        ...state.round,
-        guessed: true,
-      },
+      guessedWord: true,
     });
     this.soundService.playCorrect();
   }
@@ -244,13 +227,23 @@ export class GameState {
   }
 
   @Selector([GAME_STATE_TOKEN])
-  static round(state: GameStateModel) {
-    return state.round;
+  static roundActive(state: GameStateModel) {
+    return state.roundActive;
   }
 
   @Selector([GAME_STATE_TOKEN])
-  static state(state: GameStateModel) {
-    return state.state;
+  static roundNumber(state: GameStateModel) {
+    return state.roundNumber;
+  }
+
+  @Selector([GAME_STATE_TOKEN])
+  static roundId(state: GameStateModel) {
+    return state.roundId;
+  }
+
+  @Selector([GAME_STATE_TOKEN])
+  static interval(state: GameStateModel) {
+    return state.interval;
   }
 
   @Selector([GAME_STATE_TOKEN])
@@ -271,6 +264,11 @@ export class GameState {
   @Selector([GAME_STATE_TOKEN])
   static playerCount(state: GameStateModel) {
     return state.playerCount;
+  }
+
+  @Selector([GAME_STATE_TOKEN])
+  static roundEndSummary(state: GameStateModel) {
+    return state.roundEndSummary;
   }
 
   @Selector([GAME_STATE_TOKEN])

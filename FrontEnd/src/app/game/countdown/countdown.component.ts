@@ -1,20 +1,21 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnChanges, OnDestroy, OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-countdown',
   templateUrl: './countdown.component.html',
   styleUrls: ['./countdown.component.scss'],
 })
-export class CountdownComponent implements OnInit, OnDestroy {
+export class CountdownComponent implements OnChanges, OnDestroy {
   @Input() startDate: Date = new Date();
   @Input() endDate: Date = new Date();
-  @Input() updateRate = 100;
 
   private intervalId: any;
   public progressPercentage: number = 0;
   public secondsRemaining: number = 0;
 
-  ngOnInit() {
+  ngOnChanges() {
+    if (this.intervalId) clearInterval(this.intervalId);
+
     const startTime = this.startDate.getTime();
     const endTime = this.endDate.getTime();
     const timespan = endTime - startTime;
@@ -24,7 +25,7 @@ export class CountdownComponent implements OnInit, OnDestroy {
       const elapsed = now - startTime;
       this.progressPercentage = Math.round((elapsed / timespan) * 100);
       this.secondsRemaining = Math.round((endTime - now) / 1000);
-    }, this.updateRate);
+    }, 100);
   }
 
   ngOnDestroy() {

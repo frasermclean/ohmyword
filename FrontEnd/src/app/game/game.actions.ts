@@ -53,7 +53,7 @@ export namespace Game {
     intervalStart = new Date(this.response.intervalStart);
     intervalEnd = new Date(this.response.intervalEnd);
 
-    constructor(public response: GameStateResponse) {}
+    constructor(private response: GameStateResponse) {}
   }
 
   export class LetterHintReceived {
