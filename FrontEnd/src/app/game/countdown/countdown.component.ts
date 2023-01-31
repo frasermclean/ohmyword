@@ -12,6 +12,7 @@ export class CountdownComponent implements OnInit, OnDestroy {
 
   private intervalId: any;
   public progressPercentage: number = 0;
+  public secondsRemaining: number = 0;
 
   ngOnInit() {
     const startTime = this.startDate.getTime();
@@ -22,6 +23,7 @@ export class CountdownComponent implements OnInit, OnDestroy {
       const now = new Date().getTime();
       const elapsed = now - startTime;
       this.progressPercentage = Math.round((elapsed / timespan) * 100);
+      this.secondsRemaining = Math.round((endTime - now) / 1000);
     }, this.updateRate);
   }
 
