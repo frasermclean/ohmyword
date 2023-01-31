@@ -28,6 +28,9 @@ public class GameService : IGameService
     private readonly IWordsService wordsService;
     private readonly IVisitorService visitorService;
 
+    private IReadOnlyList<string> allWordIds = new List<string>();
+    private Stack<string> shuffledWordIds = new();
+
     public Round Round { get; private set; } = Round.Default;
     public bool RoundActive { get; private set; }
     public DateTime Expiry { get; private set; }
@@ -98,11 +101,39 @@ public class GameService : IGameService
 
     private async Task<Round> CreateRoundAsync(CancellationToken cancellationToken)
     {
-        var word = await wordsService.GetNextWordAsync(cancellationToken);
-        var duration = TimeSpan.FromSeconds(word.Length * Options.LetterHintDelay);
         var roundNumber = Round.Number + 1;
+        var word = await GetNextWordAsync(cancellationToken);
+        var duration = TimeSpan.FromSeconds(word.Length * Options.LetterHintDelay);
 
         return new Round(roundNumber, word, duration, visitorService.VisitorIds);
+    }
+
+    private async Task<Word> GetNextWordAsync(CancellationToken cancellationToken)
+    {
+        if (allWordIds.Count == 0)
+            allWordIds = await wordsService
+                .GetAllWordIds(cancellationToken)
+                .ToListAsync(cancellationToken);
+
+        if (allWordIds.Count == 0)
+        {
+            logger.LogError("No words found in database");
+            return Word.Default;
+        }
+
+        if (shuffledWordIds.Count == 0)
+        {
+            logger.LogInformation("Detected empty shuffled word stack. Shuffling words: {Count}", allWordIds.Count);
+            shuffledWordIds = new Stack<string>(allWordIds.OrderBy(_ => Random.Shared.Next()));
+        }
+
+        var wordId = shuffledWordIds.Pop();
+        var word = await wordsService.GetWordAsync(wordId, cancellationToken);
+
+        if (word is not null) return word;
+
+        logger.LogError("Word not found in database. WordId: {WordId}", wordId);
+        return Word.Default;
     }
 
     private async Task SendLetterHintsAsync(Round round)
