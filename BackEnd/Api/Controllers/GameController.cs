@@ -34,7 +34,7 @@ public sealed class GameController : AuthorizedControllerBase
     [HttpPost("reload-words")]
     public IActionResult UpdateShouldReloadWords()
     {
-        wordsService.ShouldReloadWords = true;
+        //wordsService.ShouldReloadWords = true;
         return NoContent();
     }
 }

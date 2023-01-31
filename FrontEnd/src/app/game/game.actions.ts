@@ -1,5 +1,5 @@
 import { LetterHintResponse } from '../models/responses/letter-hint.response';
-import { RegisterPlayerResponse } from '../models/responses/register-player.response';
+import { RegisterVisitorResponse } from '../models/responses/register-visitor.response';
 import { RoundEndResponse } from '../models/responses/round-end.response';
 import { RoundStartResponse } from '../models/responses/round-start.response';
 
@@ -35,12 +35,12 @@ export namespace Hub {
 export namespace Game {
   export class PlayerRegistered {
     static readonly type = '[Game Service] Game.PlayerRegistered';
-    
+
     roundActive = this.response.roundActive;
-    playerCount = this.response.playerCount;
+    playerCount = this.response.visitorCount;
     score = this.response.score;
 
-    constructor(private response: RegisterPlayerResponse) {}
+    constructor(private response: RegisterVisitorResponse) {}
   }
 
   export class RoundStarted {

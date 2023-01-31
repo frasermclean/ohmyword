@@ -4,7 +4,7 @@ import { HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/s
 import { environment } from 'src/environments/environment';
 import { FingerprintService } from './fingerprint.service';
 
-import { RegisterPlayerResponse } from '../models/responses/register-player.response';
+import { RegisterVisitorResponse } from '../models/responses/register-visitor.response';
 import { GuessResponse } from '../models/responses/guess.response';
 import { LetterHintResponse } from '../models/responses/letter-hint.response';
 import { RoundStartResponse } from '../models/responses/round-start.response';
@@ -74,7 +74,7 @@ export class GameService {
    */
   public async registerVisitor() {
     const visitorId = await this.fingerprintService.getVisitorId();
-    const response = await this.hubConnection.invoke<RegisterPlayerResponse>('RegisterVisitor', visitorId);
+    const response = await this.hubConnection.invoke<RegisterVisitorResponse>('RegisterVisitor', visitorId);
     this.store.dispatch(new Game.PlayerRegistered(response));
     if (response.roundStart) this.store.dispatch(new Game.RoundStarted(response.roundStart));
     else if (response.roundEnd) this.store.dispatch(new Game.RoundEnded(response.roundEnd));

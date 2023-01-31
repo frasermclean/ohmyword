@@ -1,9 +1,9 @@
 import { RoundEndResponse } from './round-end.response';
 import { RoundStartResponse } from './round-start.response';
 
-export interface RegisterPlayerResponse {
+export interface RegisterVisitorResponse {
   roundActive: boolean;
-  playerCount: number;
+  visitorCount: number;
   score: number;
   roundStart: RoundStartResponse | null;
   roundEnd: RoundEndResponse | null;

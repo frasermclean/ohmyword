@@ -1,4 +1,4 @@
-﻿namespace OhMyWord.Core.Responses.Game;
+﻿namespace OhMyWord.Api.Commands.RemoveVisitor;
 
 public class RemoveVisitorResponse
 {

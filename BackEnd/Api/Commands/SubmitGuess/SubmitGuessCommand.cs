@@ -1,9 +1,8 @@
-﻿using MediatR;
-using OhMyWord.Core.Responses.Game;
+﻿using FastEndpoints;
 
-namespace OhMyWord.Core.Requests.Game;
+namespace OhMyWord.Api.Commands.SubmitGuess;
 
-public class SubmitGuessRequest : IRequest<SubmitGuessResponse>
+public class SubmitGuessCommand : ICommand<SubmitGuessResponse>
 {
     public Guid RoundId { get; init; }
     public string Value { get; init; } = string.Empty;
