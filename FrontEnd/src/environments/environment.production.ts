@@ -6,5 +6,6 @@ export const environment: Environment = {
   auth: {
     clientId: '', // TODO: Add client ID
     redirectUri: 'https://ohmyword.live',
+    scopes: ['https://auth.ohmyword.live/prod-api/access'],
   }
 };

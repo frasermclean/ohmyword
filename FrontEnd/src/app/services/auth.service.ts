@@ -4,8 +4,9 @@ import { InteractionStatus } from '@azure/msal-browser';
 import { Store } from '@ngxs/store';
 import { Subject } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
+import { environment } from 'src/environments/environment';
 import { Auth } from '../auth/auth.actions';
-import { scopes } from '../auth/auth.config';
+
 import { Role } from '../models/role.enum';
 
 @Injectable({
@@ -30,8 +31,11 @@ export class AuthService {
 
         const account = accounts[0];
         const name = account.name || '';
-        const role = account.localAccountId === '377398a2-f436-4f5f-9076-89cca8435f34' || // TODO: replace this with token claim
-          account.localAccountId === 'f803a3a2-9edc-485e-98f9-3b6fea804d91' ? Role.Admin : Role.User;
+        const role =
+          account.localAccountId === '377398a2-f436-4f5f-9076-89cca8435f34' || // TODO: replace this with token claim
+          account.localAccountId === 'f803a3a2-9edc-485e-98f9-3b6fea804d91'
+            ? Role.Admin
+            : Role.User;
 
         this.store.dispatch(new Auth.LoggedIn(name, role));
       });
@@ -39,7 +43,7 @@ export class AuthService {
 
   login() {
     this.msalService.loginRedirect({
-      scopes: scopes,
+      scopes: environment.auth.scopes,
     });
   }
 

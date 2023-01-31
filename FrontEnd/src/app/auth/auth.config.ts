@@ -11,8 +11,6 @@ const policyNames = {
   signUpSignIn: 'B2C_1_SignUp_SignIn',
 };
 
-export const scopes = ['https://auth.ohmyword.live/dev-api/access'];
-
 /**
  * MSAL client application
  */
@@ -50,5 +48,5 @@ export const guardConfig: MsalGuardConfiguration = {
  */
 export const interceptorConfig: MsalInterceptorConfiguration = {
   interactionType: InteractionType.Redirect,
-  protectedResourceMap: new Map([[`https://${environment.apiHost}/*`, [scopes[0]]]]),
+  protectedResourceMap: new Map([[`https://${environment.apiHost}/api/*`, environment.auth.scopes]]),
 };
