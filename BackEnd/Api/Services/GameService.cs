@@ -35,7 +35,7 @@ public class GameService : IGameService
 
     public GameState State { get; private set; } = new();
     public Round Round { get; private set; } = Round.Default;
-    public GameServiceOptions Options { get; }    
+    public GameServiceOptions Options { get; }
 
     public GameService(ILogger<GameService> logger, IWordsService wordsService, IVisitorService visitorService,
         IOptions<GameServiceOptions> options)
@@ -60,7 +60,7 @@ public class GameService : IGameService
 
             // start new round
             Round = await CreateRoundAsync(gameCancellationToken);
-            await UpdateStateAsync(true, Round.Number, Round.Id, Round.EndTime);
+            await UpdateStateAsync(true, Round.Number, Round.Id, Round.EndTime, Round.WordHint);
 
             logger.LogDebug(
                 "Round: {RoundNumber} has started with {VisitorCount} visitors. Current word is: {WordId}. Round duration: {Seconds} seconds",
@@ -204,11 +204,16 @@ public class GameService : IGameService
             Round.EndRound(RoundEndReason.NoVisitorsLeft);
     }
 
-    private async Task UpdateStateAsync(bool roundActive, int roundNumber, Guid roundId, DateTime expiration)
+    private async Task UpdateStateAsync(bool roundActive, int roundNumber, Guid roundId, DateTime expiration,
+        WordHint? wordHint = default)
     {
         State = new GameState
         {
-            RoundActive = roundActive, RoundNumber = roundNumber, RoundId = roundId, IntervalEnd = expiration,
+            RoundActive = roundActive,
+            RoundNumber = roundNumber,
+            RoundId = roundId,
+            IntervalEnd = expiration,
+            WordHint = wordHint ?? WordHint.Default
         };
 
         await new GameStateChangedEvent(State).PublishAsync();

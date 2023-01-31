@@ -72,6 +72,28 @@ export class GameState {
       registered: true,
       playerCount: action.playerCount,
       score: action.score,
+      roundActive: action.gameState.roundActive,
+      roundNumber: action.gameState.roundNumber,
+      roundId: action.gameState.roundId,
+      wordHint: new WordHint(action.gameState.wordHint),
+      interval: {
+        startDate: new Date(action.gameState.intervalStart),
+        endDate: new Date(action.gameState.intervalEnd),
+      },
+    });
+  }
+
+  @Action(Game.GameStateUpdated)
+  gameStateUpdated(context: StateContext<GameStateModel>, action: Game.GameStateUpdated) {
+    context.patchState({
+      roundActive: action.roundActive,
+      roundNumber: action.roundNumber,
+      roundId: action.roundId,
+      wordHint: action.wordHint,
+      interval: {
+        startDate: new Date(action.intervalStart),
+        endDate: new Date(action.intervalEnd),
+      },
     });
   }
 
@@ -91,19 +113,6 @@ export class GameState {
   @Action(Game.PlayerCountUpdated)
   playerCountUpdated(context: StateContext<GameStateModel>, action: Game.PlayerCountUpdated) {
     context.patchState({ playerCount: action.count });
-  }
-
-  @Action(Game.GameStateUpdated)
-  gameStateUpdated(context: StateContext<GameStateModel>, action: Game.GameStateUpdated) {
-    context.patchState({
-      roundActive: action.roundActive,
-      roundNumber: action.roundNumber,
-      roundId: action.roundId,
-      interval: {
-        startDate: new Date(action.intervalStart),
-        endDate: new Date(action.intervalEnd),
-      },
-    });
   }
 
   @Action(Hub.Connect)

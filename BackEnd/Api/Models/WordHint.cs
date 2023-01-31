@@ -2,13 +2,13 @@
 
 public class WordHint
 {
-    private readonly List<LetterHint> letterHints = new();
+    private readonly List<LetterHint> letterHintHints = new();
 
     public int Length { get; }
     public string Definition { get; }
-    public IEnumerable<LetterHint> Letters => letterHints;
+    public IEnumerable<LetterHint> LetterHints => letterHintHints;
 
-    internal WordHint(Word word)
+    public WordHint(Word word)
     {
         var definitionIndex = Random.Shared.Next(word.Definitions.Count());
 
@@ -18,5 +18,5 @@ public class WordHint
 
     public static readonly WordHint Default = new(Word.Default);
 
-    public void AddLetterHint(LetterHint letterHint) => letterHints.Add(letterHint);
+    public void AddLetterHint(LetterHint letterHint) => letterHintHints.Add(letterHint);
 }

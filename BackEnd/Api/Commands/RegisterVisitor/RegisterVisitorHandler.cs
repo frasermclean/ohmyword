@@ -22,7 +22,7 @@ public class RegisterVisitorHandler : ICommandHandler<RegisterVisitorCommand, Re
 
         return new RegisterVisitorResponse
         {
-            VisitorCount = visitorService.VisitorCount, Score = visitor.Score, GameState = gameService.State
+            VisitorCount = visitorService.VisitorCount, Score = visitor.Score, GameState = gameService.State,
         };
     }
 }

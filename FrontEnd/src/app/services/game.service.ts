@@ -7,8 +7,6 @@ import { FingerprintService } from './fingerprint.service';
 import { RegisterVisitorResponse } from '../models/responses/register-visitor.response';
 import { GuessResponse } from '../models/responses/guess.response';
 import { LetterHintResponse } from '../models/responses/letter-hint.response';
-import { RoundStartResponse } from '../models/responses/round-start.response';
-import { RoundEndResponse } from '../models/responses/round-end.response';
 
 import { Store } from '@ngxs/store';
 

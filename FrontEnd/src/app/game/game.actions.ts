@@ -1,8 +1,7 @@
 import { GameStateResponse } from '../models/responses/game-state-response';
 import { LetterHintResponse } from '../models/responses/letter-hint.response';
 import { RegisterVisitorResponse } from '../models/responses/register-visitor.response';
-import { RoundEndResponse } from '../models/responses/round-end.response';
-import { RoundStartResponse } from '../models/responses/round-start.response';
+import { WordHint } from '../models/word-hint.model';
 
 /**
  * Hub actions and events
@@ -37,9 +36,9 @@ export namespace Game {
   export class PlayerRegistered {
     static readonly type = '[Game Service] Game.PlayerRegistered';
 
-    roundActive = this.response.roundActive;
     playerCount = this.response.visitorCount;
     score = this.response.score;
+    gameState = this.response.gameState;
 
     constructor(private response: RegisterVisitorResponse) {}
   }
@@ -52,6 +51,7 @@ export namespace Game {
     roundId = this.response.roundId;
     intervalStart = new Date(this.response.intervalStart);
     intervalEnd = new Date(this.response.intervalEnd);
+    wordHint = new WordHint(this.response.wordHint);
 
     constructor(private response: GameStateResponse) {}
   }

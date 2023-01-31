@@ -7,4 +7,5 @@ public record GameState
     public Guid RoundId { get; init; }
     public DateTime IntervalStart { get; init; } = DateTime.UtcNow;
     public DateTime IntervalEnd { get; init; }
+    public WordHint WordHint { get; init; } = WordHint.Default;
 }
