@@ -208,7 +208,7 @@ public class GameService : IGameService
     {
         State = new GameState
         {
-            RoundActive = roundActive, RoundNumber = roundNumber, RoundId = roundId, Expiration = expiration,
+            RoundActive = roundActive, RoundNumber = roundNumber, RoundId = roundId, IntervalEnd = expiration,
         };
 
         await new GameStateChangedEvent(State).PublishAsync();

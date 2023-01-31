@@ -10,6 +10,13 @@ import { Game, Guess, Hub } from './game.actions';
 interface GameStateModel {
   registered: boolean;
   playerCount: number;
+  state: {
+    roundActive: boolean;
+    roundNumber: number;
+    roundId: string;
+    intervalStart: Date;
+    intervalEnd: Date;
+  };
   round: {
     active: boolean;
     number: number;
@@ -21,6 +28,7 @@ interface GameStateModel {
   };
   wordHint: WordHint;
   score: number;
+  guessedWord: boolean;
   hub: {
     connectionState: HubConnectionState;
     error: any;
@@ -40,6 +48,13 @@ export const GUESS_DEFAULT_CHAR = '_';
   defaults: {
     registered: false,
     playerCount: 0,
+    state: {
+      roundActive: false,
+      roundNumber: 0,
+      roundId: '',
+      intervalStart: new Date(),
+      intervalEnd: new Date(),
+    },
     round: {
       active: false,
       number: 0,
@@ -51,6 +66,7 @@ export const GUESS_DEFAULT_CHAR = '_';
     },
     wordHint: WordHint.default,
     score: 0,
+    guessedWord: false,
     hub: {
       connectionState: HubConnectionState.Disconnected,
       error: null,
@@ -75,42 +91,6 @@ export class GameState {
     });
   }
 
-  @Action(Game.RoundStarted)
-  roundStarted(context: StateContext<GameStateModel>, action: Game.RoundStarted) {
-    const state = context.getState();
-    context.patchState({
-      round: {
-        ...state.round,
-        active: true,
-        number: action.roundNumber,
-        id: action.roundId,
-        guessed: false,
-        startDate: action.roundStarted,
-        endDate: action.roundEnds,
-      },
-      wordHint: new WordHint(action.wordHint),
-      guess: {
-        value: '',
-        count: 0,
-        maxLength: action.wordHint.length,
-      },
-    });
-  }
-
-  @Action(Game.RoundEnded)
-  roundEnded(context: StateContext<GameStateModel>, action: Game.RoundEnded) {
-    const state = context.getState();
-    context.patchState({
-      round: {
-        ...state.round,
-        active: false,
-        number: action.roundNumber,
-        endSummary: new RoundEndSummary(action.word, action.endReason, action.nextRoundStart),
-      },
-      wordHint: WordHint.default,
-    });
-  }
-
   @Action(Game.LetterHintReceived)
   letterHintReceived(context: StateContext<GameStateModel>, action: Game.LetterHintReceived) {
     const state = context.getState();
@@ -127,6 +107,17 @@ export class GameState {
   @Action(Game.PlayerCountUpdated)
   playerCountUpdated(context: StateContext<GameStateModel>, action: Game.PlayerCountUpdated) {
     context.patchState({ playerCount: action.count });
+  }
+
+  @Action(Game.GameStateUpdated)
+  gameStateUpdated(context: StateContext<GameStateModel>, action: Game.GameStateUpdated) {
+    context.patchState({
+      state: {
+        ...action.response,
+        intervalStart: new Date(action.response.intervalStart),
+        intervalEnd: new Date(action.response.intervalEnd),
+      },
+    });
   }
 
   @Action(Hub.Connect)
@@ -258,6 +249,11 @@ export class GameState {
   }
 
   @Selector([GAME_STATE_TOKEN])
+  static state(state: GameStateModel) {
+    return state.state;
+  }
+
+  @Selector([GAME_STATE_TOKEN])
   static wordHint(state: GameStateModel) {
     return state.wordHint;
   }
@@ -265,6 +261,11 @@ export class GameState {
   @Selector([GAME_STATE_TOKEN])
   static score(state: GameStateModel) {
     return state.score;
+  }
+
+  @Selector([GAME_STATE_TOKEN])
+  static guessedWord(state: GameStateModel) {
+    return state.guessedWord;
   }
 
   @Selector([GAME_STATE_TOKEN])

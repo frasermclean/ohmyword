@@ -11,7 +11,8 @@ import { GameState } from '../game.state';
 export class GameContainerComponent implements OnInit, OnDestroy {
   registered$ = this.store.select(GameState.registered);
   connectionState$ = this.store.select(GameState.connectionState);
-  round$ = this.store.select(GameState.round);
+  state$ = this.store.select(GameState.state);
+  guessedWord$ = this.store.select(GameState.guessedWord);
   showKeyboard = false
 
   constructor(private store: Store) {}

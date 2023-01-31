@@ -1,3 +1,4 @@
+import { GameStateResponse } from '../models/responses/game-state-response';
 import { LetterHintResponse } from '../models/responses/letter-hint.response';
 import { RegisterVisitorResponse } from '../models/responses/register-visitor.response';
 import { RoundEndResponse } from '../models/responses/round-end.response';
@@ -43,28 +44,16 @@ export namespace Game {
     constructor(private response: RegisterVisitorResponse) {}
   }
 
-  export class RoundStarted {
-    static readonly type = '[Game Service] Game.RoundStarted';
+  export class GameStateUpdated {
+    static readonly type = '[Game Service] Game.GameStateUpdated';
 
-    roundId = this.response.roundId;
-    roundNumber = this.response.roundNumber;
-    roundStarted = new Date(this.response.roundStarted);
-    roundEnds = new Date(this.response.roundEnds);
-    wordHint = this.response.wordHint;
-
-    constructor(private response: RoundStartResponse) {}
-  }
-
-  export class RoundEnded {
-    static readonly type = '[Game Service] Game.RoundEnded';
-
+    roundActive = this.response.roundActive;
     roundNumber = this.response.roundNumber;
     roundId = this.response.roundId;
-    word = this.response.word;
-    endReason = this.response.endReason;
-    nextRoundStart = new Date(this.response.nextRoundStart);
+    intervalStart = new Date(this.response.intervalStart);
+    intervalEnd = new Date(this.response.intervalEnd);
 
-    constructor(private response: RoundEndResponse) {}
+    constructor(public response: GameStateResponse) {}
   }
 
   export class LetterHintReceived {

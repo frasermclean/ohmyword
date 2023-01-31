@@ -10,9 +10,9 @@ namespace OhMyWord.Api.Hubs;
 
 public interface IGameHub
 {
-    Task SendLetterHint(LetterHint letterHint);
-    Task SendGameState(GameState gameState);    
+    Task SendGameState(GameState gameState);
     Task SendVisitorCount(int count);
+    Task SendLetterHint(LetterHint letterHint);
 }
 
 public class GameHub : Hub<IGameHub>
