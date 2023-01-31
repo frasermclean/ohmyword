@@ -19,7 +19,8 @@ public sealed class DatabaseService : IDatabaseService, IDisposable
     {
         cosmosClient = new CosmosClientBuilder(options.Value.ConnectionString)
             .WithApplicationName(options.Value.ApplicationName)
-            .WithHttpClientFactory(() => httpClientFactory.CreateClient("CosmosDb"))            
+            .WithHttpClientFactory(() => httpClientFactory.CreateClient("CosmosDb"))
+            .WithCustomSerializer(new EntitySerializer())
             .WithContentResponseOnWrite(false)
             .Build();
 
@@ -30,6 +31,6 @@ public sealed class DatabaseService : IDatabaseService, IDisposable
 
     public void Dispose()
     {
-        cosmosClient.Dispose();        
+        cosmosClient.Dispose();
     }
 }

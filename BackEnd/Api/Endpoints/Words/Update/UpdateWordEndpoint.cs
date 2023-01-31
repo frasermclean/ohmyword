@@ -20,7 +20,10 @@ public class UpdateWordEndpoint : Endpoint<UpdateWordRequest, Word>
 
     public override async Task HandleAsync(UpdateWordRequest request, CancellationToken cancellationToken)
     {
-        var word = new Word { Id = request.WordId, Definitions = request.Definitions, LastModified = DateTime.UtcNow };
+        var word = new Word
+        {
+            Id = request.WordId, Definitions = request.Definitions, LastModifiedTime = DateTime.UtcNow
+        };
         await wordsService.UpdateWordAsync(word, cancellationToken);
         await SendOkAsync(word, cancellationToken);
     }

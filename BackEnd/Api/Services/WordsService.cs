@@ -83,6 +83,6 @@ public class WordsService : IWordsService
         Definitions = await definitionsRepository.GetDefinitionsAsync(wordEntity.Id, cancellationToken)
             .Select(Definition.FromEntity)
             .ToListAsync(cancellationToken),
-        LastModified = wordEntity.LastModifiedTime,
+        LastModifiedTime = wordEntity.LastModifiedTime,
     };
 }

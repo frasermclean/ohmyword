@@ -12,7 +12,7 @@ public class Word
     public int Length => Id.Length;
 
     public required IEnumerable<Definition> Definitions { get; init; }
-    public DateTime LastModified { get; init; }
+    public DateTime LastModifiedTime { get; init; }
 
     public LetterHint GetLetterHint(int position) => new(position, Id[position - 1]);
 
@@ -20,6 +20,6 @@ public class Word
     {
         Id = "default",
         Definitions = new List<Definition> { new() { PartOfSpeech = PartOfSpeech.Noun, Value = "Default word" } },
-        LastModified = DateTime.UtcNow,
+        LastModifiedTime = DateTime.UtcNow,
     };
 }
