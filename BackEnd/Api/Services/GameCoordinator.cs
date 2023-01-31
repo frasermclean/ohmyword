@@ -13,9 +13,10 @@ public class GameCoordinator : BackgroundService
     {
         this.gameService = gameService;
 
-        gameService.RoundStarted += async (_, args) => await gameHubContext.Clients.All.SendRoundStarted(mapper.Map<RoundStartResponse>(args));
-        gameService.RoundEnded += async (_, args) => await gameHubContext.Clients.All.SendRoundEnded(mapper.Map<RoundEndResponse>(args));
-        gameService.LetterHintAdded += async letterHint => await gameHubContext.Clients.All.SendLetterHint(letterHint);
+        gameService.RoundStarted += async (_, args) =>
+            await gameHubContext.Clients.All.SendRoundStarted(mapper.Map<RoundStartResponse>(args));
+        gameService.RoundEnded += async (_, args) =>
+            await gameHubContext.Clients.All.SendRoundEnded(mapper.Map<RoundEndResponse>(args));
     }
 
     protected override Task ExecuteAsync(CancellationToken cancellationToken) =>

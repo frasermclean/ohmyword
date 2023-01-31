@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Options;
+﻿using FastEndpoints;
+using Microsoft.Extensions.Options;
+using OhMyWord.Api.Events.LetterHintAdded;
 using OhMyWord.Core.Events;
 using OhMyWord.Core.Models;
 using OhMyWord.Core.Options;
@@ -15,7 +17,6 @@ public interface IGameService
 
     event EventHandler<RoundStartedEventArgs> RoundStarted;
     event EventHandler<RoundEndedEventArgs> RoundEnded;
-    event Action<LetterHint> LetterHintAdded;
 
     Task ExecuteGameAsync(CancellationToken gameCancellationToken);
     Task<int> ProcessGuessAsync(string connectionId, Guid roundId, string value);
@@ -37,7 +38,6 @@ public class GameService : IGameService
     public DateTime Expiry { get; private set; }
     public GameServiceOptions Options { get; }
 
-    public event Action<LetterHint>? LetterHintAdded;
     public event EventHandler<RoundStartedEventArgs>? RoundStarted;
     public event EventHandler<RoundEndedEventArgs>? RoundEnded;
 
@@ -134,7 +134,7 @@ public class GameService : IGameService
         return Word.Default;
     }
 
-    private async Task SendLetterHintsAsync(Round round)
+    private static async Task SendLetterHintsAsync(Round round)
     {
         var word = round.Word;
         var wordHint = round.WordHint;
@@ -151,9 +151,8 @@ public class GameService : IGameService
             previousIndices.Add(index);
 
             var letterHint = word.GetLetterHint(index + 1);
-
             wordHint.AddLetterHint(letterHint);
-            LetterHintAdded?.Invoke(letterHint);
+            await new LetterHintAddedEvent(letterHint).PublishAsync();
         }
     }
 
