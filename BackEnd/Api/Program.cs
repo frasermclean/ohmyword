@@ -2,7 +2,8 @@ using FastEndpoints;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Web;
 using OhMyWord.Api.Hubs;
-using OhMyWord.Api.Registration;
+using OhMyWord.Api.Options;
+using OhMyWord.Api.Services;
 using OhMyWord.Data.Extensions;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -37,17 +38,17 @@ public static class Program
                     );
 
                 // game services
-                services.AddGameServices(context.Configuration);
+                services.Configure<GameServiceOptions>(context.Configuration.GetSection("Game"));
+                services.AddHostedService<GameCoordinator>();
+                services.AddSingleton<IGameService, GameService>();
+                services.AddSingleton<IVisitorService, VisitorService>();
+                services.AddSingleton<IWordsService, WordsService>();
 
                 // development services
                 if (context.HostingEnvironment.IsDevelopment())
                 {
                     services.AddCors();
                 }
-
-                // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-                services.AddEndpointsApiExplorer();
-                services.AddSwaggerGen();
 
                 // health checks        
                 services.AddHealthChecks()
