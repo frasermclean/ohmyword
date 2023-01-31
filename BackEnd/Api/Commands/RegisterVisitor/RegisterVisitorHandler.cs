@@ -1,6 +1,6 @@
 ﻿using FastEndpoints;
+using OhMyWord.Api.Services;
 using OhMyWord.Core.Responses.Game;
-using OhMyWord.Core.Services;
 
 namespace OhMyWord.Api.Commands.RegisterVisitor;
 
@@ -18,6 +18,7 @@ public class RegisterVisitorHandler : ICommandHandler<RegisterVisitorCommand, Re
     public async Task<RegisterVisitorResponse> ExecuteAsync(RegisterVisitorCommand command, CancellationToken cancellationToken)
     {
         var visitor = await visitorService.AddVisitorAsync(command.VisitorId, command.ConnectionId);
+        gameService.AddVisitor(command.VisitorId);
 
         return new RegisterVisitorResponse
         {

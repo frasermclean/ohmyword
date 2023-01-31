@@ -1,11 +1,10 @@
-﻿using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using OhMyWord.Core.Events;
 using OhMyWord.Core.Models;
 using OhMyWord.Core.Options;
 using OhMyWord.Data.Enums;
 
-namespace OhMyWord.Core.Services;
+namespace OhMyWord.Api.Services;
 
 public interface IGameService
 {
@@ -20,6 +19,8 @@ public interface IGameService
 
     Task ExecuteGameAsync(CancellationToken gameCancellationToken);
     Task<int> ProcessGuessAsync(string connectionId, Guid roundId, string value);
+    void AddVisitor(string visitorId);
+    void RemoveVisitor(string visitorId);
 }
 
 public class GameService : IGameService
@@ -48,9 +49,6 @@ public class GameService : IGameService
         this.visitorService = visitorService;
 
         Options = options.Value;
-
-        visitorService.VisitorAdded += OnVisitorAdded;
-        visitorService.VisitorRemoved += OnVisitorRemoved;
     }
 
     public async Task ExecuteGameAsync(CancellationToken gameCancellationToken)
@@ -187,29 +185,29 @@ public class GameService : IGameService
         return pointsAwarded;
     }
 
-    private void OnVisitorAdded(object? _, VisitorEventArgs args)
+    public void AddVisitor(string visitorId)
     {
         // visitor joined while round wasn't active
         if (!RoundActive)
             return;
 
-        var wasAdded = Round.AddVisitor(args.VisitorId);
+        var wasAdded = Round.AddVisitor(visitorId);
         if (!wasAdded)
-            logger.LogError("Couldn't add visitor with ID {VisitorId} to round", args.VisitorId);
+            logger.LogError("Couldn't add visitor with ID {VisitorId} to round", visitorId);
     }
 
-    private void OnVisitorRemoved(object? _, VisitorEventArgs args)
+    public void RemoveVisitor(string visitorId)
     {
         // visitor left while round wasn't active
         if (!RoundActive)
             return;
 
-        var wasRemoved = Round.RemoveVisitor(args.VisitorId);
+        var wasRemoved = Round.RemoveVisitor(visitorId);
         if (!wasRemoved)
-            logger.LogError("Couldn't remove visitor with ID {VisitorId} from round", args.VisitorId);
+            logger.LogError("Couldn't remove visitor with ID {VisitorId} from round", visitorId);
 
         // last visitor left while round active
-        if (args.VisitorCount == 0)
+        if (visitorService.VisitorCount == 0)
             Round.EndRound(RoundEndReason.NoVisitorsLeft);
     }
 }

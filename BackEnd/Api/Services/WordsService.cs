@@ -3,7 +3,7 @@ using OhMyWord.Core.Models;
 using OhMyWord.Data.Entities;
 using OhMyWord.Data.Services;
 
-namespace OhMyWord.Core.Services;
+namespace OhMyWord.Api.Services;
 
 public interface IWordsService
 {

@@ -1,6 +1,6 @@
 ﻿using FastEndpoints;
+using OhMyWord.Api.Services;
 using OhMyWord.Core.Models;
-using OhMyWord.Core.Services;
 
 namespace OhMyWord.Api.Endpoints.Words.Get;
 

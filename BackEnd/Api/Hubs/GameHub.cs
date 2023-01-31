@@ -1,8 +1,9 @@
 ﻿using FastEndpoints;
 using Microsoft.AspNetCore.SignalR;
 using OhMyWord.Api.Commands.RegisterVisitor;
-using OhMyWord.Api.Commands.RemoveVisitor;
 using OhMyWord.Api.Commands.SubmitGuess;
+using OhMyWord.Api.Events.VisitorDisconnected;
+using OhMyWord.Api.Services;
 using OhMyWord.Core.Models;
 using OhMyWord.Core.Responses.Game;
 
@@ -19,10 +20,12 @@ public interface IGameHub
 public class GameHub : Hub<IGameHub>
 {
     private readonly ILogger<GameHub> logger;
+    private readonly IVisitorService visitorService;
 
-    public GameHub(ILogger<GameHub> logger)
+    public GameHub(ILogger<GameHub> logger, IVisitorService visitorService)
     {
         this.logger = logger;
+        this.visitorService = visitorService;
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)
@@ -32,9 +35,8 @@ public class GameHub : Hub<IGameHub>
         else
             logger.LogError(exception, "Client disconnected. Connection ID: {ConnectionId}", Context.ConnectionId);
 
-        var response = await new RemoveVisitorCommand { ConnectionId = Context.ConnectionId }.ExecuteAsync();
-
-        await Clients.Others.SendVisitorCount(response.VisitorCount);
+        await new VisitorDisconnectedEvent(Context.ConnectionId).PublishAsync();
+        await Clients.Others.SendVisitorCount(visitorService.VisitorCount);
     }
 
     public async Task<RegisterVisitorResponse> RegisterVisitor(string visitorId)

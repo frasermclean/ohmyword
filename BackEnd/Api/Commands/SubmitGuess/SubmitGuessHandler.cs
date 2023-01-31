@@ -1,5 +1,5 @@
 ﻿using FastEndpoints;
-using OhMyWord.Core.Services;
+using OhMyWord.Api.Services;
 
 namespace OhMyWord.Api.Commands.SubmitGuess;
 

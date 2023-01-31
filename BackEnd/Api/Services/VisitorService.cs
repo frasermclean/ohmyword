@@ -1,12 +1,11 @@
-﻿using Microsoft.Extensions.Logging;
-using OhMyWord.Core.Events;
+﻿using OhMyWord.Core.Events;
 using OhMyWord.Core.Extensions;
 using OhMyWord.Core.Models;
 using OhMyWord.Data.Entities;
 using OhMyWord.Data.Services;
 using System.Collections.Concurrent;
 
-namespace OhMyWord.Core.Services;
+namespace OhMyWord.Api.Services;
 
 public interface IVisitorService
 {
@@ -16,9 +15,6 @@ public interface IVisitorService
     /// Currently connected visitor IDs.
     /// </summary>
     IEnumerable<string> VisitorIds { get; }
-
-    event EventHandler<VisitorEventArgs> VisitorAdded;
-    event EventHandler<VisitorEventArgs> VisitorRemoved;
 
     Task<Visitor> AddVisitorAsync(string visitorId, string connectionId);
     void RemoveVisitor(string connectionId);
@@ -36,7 +32,7 @@ public class VisitorService : IVisitorService
     public IEnumerable<string> VisitorIds => visitors.Values.Select(visitor => visitor.Id);
 
     public event EventHandler<VisitorEventArgs>? VisitorAdded;
-    public event EventHandler<VisitorEventArgs>? VisitorRemoved;
+    
 
     public VisitorService(ILogger<VisitorService> logger, IVisitorRepository visitorRepository)
     {
@@ -74,10 +70,8 @@ public class VisitorService : IVisitorService
     {
         if (visitors.TryRemove(connectionId, out var visitor))
         {
-            VisitorRemoved?.Invoke(this, new VisitorEventArgs(visitor.Id, VisitorCount, connectionId));
             logger.LogInformation("Visitor with ID: {VisitorId} left the game. Visitor count: {VisitorCount}",
-                visitor.Id,
-                VisitorCount);
+                visitor.Id, VisitorCount);
         }
         else
         {
