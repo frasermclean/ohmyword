@@ -1,16 +1,14 @@
-using FluentAssertions;
 using OhMyWord.Data;
 using OhMyWord.Data.Entities;
-using Xunit;
 
 namespace Data.Tests;
 
+[Trait("Category", "Unit")]
 public class EntitySerializerTests : IClassFixture<DataFixture>
 {
     private readonly DataFixture fixture;
     private readonly DateTime oneTwoThreeSecondsPastEpoch = new(1970, 1, 1, 0, 2, 3);
     private readonly EntitySerializer serializer = new();
-    
 
     public EntitySerializerTests(DataFixture fixture)
     {
@@ -35,7 +33,7 @@ public class EntitySerializerTests : IClassFixture<DataFixture>
 
         var word = serializer.FromStream<WordEntity>(stream);
 
-        word.Id.Should().Be("rooster");        
+        word.Id.Should().Be("rooster");
         word.Timestamp.Should().Be(123);
         word.LastModifiedTime.Should().Be(new DateTime(1970, 1, 1, 0, 2, 3));
     }
@@ -48,7 +46,7 @@ public class EntitySerializerTests : IClassFixture<DataFixture>
         using var stream = EntitySerializer.ConvertToStream(testWord);
         var word = EntitySerializer.ConvertFromStream<WordEntity>(stream);
 
-        word.Id.Should().Be(testWord.Id);        
+        word.Id.Should().Be(testWord.Id);
         word.Timestamp.Should().Be(testWord.Timestamp);
         word.LastModifiedTime.Should().Be(testWord.LastModifiedTime);
     }

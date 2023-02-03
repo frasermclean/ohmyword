@@ -1,9 +1,8 @@
-using FluentAssertions;
 using OhMyWord.Data.Enums;
-using Xunit;
 
 namespace Data.Tests;
 
+[Trait("Category", "Unit")]
 public class EntityTests : IClassFixture<DataFixture>
 {
     private readonly DataFixture fixture;

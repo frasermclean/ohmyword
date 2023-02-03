@@ -22,7 +22,7 @@ internal class EntitySerializer : CosmosSerializer
     {
         using (stream)
         {
-            if (stream.CanSeek && stream.Length == 0)
+            if (stream is { CanSeek: true, Length: 0 })
                 return default!;
 
             if (typeof(Stream).IsAssignableFrom(typeof(T)))
