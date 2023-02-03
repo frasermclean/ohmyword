@@ -1,20 +1,27 @@
 using FluentAssertions;
 using OhMyWord.Data;
-using OhMyWord.Data.Models;
+using OhMyWord.Data.Entities;
 using Xunit;
 
 namespace Data.Tests;
 
-public class EntitySerializerTests
+public class EntitySerializerTests : IClassFixture<DataFixture>
 {
-    private const long OneTwoThree = 123;
+    private readonly DataFixture fixture;
     private readonly DateTime oneTwoThreeSecondsPastEpoch = new(1970, 1, 1, 0, 2, 3);
+    private readonly EntitySerializer serializer = new();
+    
+
+    public EntitySerializerTests(DataFixture fixture)
+    {
+        this.fixture = fixture;
+    }
 
     [Fact]
     public void ConvertToStream_ShouldPass()
     {
-        var word = GetTestWord();
-        using var stream = EntitySerializer.ConvertToStream(word);
+        var word = fixture.TestWord;
+        using var stream = serializer.ToStream(word);
 
         stream.Should().BeOfType<MemoryStream>();
         stream.Should().BeReadable();
@@ -23,41 +30,28 @@ public class EntitySerializerTests
     [Fact]
     public void ConvertFromStream_ShouldPass()
     {
-        var jsonString = File.ReadAllText("Data/rooster.json");
+        var jsonString = File.ReadAllText("rooster.json");
         using var stream = GenerateStreamFromString(jsonString);
 
-        var word = EntitySerializer.ConvertFromStream<Word>(stream);
+        var word = serializer.FromStream<WordEntity>(stream);
 
-        word.Id.Should().Be("672d788e-ac53-416b-938d-f9903526c1a7");
-        word.Value.Should().Be("rooster");
-        word.Definition.Should().Be("A male domestic chicken.");
-        word.PartOfSpeech.Should().Be(PartOfSpeech.Noun);
-        word.Timestamp.Should().Be(OneTwoThree);
-        word.LastModifiedTime.Should().Be(oneTwoThreeSecondsPastEpoch);
+        word.Id.Should().Be("rooster");        
+        word.Timestamp.Should().Be(123);
+        word.LastModifiedTime.Should().Be(new DateTime(1970, 1, 1, 0, 2, 3));
     }
 
     [Fact]
     public void ConversionMethods_ShouldMatch()
     {
-        var testWord = GetTestWord();
+        var testWord = fixture.TestWord;
 
         using var stream = EntitySerializer.ConvertToStream(testWord);
-        var word = EntitySerializer.ConvertFromStream<Word>(stream);
+        var word = EntitySerializer.ConvertFromStream<WordEntity>(stream);
 
-        word.Id.Should().Be(testWord.Id);
-        word.Definition.Should().Be(testWord.Definition);
-        word.PartOfSpeech.Should().Be(testWord.PartOfSpeech);
+        word.Id.Should().Be(testWord.Id);        
         word.Timestamp.Should().Be(testWord.Timestamp);
         word.LastModifiedTime.Should().Be(testWord.LastModifiedTime);
     }
-
-    private static Word GetTestWord() => new()
-    {
-        Value = "cat",
-        Definition = "Small furry creature",
-        PartOfSpeech = PartOfSpeech.Noun,
-        Timestamp = OneTwoThree,
-    };
 
     private static Stream GenerateStreamFromString(string input)
     {
