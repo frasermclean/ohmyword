@@ -1,12 +1,12 @@
 ﻿using OhMyWord.Data.Services;
 
-namespace OhMyWord.Api.Endpoints.Words.List;
+namespace OhMyWord.Api.Endpoints.Words.Search;
 
-public class ListWordsRequest
+public class SearchWordsRequest
 {
     public int Offset { get; init; } = WordsRepository.OffsetMinimum;
     public int Limit { get; init; } = WordsRepository.LimitDefault;
     public string Filter { get; init; } = string.Empty;
-    public ListWordsOrderBy OrderBy { get; init; } = ListWordsOrderBy.Id;
+    public SearchWordsOrderBy OrderBy { get; init; } = SearchWordsOrderBy.Id;
     public SortDirection Direction { get; init; } = SortDirection.Ascending;
 }

@@ -2,11 +2,11 @@
 using FluentValidation;
 using OhMyWord.Data.Services;
 
-namespace OhMyWord.Api.Endpoints.Words.List;
+namespace OhMyWord.Api.Endpoints.Words.Search;
 
-public class ListWordsValidator : Validator<ListWordsRequest>
+public class SearchWordsValidator : Validator<SearchWordsRequest>
 {
-    public ListWordsValidator()
+    public SearchWordsValidator()
     {
         RuleFor(request => request.Offset).GreaterThanOrEqualTo(WordsRepository.OffsetMinimum);
         RuleFor(request => request.Limit).InclusiveBetween(WordsRepository.LimitMinimum, WordsRepository.LimitMaximum);

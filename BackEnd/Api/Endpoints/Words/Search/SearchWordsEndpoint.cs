@@ -2,13 +2,13 @@
 using OhMyWord.Api.Models;
 using OhMyWord.Api.Services;
 
-namespace OhMyWord.Api.Endpoints.Words.List;
+namespace OhMyWord.Api.Endpoints.Words.Search;
 
-public class ListWordsEndpoint : Endpoint<ListWordsRequest, IEnumerable<Word>>
+public class SearchWordsEndpoint : Endpoint<SearchWordsRequest, IEnumerable<Word>>
 {
     private readonly IWordsService wordsService;
 
-    public ListWordsEndpoint(IWordsService wordsService)
+    public SearchWordsEndpoint(IWordsService wordsService)
     {
         this.wordsService = wordsService;
     }
@@ -18,11 +18,11 @@ public class ListWordsEndpoint : Endpoint<ListWordsRequest, IEnumerable<Word>>
         Get("words");
     }
 
-    public override async Task<IEnumerable<Word>> ExecuteAsync(ListWordsRequest request,
+    public override async Task<IEnumerable<Word>> ExecuteAsync(SearchWordsRequest request,
         CancellationToken cancellationToken)
     {
         return await wordsService
-            .ListWordsAsync(request.Offset, request.Limit, request.Filter, request.OrderBy, request.Direction,
+            .SearchWordsAsync(request.Offset, request.Limit, request.Filter, request.OrderBy, request.Direction,
                 cancellationToken)
             .ToListAsync(cancellationToken);
     }

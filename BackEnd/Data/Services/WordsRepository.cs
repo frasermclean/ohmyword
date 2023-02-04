@@ -11,11 +11,11 @@ public interface IWordsRepository
 {
     IAsyncEnumerable<WordEntity> GetAllWordsAsync(CancellationToken cancellationToken = default);
 
-    IAsyncEnumerable<WordEntity> ListWords(
+    IAsyncEnumerable<WordEntity> SearchWords(
         int offset = WordsRepository.OffsetMinimum,
         int limit = WordsRepository.LimitDefault,
         string filter = "",
-        ListWordsOrderBy orderBy = ListWordsOrderBy.Id,
+        SearchWordsOrderBy orderBy = SearchWordsOrderBy.Id,
         SortDirection direction = SortDirection.Ascending,
         CancellationToken cancellationToken = default);
 
@@ -45,13 +45,13 @@ public class WordsRepository : Repository<WordEntity>, IWordsRepository
     public IAsyncEnumerable<WordEntity> GetAllWordsAsync(CancellationToken cancellationToken = default)
         => ReadPartitionItems(null, cancellationToken);
 
-    public IAsyncEnumerable<WordEntity> ListWords(int offset, int limit, string filter,
-        ListWordsOrderBy orderBy, SortDirection direction, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<WordEntity> SearchWords(int offset, int limit, string filter,
+        SearchWordsOrderBy orderBy, SortDirection direction, CancellationToken cancellationToken = default)
     {
         var orderByString = orderBy switch
         {
-            ListWordsOrderBy.LastModifiedTime => "word._ts",
-            ListWordsOrderBy.Length => "word.id.length",
+            SearchWordsOrderBy.LastModifiedTime => "word._ts",
+            SearchWordsOrderBy.Length => "word.id.length",
             _ => "word.id"
         };
 
@@ -89,7 +89,7 @@ public class WordsRepository : Repository<WordEntity>, IWordsRepository
         DeleteItemAsync(wordId, wordId, cancellationToken);
 }
 
-public enum ListWordsOrderBy
+public enum SearchWordsOrderBy
 {
     Id,
     Length,
