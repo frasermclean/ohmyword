@@ -32,6 +32,12 @@ var tags = {
 var frontendHostname = appEnv == 'prod' ? domainName : 'test.${domainName}'
 var backendHostname = appEnv == 'prod' ? 'api.${domainName}' : 'test.api.${domainName}'
 
+@description('Azure AD B2C client ID of single page application')
+var authClientId = appEnv == 'prod' ? 'ee95c3c0-c6f7-4675-9097-0e4d9bca14e3' : '1f427277-e4b2-4f9b-97b1-4f47f4ff03c0'
+
+@description('Azure AD B2C audience for API to validate')
+var authAudience = appEnv == 'prod' ? '7a224ce3-b92f-4525-a563-a79856d04a78' : 'f1f90898-e7c9-40b0-8ebf-103c2b0b1e72'
+
 resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-08-15' existing = {
   name: 'cosmos-${appName}-shared'
   scope: resourceGroup(sharedResourceGroup)
@@ -44,6 +50,11 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' existing = {
 
 resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' existing = {
   name: 'law-${appName}-shared'
+  scope: resourceGroup(sharedResourceGroup)
+}
+
+resource b2cTenant 'Microsoft.AzureActiveDirectory/b2cDirectories@2021-04-01' existing = {
+  name: 'ohmywordauth.onmicrosoft.com'
   scope: resourceGroup(sharedResourceGroup)
 }
 
@@ -105,6 +116,30 @@ resource appService 'Microsoft.Web/sites@2022-03-01' = {
         {
           name: 'XDT_MicrosoftApplicationInsights_Mode'
           value: 'Recommended'
+        }
+        {
+          name: 'AzureAd__Instance'
+          value: 'https://ohmywordauth.b2clogin.com'
+        }
+        {
+          name: 'AzureAd__Domain'
+          value: 'ohmywordauth.onmicrosoft.com'
+        }
+        {
+          name: 'AzureAd__TenantId'
+          value: b2cTenant.properties.tenantId
+        }
+        {
+          name: 'AzureAd__ClientId'
+          value: authClientId
+        }
+        {
+          name: 'AzureAd__Audience'
+          value: authAudience
+        }
+        {
+          name: 'AzureAd__SignUpSignInPolicyId'
+          value: 'B2C_1_SignUp_SignIn'
         }
         {
           name: 'Game__LetterHintDelay'

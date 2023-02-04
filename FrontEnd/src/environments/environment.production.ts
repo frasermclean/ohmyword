@@ -4,8 +4,8 @@ export const environment: Environment = {
   name: 'production',
   apiHost: 'api.ohmyword.live',
   auth: {
-    clientId: '', // TODO: Add client ID
+    clientId: 'ee95c3c0-c6f7-4675-9097-0e4d9bca14e3',
     redirectUri: 'https://ohmyword.live',
     scopes: ['https://auth.ohmyword.live/prod-api/access'],
-  }
+  },
 };
