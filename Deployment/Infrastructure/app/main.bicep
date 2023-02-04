@@ -60,7 +60,7 @@ resource b2cTenant 'Microsoft.AzureActiveDirectory/b2cDirectories@2021-04-01' ex
 
 // database
 module database 'database.bicep' = {
-  name: 'database'
+  name: 'database-${appEnv}'
   scope: resourceGroup(sharedResourceGroup)
   params: {
     cosmosDbAccountName: cosmosDbAccount.name
@@ -155,7 +155,7 @@ resource appService 'Microsoft.Web/sites@2022-03-01' = {
         }
         {
           name: 'CosmosDb__DatabaseId'
-          value: 'db-${appEnv}'
+          value: database.outputs.databaseName
         }
         {
           name: 'CosmosDb__ContainerIds'
@@ -188,8 +188,12 @@ resource staticWebApp 'Microsoft.Web/staticSites@2022-03-01' = {
     allowConfigFileUpdates: true
   }
 
-  resource customDomains 'customDomains' = {
+  // custom domain
+  resource customDomain 'customDomains' = {
     name: frontendHostname
+    properties: {
+      validationMethod: 'dns-txt-token'
+    }
     dependsOn: [ dnsRecords ]
   }
 }
@@ -203,6 +207,7 @@ module dnsRecords 'dnsRecords.bicep' = {
     appEnv: appEnv
     domainName: domainName
     appServiceVerificationId: appService.properties.customDomainVerificationId
+    staticWebAppResourceId: staticWebApp.id
     staticWebAppDefaultHostname: staticWebApp.properties.defaultHostname
   }
 }
