@@ -55,3 +55,5 @@ resource database 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2022-08-15
     }
   }]
 }
+
+output databaseName string = database.name
