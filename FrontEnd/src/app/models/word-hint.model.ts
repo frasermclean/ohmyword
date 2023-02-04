@@ -10,7 +10,7 @@ export class WordHint {
     this.definition = response.definition ?? '';
     this.letterHints = new Array(this.length).fill('');
 
-    response.letters.forEach((lh) => {
+    response.letterHints.forEach((lh) => {
       this.letterHints[lh.position - 1] = lh.value;
     });
   }
@@ -18,6 +18,6 @@ export class WordHint {
   public static default = new WordHint({
     length: 7,
     definition: 'Default word',
-    letters: [],
+    letterHints: [],
   });
 }

@@ -1,11 +1,10 @@
-using FluentValidation;
-using MediatR;
+using FastEndpoints;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Identity.Web;
 using OhMyWord.Api.Hubs;
-using OhMyWord.Api.Registration;
-using OhMyWord.Core.Behaviours;
-using OhMyWord.Core.Handlers.Words;
-using OhMyWord.Core.Mapping;
-using OhMyWord.Core.Validators.Words;
+using OhMyWord.Api.Options;
+using OhMyWord.Api.Services;
+using OhMyWord.Data.Extensions;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -19,56 +18,40 @@ public static class Program
 
         // configure app host
         appBuilder.Host
-            .ConfigureServices((context, collection) =>
+            .ConfigureServices((context, services) =>
             {
-                // set up routing options
-                collection.AddRouting(options =>
-                {
-                    options.LowercaseUrls = true;
-                    options.LowercaseQueryStrings = true;
-                });
-
-                collection.AddControllers()
-                    .AddJsonOptions(options =>
-                    {
-                        options.JsonSerializerOptions.Converters.Add(
-                            new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
-                    });
-
                 // microsoft identity authentication services
-                collection.AddMicrosoftIdentity();
+                services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                    .AddMicrosoftIdentityWebApi(context.Configuration);
 
-                // add database services
-                collection.AddCosmosDbService(context.Configuration);
-                collection.AddRepositoryServices();
+                // fast endpoints
+                services.AddFastEndpoints();
+
+                // add data services
+                services.AddDataServices(context.Configuration);
 
                 // signalR services
-                collection.AddSignalR()
+                services.AddSignalR()
                     .AddJsonProtocol(options =>
                         options.PayloadSerializerOptions.Converters.Add(
                             new JsonStringEnumConverter(JsonNamingPolicy.CamelCase))
                     );
 
                 // game services
-                collection.AddGameServices(context.Configuration);
+                services.Configure<GameServiceOptions>(context.Configuration.GetSection("Game"));
+                services.AddHostedService<GameCoordinator>();
+                services.AddSingleton<IGameService, GameService>();
+                services.AddSingleton<IVisitorService, VisitorService>();
+                services.AddSingleton<IWordsService, WordsService>();
 
-                // add fluent validation validators
-                collection.AddValidatorsFromAssemblyContaining<CreateWordRequestValidator>();
-
-                // add mediatr service
-                collection.AddMediatR(typeof(CreateWordHandler))
-                    .AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehaviour<,>))
-                    .AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehaviour<,>));
-
-                // automapper service
-                collection.AddAutoMapper(typeof(EntitiesProfile));
-
-                // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-                collection.AddEndpointsApiExplorer();
-                collection.AddSwaggerGen();
+                // development services
+                if (context.HostingEnvironment.IsDevelopment())
+                {
+                    services.AddCors();
+                }
 
                 // health checks        
-                collection.AddHealthChecks()
+                services.AddHealthChecks()
                     .AddCosmosDbCollection(
                         context.Configuration.GetValue<string>("CosmosDb:ConnectionString") ?? string.Empty,
                         context.Configuration.GetValue<string>("CosmosDb:DatabaseId"),
@@ -78,25 +61,25 @@ public static class Program
         // build the application
         var app = appBuilder.Build();
 
-        if (app.Environment.IsDevelopment())
-        {
-            app.UseSwagger();
-            app.UseSwaggerUI();
-            app.UseLocalCorsPolicy();
-            app.UseDeveloperExceptionPage();
-        }
-
-        // enable serving static content
-        app.UseDefaultFiles();
-        app.UseStaticFiles();
-
-        app.UseRouting();
-        app.UseAuthentication();
         app.UseAuthorization();
 
-        app.MapControllers();
-        app.MapHub<GameHub>("/hub");
+        // development pipeline
+        if (app.Environment.IsDevelopment())
+        {
+            // enable CORS policy
+            app.UseCors(builder => builder.WithOrigins("http://localhost:4200")
+                .AllowCredentials()
+                .AllowAnyHeader()
+                .AllowAnyMethod());
+        }
 
+        app.UseFastEndpoints(config =>
+        {
+            config.Endpoints.RoutePrefix = "api";
+            config.Serializer.Options.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
+        });
+
+        app.MapHub<GameHub>("/hub");
         app.UseHealthChecks("/health");
 
         // run the application

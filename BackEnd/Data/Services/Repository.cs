@@ -1,6 +1,11 @@
 ﻿using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
-using OhMyWord.Data.Models;
+using Microsoft.Extensions.Options;
+using OhMyWord.Data.Entities;
+using OhMyWord.Data.Options;
+using System.Runtime.CompilerServices;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace OhMyWord.Data.Services;
 
@@ -10,67 +15,74 @@ public abstract class Repository<TEntity> where TEntity : Entity
     private readonly ILogger<Repository<TEntity>> logger;
     private readonly string entityTypeName;
 
-    protected Repository(IDatabaseService databaseService, ILogger<Repository<TEntity>> logger, string containerId)
+    private readonly JsonSerializerOptions serializerOptions = new()
     {
-        container = databaseService.GetContainer(containerId);
+        IgnoreReadOnlyProperties = true,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        DictionaryKeyPolicy = JsonNamingPolicy.CamelCase,
+        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
+    };
+
+    protected Repository(CosmosClient cosmosClient, IOptions<CosmosDbOptions> options,
+        ILogger<Repository<TEntity>> logger, string containerId)
+    {
+        container = cosmosClient.GetContainer(options.Value.DatabaseId, containerId);
         this.logger = logger;
         entityTypeName = typeof(TEntity).Name;
     }
 
-    protected async Task<TEntity> CreateItemAsync(TEntity item, CancellationToken cancellationToken = default)
+    protected async Task CreateItemAsync(TEntity item, CancellationToken cancellationToken = default)
     {
-        var response = await container.CreateItemAsync(item, new PartitionKey(item.GetPartition()),
+        using var stream = new MemoryStream();
+        await JsonSerializer.SerializeAsync(stream, item, serializerOptions, cancellationToken);
+        var response = await container.CreateItemStreamAsync(stream, new PartitionKey(item.GetPartition()),
             cancellationToken: cancellationToken);
 
-        logger.LogInformation("Created {TypeName} on partition: /{Partition}, request charge: {Charge} RU",
-            entityTypeName, item.GetPartition(), response.RequestCharge);
+        response.EnsureSuccessStatusCode();
 
-        return response.Resource;
+        logger.LogInformation("Created {TypeName} on partition: /{Partition}", entityTypeName, item.GetPartition());
     }
 
-    protected async Task<TEntity?> ReadItemAsync(Guid id, string partition,
+    protected async Task<TEntity?> ReadItemAsync(string id, string partition,
         CancellationToken cancellationToken = default)
     {
-        var response = await container.ReadItemAsync<TEntity>(id.ToString(), new PartitionKey(partition),
+        using var response = await container.ReadItemStreamAsync(id, new PartitionKey(partition),
             cancellationToken: cancellationToken);
 
-        logger.LogInformation("Read {TypeName} on partition: /{Partition}, request charge: {Charge} RU",
-            entityTypeName, partition, response.RequestCharge);
-
-        return response.Resource;
+        return response.IsSuccessStatusCode
+            ? await JsonSerializer.DeserializeAsync<TEntity>(response.Content, serializerOptions, cancellationToken)
+            : default;
     }
 
-    protected async Task<TEntity> UpdateItemAsync(TEntity item,
+    protected async Task UpdateItemAsync(TEntity item,
         CancellationToken cancellationToken = default)
     {
-        var response = await container.ReplaceItemAsync(item, item.Id.ToString(), new PartitionKey(item.GetPartition()),
+        using var stream = new MemoryStream();
+        await JsonSerializer.SerializeAsync(stream, item, serializerOptions, cancellationToken);
+        var response = await container.ReplaceItemStreamAsync(stream, item.Id, new PartitionKey(item.GetPartition()),
             cancellationToken: cancellationToken);
 
-        logger.LogInformation("Replaced {TypeName} on partition: /{Partition}, request charge: {Charge} RU",
-            entityTypeName, item.GetPartition(), response.RequestCharge);
+        response.EnsureSuccessStatusCode();
 
-        return response.Resource;
+        logger.LogInformation("Replaced {TypeName} on partition: /{Partition}", entityTypeName, item.GetPartition());
     }
 
     protected Task DeleteItemAsync(TEntity item) => DeleteItemAsync(item.Id, item.GetPartition());
 
-    protected async Task DeleteItemAsync(Guid id, string partition,
-        CancellationToken cancellationToken = default)
+    protected async Task DeleteItemAsync(string id, string partition, CancellationToken cancellationToken = default)
     {
-        var response = await container.DeleteItemAsync<TEntity>(id.ToString(), new PartitionKey(partition),
+        var response = await container.DeleteItemStreamAsync(id, new PartitionKey(partition),
             cancellationToken: cancellationToken);
 
-        logger.LogInformation("Deleted {TypeName} on partition: /{Partition}, request charge: {Charge} RU",
-            entityTypeName, partition, response.RequestCharge);
+        response.EnsureSuccessStatusCode();
+
+        logger.LogInformation("Deleted item: {Id} on partition: /{Partition}", id, partition);
     }
 
-    protected async Task<TEntity> PatchItemAsync(
-        Guid id,
-        string partition,
-        PatchOperation[] operations,
+    protected async Task<TEntity> PatchItemAsync(string id, string partition, PatchOperation[] operations,
         CancellationToken cancellationToken = default)
     {
-        var response = await container.PatchItemAsync<TEntity>(id.ToString(), new PartitionKey(partition), operations,
+        var response = await container.PatchItemAsync<TEntity>(id, new PartitionKey(partition), operations,
             cancellationToken: cancellationToken);
 
         logger.LogInformation("Patched {TypeName} on partition: /{Partition}, request charge: {Charge} RU",
@@ -82,46 +94,51 @@ public abstract class Repository<TEntity> where TEntity : Entity
     protected async Task<int> GetItemCountAsync(string? partition = null, CancellationToken cancellationToken = default)
     {
         QueryDefinition queryDefinition = new("SELECT COUNT(1) FROM c");
-        var enumerable = await ExecuteQueryAsync<CountResponse>(queryDefinition, partition, cancellationToken);
-        return enumerable.Count;
+        return await ExecuteQuery<CountResponse>(queryDefinition, partition, cancellationToken)
+            .CountAsync(cancellationToken);
     }
 
     /// <summary>
-    /// Read all items across all partitions. This is an expensive operation and should be avoided if possible.
+    /// Read all items on the specified partition.
     /// </summary>
-    protected async Task<IEnumerable<TEntity>> ReadAllItemsAsync(CancellationToken cancellationToken)
-    {
-        QueryDefinition queryDefinition = new("SELECT * FROM c");
-        return await ExecuteQueryAsync<TEntity>(queryDefinition, cancellationToken: cancellationToken);
-    }
+    /// <param name="partition">The partition to query items on. If null, will query all partitions</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns></returns>
+    protected IAsyncEnumerable<TEntity> ReadPartitionItems(string? partition = null,
+        CancellationToken cancellationToken = default) =>
+        ExecuteQuery<TEntity>("SELECT * FROM c", partition, cancellationToken);
 
-    protected async Task<IReadOnlyCollection<TResponse>> ExecuteQueryAsync<TResponse>(
-        QueryDefinition queryDefinition,
-        string? partition = null,
-        CancellationToken cancellationToken = default)
+    protected IAsyncEnumerable<string> ReadItemIds(string? partition = null,
+        CancellationToken cancellationToken = default) =>
+        ExecuteQuery<string>("SELECT * FROM c.id", partition, cancellationToken);
+
+    private IAsyncEnumerable<TResponse> ExecuteQuery<TResponse>(string queryText, string? partition = null,
+        CancellationToken cancellationToken = default) =>
+        ExecuteQuery<TResponse>(new QueryDefinition(queryText), partition, cancellationToken);
+
+
+    protected async IAsyncEnumerable<TResponse> ExecuteQuery<TResponse>(QueryDefinition queryDefinition,
+        string? partition = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         using var iterator = container.GetItemQueryIterator<TResponse>(queryDefinition,
             requestOptions: new QueryRequestOptions
             {
-                PartitionKey = partition is not null ? new PartitionKey(partition) : null
+                PartitionKey = partition is not null ? new PartitionKey(partition) : null,
             });
 
         logger.LogInformation("Executing SQL query: {QueryText}, on partition: {Partition}", queryDefinition.QueryText,
             partition);
 
-        List<TResponse> items = new();
-        double totalCharge = 0;
+        int total = 0;
         while (iterator.HasMoreResults)
         {
             var response = await iterator.ReadNextAsync(cancellationToken);
-            logger.LogInformation("Read {Count} items, charge was: {Charge} RU", response.Count,
-                response.RequestCharge);
-            totalCharge += response.RequestCharge;
-            items.AddRange(response);
+            total += response.Count;
+            foreach (var item in response)
+                yield return item;
         }
 
-        logger.LogInformation("Completed query. Total charge: {Total} RU", totalCharge);
-
-        return items;
+        logger.LogInformation("Executed SQL query: {QueryText}, on partition: {Partition}, total results: {Total}",
+            queryDefinition.QueryText, partition, total);
     }
 }

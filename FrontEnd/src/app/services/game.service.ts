@@ -4,40 +4,37 @@ import { HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/s
 import { environment } from 'src/environments/environment';
 import { FingerprintService } from './fingerprint.service';
 
-import { RegisterPlayerResponse } from '../models/responses/register-player.response';
+import { RegisterVisitorResponse } from '../models/responses/register-visitor.response';
 import { GuessResponse } from '../models/responses/guess.response';
 import { LetterHintResponse } from '../models/responses/letter-hint.response';
-import { RoundStartResponse } from '../models/responses/round-start.response';
-import { RoundEndResponse } from '../models/responses/round-end.response';
 
 import { Store } from '@ngxs/store';
 
 import { Game, Guess, Hub } from '../game/game.actions';
+import { GameStateResponse } from '../models/responses/game-state-response';
 
 @Injectable({
   providedIn: 'root',
 })
 export class GameService {
   private readonly hubConnection = new HubConnectionBuilder()
-    .withUrl(`${environment.apiBaseUrl}/hub`)
+    .withUrl(`https://${environment.apiHost}/hub`)
     .configureLogging(environment.name !== 'development' ? LogLevel.Error : LogLevel.Information)
     .build();
 
   constructor(private fingerprintService: FingerprintService, private store: Store) {
     // register callbacks
     this.hubConnection.onclose((error) => this.store.dispatch(new Hub.Disconnected(error)));
-    this.hubConnection.on('SendRoundStarted', (response: RoundStartResponse) =>
-      this.store.dispatch(new Game.RoundStarted(response))
+
+    this.hubConnection.on('SendGameState', (response: GameStateResponse) =>
+      this.store.dispatch(new Game.GameStateUpdated(response))
     );
-    this.hubConnection.on('SendRoundEnded', (response: RoundEndResponse) =>
-      this.store.dispatch(new Game.RoundEnded(response))
+    this.hubConnection.on('SendVisitorCount', (count: number) =>
+      this.store.dispatch(new Game.PlayerCountUpdated(count)) // TODO: Update references from Player to Visitor
     );
     this.hubConnection.on('SendLetterHint', (response: LetterHintResponse) => {
       this.store.dispatch(new Game.LetterHintReceived(response));
     });
-    this.hubConnection.on('SendPlayerCount', (count: number) =>
-      this.store.dispatch(new Game.PlayerCountUpdated(count))
-    );
   }
 
   /**
@@ -72,12 +69,10 @@ export class GameService {
   /**
    * Attempt to register with game service.
    */
-  public async registerPlayer() {
+  public async registerVisitor() {
     const visitorId = await this.fingerprintService.getVisitorId();
-    const response = await this.hubConnection.invoke<RegisterPlayerResponse>('RegisterPlayer', visitorId);
+    const response = await this.hubConnection.invoke<RegisterVisitorResponse>('RegisterVisitor', visitorId);
     this.store.dispatch(new Game.PlayerRegistered(response));
-    if (response.roundStart) this.store.dispatch(new Game.RoundStarted(response.roundStart));
-    else if (response.roundEnd) this.store.dispatch(new Game.RoundEnded(response.roundEnd));
   }
 
   /**

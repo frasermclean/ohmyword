@@ -8,7 +8,7 @@ import { GameState } from '../game.state';
   styleUrls: ['./stats.component.scss'],
 })
 export class StatsComponent implements OnInit {
-  round$ = this.store.select(GameState.round);
+  roundNumber$ = this.store.select(GameState.roundNumber);
   score$ = this.store.select(GameState.score);
   playerCount$ = this.store.select(GameState.playerCount);
 

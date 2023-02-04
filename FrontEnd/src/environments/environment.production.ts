@@ -2,5 +2,10 @@ import { Environment } from './environment.interface';
 
 export const environment: Environment = {
   name: 'production',
-  apiBaseUrl: 'https://api.ohmyword.live',
+  apiHost: 'api.ohmyword.live',
+  auth: {
+    clientId: '', // TODO: Add client ID
+    redirectUri: 'https://ohmyword.live',
+    scopes: ['https://auth.ohmyword.live/prod-api/access'],
+  }
 };

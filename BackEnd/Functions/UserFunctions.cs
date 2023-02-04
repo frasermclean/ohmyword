@@ -9,32 +9,32 @@ namespace OhMyWord.Functions;
 public sealed class UserFunctions
 {
     private readonly ILogger<UserFunctions> logger;
-    private readonly IPlayerRepository playerRepository;
+    private readonly IVisitorRepository visitorRepository;
 
-    public UserFunctions(ILogger<UserFunctions> logger, IPlayerRepository playerRepository)
+    public UserFunctions(ILogger<UserFunctions> logger, IVisitorRepository visitorRepository)
     {
         this.logger = logger;
-        this.playerRepository = playerRepository;
+        this.visitorRepository = visitorRepository;
     }
 
     [Function(nameof(GetUserRoles))]
     public async Task<HttpResponseData> GetUserRoles(
         [HttpTrigger("get", Route = "get-roles/{userId:guid}")]
         HttpRequestData request,
-        Guid userId
+        string userId
     )
     {
         try
         {
-            var player = await playerRepository.FindPlayerByPlayerIdAsync(userId);
-            logger.LogInformation("Found player with ID: {UserId}", userId);
+            var visitor = await visitorRepository.GetVisitorAsync(userId);
+            logger.LogInformation("Found visitor with ID: {UserId}", userId);
             var response = request.CreateResponse();
-            await response.WriteAsJsonAsync(player);
+            await response.WriteAsJsonAsync(visitor);
             return response;
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "Couldn't find player with ID: {UserId}", userId);
+            logger.LogWarning(ex, "Couldn't find visitor with ID: {UserId}", userId);
             return request.CreateResponse(HttpStatusCode.NotFound);
         }
     }

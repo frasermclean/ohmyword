@@ -32,7 +32,7 @@ const WORDS_STATE_TOKEN = new StateToken<WordsStateModel>('words');
     limit: 10,
     total: 0,
     filter: '',
-    orderBy: GetWordsOrderBy.Value,
+    orderBy: GetWordsOrderBy.Id,
     direction: SortDirection.Ascending,
   },
 })

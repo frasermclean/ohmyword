@@ -1,4 +1,4 @@
-import { RoundEndReason } from './responses/round-end.response';
+import { RoundEndReason } from './enums/round-end-reason';
 
 export class RoundEndSummary {
   readonly word: string;

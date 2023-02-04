@@ -1,6 +1,5 @@
 export enum GetWordsOrderBy {
-  Value = 'value',
-  PartOfSpeech = 'partOfSpeech',
-  Definition = 'definition',
+  Id = 'id',
+  Length = 'length',
   LastModifiedTime = 'lastModifiedTime',
 }
