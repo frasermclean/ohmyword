@@ -1,5 +1,8 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Azure.Cosmos;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using OhMyWord.Data.Entities;
+using OhMyWord.Data.Options;
 
 namespace OhMyWord.Data.Services;
 
@@ -15,8 +18,9 @@ public interface IDefinitionsRepository
 
 public class DefinitionsRepository : Repository<DefinitionEntity>, IDefinitionsRepository
 {
-    public DefinitionsRepository(IDatabaseService databaseService, ILogger<DefinitionsRepository> logger)
-        : base(databaseService, logger, "definitions")
+    public DefinitionsRepository(CosmosClient cosmosClient, IOptions<CosmosDbOptions> options,
+        ILogger<DefinitionsRepository> logger)
+        : base(cosmosClient, options, logger, "definitions")
     {
     }
 

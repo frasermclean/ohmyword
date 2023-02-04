@@ -1,6 +1,8 @@
 ﻿using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using OhMyWord.Data.Entities;
+using OhMyWord.Data.Options;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -21,9 +23,10 @@ public abstract class Repository<TEntity> where TEntity : Entity
         Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
     };
 
-    protected Repository(IDatabaseService databaseService, ILogger<Repository<TEntity>> logger, string containerId)
+    protected Repository(CosmosClient cosmosClient, IOptions<CosmosDbOptions> options,
+        ILogger<Repository<TEntity>> logger, string containerId)
     {
-        container = databaseService.GetContainer(containerId);
+        container = cosmosClient.GetContainer(options.Value.DatabaseId, containerId);
         this.logger = logger;
         entityTypeName = typeof(TEntity).Name;
     }
@@ -134,7 +137,7 @@ public abstract class Repository<TEntity> where TEntity : Entity
             foreach (var item in response)
                 yield return item;
         }
-        
+
         logger.LogInformation("Executed SQL query: {QueryText}, on partition: {Partition}, total results: {Total}",
             queryDefinition.QueryText, partition, total);
     }

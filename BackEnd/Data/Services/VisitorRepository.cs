@@ -1,6 +1,8 @@
 ﻿using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using OhMyWord.Data.Entities;
+using OhMyWord.Data.Options;
 
 namespace OhMyWord.Data.Services;
 
@@ -15,8 +17,9 @@ public interface IVisitorRepository
 
 public class VisitorRepository : Repository<VisitorEntity>, IVisitorRepository
 {
-    public VisitorRepository(IDatabaseService databaseService, ILogger<VisitorRepository> logger)
-        : base(databaseService, logger, "visitors")
+    public VisitorRepository(CosmosClient cosmosClient, IOptions<CosmosDbOptions> options,
+        ILogger<VisitorRepository> logger)
+        : base(cosmosClient, options, logger, "visitors")
     {
     }
 

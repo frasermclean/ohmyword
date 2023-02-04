@@ -1,6 +1,8 @@
 ﻿using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using OhMyWord.Data.Entities;
+using OhMyWord.Data.Options;
 
 
 namespace OhMyWord.Data.Services;
@@ -34,8 +36,9 @@ public class WordsRepository : Repository<WordEntity>, IWordsRepository
     public const int LimitMinimum = 1;
     public const int LimitMaximum = 100;
 
-    public WordsRepository(IDatabaseService databaseService, ILogger<WordsRepository> logger)
-        : base(databaseService, logger, "words")
+    public WordsRepository(CosmosClient cosmosClient, IOptions<CosmosDbOptions> options,
+        ILogger<WordsRepository> logger)
+        : base(cosmosClient, options, logger, "words")
     {
     }
 
