@@ -1,0 +1,8 @@
+﻿namespace OhMyWord.Api.Commands.SubmitGuess;
+
+public class SubmitGuessResponse
+{
+    public string Value { get; init; } = default!;
+    public bool Correct { get; init; }
+    public int Points { get; init; }
+}

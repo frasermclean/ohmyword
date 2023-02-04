@@ -2,5 +2,10 @@ import { Environment } from './environment.interface';
 
 export const environment: Environment = {
   name: 'testing',
-  apiBaseUrl: 'https://test.api.ohmyword.live',
+  apiHost: 'test.api.ohmyword.live',
+  auth: {
+    clientId: '1f427277-e4b2-4f9b-97b1-4f47f4ff03c0',
+    redirectUri: 'https://test.ohmyword.live',
+    scopes: ['https://auth.ohmyword.live/test-api/access'],
+  },
 };

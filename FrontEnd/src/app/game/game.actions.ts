@@ -1,7 +1,7 @@
+import { GameStateResponse } from '../models/responses/game-state-response';
 import { LetterHintResponse } from '../models/responses/letter-hint.response';
-import { RegisterPlayerResponse } from '../models/responses/register-player.response';
-import { RoundEndResponse } from '../models/responses/round-end.response';
-import { RoundStartResponse } from '../models/responses/round-start.response';
+import { RegisterVisitorResponse } from '../models/responses/register-visitor.response';
+import { WordHint } from '../models/word-hint.model';
 
 /**
  * Hub actions and events
@@ -35,36 +35,25 @@ export namespace Hub {
 export namespace Game {
   export class PlayerRegistered {
     static readonly type = '[Game Service] Game.PlayerRegistered';
-    
-    roundActive = this.response.roundActive;
-    playerCount = this.response.playerCount;
+
+    playerCount = this.response.visitorCount;
     score = this.response.score;
+    gameState = this.response.gameState;
 
-    constructor(private response: RegisterPlayerResponse) {}
+    constructor(private response: RegisterVisitorResponse) {}
   }
 
-  export class RoundStarted {
-    static readonly type = '[Game Service] Game.RoundStarted';
+  export class GameStateUpdated {
+    static readonly type = '[Game Service] Game.GameStateUpdated';
 
-    roundId = this.response.roundId;
-    roundNumber = this.response.roundNumber;
-    roundStarted = new Date(this.response.roundStarted);
-    roundEnds = new Date(this.response.roundEnds);
-    wordHint = this.response.wordHint;
-
-    constructor(private response: RoundStartResponse) {}
-  }
-
-  export class RoundEnded {
-    static readonly type = '[Game Service] Game.RoundEnded';
-
+    roundActive = this.response.roundActive;
     roundNumber = this.response.roundNumber;
     roundId = this.response.roundId;
-    word = this.response.word;
-    endReason = this.response.endReason;
-    nextRoundStart = new Date(this.response.nextRoundStart);
+    intervalStart = new Date(this.response.intervalStart);
+    intervalEnd = new Date(this.response.intervalEnd);
+    wordHint = new WordHint(this.response.wordHint);
 
-    constructor(private response: RoundEndResponse) {}
+    constructor(private response: GameStateResponse) {}
   }
 
   export class LetterHintReceived {

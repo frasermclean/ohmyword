@@ -223,7 +223,7 @@ jobs:
     permissions:
       id-token: write
     env:
-      APP_NAME: ${{ github.ref_name == 'main' &&  'app-ohmyword-prod' || 'app-ohmyword-test' }}
+      APP_NAME: ${{ github.ref_name == 'main' && 'app-ohmyword-prod' || 'app-ohmyword-test' }}
     steps:
       # Login to Azure
       - uses: azure/login@v1

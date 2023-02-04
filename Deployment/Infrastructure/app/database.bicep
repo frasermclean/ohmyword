@@ -10,6 +10,21 @@ param databaseName string
 @minValue(400)
 param throughput int
 
+var containersDefinitions = [
+  {
+    name: 'definitions'
+    partitionKeyPath: '/wordId'
+  }
+  {
+    name: 'visitors'
+    partitionKeyPath: '/id'
+  }
+  {
+    name: 'words'
+    partitionKeyPath: '/id'
+  }
+]
+
 resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-08-15' existing = {
   name: cosmosDbAccountName
 }
@@ -25,39 +40,18 @@ resource database 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2022-08-15
       throughput: throughput
     }
   }
-  resource wordsContainer 'containers@2022-08-15' = {
-    name: 'words'
+
+  resource containers 'containers' = [for definition in containersDefinitions: {
+    name: definition.name
     properties: {
       resource: {
-        id: 'words'
+        id: definition.name
         partitionKey: {
           paths: [
-            '/partOfSpeech'
-          ]
-        }
-        uniqueKeyPolicy: {
-          uniqueKeys: [
-            {
-              paths: [
-                '/value'
-              ]
-            }
+            definition.partitionKeyPath
           ]
         }
       }
     }
-  }
-  resource playersContainer 'containers@2022-08-15' = {
-    name: 'players'
-    properties: {
-      resource: {
-        id: 'players'
-        partitionKey: {
-          paths: [
-            '/id'
-          ]
-        }
-      }
-    }
-  }
+  }]
 }

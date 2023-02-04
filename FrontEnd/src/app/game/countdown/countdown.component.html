@@ -1,4 +1,4 @@
 <div id="container">
-  <mat-progress-bar mode="determinate" color="accent" [value]="progressPercentage"></mat-progress-bar>
+  <mat-progress-spinner mode="determinate" color="accent" [value]="progressPercentage"></mat-progress-spinner>
+  <p *ngIf="secondsRemaining >= 0">{{ secondsRemaining }} second{{ secondsRemaining !== 1 ? "s" : "" }} remaining</p>
 </div>
-

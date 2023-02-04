@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using OhMyWord.Data.Options;
-using OhMyWord.Data.Services;
+using OhMyWord.Data.Extensions;
+using OhMyWord.Seeder.Services;
 
 namespace OhMyWord.Seeder;
 
@@ -12,13 +12,8 @@ public static class Program
         var host = Host.CreateDefaultBuilder(args)
             .ConfigureServices((context, services) =>
             {
-                var configuration = context.Configuration;
-
-                // cosmos db related services
-                services.AddHttpClient();
-                services.Configure<CosmosDbOptions>(configuration.GetSection(CosmosDbOptions.SectionName));
-                services.AddSingleton<IDatabaseService, DatabaseService>();
-                services.AddSingleton<IWordsRepository, WordsRepository>();
+                // services from data project
+                services.AddDataServices(context.Configuration);                
 
                 // local application services
                 services.AddSingleton<DataReader>();

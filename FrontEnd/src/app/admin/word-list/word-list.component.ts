@@ -37,7 +37,7 @@ export class WordListComponent implements OnInit, OnDestroy {
   searchInput = new FormControl('');
   highlightedWord: Word | null = null;
 
-  readonly displayedColumns = ['value', 'partOfSpeech', 'definition', 'lastModifiedTime', 'actions'];
+  readonly displayedColumns = ['id', 'length', 'lastModifiedTime', 'actions'];
 
   constructor(private store: Store, private dialog: MatDialog) {
   }
@@ -117,14 +117,12 @@ export class WordListComponent implements OnInit, OnDestroy {
 
   private static parseOrderByString(value: string) {
     switch (value) {
-      case 'partOfSpeech':
-        return GetWordsOrderBy.PartOfSpeech;
-      case 'definition':
-        return GetWordsOrderBy.Definition;
+      case 'length':
+        return GetWordsOrderBy.Length;
       case 'lastModifiedTime':
         return GetWordsOrderBy.LastModifiedTime;
       default:
-        return GetWordsOrderBy.Value;
+        return GetWordsOrderBy.Id;
     }
   }
 }
