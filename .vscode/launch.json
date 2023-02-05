@@ -7,9 +7,10 @@
     {
       "type": "msedge",
       "request": "launch",
-      "name": "Debug Client with Edge",
+      "name": "Debug FrontEnd with Edge",
       "url": "http://localhost:4200/admin",
-      "webRoot": "${workspaceFolder}/Client",
+      "webRoot": "${workspaceFolder}/FrontEnd",
+      "preLaunchTask": "Serve FrontEnd",
       "sourceMaps": true
     }
   ]
