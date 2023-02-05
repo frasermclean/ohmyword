@@ -7,8 +7,9 @@ namespace OhMyWord.Api.Services;
 
 public interface IWordsService
 {
-    IAsyncEnumerable<Word> SearchWordsAsync(int offset = WordsRepository.OffsetMinimum,
-        int limit = WordsRepository.LimitDefault, string filter = "", SearchWordsOrderBy orderBy = SearchWordsOrderBy.Id,
+    IAsyncEnumerable<Word> SearchWords(int offset = WordsRepository.OffsetMinimum,
+        int limit = WordsRepository.LimitDefault, string filter = "",
+        SearchWordsOrderBy orderBy = SearchWordsOrderBy.Id,
         SortDirection direction = SortDirection.Ascending, CancellationToken cancellationToken = default);
 
 
@@ -18,6 +19,13 @@ public interface IWordsService
     /// <param name="cancellationToken">Task cancellation token</param>
     /// <returns>All unique word IDs</returns>
     IAsyncEnumerable<string> GetAllWordIds(CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Get the total number of words in the database.
+    /// </summary>
+    /// <param name="cancellationToken">Task cancellation token</param>
+    /// <returns>The total word count.</returns>
+    Task<int> GetTotalWordCountAsync(CancellationToken cancellationToken = default);
 
     Task<Word?> GetWordAsync(string wordId, CancellationToken cancellationToken = default);
     Task CreateWordAsync(Word word, CancellationToken cancellationToken = default);
@@ -36,13 +44,16 @@ public class WordsService : IWordsService
         this.definitionsRepository = definitionsRepository;
     }
 
-    public IAsyncEnumerable<Word> SearchWordsAsync(int offset, int limit, string filter, SearchWordsOrderBy orderBy,
+    public IAsyncEnumerable<Word> SearchWords(int offset, int limit, string filter, SearchWordsOrderBy orderBy,
         SortDirection direction, CancellationToken cancellationToken = default) =>
         wordsRepository.SearchWords(offset, limit, filter, orderBy, direction, cancellationToken)
             .SelectAwait(async wordEntity => await MapToWordAsync(wordEntity, cancellationToken));
 
     public IAsyncEnumerable<string> GetAllWordIds(CancellationToken cancellationToken) =>
         wordsRepository.GetAllWordIds(cancellationToken);
+
+    public Task<int> GetTotalWordCountAsync(CancellationToken cancellationToken = default) =>
+        wordsRepository.GetTotalWordCountAsync(cancellationToken);
 
     public async Task<Word?> GetWordAsync(string wordId, CancellationToken cancellationToken = default)
     {

@@ -94,8 +94,11 @@ public abstract class Repository<TEntity> where TEntity : Entity
     protected async Task<int> GetItemCountAsync(string? partition = null, CancellationToken cancellationToken = default)
     {
         QueryDefinition queryDefinition = new("SELECT COUNT(1) FROM c");
-        return await ExecuteQuery<CountResponse>(queryDefinition, partition, cancellationToken)
-            .CountAsync(cancellationToken);
+        var response =
+            await ExecuteQuery<CountResponse>(queryDefinition, partition, cancellationToken: cancellationToken)
+                .FirstOrDefaultAsync(cancellationToken);
+
+        return response?.Count ?? 0;
     }
 
     /// <summary>
@@ -106,23 +109,21 @@ public abstract class Repository<TEntity> where TEntity : Entity
     /// <returns></returns>
     protected IAsyncEnumerable<TEntity> ReadPartitionItems(string? partition = null,
         CancellationToken cancellationToken = default) =>
-        ExecuteQuery<TEntity>("SELECT * FROM c", partition, cancellationToken);
+        ExecuteQuery<TEntity>(new QueryDefinition("SELECT * FROM c"), partition, cancellationToken: cancellationToken);
 
     protected IAsyncEnumerable<string> ReadItemIds(string? partition = null,
         CancellationToken cancellationToken = default) =>
-        ExecuteQuery<string>("SELECT * FROM c.id", partition, cancellationToken);
-
-    private IAsyncEnumerable<TResponse> ExecuteQuery<TResponse>(string queryText, string? partition = null,
-        CancellationToken cancellationToken = default) =>
-        ExecuteQuery<TResponse>(new QueryDefinition(queryText), partition, cancellationToken);
-
+        ExecuteQuery<string>(new QueryDefinition("SELECT * FROM c.id"), partition,
+            cancellationToken: cancellationToken);
 
     protected async IAsyncEnumerable<TResponse> ExecuteQuery<TResponse>(QueryDefinition queryDefinition,
-        string? partition = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        string? partition = null, int maxItemCount = -1,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         using var iterator = container.GetItemQueryIterator<TResponse>(queryDefinition,
             requestOptions: new QueryRequestOptions
             {
+                MaxItemCount = maxItemCount,
                 PartitionKey = partition is not null ? new PartitionKey(partition) : null,
             });
 

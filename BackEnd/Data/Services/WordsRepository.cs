@@ -21,7 +21,7 @@ public interface IWordsRepository
 
     IAsyncEnumerable<string> GetAllWordIds(CancellationToken cancellationToken = default);
 
-    Task<int> GetWordCountAsync(CancellationToken cancellationToken = default);
+    Task<int> GetTotalWordCountAsync(CancellationToken cancellationToken = default);
 
     Task<WordEntity?> GetWordAsync(string id, CancellationToken cancellationToken = default);
     Task CreateWordAsync(WordEntity entity, CancellationToken cancellationToken = default);
@@ -67,13 +67,13 @@ public class WordsRepository : Repository<WordEntity>, IWordsRepository
             .WithParameter("@offset", offset)
             .WithParameter("@limit", limit);
 
-        return ExecuteQuery<WordEntity>(queryDefinition, cancellationToken: cancellationToken);
+        return ExecuteQuery<WordEntity>(queryDefinition, maxItemCount: limit, cancellationToken: cancellationToken);
     }
 
     public IAsyncEnumerable<string> GetAllWordIds(CancellationToken cancellationToken = default) =>
         ReadItemIds(null, cancellationToken);
 
-    public Task<int> GetWordCountAsync(CancellationToken cancellationToken) =>
+    public Task<int> GetTotalWordCountAsync(CancellationToken cancellationToken) =>
         GetItemCountAsync(cancellationToken: cancellationToken);
 
     public Task<WordEntity?> GetWordAsync(string id, CancellationToken cancellationToken) =>

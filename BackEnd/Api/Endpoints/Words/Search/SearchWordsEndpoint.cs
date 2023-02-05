@@ -4,7 +4,7 @@ using OhMyWord.Api.Services;
 
 namespace OhMyWord.Api.Endpoints.Words.Search;
 
-public class SearchWordsEndpoint : Endpoint<SearchWordsRequest, IEnumerable<Word>>
+public class SearchWordsEndpoint : Endpoint<SearchWordsRequest, SearchWordsResponse>
 {
     private readonly IWordsService wordsService;
 
@@ -18,12 +18,18 @@ public class SearchWordsEndpoint : Endpoint<SearchWordsRequest, IEnumerable<Word
         Get("words");
     }
 
-    public override async Task<IEnumerable<Word>> ExecuteAsync(SearchWordsRequest request,
+    public override async Task<SearchWordsResponse> ExecuteAsync(SearchWordsRequest request,
         CancellationToken cancellationToken)
     {
-        return await wordsService
-            .SearchWordsAsync(request.Offset, request.Limit, request.Filter, request.OrderBy, request.Direction,
+        var totalTask = wordsService.GetTotalWordCountAsync(cancellationToken);
+        var wordsTask = wordsService
+            .SearchWords(request.Offset, request.Limit, request.Filter, request.OrderBy, request.Direction,
                 cancellationToken)
-            .ToListAsync(cancellationToken);
+            .ToListAsync(cancellationToken)
+            .AsTask();
+
+        await Task.WhenAll(totalTask, wordsTask);
+
+        return new SearchWordsResponse() { Total = totalTask.Result, Words = wordsTask.Result };
     }
 }
