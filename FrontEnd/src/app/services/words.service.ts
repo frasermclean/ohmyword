@@ -4,9 +4,9 @@ import { map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { PartOfSpeech } from '../models/enums/part-of-speech.enum';
 import { CreateWordRequest } from '../models/requests/create-word.request';
-import { GetWordsRequest } from '../models/requests/get-words.request';
+import { SearchWordsRequest } from '../models/requests/search-words.request';
 import { UpdateWordRequest } from '../models/requests/update-word.request';
-import { GetWordsResponse } from '../models/responses/get-words.response';
+import { SearchWordsResponse } from '../models/responses/search-words.response';
 import { WordResponse } from '../models/responses/word.response';
 import { Word } from '../models/word.model';
 
@@ -17,7 +17,7 @@ export class WordsService {
   private readonly baseUrl = `https://${environment.apiHost}/api/words`;
   constructor(private httpClient: HttpClient) {}
 
-  public getWords(request: GetWordsRequest) {
+  public searchWords(request: SearchWordsRequest) {
     let params = new HttpParams()
       .set('offset', request.offset)
       .set('limit', request.limit)
@@ -26,7 +26,7 @@ export class WordsService {
 
     if (request.filter) params = params.append('filter', request.filter);
 
-    return this.httpClient.get<GetWordsResponse>(this.baseUrl, { params }).pipe(
+    return this.httpClient.get<SearchWordsResponse>(this.baseUrl, { params }).pipe(
       map((response) => ({
         ...response,
         words: response.words.map((word) => new Word(word)),
@@ -42,7 +42,7 @@ export class WordsService {
     return this.httpClient.put<WordResponse>(this.baseUrl, request).pipe(map((response) => new Word(response)));
   }
 
-  public deleteWord(partOfSpeech: PartOfSpeech, id: string) {
-    return this.httpClient.delete<void>(`${this.baseUrl}/${partOfSpeech}/${id}`);
+  public deleteWord(id: string) {
+    return this.httpClient.delete<void>(`${this.baseUrl}/${id}`);
   }
 }

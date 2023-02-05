@@ -19,9 +19,7 @@ const partOfSpeechOptions = [
 export class WordEditComponent implements OnInit {
   readonly isEditing: boolean;
   readonly formGroup = this.formBuilder.group({
-    value: [this.data?.word.value, Validators.required],
-    partOfSpeech: [this.data?.word.partOfSpeech, Validators.required],
-    definition: [this.data?.word.definition, Validators.required],
+    id: [this.data?.word.id, Validators.required],
   });
   readonly partOfSpeechOptions = partOfSpeechOptions;
 

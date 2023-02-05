@@ -1,10 +1,10 @@
-import { GetWordsOrderBy } from '../enums/get-words-order-by.enum';
+import { SearchWordsOrderBy } from '../enums/search-words-order-by.enum';
 import { SortDirection } from '../enums/sort-direction.enum';
 
-export interface GetWordsRequest {
+export interface SearchWordsRequest {
   offset: number;
   limit: number;
   filter: string;
-  orderBy: GetWordsOrderBy;
+  orderBy: SearchWordsOrderBy;
   direction: SortDirection;
 }

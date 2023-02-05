@@ -34,7 +34,7 @@
     <td mat-cell *matCellDef="let word">{{ word.id }}</td>
   </ng-container>
 
-  <!-- last modified time column -->
+  <!-- length column -->
   <ng-container matColumnDef="length">
     <th
       mat-header-cell
@@ -45,7 +45,21 @@
     >
       Length
     </th>
-    <td mat-cell *matCellDef="let word">{{ word.lastModifiedTime | date: "medium" }}</td>
+    <td mat-cell *matCellDef="let word">{{ word.length }}</td>
+  </ng-container>
+
+  <!-- definition count column -->
+  <ng-container matColumnDef="definitionCount">
+    <th
+      mat-header-cell
+      *matHeaderCellDef
+      mat-sort-header
+      sortActionDescription="Sort by number of definitions"
+      disableClear="true"
+    >
+      Definition Count
+    </th>
+    <td mat-cell *matCellDef="let word">{{ word.definitions.length }}</td>
   </ng-container>
 
   <!-- last modified time column -->
