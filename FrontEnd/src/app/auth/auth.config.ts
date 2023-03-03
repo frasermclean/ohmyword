@@ -8,7 +8,7 @@ const isIE = window.navigator.userAgent.indexOf('MSIE ') > -1 || window.navigato
 const tenantName = 'ohmywordauth';
 
 const policyNames = {
-  signUpSignIn: 'B2C_1_SignUp_SignIn',
+  signUpSignIn: 'B2C_1A_SignUp_SignIn',
 };
 
 /**
