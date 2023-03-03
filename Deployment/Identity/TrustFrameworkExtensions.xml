@@ -4,12 +4,12 @@
   xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
   xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" 
   PolicySchemaVersion="0.3.0.0" 
-  TenantId="ohmywordb2c.onmicrosoft.com" 
+  TenantId="ohmywordauth.onmicrosoft.com" 
   PolicyId="B2C_1A_TrustFrameworkExtensions" 
-  PublicPolicyUri="http://ohmywordb2c.onmicrosoft.com/B2C_1A_TrustFrameworkExtensions">
+  PublicPolicyUri="http://ohmywordauth.onmicrosoft.com/B2C_1A_TrustFrameworkExtensions">
   
   <BasePolicy>
-    <TenantId>ohmywordb2c.onmicrosoft.com</TenantId>
+    <TenantId>ohmywordauth.onmicrosoft.com</TenantId>
     <PolicyId>B2C_1A_TrustFrameworkLocalization</PolicyId>
   </BasePolicy>
  <BuildingBlocks>
@@ -23,7 +23,7 @@
       <TechnicalProfiles>
         <TechnicalProfile Id="Facebook-OAUTH">
           <Metadata>
-            <Item Key="client_id">426202852829491</Item>
+            <Item Key="client_id">2446844935478664</Item>
             <Item Key="scope">email public_profile</Item>
             <Item Key="ClaimsEndpoint">https://graph.facebook.com/me?fields=id,first_name,last_name,name,email</Item>
           </Metadata>
@@ -37,12 +37,12 @@
       <TechnicalProfiles>
          <TechnicalProfile Id="login-NonInteractive">
           <Metadata>
-            <Item Key="client_id">a02ff048-dc18-4256-8a8a-07634515d909</Item>
-            <Item Key="IdTokenAudience">dec2d98a-f3d9-413a-bf43-fc57c8568ad5</Item>
+            <Item Key="client_id">7b82aaf9-360c-40e0-a6f8-813d125e62f7</Item>
+            <Item Key="IdTokenAudience">7a66068b-5ad0-468b-a7cc-e0fb28f239e1</Item>
           </Metadata>
           <InputClaims>
-            <InputClaim ClaimTypeReferenceId="client_id" DefaultValue="a02ff048-dc18-4256-8a8a-07634515d909" />
-            <InputClaim ClaimTypeReferenceId="resource_id" PartnerClaimType="resource" DefaultValue="dec2d98a-f3d9-413a-bf43-fc57c8568ad5" />
+            <InputClaim ClaimTypeReferenceId="client_id" DefaultValue="7b82aaf9-360c-40e0-a6f8-813d125e62f7" />
+            <InputClaim ClaimTypeReferenceId="resource_id" PartnerClaimType="resource" DefaultValue="7a66068b-5ad0-468b-a7cc-e0fb28f239e1" />
           </InputClaims>
         </TechnicalProfile>
       </TechnicalProfiles>
