@@ -1,6 +1,7 @@
 ﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
+using OhMyWord.Data.Entities;
 using OhMyWord.Data.Services;
 using OhMyWord.Functions.Models;
 using System.Net;
@@ -28,8 +29,8 @@ public sealed class UserFunctions
         {
             var getUserClaimsRequest = await httpRequest.ReadFromJsonAsync<GetUserClaimsRequest>();
             var role = getUserClaimsRequest?.UserId == "69a85c34-9566-40ba-b43c-ffcf664f717d"
-                ? "admin"
-                : "user";
+                ? Role.Admin
+                : Role.User;
 
             logger.LogInformation("Incoming user ID is is: {UserId}, determined role is: {Role}",
                 getUserClaimsRequest?.UserId, role);
