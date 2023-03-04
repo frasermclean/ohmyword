@@ -38,11 +38,14 @@ public static class Program
                     );
 
                 // game services
-                services.Configure<GameServiceOptions>(context.Configuration.GetSection("Game"));
                 services.AddHostedService<GameCoordinator>();
                 services.AddSingleton<IGameService, GameService>();
                 services.AddSingleton<IVisitorService, VisitorService>();
                 services.AddSingleton<IWordsService, WordsService>();
+                services.AddOptions<GameServiceOptions>()
+                    .Bind(context.Configuration.GetSection(GameServiceOptions.SectionName))
+                    .ValidateDataAnnotations()
+                    .ValidateOnStart();
 
                 // development services
                 if (context.HostingEnvironment.IsDevelopment())
