@@ -11,12 +11,13 @@ namespace OhMyWord.Functions;
 public sealed class UserFunctions
 {
     private readonly ILogger<UserFunctions> logger;
-    private readonly IVisitorRepository visitorRepository;
+    private readonly IUsersRepository usersRepository;
 
-    public UserFunctions(ILogger<UserFunctions> logger, IVisitorRepository visitorRepository)
+
+    public UserFunctions(ILogger<UserFunctions> logger, IUsersRepository usersRepository)
     {
         this.logger = logger;
-        this.visitorRepository = visitorRepository;
+        this.usersRepository = usersRepository;
     }
 
     [Function(nameof(GetUserClaims))]
@@ -25,27 +26,25 @@ public sealed class UserFunctions
         HttpRequestData httpRequest
     )
     {
-        try
-        {
-            var getUserClaimsRequest = await httpRequest.ReadFromJsonAsync<GetUserClaimsRequest>();
-            var role = getUserClaimsRequest?.UserId == "69a85c34-9566-40ba-b43c-ffcf664f717d"
-                ? Role.Admin
-                : Role.User;
+        var getUserClaimsRequest = await httpRequest.ReadFromJsonAsync<GetUserClaimsRequest>();
+        if (getUserClaimsRequest is null) throw new InvalidOperationException("Couldn't deserialize request body");
 
-            logger.LogInformation("Incoming user ID is is: {UserId}, determined role is: {Role}",
-                getUserClaimsRequest?.UserId, role);
+        var user = await usersRepository.GetUserAsync(getUserClaimsRequest.UserId);
 
-            var response = httpRequest.CreateResponse();
-            await response.WriteAsJsonAsync(new GetUserClaimsResponse
+        // create user if it doesn't exist
+        if (user is null)
+            await usersRepository.CreateUserAsync(new UserEntity
             {
-                Role = role
+                Name = getUserClaimsRequest.Name, Email = getUserClaimsRequest.Email
             });
-            return response;
-        }
-        catch (Exception ex)
-        {
-            // logger.LogWarning(ex, "Couldn't find visitor with ID: {UserId}", userId);
-            return httpRequest.CreateResponse(HttpStatusCode.NotFound);
-        }
+
+        var role = user?.Role ?? Role.User;
+
+        logger.LogInformation("Authenticated user ID is: {UserId}, determined role as: {Role}",
+            getUserClaimsRequest.UserId, role);
+
+        var response = httpRequest.CreateResponse();
+        await response.WriteAsJsonAsync(new GetUserClaimsResponse { Role = role });
+        return response;
     }
 }

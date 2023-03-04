@@ -10,15 +10,19 @@ namespace OhMyWord.Data.Extensions;
 public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddDataServices(this IServiceCollection services, IConfiguration configuration)
-    {
-        // cosmos db related services
+    {        
         services.AddHttpClient();
-        services.Configure<CosmosDbOptions>(configuration.GetSection(CosmosDbOptions.SectionName));
+        
+        // options
+        services.AddOptions<CosmosDbOptions>()
+            .Bind(configuration.GetSection(CosmosDbOptions.SectionName));
+        
+        // cosmos client
         services.AddSingleton(serviceProvider =>
         {
             var options = serviceProvider.GetRequiredService<IOptions<CosmosDbOptions>>();
             var httpClientFactory = serviceProvider.GetRequiredService<IHttpClientFactory>();
-            
+
             return new CosmosClientBuilder(options.Value.ConnectionString)
                 .WithApplicationName(options.Value.ApplicationName)
                 .WithHttpClientFactory(() => httpClientFactory.CreateClient("CosmosDb"))
@@ -29,8 +33,9 @@ public static class ServiceCollectionExtensions
 
         // repositories
         services.AddSingleton<IDefinitionsRepository, DefinitionsRepository>();
-        services.AddSingleton<IWordsRepository, WordsRepository>();
         services.AddSingleton<IVisitorRepository, VisitorRepository>();
+        services.AddSingleton<IUsersRepository, UsersRepository>();
+        services.AddSingleton<IWordsRepository, WordsRepository>();
 
         return services;
     }
