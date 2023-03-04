@@ -19,19 +19,21 @@ const partOfSpeechOptions = [
 export class WordEditComponent implements OnInit {
   readonly isEditing: boolean;
   readonly formGroup = this.formBuilder.group({
-    id: [this.data?.word.id, Validators.required],
+    id: [this.data?.wordId, Validators.required],
   });
   readonly partOfSpeechOptions = partOfSpeechOptions;
 
   constructor(
-    @Inject(MAT_DIALOG_DATA) private data: { word: Word },
+    @Inject(MAT_DIALOG_DATA) private data: { wordId: string },
     private formBuilder: FormBuilder,
     private dialogRef: MatDialogRef<WordEditComponent>
   ) {
-    this.isEditing = !!data?.word;
+    this.isEditing = !!data?.wordId;
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    if (this.isEditing) this.formGroup.get('id')?.disable(); // can't edit id
+  }
 
   submit() {
     this.dialogRef.close(this.formGroup.value);

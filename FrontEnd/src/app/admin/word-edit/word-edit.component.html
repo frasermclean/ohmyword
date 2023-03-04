@@ -3,7 +3,7 @@
   <form [formGroup]="formGroup">
     <mat-form-field>
       <mat-label>Word</mat-label>
-      <input matInput name="word" placeholder="Letters that make up the word" formControlName="value" />
+      <input matInput name="word" placeholder="Letters that make up the word" formControlName="id" />
       <mat-error *ngIf="!formGroup.controls.id.valid">The value of the word is required.</mat-error>
     </mat-form-field>
   </form>

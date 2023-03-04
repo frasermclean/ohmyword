@@ -42,7 +42,7 @@ export class WordListComponent implements OnInit, OnDestroy {
   constructor(private store: Store, private dialog: MatDialog) {}
 
   ngOnInit(): void {
-    this.getWords({});
+    this.searchWords();
 
     this.searchInput.valueChanges
       .pipe(
@@ -64,7 +64,7 @@ export class WordListComponent implements OnInit, OnDestroy {
   onSortChange(event: Sort) {
     if (!event.direction) return; // no sort direction
     const orderBy = WordListComponent.parseOrderByString(event.active);
-    this.getWords({
+    this.searchWords({
       orderBy,
       direction: event.direction === 'asc' ? SortDirection.Ascending : SortDirection.Descending,
     });
@@ -72,11 +72,11 @@ export class WordListComponent implements OnInit, OnDestroy {
 
   onPageEvent(event: PageEvent) {
     const offset = event.pageIndex * event.pageSize;
-    this.getWords({ offset, limit: event.pageSize });
+    this.searchWords({ offset, limit: event.pageSize });
   }
 
-  getWords(request: Partial<SearchWordsRequest>) {
-    this.store.dispatch(new Words.SearchWords(request));
+  searchWords(request?: Partial<SearchWordsRequest>) {
+    this.store.dispatch(new Words.SearchWords(request || {}));
   }
 
   createWord() {
@@ -91,7 +91,7 @@ export class WordListComponent implements OnInit, OnDestroy {
 
   editWord(word: Word) {
     this.dialog
-      .open(WordEditComponent, { data: { word } })
+      .open(WordEditComponent, { data: { wordId: word.id } })
       .afterClosed()
       .subscribe((result) => {
         if (!result) return;

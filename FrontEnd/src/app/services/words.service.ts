@@ -34,6 +34,10 @@ export class WordsService {
     );
   }
 
+  public getWord(id: string) {
+    return this.httpClient.get<WordResponse>(`${this.baseUrl}/${id}`).pipe(map((response) => new Word(response)));
+  }
+
   public createWord(request: CreateWordRequest) {
     return this.httpClient.post<WordResponse>(this.baseUrl, request).pipe(map((response) => new Word(response)));
   }

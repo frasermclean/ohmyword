@@ -8,6 +8,11 @@ export namespace Words {
     constructor(public request: Partial<SearchWordsRequest>) {}
   }
 
+  export class GetWord {
+    static readonly type = '[Words List] Get Word';
+    constructor(public id: string) {}
+  }
+
   export class CreateWord {
     static readonly type = '[Words List] Create Word';
     constructor(public request: CreateWordRequest) {}
