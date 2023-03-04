@@ -30,6 +30,6 @@ public class SearchWordsEndpoint : Endpoint<SearchWordsRequest, SearchWordsRespo
 
         await Task.WhenAll(totalTask, wordsTask);
 
-        return new SearchWordsResponse() { Total = totalTask.Result, Words = wordsTask.Result };
+        return new SearchWordsResponse { Total = totalTask.Result, Words = wordsTask.Result };
     }
 }

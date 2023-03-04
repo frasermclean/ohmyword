@@ -76,6 +76,10 @@ public static class Program
         app.UseFastEndpoints(config =>
         {
             config.Endpoints.RoutePrefix = "api";
+            config.Endpoints.Configurator = endpoint =>
+            {
+                endpoint.Roles("admin");
+            };
             config.Serializer.Options.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
         });
 
