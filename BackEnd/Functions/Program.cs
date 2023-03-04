@@ -11,10 +11,14 @@ public static class Program
     public static void Main()
     {
         var host = new HostBuilder()
-            .ConfigureFunctionsWorkerDefaults()            
+            .ConfigureFunctionsWorkerDefaults()           
+            .ConfigureAppConfiguration(builder =>
+            {
+                builder.AddJsonFile("local.settings.json", optional: true);
+            })            
             .ConfigureServices((context, services) =>
             {
-               // data services
+                // data services
                 services.AddDataServices(context.Configuration);
 
                 // health checks
