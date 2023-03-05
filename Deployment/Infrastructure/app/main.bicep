@@ -46,11 +46,6 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-08-15' exis
   scope: resourceGroup(sharedResourceGroup)
 }
 
-resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' existing = {
-  name: 'asp-${appName}-shared'
-  scope: resourceGroup(sharedResourceGroup)
-}
-
 resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' existing = {
   name: 'law-${appName}-shared'
   scope: resourceGroup(sharedResourceGroup)
@@ -83,6 +78,20 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
     Application_Type: 'web'
     Request_Source: 'rest'
     WorkspaceResourceId: logAnalyticsWorkspace.id
+  }
+}
+
+// app service plan
+resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
+  name: 'asp-${appName}-${appEnv}'
+  location: location
+  tags: tags
+  kind: 'linux'
+  sku: {
+    name: 'B1'
+  }
+  properties: {
+    reserved: true
   }
 }
 
@@ -253,14 +262,13 @@ resource functionsApp 'Microsoft.Web/sites@2022-03-01' = {
   name: 'func-${appName}-${appEnv}'
   location: location
   tags: tags
-  kind: 'functionapp,linux'  
+  kind: 'functionapp,linux'
   properties: {
     serverFarmId: appServicePlan.id
     reserved: true
     httpsOnly: true
     siteConfig: {
       linuxFxVersion: 'DOTNETCORE|7.0'
-      alwaysOn: true
       http20Enabled: true
       ftpsState: 'Disabled'
       appSettings: [
@@ -295,6 +303,10 @@ resource functionsApp 'Microsoft.Web/sites@2022-03-01' = {
         {
           name: 'CosmosDb__DatabaseId'
           value: database.outputs.databaseName
+        }
+        {
+          name: 'CosmosDb__ContainerIds'
+          value: '["users"]'
         }
       ]
     }

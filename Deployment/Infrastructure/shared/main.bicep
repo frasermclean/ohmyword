@@ -46,20 +46,6 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-08-15' = {
   }
 }
 
-// app service plan
-resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
-  name: 'asp-${appName}-shared'
-  location: location
-  tags: tags
-  kind: 'linux'
-  sku: {
-    name: 'B1'
-  }
-  properties: {
-    reserved: true
-  }
-}
-
 // log analytics workspace
 resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
   name: 'law-${appName}-shared'

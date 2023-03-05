@@ -17,12 +17,6 @@
     "databaseThroughput": {
       "value": 400
     },
-    "appSettings": {
-      "value": {
-        "letterHintDelay": 3,
-        "postRoundDelay": 5
-      }
-    },
     "databaseContainers": {
       "value": [
         {
@@ -42,6 +36,12 @@
           "partitionKeyPath": "/id"
         }
       ]
+    },
+    "appSettings": {
+      "value": {
+        "letterHintDelay": 3,
+        "postRoundDelay": 5
+      }
     }
   }
 }
