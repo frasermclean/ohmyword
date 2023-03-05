@@ -26,7 +26,14 @@ public abstract class Repository<TEntity> where TEntity : Entity
     protected Repository(CosmosClient cosmosClient, IOptions<CosmosDbOptions> options,
         ILogger<Repository<TEntity>> logger, string containerId)
     {
-        container = cosmosClient.GetContainer(options.Value.DatabaseId, containerId);
+        var databaseId = options.Value.Databases
+            .FirstOrDefault(definition => definition.ContainerIds.Contains(containerId))?.DatabaseId;
+
+        if (databaseId is null)
+            throw new ArgumentException($"Could not determine database ID for container ID: {containerId}",
+                nameof(containerId));
+        
+        container = cosmosClient.GetContainer(databaseId, containerId);
         this.logger = logger;
         entityTypeName = typeof(TEntity).Name;
     }
