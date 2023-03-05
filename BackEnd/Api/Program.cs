@@ -40,6 +40,7 @@ public static class Program
                 // game services
                 services.AddHostedService<GameCoordinator>();
                 services.AddSingleton<IGameService, GameService>();
+                services.AddSingleton<IUserService, UserService>();
                 services.AddSingleton<IVisitorService, VisitorService>();
                 services.AddSingleton<IWordsService, WordsService>();
                 services.AddOptions<GameServiceOptions>()
