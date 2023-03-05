@@ -22,6 +22,26 @@
         "letterHintDelay": 3,
         "postRoundDelay": 5
       }
+    },
+    "databaseContainers": {
+      "value": [
+        {
+          "id": "words",
+          "partitionKeyPath": "/id"
+        },
+        {
+          "id": "definitions",
+          "partitionKeyPath": "/wordId"
+        },
+        {
+          "id": "players",
+          "partitionKeyPath": "/id"
+        },
+        {
+          "id": "users",
+          "partitionKeyPath": "/id"
+        }
+      ]
     }
   }
 }

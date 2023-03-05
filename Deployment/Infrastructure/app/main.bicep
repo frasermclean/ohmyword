@@ -16,6 +16,9 @@ param domainName string
 @description('Database request units per second.')
 param databaseThroughput int
 
+@description('Database containers to create')
+param databaseContainers array
+
 @description('Application specific settings')
 param appSettings object
 
@@ -64,8 +67,9 @@ module database 'database.bicep' = {
   scope: resourceGroup(sharedResourceGroup)
   params: {
     cosmosDbAccountName: cosmosDbAccount.name
-    databaseName: 'db-${appEnv}'
-    throughput: databaseThroughput
+    databaseName: appEnv
+    databaseContainers: databaseContainers
+    databaseThroughput: databaseThroughput
   }
 }
 
@@ -139,7 +143,7 @@ resource appService 'Microsoft.Web/sites@2022-03-01' = {
         }
         {
           name: 'AzureAd__SignUpSignInPolicyId'
-          value: 'B2C_1_SignUp_SignIn'
+          value: 'B2C_1A_SignUp_SignIn'
         }
         {
           name: 'Game__LetterHintDelay'
@@ -159,7 +163,7 @@ resource appService 'Microsoft.Web/sites@2022-03-01' = {
         }
         {
           name: 'CosmosDb__ContainerIds'
-          value: '["players", "words"]'
+          value: string(map(databaseContainers, container => container.id))
         }
       ]
     }
@@ -230,5 +234,69 @@ module sniEnable 'sniEnable.bicep' = {
     appServiceName: appService.name
     hostname: appService::hostNameBinding.name
     certificateThumbprint: managedCertificate.properties.thumbprint
+  }
+}
+
+// storage account
+resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
+  name: 'st${appName}${appEnv}'
+  location: location
+  tags: tags
+  kind: 'StorageV2'
+  sku: {
+    name: 'Standard_LRS'
+  }
+}
+
+// functions app
+resource functionsApp 'Microsoft.Web/sites@2022-03-01' = {
+  name: 'func-${appName}-${appEnv}'
+  location: location
+  tags: tags
+  kind: 'functionapp,linux'  
+  properties: {
+    serverFarmId: appServicePlan.id
+    reserved: true
+    httpsOnly: true
+    siteConfig: {
+      linuxFxVersion: 'DOTNETCORE|7.0'
+      alwaysOn: true
+      http20Enabled: true
+      ftpsState: 'Disabled'
+      appSettings: [
+        {
+          name: 'AzureWebJobsStorage'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};EndpointSuffix=${environment().suffixes.storage};AccountKey=${storageAccount.listKeys().keys[0].value}'
+        }
+        {
+          name: 'FUNCTIONS_EXTENSION_VERSION'
+          value: '~4'
+        }
+        {
+          name: 'FUNCTIONS_WORKER_RUNTIME'
+          value: 'dotnet-isolated'
+        }
+        {
+          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+          value: appInsights.properties.ConnectionString
+        }
+        {
+          name: 'ApplicationInsightsAgent_EXTENSION_VERSION'
+          value: '~3'
+        }
+        {
+          name: 'XDT_MicrosoftApplicationInsights_Mode'
+          value: 'Recommended'
+        }
+        {
+          name: 'CosmosDb__ConnectionString'
+          value: 'AccountEndpoint=${cosmosDbAccount.properties.documentEndpoint};AccountKey=${cosmosDbAccount.listKeys().primaryMasterKey};'
+        }
+        {
+          name: 'CosmosDb__DatabaseId'
+          value: database.outputs.databaseName
+        }
+      ]
+    }
   }
 }

@@ -6,24 +6,12 @@ param cosmosDbAccountName string
 @description('Name of the database')
 param databaseName string
 
+@description('Containers to create in the database.')
+param databaseContainers array
+
 @description('Database request units per second.')
 @minValue(400)
-param throughput int
-
-var containersDefinitions = [
-  {
-    name: 'definitions'
-    partitionKeyPath: '/wordId'
-  }
-  {
-    name: 'visitors'
-    partitionKeyPath: '/id'
-  }
-  {
-    name: 'words'
-    partitionKeyPath: '/id'
-  }
-]
+param databaseThroughput int
 
 resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-08-15' existing = {
   name: cosmosDbAccountName
@@ -37,18 +25,18 @@ resource database 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2022-08-15
       id: databaseName
     }
     options: {
-      throughput: throughput
+      throughput: databaseThroughput
     }
   }
 
-  resource containers 'containers' = [for definition in containersDefinitions: {
-    name: definition.name
+  resource containers 'containers' = [for container in databaseContainers: {
+    name: container.id
     properties: {
       resource: {
-        id: definition.name
+        id: container.id
         partitionKey: {
           paths: [
-            definition.partitionKeyPath
+            container.partitionKeyPath
           ]
         }
       }
