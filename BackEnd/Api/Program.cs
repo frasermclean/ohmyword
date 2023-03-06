@@ -25,7 +25,7 @@ public static class Program
                     .AddMicrosoftIdentityWebApi(context.Configuration);
 
                 // fast endpoints
-                services.AddFastEndpoints();               
+                services.AddFastEndpoints();
 
                 // signalR services
                 services.AddSignalR()
@@ -41,14 +41,14 @@ public static class Program
                     .Bind(context.Configuration.GetSection(GameServiceOptions.SectionName))
                     .ValidateDataAnnotations()
                     .ValidateOnStart();
-                
+
                 // domain services
                 services.AddSingleton<IUsersService, UsersService>();
                 services.AddSingleton<IVisitorService, VisitorService>();
                 services.AddSingleton<IWordsService, WordsService>();
-                
+
                 // infrastructure services
-                services.AddInfrastructureServices(context.Configuration);
+                services.AddInfrastructureServices(context);
 
                 // development services
                 if (context.HostingEnvironment.IsDevelopment())

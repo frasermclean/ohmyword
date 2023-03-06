@@ -13,7 +13,7 @@ public static class Program
             .ConfigureServices((context, services) =>
             {
                 // services from infrastructure project
-                services.AddInfrastructureServices(context.Configuration);                
+                services.AddInfrastructureServices(context);                
 
                 // local application services
                 services.AddSingleton<DataReader>();

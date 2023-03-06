@@ -1,6 +1,4 @@
-﻿using FastEndpoints;
-
-namespace OhMyWord.Api.Commands.RegisterVisitor;
+﻿namespace OhMyWord.Api.Commands.RegisterVisitor;
 
 public class RegisterVisitorCommand : ICommand<RegisterVisitorResponse>
 {

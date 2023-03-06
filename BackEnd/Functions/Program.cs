@@ -1,12 +1,8 @@
 ﻿using Azure.Core.Serialization;
-using Azure.Identity;
-using Microsoft.Extensions.Azure;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OhMyWord.Domain.Services;
 using OhMyWord.Infrastructure.Extensions;
-using OhMyWord.Infrastructure.Options;
 using OhMyWord.Infrastructure.Services;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -32,22 +28,8 @@ public static class Program
             {
                 services.AddSingleton<IUsersService, UsersService>();
                 services.AddSingleton<IUsersRepository, UsersRepository>();
-
-                services.AddAzureClients(builder =>
-                {
-                    if (context.HostingEnvironment.IsDevelopment())
-                    {
-                        // use local storage emulator
-                        builder.AddTableServiceClient("UseDevelopmentStorage=true");
-                    }
-                    else
-                    {
-                        // use managed identity
-                        builder.AddTableServiceClient(context.Configuration.GetSection("TableService"));
-                        builder.UseCredential(new DefaultAzureCredential());
-                    }
-                });
-
+                services.AddInfrastructureServices(context);
+                
                 // health checks
                 services.AddHealthChecks();
                 //.AddAzureTable();

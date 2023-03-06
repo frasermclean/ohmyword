@@ -1,6 +1,8 @@
-﻿using Microsoft.Azure.Cosmos.Fluent;
-using Microsoft.Extensions.Configuration;
+﻿using Azure.Identity;
+using Microsoft.Azure.Cosmos.Fluent;
+using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using OhMyWord.Infrastructure.Options;
 using OhMyWord.Infrastructure.Services;
@@ -9,14 +11,15 @@ namespace OhMyWord.Infrastructure.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
-    {        
+    public static IServiceCollection AddInfrastructureServices(this IServiceCollection services,
+        HostBuilderContext context)
+    {
         services.AddHttpClient();
-        
+
         // options
         services.AddOptions<CosmosDbOptions>()
-            .Bind(configuration.GetSection(CosmosDbOptions.SectionName));
-        
+            .Bind(context.Configuration.GetSection(CosmosDbOptions.SectionName));
+
         // cosmos client
         services.AddSingleton(serviceProvider =>
         {
@@ -29,6 +32,21 @@ public static class ServiceCollectionExtensions
                 .WithCustomSerializer(new EntitySerializer())
                 .WithContentResponseOnWrite(false)
                 .Build();
+        });
+
+        services.AddAzureClients(builder =>
+        {
+            if (context.HostingEnvironment.IsDevelopment())
+            {
+                // use local storage emulator
+                builder.AddTableServiceClient("UseDevelopmentStorage=true");
+            }
+            else
+            {
+                // use managed identity
+                builder.AddTableServiceClient(context.Configuration.GetSection("TableService"));
+                builder.UseCredential(new DefaultAzureCredential());
+            }
         });
 
         // repositories
