@@ -29,13 +29,9 @@ export class AuthService {
         const accounts = this.msalService.instance.getAllAccounts();
         if (accounts.length === 0) return;
 
-        const account = accounts[0];
+        const account = accounts[accounts.length - 1];
         const name = account.name || '';
-        const role =
-          account.localAccountId === '377398a2-f436-4f5f-9076-89cca8435f34' || // TODO: replace this with token claim
-          account.localAccountId === 'f803a3a2-9edc-485e-98f9-3b6fea804d91'
-            ? Role.Admin
-            : Role.User;
+        const role = account.idTokenClaims?.role as Role || Role.Guest;
 
         this.store.dispatch(new Auth.LoggedIn(name, role));
       });
