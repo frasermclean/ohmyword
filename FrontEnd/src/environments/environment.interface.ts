@@ -5,5 +5,6 @@ export interface Environment {
     clientId: string;
     redirectUri: string;
     scopes: string[];
+    signUpSignInPolicy: string;
   };
 }

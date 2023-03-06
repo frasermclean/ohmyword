@@ -10,5 +10,6 @@ export const environment: Environment = {
     clientId: '4c6638cf-bf1b-4c19-9948-2396f0148c59',
     redirectUri: 'http://localhost:4200',
     scopes: ['https://auth.ohmyword.live/dev-api/access'],
+    signUpSignInPolicy: 'B2C_1A_SignUp_SignIn_DevTest',
   },
 };
