@@ -62,4 +62,115 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10
   }
 }
 
-output dnsZoneNameServers array = dnsZone.properties.nameServers
+// application insights
+resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
+  name: toLower('ai-${appName}-shared')
+  location: location
+  tags: tags
+  kind: 'web'
+  properties: {
+    Application_Type: 'web'
+    Request_Source: 'rest'
+    WorkspaceResourceId: logAnalyticsWorkspace.id
+  }
+}
+
+// storage account
+resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
+  name: 'st${appName}shared'
+  location: location
+  tags: tags
+  kind: 'StorageV2'
+  sku: {
+    name: 'Standard_LRS'
+  }
+
+  resource tableServices 'tableServices' = {
+    name: 'default'
+    resource usersTable 'tables' = {
+      name: 'users'
+    }
+  }
+}
+
+// app service plan for the functions app (consumption plan)
+resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
+  name: 'asp-${appName}-shared'
+  location: location
+  tags: tags
+  kind: 'functionapp'
+  sku: {
+    name: 'Y1'
+  }
+  properties: {
+    reserved: true
+  }
+}
+
+// functions app
+resource functionsApp 'Microsoft.Web/sites@2022-03-01' = {
+  name: 'func-${appName}-shared'
+  location: location
+  tags: tags
+  kind: 'functionapp,linux'
+  identity: {
+    type: 'SystemAssigned'
+  }
+  properties: {
+    serverFarmId: appServicePlan.id
+    reserved: true
+    httpsOnly: true
+    siteConfig: {
+      linuxFxVersion: 'DOTNET-ISOLATED|7.0'
+      http20Enabled: true
+      ftpsState: 'Disabled'
+      appSettings: [
+        {
+          name: 'AzureWebJobsStorage'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};EndpointSuffix=${environment().suffixes.storage};AccountKey=${storageAccount.listKeys().keys[0].value}'
+        }
+        {
+          name: 'FUNCTIONS_EXTENSION_VERSION'
+          value: '~4'
+        }
+        {
+          name: 'FUNCTIONS_WORKER_RUNTIME'
+          value: 'dotnet-isolated'
+        }
+        {
+          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+          value: appInsights.properties.ConnectionString
+        }
+        {
+          name: 'ApplicationInsightsAgent_EXTENSION_VERSION'
+          value: '~3'
+        }
+        {
+          name: 'XDT_MicrosoftApplicationInsights_Mode'
+          value: 'Recommended'
+        }
+        {
+          name: 'TableService__Endpoint'
+          value: 'https://${storageAccount.name}.table.${environment().suffixes.storage}'
+        }
+      ]
+    }
+  }
+}
+
+// role definition for storage account
+resource roleDefinition 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+  name: '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3' // Storage Blob Data Contributor
+  scope: resourceGroup()
+}
+
+// assign role to storage account
+resource roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(functionsApp.id, roleDefinition.id)
+  scope: storageAccount
+  properties: {
+    roleDefinitionId: roleDefinition.id
+    principalId: functionsApp.identity.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
