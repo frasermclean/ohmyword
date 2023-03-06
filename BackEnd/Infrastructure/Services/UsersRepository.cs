@@ -6,6 +6,7 @@ namespace OhMyWord.Infrastructure.Services;
 
 public interface IUsersRepository
 {
+    IAsyncEnumerable<UserEntity> SearchUsers(string? filter = default, CancellationToken cancellationToken = default);
     Task<UserEntity?> GetUserAsync(string userId, CancellationToken cancellationToken = default);
     Task UpsertUserAsync(UserEntity userEntity, CancellationToken cancellationToken = default);
 }
@@ -19,6 +20,19 @@ public class UsersRepository : IUsersRepository
     {
         this.logger = logger;
         tableClient = serviceClient.GetTableClient("users");
+    }
+
+    public IAsyncEnumerable<UserEntity> SearchUsers(string? filter = default,
+        CancellationToken cancellationToken = default)
+    {
+        return filter is null
+            ? tableClient.QueryAsync<UserEntity>(cancellationToken: cancellationToken)
+            : tableClient.QueryAsync<UserEntity>(entity =>
+                    entity.PartitionKey.Contains(filter, StringComparison.InvariantCultureIgnoreCase) ||
+                    entity.RowKey.Contains(filter, StringComparison.InvariantCultureIgnoreCase) ||
+                    entity.Name.Contains(filter, StringComparison.InvariantCultureIgnoreCase) ||
+                    entity.Email.Contains(filter, StringComparison.InvariantCultureIgnoreCase),
+                cancellationToken: cancellationToken);
     }
 
     public async Task<UserEntity?> GetUserAsync(string userId, CancellationToken cancellationToken = default)
