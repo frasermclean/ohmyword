@@ -190,7 +190,7 @@
 
         <OrchestrationStep Order="7" Type="ClaimsExchange">
           <ClaimsExchanges>
-            <ClaimsExchange Id="REST-GetUserClaims" TechnicalProfileReferenceId="REST-GetUserClaims" />
+            <ClaimsExchange Id="GetUserClaims" TechnicalProfileReferenceId="REST-GetUserClaims" />
           </ClaimsExchanges>
         </OrchestrationStep>
 
@@ -297,7 +297,14 @@
               TechnicalProfileReferenceId="AAD-UserReadUsingObjectId-CheckRefreshTokenDate" />
           </ClaimsExchanges>
         </OrchestrationStep>
-        <OrchestrationStep Order="3" Type="SendClaims"
+
+        <OrchestrationStep Order="3" Type="ClaimsExchange">
+          <ClaimsExchanges>
+            <ClaimsExchange Id="GetUserClaims" TechnicalProfileReferenceId="REST-GetUserClaims" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <OrchestrationStep Order="4" Type="SendClaims"
           CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
       </OrchestrationSteps>
     </UserJourney>
