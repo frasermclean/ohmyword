@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 using OhMyWord.Data.Entities;
 using OhMyWord.Data.Services;
 using OhMyWord.Functions.Models;
-using System.Net;
 
 namespace OhMyWord.Functions;
 
@@ -35,7 +34,10 @@ public sealed class UserFunctions
         if (user is null)
             await usersRepository.CreateUserAsync(new UserEntity
             {
-                Name = getUserClaimsRequest.Name, Email = getUserClaimsRequest.Email
+                Id = getUserClaimsRequest.UserId,
+                Name = getUserClaimsRequest.Name,
+                Email = getUserClaimsRequest.Email,
+                Role = Role.User
             });
 
         var role = user?.Role ?? Role.User;
