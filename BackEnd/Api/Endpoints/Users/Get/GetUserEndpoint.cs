@@ -5,11 +5,11 @@ namespace OhMyWord.Api.Endpoints.Users.Get;
 
 public class GetUserEndpoint : Endpoint<GetUserRequest, User?>
 {
-    private readonly IUserService userService;
+    private readonly IUsersService usersService;
 
-    public GetUserEndpoint(IUserService userService)
+    public GetUserEndpoint(IUsersService usersService)
     {
-        this.userService = userService;
+        this.usersService = usersService;
     }
 
     public override void Configure()
@@ -19,7 +19,7 @@ public class GetUserEndpoint : Endpoint<GetUserRequest, User?>
 
     public override async Task HandleAsync(GetUserRequest request, CancellationToken cancellationToken)
     {
-        var user = await userService.GetUserAsync(request.UserId, cancellationToken);
+        var user = await usersService.GetUserAsync(request.UserId, cancellationToken);
 
         var responseTask = user is not null
             ? SendOkAsync(user, cancellationToken)

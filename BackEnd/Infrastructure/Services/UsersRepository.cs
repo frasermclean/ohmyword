@@ -1,32 +1,40 @@
-﻿using Microsoft.Azure.Cosmos;
+﻿using Azure.Data.Tables;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using OhMyWord.Infrastructure.Entities;
-using OhMyWord.Infrastructure.Options;
 
 namespace OhMyWord.Infrastructure.Services;
 
 public interface IUsersRepository
 {
     Task<UserEntity?> GetUserAsync(string userId, CancellationToken cancellationToken = default);
-    Task CreateUserAsync(UserEntity userEntity, CancellationToken cancellationToken = default);
-    Task UpdateUserAsync(UserEntity userEntity, CancellationToken cancellationToken = default);
+    Task UpsertUserAsync(UserEntity userEntity, CancellationToken cancellationToken = default);
 }
 
-public class UsersRepository : Repository<UserEntity>, IUsersRepository
+public class UsersRepository : IUsersRepository
 {
-    public UsersRepository(CosmosClient cosmosClient, IOptions<CosmosDbOptions> options,
-        ILogger<UsersRepository> logger)
-        : base(cosmosClient, options, logger, "users")
+    private readonly ILogger<UsersRepository> logger;
+    private readonly TableClient tableClient;
+
+    public UsersRepository(ILogger<UsersRepository> logger, TableServiceClient serviceClient)
     {
+        this.logger = logger;
+        tableClient = serviceClient.GetTableClient("users");
     }
 
-    public Task<UserEntity?> GetUserAsync(string userId, CancellationToken cancellationToken) =>
-        ReadItemAsync(userId, userId, cancellationToken);
+    public async Task<UserEntity?> GetUserAsync(string userId, CancellationToken cancellationToken = default)
+    {
+        var user = await tableClient
+            .QueryAsync<UserEntity>(entity => entity.PartitionKey == userId, cancellationToken: cancellationToken)
+            .FirstOrDefaultAsync(cancellationToken);
 
-    public Task CreateUserAsync(UserEntity userEntity, CancellationToken cancellationToken) =>
-        CreateItemAsync(userEntity, cancellationToken);
+        if (user is null)
+            logger.LogWarning("User with ID: {UserId} was not found", userId);
 
-    public Task UpdateUserAsync(UserEntity userEntity, CancellationToken cancellationToken = default)
-        => UpdateItemAsync(userEntity, cancellationToken);
+        return user;
+    }
+
+    public async Task UpsertUserAsync(UserEntity userEntity, CancellationToken cancellationToken = default)
+    {
+        await tableClient.UpsertEntityAsync(userEntity, cancellationToken: cancellationToken);
+    }
 }

@@ -4,16 +4,17 @@ using OhMyWord.Infrastructure.Services;
 
 namespace OhMyWord.Domain.Services;
 
-public interface IUserService
+public interface IUsersService
 {
     Task<User?> GetUserAsync(string userId, CancellationToken cancellationToken = default);
+    Task<User> CreateUserAsync(User user);
 }
 
-public class UserService : IUserService
+public class UsersService : IUsersService
 {
     private readonly IUsersRepository usersRepository;
 
-    public UserService(IUsersRepository usersRepository)
+    public UsersService(IUsersRepository usersRepository)
     {
         this.usersRepository = usersRepository;
     }
@@ -22,5 +23,11 @@ public class UserService : IUserService
     {
         var entity = await usersRepository.GetUserAsync(userId, cancellationToken);
         return entity?.ToUser();
+    }
+
+    public async Task<User> CreateUserAsync(User user)
+    {
+        await usersRepository.UpsertUserAsync(user.ToEntity());
+        return user;
     }
 }

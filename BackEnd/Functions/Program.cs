@@ -1,9 +1,13 @@
 ﻿using Azure.Core.Serialization;
+using Azure.Identity;
+using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using OhMyWord.Domain.Services;
 using OhMyWord.Infrastructure.Extensions;
 using OhMyWord.Infrastructure.Options;
+using OhMyWord.Infrastructure.Services;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -14,9 +18,9 @@ public static class Program
     public static void Main()
     {
         var host = new HostBuilder()
-            .ConfigureFunctionsWorkerDefaults(builder =>
+            .ConfigureFunctionsWorkerDefaults(options =>
             {
-                builder.Serializer = new JsonObjectSerializer(new JsonSerializerOptions
+                options.Serializer = new JsonObjectSerializer(new JsonSerializerOptions
                 {
                     IgnoreReadOnlyProperties = true,
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -24,21 +28,29 @@ public static class Program
                     Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
                 });
             })
-            .ConfigureAppConfiguration(builder =>
-            {
-                builder.AddJsonFile("local.settings.json", optional: true);
-            })
             .ConfigureServices((context, services) =>
             {
-                // infrastructure services
-                services.AddInfrastructureServices(context.Configuration);
+                services.AddSingleton<IUsersService, UsersService>();
+                services.AddSingleton<IUsersRepository, UsersRepository>();
+
+                services.AddAzureClients(builder =>
+                {
+                    if (context.HostingEnvironment.IsDevelopment())
+                    {
+                        // use local storage emulator
+                        builder.AddTableServiceClient("UseDevelopmentStorage=true");
+                    }
+                    else
+                    {
+                        // use managed identity
+                        builder.AddTableServiceClient(context.Configuration.GetSection("TableService"));
+                        builder.UseCredential(new DefaultAzureCredential());
+                    }
+                });
 
                 // health checks
-                var cosmosDbOptions = context.Configuration
-                    .GetSection(CosmosDbOptions.SectionName)
-                    .Get<CosmosDbOptions>();
-                services.AddHealthChecks()
-                    .AddCosmosDb(cosmosDbOptions?.ConnectionString ?? string.Empty);
+                services.AddHealthChecks();
+                //.AddAzureTable();
             })
             .Build();
 

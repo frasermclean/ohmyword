@@ -43,7 +43,7 @@ public static class Program
                     .ValidateOnStart();
                 
                 // domain services
-                services.AddSingleton<IUserService, UserService>();
+                services.AddSingleton<IUsersService, UsersService>();
                 services.AddSingleton<IVisitorService, VisitorService>();
                 services.AddSingleton<IWordsService, WordsService>();
                 

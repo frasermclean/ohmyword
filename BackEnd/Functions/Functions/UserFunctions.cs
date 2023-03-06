@@ -1,21 +1,22 @@
 ﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
+using OhMyWord.Domain.Models;
+using OhMyWord.Domain.Services;
 using OhMyWord.Functions.Models;
 using OhMyWord.Infrastructure.Entities;
-using OhMyWord.Infrastructure.Services;
 
 namespace OhMyWord.Functions.Functions;
 
 public sealed class UserFunctions
 {
     private readonly ILogger<UserFunctions> logger;
-    private readonly IUsersRepository usersRepository;
+    private readonly IUsersService usersService;
 
-    public UserFunctions(ILogger<UserFunctions> logger, IUsersRepository usersRepository)
+    public UserFunctions(ILogger<UserFunctions> logger, IUsersService usersService)
     {
         this.logger = logger;
-        this.usersRepository = usersRepository;
+        this.usersService = usersService;
     }
 
     [Function(nameof(GetUserClaims))]
@@ -27,19 +28,18 @@ public sealed class UserFunctions
         var getUserClaimsRequest = await httpRequest.ReadFromJsonAsync<GetUserClaimsRequest>();
         if (getUserClaimsRequest is null) throw new InvalidOperationException("Couldn't deserialize request body");
 
-        var user = await usersRepository.GetUserAsync(getUserClaimsRequest.UserId);
+        var user = await usersService.GetUserAsync(getUserClaimsRequest.UserId);
 
         // create user if it doesn't exist
-        if (user is null)
-            await usersRepository.CreateUserAsync(new UserEntity
-            {
-                Id = getUserClaimsRequest.UserId,
-                Name = getUserClaimsRequest.Name,
-                Email = getUserClaimsRequest.Email,
-                Role = Role.User
-            });
+        user ??= await usersService.CreateUserAsync(new User
+        {
+            Id = getUserClaimsRequest.UserId,
+            Name = getUserClaimsRequest.Name,
+            Email = getUserClaimsRequest.Email,
+            Role = Role.User
+        });
 
-        var role = user?.Role ?? Role.User;
+        var role = user.Role;
 
         logger.LogInformation("Authenticated user ID is: {UserId}, determined role as: {Role}",
             getUserClaimsRequest.UserId, role);
