@@ -204,9 +204,6 @@ resource staticWebApp 'Microsoft.Web/staticSites@2022-03-01' = {
   // custom domain
   resource customDomain 'customDomains' = {
     name: frontendHostname
-    properties: {
-      validationMethod: 'dns-txt-token'
-    }
     dependsOn: [ dnsRecords ]
   }
 }
