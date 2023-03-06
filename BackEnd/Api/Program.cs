@@ -1,10 +1,10 @@
-using FastEndpoints;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Web;
 using OhMyWord.Api.Hubs;
-using OhMyWord.Api.Options;
 using OhMyWord.Api.Services;
-using OhMyWord.Data.Extensions;
+using OhMyWord.Domain.Options;
+using OhMyWord.Domain.Services;
+using OhMyWord.Infrastructure.Extensions;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -25,10 +25,7 @@ public static class Program
                     .AddMicrosoftIdentityWebApi(context.Configuration);
 
                 // fast endpoints
-                services.AddFastEndpoints();
-
-                // add data services
-                services.AddDataServices(context.Configuration);
+                services.AddFastEndpoints();               
 
                 // signalR services
                 services.AddSignalR()
@@ -40,13 +37,18 @@ public static class Program
                 // game services
                 services.AddHostedService<GameCoordinator>();
                 services.AddSingleton<IGameService, GameService>();
-                services.AddSingleton<IUserService, UserService>();
-                services.AddSingleton<IVisitorService, VisitorService>();
-                services.AddSingleton<IWordsService, WordsService>();
                 services.AddOptions<GameServiceOptions>()
                     .Bind(context.Configuration.GetSection(GameServiceOptions.SectionName))
                     .ValidateDataAnnotations()
                     .ValidateOnStart();
+                
+                // domain services
+                services.AddSingleton<IUserService, UserService>();
+                services.AddSingleton<IVisitorService, VisitorService>();
+                services.AddSingleton<IWordsService, WordsService>();
+                
+                // infrastructure services
+                services.AddInfrastructureServices(context.Configuration);
 
                 // development services
                 if (context.HostingEnvironment.IsDevelopment())

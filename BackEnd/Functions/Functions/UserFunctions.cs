@@ -1,17 +1,16 @@
 ﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
-using OhMyWord.Data.Entities;
-using OhMyWord.Data.Services;
 using OhMyWord.Functions.Models;
+using OhMyWord.Infrastructure.Entities;
+using OhMyWord.Infrastructure.Services;
 
-namespace OhMyWord.Functions;
+namespace OhMyWord.Functions.Functions;
 
 public sealed class UserFunctions
 {
     private readonly ILogger<UserFunctions> logger;
     private readonly IUsersRepository usersRepository;
-
 
     public UserFunctions(ILogger<UserFunctions> logger, IUsersRepository usersRepository)
     {

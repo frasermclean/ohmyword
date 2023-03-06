@@ -1,7 +1,6 @@
-﻿using FastEndpoints;
-using OhMyWord.Api.Endpoints.Words.Get;
-using OhMyWord.Api.Models;
-using OhMyWord.Api.Services;
+﻿using OhMyWord.Api.Endpoints.Words.Get;
+using OhMyWord.Domain.Models;
+using OhMyWord.Domain.Services;
 
 namespace OhMyWord.Api.Endpoints.Words.Create;
 

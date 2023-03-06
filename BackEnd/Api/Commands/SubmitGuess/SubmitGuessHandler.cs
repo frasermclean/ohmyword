@@ -1,5 +1,4 @@
-﻿using FastEndpoints;
-using OhMyWord.Api.Services;
+﻿using OhMyWord.Api.Services;
 
 namespace OhMyWord.Api.Commands.SubmitGuess;
 
@@ -14,7 +13,6 @@ public class SubmitGuessHandler : ICommandHandler<SubmitGuessCommand, SubmitGues
 
     public async Task<SubmitGuessResponse> ExecuteAsync(SubmitGuessCommand command, CancellationToken cancellationToken)
     {
-        //await validator.ValidateAndThrowAsync(request, cancellationToken);
         var points = await gameService.ProcessGuessAsync(command.ConnectionId, command.RoundId, command.Value);
         return new SubmitGuessResponse
         {

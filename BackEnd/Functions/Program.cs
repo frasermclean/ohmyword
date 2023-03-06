@@ -2,8 +2,8 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using OhMyWord.Data.Extensions;
-using OhMyWord.Data.Options;
+using OhMyWord.Infrastructure.Extensions;
+using OhMyWord.Infrastructure.Options;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -30,8 +30,8 @@ public static class Program
             })
             .ConfigureServices((context, services) =>
             {
-                // data services
-                services.AddDataServices(context.Configuration);
+                // infrastructure services
+                services.AddInfrastructureServices(context.Configuration);
 
                 // health checks
                 var cosmosDbOptions = context.Configuration

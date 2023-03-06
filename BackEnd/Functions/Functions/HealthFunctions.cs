@@ -3,7 +3,7 @@ using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Net;
 
-namespace OhMyWord.Functions;
+namespace OhMyWord.Functions.Functions;
 
 public class HealthFunctions
 {

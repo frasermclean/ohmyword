@@ -1,10 +1,9 @@
-﻿using FastEndpoints;
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 using OhMyWord.Api.Commands.RegisterVisitor;
 using OhMyWord.Api.Commands.SubmitGuess;
 using OhMyWord.Api.Events.VisitorDisconnected;
-using OhMyWord.Api.Models;
-using OhMyWord.Api.Services;
+using OhMyWord.Domain.Models;
+using OhMyWord.Domain.Services;
 
 namespace OhMyWord.Api.Hubs;
 

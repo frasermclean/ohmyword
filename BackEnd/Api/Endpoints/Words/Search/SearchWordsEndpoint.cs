@@ -1,6 +1,4 @@
-﻿using FastEndpoints;
-using OhMyWord.Api.Models;
-using OhMyWord.Api.Services;
+﻿using OhMyWord.Domain.Services;
 
 namespace OhMyWord.Api.Endpoints.Words.Search;
 

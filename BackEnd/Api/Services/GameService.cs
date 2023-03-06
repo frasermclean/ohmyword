@@ -1,10 +1,10 @@
-﻿using FastEndpoints;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using OhMyWord.Api.Events.GameStateChanged;
 using OhMyWord.Api.Events.LetterHintAdded;
-using OhMyWord.Api.Models;
-using OhMyWord.Api.Options;
-using OhMyWord.Data.Enums;
+using OhMyWord.Domain.Models;
+using OhMyWord.Domain.Options;
+using OhMyWord.Domain.Services;
+using OhMyWord.Infrastructure.Enums;
 
 namespace OhMyWord.Api.Services;
 

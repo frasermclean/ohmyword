@@ -1,5 +1,4 @@
-﻿using FastEndpoints;
-using OhMyWord.Api.Services;
+﻿using OhMyWord.Domain.Services;
 
 namespace OhMyWord.Api.Endpoints.Words.Delete;
 

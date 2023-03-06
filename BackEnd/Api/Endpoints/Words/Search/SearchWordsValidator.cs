@@ -1,6 +1,5 @@
-﻿using FastEndpoints;
-using FluentValidation;
-using OhMyWord.Data.Services;
+﻿using FluentValidation;
+using OhMyWord.Infrastructure.Services;
 
 namespace OhMyWord.Api.Endpoints.Words.Search;
 

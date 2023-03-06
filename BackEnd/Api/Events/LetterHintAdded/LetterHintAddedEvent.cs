@@ -1,5 +1,4 @@
-﻿using FastEndpoints;
-using OhMyWord.Api.Models;
+﻿using OhMyWord.Domain.Models;
 
 namespace OhMyWord.Api.Events.LetterHintAdded;
 

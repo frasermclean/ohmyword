@@ -1,5 +1,5 @@
-﻿using FastEndpoints;
-using OhMyWord.Api.Services;
+﻿using OhMyWord.Api.Services;
+using OhMyWord.Domain.Services;
 
 namespace OhMyWord.Api.Events.VisitorDisconnected;
 

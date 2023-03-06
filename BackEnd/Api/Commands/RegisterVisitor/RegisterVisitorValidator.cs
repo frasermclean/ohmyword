@@ -1,5 +1,4 @@
-﻿using FastEndpoints;
-using FluentValidation;
+﻿using FluentValidation;
 
 namespace OhMyWord.Api.Commands.RegisterVisitor;
 
