@@ -56,6 +56,11 @@ resource b2cTenant 'Microsoft.AzureActiveDirectory/b2cDirectories@2021-04-01' ex
   scope: resourceGroup(sharedResourceGroup)
 }
 
+resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' existing = {
+  name: 'st${appName}shared'
+  scope: resourceGroup(sharedResourceGroup)
+}
+
 // database
 module database 'database.bicep' = {
   name: 'database-${appEnv}'
@@ -173,6 +178,10 @@ resource appService 'Microsoft.Web/sites@2022-03-01' = {
         {
           name: 'CosmosDb__ContainerIds'
           value: string(map(databaseContainers, container => container.id))
+        }
+        {
+          name: 'TableService__Endpoint'
+          value: 'https://${storageAccount.name}.table.${environment().suffixes.storage}'
         }
       ]
     }
