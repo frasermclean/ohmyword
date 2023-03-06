@@ -5,8 +5,8 @@
   xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06"
   PolicySchemaVersion="0.3.0.0"
   TenantId="ohmywordauth.onmicrosoft.com"
-  PolicyId="B2C_1A_SignUp_SignIn_DevTest"
-  PublicPolicyUri="http://ohmywordauth.onmicrosoft.com/B2C_1A_SignUp_SignIn_DevTest">
+  PolicyId="B2C_1A_SignUp_SignIn"
+  PublicPolicyUri="http://ohmywordauth.onmicrosoft.com/B2C_1A_SignUp_SignIn">
 
   <BasePolicy>
     <TenantId>ohmywordauth.onmicrosoft.com</TenantId>
@@ -14,7 +14,7 @@
   </BasePolicy>
 
   <RelyingParty>
-    <DefaultUserJourney ReferenceId="SignUpOrSignIn_DevTest" />
+    <DefaultUserJourney ReferenceId="SignUpOrSignIn" />
     <Endpoints>
       <!--points to refresh token journey when app makes refresh token request-->
       <Endpoint Id="Token" UserJourneyReferenceId="RedeemRefreshToken" />

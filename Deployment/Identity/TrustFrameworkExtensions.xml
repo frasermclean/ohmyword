@@ -60,18 +60,19 @@
     <ClaimsProvider>
       <DisplayName>REST APIs</DisplayName>
       <TechnicalProfiles>
-        <!-- Azure Functions - Get User Claims - Dev/Test Environment -->
-        <TechnicalProfile Id="REST-GetUserClaims-DevTest">
-          <DisplayName>Get User Claims - Dev/Test Environment</DisplayName>
+        <!-- Azure Functions - Get User Claims -->
+        <TechnicalProfile Id="REST-GetUserClaims">
+          <DisplayName>Get User Claims</DisplayName>
           <Protocol Name="Proprietary"
             Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
           <Metadata>
-            <Item Key="ServiceUrl">https://func-ohmyword-test.azurewebsites.net/api/get-user-claims</Item>
+            <Item Key="ServiceUrl">
+              https://func-ohmyword-shared.azurewebsites.net/api/get-user-claims</Item>
             <Item Key="SendClaimsIn">Body</Item>
             <Item Key="AuthenticationType">ApiKeyHeader</Item>
           </Metadata>
           <CryptographicKeys>
-            <Key Id="X-Functions-Key" StorageReferenceId="B2C_1A_FunctionsKeyDevTest" />
+            <Key Id="X-Functions-Key" StorageReferenceId="B2C_1A_FunctionsKey" />
           </CryptographicKeys>
           <InputClaims>
             <InputClaim ClaimTypeReferenceId="objectId" PartnerClaimType="userId" />
@@ -90,7 +91,7 @@
 
   <UserJourneys>
 
-    <UserJourney Id="SignUpOrSignIn_DevTest">
+    <UserJourney Id="SignUpOrSignIn">
       <OrchestrationSteps>
 
         <OrchestrationStep Order="1" Type="CombinedSignInAndSignUp"
@@ -189,7 +190,7 @@
 
         <OrchestrationStep Order="7" Type="ClaimsExchange">
           <ClaimsExchanges>
-            <ClaimsExchange Id="REST-GetUserClaims" TechnicalProfileReferenceId="REST-GetUserClaims-DevTest" />
+            <ClaimsExchange Id="REST-GetUserClaims" TechnicalProfileReferenceId="REST-GetUserClaims" />
           </ClaimsExchanges>
         </OrchestrationStep>
 
