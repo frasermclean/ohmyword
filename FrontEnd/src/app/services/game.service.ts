@@ -1,14 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
-
+import { Store } from '@ngxs/store';
 import { environment } from 'src/environments/environment';
 import { FingerprintService } from './fingerprint.service';
+import { AuthService } from './auth.service';
 
 import { RegisterVisitorResponse } from '../models/responses/register-visitor.response';
 import { GuessResponse } from '../models/responses/guess.response';
 import { LetterHintResponse } from '../models/responses/letter-hint.response';
-
-import { Store } from '@ngxs/store';
 
 import { Game, Guess, Hub } from '../game/game.actions';
 import { GameStateResponse } from '../models/responses/game-state-response';
@@ -18,23 +17,14 @@ import { GameStateResponse } from '../models/responses/game-state-response';
 })
 export class GameService {
   private readonly hubConnection = new HubConnectionBuilder()
-    .withUrl(`https://${environment.apiHost}/hub`)
+    .withUrl(`https://${environment.apiHost}/hub`, {
+      accessTokenFactory: () => this.authService.getApiAccessToken(),
+    })
     .configureLogging(environment.name !== 'development' ? LogLevel.Error : LogLevel.Information)
     .build();
 
-  constructor(private fingerprintService: FingerprintService, private store: Store) {
-    // register callbacks
-    this.hubConnection.onclose((error) => this.store.dispatch(new Hub.Disconnected(error)));
-
-    this.hubConnection.on('SendGameState', (response: GameStateResponse) =>
-      this.store.dispatch(new Game.GameStateUpdated(response))
-    );
-    this.hubConnection.on('SendVisitorCount', (count: number) =>
-      this.store.dispatch(new Game.PlayerCountUpdated(count)) // TODO: Update references from Player to Visitor
-    );
-    this.hubConnection.on('SendLetterHint', (response: LetterHintResponse) => {
-      this.store.dispatch(new Game.LetterHintReceived(response));
-    });
+  constructor(private fingerprintService: FingerprintService, private store: Store, private authService: AuthService) {
+    this.registerHubCallbacks();
   }
 
   /**
@@ -83,5 +73,28 @@ export class GameService {
   public async submitGuess(roundId: string, value: string) {
     const response = await this.hubConnection.invoke<GuessResponse>('SubmitGuess', roundId, value);
     this.store.dispatch(response.correct ? new Guess.Succeeded(response.points) : new Guess.Failed());
+  }
+
+  /**
+   * Register hub connection callback methods.
+   */
+  private registerHubCallbacks() {
+    // connect closed
+    this.hubConnection.onclose((error) => this.store.dispatch(new Hub.Disconnected(error)));
+
+    // server sent game state
+    this.hubConnection.on('SendGameState', (response: GameStateResponse) =>
+      this.store.dispatch(new Game.GameStateUpdated(response))
+    );
+
+    // vistor count changed
+    this.hubConnection.on('SendVisitorCount', (count: number) =>
+      this.store.dispatch(new Game.PlayerCountUpdated(count))
+    );
+
+    // letter hint received
+    this.hubConnection.on('SendLetterHint', (response: LetterHintResponse) => {
+      this.store.dispatch(new Game.LetterHintReceived(response));
+    });
   }
 }

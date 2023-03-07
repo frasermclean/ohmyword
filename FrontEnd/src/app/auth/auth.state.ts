@@ -5,6 +5,7 @@ import { AuthService } from '../services/auth.service';
 import { Auth } from './auth.actions';
 
 interface AuthStateModel {
+  busy: boolean;
   loggedIn: boolean;
   name: string;
   role: Role;
@@ -14,6 +15,7 @@ const AUTH_STATE_TOKEN = new StateToken<AuthStateModel>('auth');
 @State<AuthStateModel>({
   name: AUTH_STATE_TOKEN,
   defaults: {
+    busy: true,
     loggedIn: false,
     name: '',
     role: Role.Guest,
@@ -33,7 +35,8 @@ export class AuthState {
 
   @Action(Auth.LoggedIn)
   loggedIn(context: StateContext<AuthStateModel>, action: Auth.LoggedIn) {
-    context.patchState({
+    context.setState({
+      busy: false,
       loggedIn: true,
       name: action.displayName,
       role: action.role,
@@ -43,6 +46,11 @@ export class AuthState {
   @Action(Auth.Logout)
   logout() {
     this.authService.logout();
+  }
+
+  @Selector()
+  static busy(state: AuthStateModel) {
+    return state.busy;
   }
 
   @Selector()

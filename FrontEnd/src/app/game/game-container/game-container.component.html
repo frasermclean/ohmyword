@@ -1,4 +1,7 @@
 <div id="container">
+  <div *ngIf="(connectionState$ | async) === 'Disconnected' && !(authBusy$ | async)" >
+    <button mat-button color="primary" (click)="connect()">CONNECT</button>
+  </div>
   <div *ngIf="(connectionState$ | async) === 'Connecting'" id="connecting-container">
     <mat-spinner color="accent"></mat-spinner>
     <p>Connecting to server</p>

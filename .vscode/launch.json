@@ -8,7 +8,7 @@
       "type": "msedge",
       "request": "launch",
       "name": "Debug FrontEnd with Edge",
-      "url": "http://localhost:4200/admin",
+      "url": "http://localhost:4200",
       "webRoot": "${workspaceFolder}/FrontEnd",
       "preLaunchTask": "Serve FrontEnd",
       "sourceMaps": true
