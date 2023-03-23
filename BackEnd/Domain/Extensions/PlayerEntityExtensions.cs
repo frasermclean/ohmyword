@@ -8,7 +8,6 @@ public static class VisitorEntityExtensions
     public static Player ToPlayer(this PlayerEntity entity, string connectionId) => new()
     {        
         Id = entity.Id,
-        VisitorId = entity.VisitorId,
         ConnectionId = connectionId,
         UserId = entity.UserId,
         Score = entity.Score,

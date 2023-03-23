@@ -8,7 +8,7 @@ namespace OhMyWord.Infrastructure.Services;
 
 public interface IPlayerRepository
 {
-    Task<PlayerEntity?> GetPlayerByVisitorIdAsync(string visitorId);
+    Task<PlayerEntity?> GetPlayerAsync(string playerId);
     Task<PlayerEntity> CreatePlayerAsync(PlayerEntity playerEntity);
     Task DeletePlayerAsync(PlayerEntity playerEntity);
     Task<PlayerEntity> IncrementRegistrationCountAsync(string playerId);
@@ -23,12 +23,8 @@ public class PlayerRepository : Repository<PlayerEntity>, IPlayerRepository
     {
     }
 
-    public async Task<PlayerEntity?> GetPlayerByVisitorIdAsync(string visitorId)
-    {
-        const string sql = "SELECT * FROM c WHERE c.visitorId = @visitorId";
-        var queryDefinition = new QueryDefinition(sql).WithParameter("@visitorId", visitorId);
-        return await ExecuteQuery<PlayerEntity>(queryDefinition).FirstOrDefaultAsync();
-    }
+    public Task<PlayerEntity?> GetPlayerAsync(string playerId)
+        => ReadItemAsync(playerId, playerId);
 
     public async Task<PlayerEntity> CreatePlayerAsync(PlayerEntity playerEntity)
     {

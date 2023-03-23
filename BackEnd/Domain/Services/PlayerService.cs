@@ -43,7 +43,7 @@ public class PlayerService : IPlayerService
 
     public async Task<Player> AddPlayerAsync(string visitorId, string connectionId)
     {
-        var player = (await playerRepository.GetPlayerByVisitorIdAsync(visitorId))?.ToPlayer(connectionId);
+        var player = (await playerRepository.GetPlayerAsync(visitorId))?.ToPlayer(connectionId);
         if (player is not null)
         {
             // TODO: Handle multiple connections with same visitor ID
@@ -52,7 +52,7 @@ public class PlayerService : IPlayerService
         }
 
         // create player if existing player was not found
-        player ??= (await playerRepository.CreatePlayerAsync(new PlayerEntity { VisitorId = visitorId }))
+        player ??= (await playerRepository.CreatePlayerAsync(new PlayerEntity { Id = visitorId }))
             .ToPlayer(connectionId);
 
         var wasAdded = players.TryAdd(connectionId, player);

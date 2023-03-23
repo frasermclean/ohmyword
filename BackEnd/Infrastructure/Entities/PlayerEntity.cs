@@ -3,11 +3,6 @@
 public record PlayerEntity : Entity
 {
     /// <summary>
-    /// Client side generated unique visitor ID.
-    /// </summary>
-    public string VisitorId { get; init; } = string.Empty;
-    
-    /// <summary>
     /// User ID if this player has a registered account.
     /// </summary>
     public string? UserId { get; init; }

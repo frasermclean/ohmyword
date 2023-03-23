@@ -8,11 +8,6 @@ public record Player
     public required string Id { get; init; }
 
     /// <summary>
-    /// Client side generated unique visitor ID.
-    /// </summary>    
-    public required string VisitorId { get; init; }
-    
-    /// <summary>
     /// SignalR connection ID.
     /// </summary>
     public required string ConnectionId { get; init; }
