@@ -7,7 +7,7 @@ namespace OhMyWord.Domain.Models;
 public class Round : IDisposable
 {
     private readonly CancellationTokenSource cancellationTokenSource = new();
-    private readonly ConcurrentDictionary<string, RoundVisitorData> visitors = new();
+    private readonly ConcurrentBag<RoundPlayerData> playerData = new();
 
     public Guid Id { get; } = Guid.NewGuid();
     public int Number { get; }
@@ -17,8 +17,8 @@ public class Round : IDisposable
     public TimeSpan Duration { get; }
     public DateTime EndTime => StartTime + Duration;
     public RoundEndReason EndReason { get; private set; } = RoundEndReason.Timeout;
-    public int VisitorCount => visitors.Count;
-    public bool AllVisitorsAwarded => visitors.Values.Count(data => data.PointsAwarded > 0) == VisitorCount;
+    public int PlayerCount => playerData.Count;
+    public bool AllPlayersAwarded => playerData.All(data => data.GuessedCorrectly);
 
     [JsonIgnore] public CancellationToken CancellationToken => cancellationTokenSource.Token;
 
@@ -33,30 +33,29 @@ public class Round : IDisposable
         if (visitorIds is null) return;
 
         foreach (var visitorId in visitorIds)
-            AddVisitor(visitorId);
+            AddPlayer(visitorId);
     }
 
-    public bool AddVisitor(string visitor) => visitors.TryAdd(visitor, new RoundVisitorData());
-    public bool RemoveVisitor(string visitorId) => visitors.TryRemove(visitorId, out _);
+    public void AddPlayer(string playerId) => playerData.Add(new RoundPlayerData { PlayerId = playerId });
 
-    public bool IncrementGuessCount(string visitorId)
+    public bool IncrementGuessCount(string playerId)
     {
-        if (!visitors.TryGetValue(visitorId, out var data))
-            return false;
+        var data = playerData.FirstOrDefault(d => d.PlayerId == playerId);
+        if (data is null) return false;
 
         data.GuessCount++;
         return true;
     }
 
-    public int AwardVisitor(string visitorId)
+    public bool AwardVisitor(string playerId, int points)
     {
-        if (!visitors.TryGetValue(visitorId, out var data))
-            return 0;
+        var data = playerData.FirstOrDefault(d => d.PlayerId == playerId);
+        if (data is null) return false;
 
-        const int points = 100; // TODO: Calculate points dynamically
         data.PointsAwarded = points;
+        data.GuessedCorrectly = true;
 
-        return points;
+        return true;
     }
 
     /// <summary>

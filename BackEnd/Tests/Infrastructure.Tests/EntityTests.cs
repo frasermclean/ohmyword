@@ -42,15 +42,15 @@ public class EntityTests : IClassFixture<DataFixture>
     }
 
     [Fact]
-    public void VisitorEntity_Should_HaveValidProperties()
+    public void PlayerEntity_Should_HaveValidProperties()
     {
-        var visitor = fixture.TestVisitor;
-        var partition = visitor.GetPartition();
+        var player = fixture.TestPlayer;
+        var partition = player.GetPartition();
 
         // assert
-        visitor.Id.Should().Be("abc123");
-        visitor.RegistrationCount.Should().Be(3);
-        visitor.Score.Should().Be(400);
+        player.Id.Should().Be("abc123");
+        player.RegistrationCount.Should().Be(3);
+        player.Score.Should().Be(400);
         partition.Should().Be("abc123");
     }
 }

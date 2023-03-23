@@ -16,5 +16,5 @@ public class DataFixture
         WordId = "test"
     };
 
-    public VisitorEntity TestVisitor { get; } = new() { Id = "abc123", RegistrationCount = 3, Score = 400 };
+    public PlayerEntity TestPlayer { get; } = new() { Id = "abc123", RegistrationCount = 3, Score = 400 };
 }

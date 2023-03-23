@@ -4,7 +4,7 @@ import { HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/s
 import { environment } from 'src/environments/environment';
 import { FingerprintService } from './fingerprint.service';
 
-import { RegisterVisitorResponse } from '../models/responses/register-visitor.response';
+import { RegisterPlayerResponse } from '../models/responses/register-player.response';
 import { GuessResponse } from '../models/responses/guess.response';
 import { LetterHintResponse } from '../models/responses/letter-hint.response';
 
@@ -29,8 +29,8 @@ export class GameService {
     this.hubConnection.on('SendGameState', (response: GameStateResponse) =>
       this.store.dispatch(new Game.GameStateUpdated(response))
     );
-    this.hubConnection.on('SendVisitorCount', (count: number) =>
-      this.store.dispatch(new Game.PlayerCountUpdated(count)) // TODO: Update references from Player to Visitor
+    this.hubConnection.on('SendPlayerCount', (count: number) =>
+      this.store.dispatch(new Game.PlayerCountUpdated(count))
     );
     this.hubConnection.on('SendLetterHint', (response: LetterHintResponse) => {
       this.store.dispatch(new Game.LetterHintReceived(response));
@@ -69,9 +69,9 @@ export class GameService {
   /**
    * Attempt to register with game service.
    */
-  public async registerVisitor() {
+  public async registerPlayer() {
     const visitorId = await this.fingerprintService.getVisitorId();
-    const response = await this.hubConnection.invoke<RegisterVisitorResponse>('RegisterVisitor', visitorId);
+    const response = await this.hubConnection.invoke<RegisterPlayerResponse>('RegisterPlayer', visitorId);
     this.store.dispatch(new Game.PlayerRegistered(response));
   }
 

@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR;
-using OhMyWord.Api.Commands.RegisterVisitor;
+using OhMyWord.Api.Commands.RegisterPlayer;
 using OhMyWord.Api.Commands.SubmitGuess;
 using OhMyWord.Api.Events.VisitorDisconnected;
 using OhMyWord.Domain.Models;
@@ -10,19 +10,19 @@ namespace OhMyWord.Api.Hubs;
 public interface IGameHub
 {
     Task SendGameState(GameState gameState);
-    Task SendVisitorCount(int count);
+    Task SendPlayerCount(int count);
     Task SendLetterHint(LetterHint letterHint);
 }
 
 public class GameHub : Hub<IGameHub>
 {
     private readonly ILogger<GameHub> logger;
-    private readonly IVisitorService visitorService;
+    private readonly IPlayerService playerService;
 
-    public GameHub(ILogger<GameHub> logger, IVisitorService visitorService)
+    public GameHub(ILogger<GameHub> logger, IPlayerService playerService)
     {
         this.logger = logger;
-        this.visitorService = visitorService;
+        this.playerService = playerService;
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)
@@ -32,16 +32,16 @@ public class GameHub : Hub<IGameHub>
         else
             logger.LogError(exception, "Client disconnected. Connection ID: {ConnectionId}", Context.ConnectionId);
 
-        await new VisitorDisconnectedEvent(Context.ConnectionId).PublishAsync();
-        await Clients.Others.SendVisitorCount(visitorService.VisitorCount);
+        await new PlayerDisconnectedEvent(Context.ConnectionId).PublishAsync();
+        await Clients.Others.SendPlayerCount(playerService.PlayerCount);
     }
 
-    public async Task<RegisterVisitorResponse> RegisterVisitor(string visitorId)
+    public async Task<RegisterPlayerResponse> RegisterPlayer(string visitorId)
     {
-        logger.LogInformation("Attempting to register client with visitor ID: {VisitorId}", visitorId);
-        var response = await new RegisterVisitorCommand { VisitorId = visitorId, ConnectionId = Context.ConnectionId }
+        logger.LogInformation("Attempting to register player with visitor ID: {VisitorId}", visitorId);
+        var response = await new RegisterPlayerCommand { VisitorId = visitorId, ConnectionId = Context.ConnectionId }
             .ExecuteAsync();
-        await Clients.Others.SendVisitorCount(response.VisitorCount);
+        await Clients.Others.SendPlayerCount(response.PlayerCount);
         return response;
     }
 

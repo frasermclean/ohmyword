@@ -5,9 +5,12 @@ namespace OhMyWord.Domain.Extensions;
 
 public static class VisitorEntityExtensions
 {
-    public static Visitor ToVisitor(this VisitorEntity entity) => new()
+    public static Player ToPlayer(this PlayerEntity entity, string connectionId) => new()
     {        
         Id = entity.Id,
+        VisitorId = entity.VisitorId,
+        ConnectionId = connectionId,
+        UserId = entity.UserId,
         Score = entity.Score,
         RegistrationCount = entity.RegistrationCount,
     };
