@@ -51,7 +51,7 @@ public static class ServiceCollectionExtensions
 
         // repositories
         services.AddSingleton<IDefinitionsRepository, DefinitionsRepository>();
-        services.AddSingleton<IVisitorRepository, VisitorRepository>();
+        services.AddSingleton<IPlayerRepository, PlayerRepository>();
         services.AddSingleton<IUsersRepository, UsersRepository>();
         services.AddSingleton<IWordsRepository, WordsRepository>();
 

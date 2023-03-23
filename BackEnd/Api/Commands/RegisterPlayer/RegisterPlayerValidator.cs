@@ -1,10 +1,10 @@
 ﻿using FluentValidation;
 
-namespace OhMyWord.Api.Commands.RegisterVisitor;
+namespace OhMyWord.Api.Commands.RegisterPlayer;
 
-public class RegisterVisitorValidator : Validator<RegisterVisitorCommand>
+public class RegisterPlayerValidator : Validator<RegisterPlayerCommand>
 {
-    public RegisterVisitorValidator()
+    public RegisterPlayerValidator()
     {
         RuleFor(command => command.ConnectionId).NotEmpty();
         RuleFor(command => command.VisitorId).NotEmpty();

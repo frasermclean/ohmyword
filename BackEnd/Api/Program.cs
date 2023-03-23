@@ -44,7 +44,7 @@ public static class Program
 
                 // domain services
                 services.AddSingleton<IUsersService, UsersService>();
-                services.AddSingleton<IVisitorService, VisitorService>();
+                services.AddSingleton<IPlayerService, PlayerService>();
                 services.AddSingleton<IWordsService, WordsService>();
 
                 // infrastructure services

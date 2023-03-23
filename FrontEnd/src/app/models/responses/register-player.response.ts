@@ -1,7 +1,7 @@
 import { GameStateResponse } from './game-state-response';
 
-export interface RegisterVisitorResponse {
-  visitorCount: number;
+export interface RegisterPlayerResponse {
+  playerCount: number;
   score: number;
   gameState: GameStateResponse;
 }

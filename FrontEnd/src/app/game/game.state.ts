@@ -148,7 +148,7 @@ export class GameState {
         connectionState: HubConnectionState.Connected,
       },
     });
-    this.gameService.registerVisitor();
+    this.gameService.registerPlayer();
   }
 
   @Action(Hub.Disconnected)
