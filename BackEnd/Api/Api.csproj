@@ -10,8 +10,8 @@
 
   <ItemGroup>
     <PackageReference Include="AspNetCore.HealthChecks.CosmosDb" Version="6.1.0" />
-    <PackageReference Include="FastEndpoints" Version="5.7.0" />
-    <PackageReference Include="Microsoft.Identity.Web" Version="1.25.10" />
+    <PackageReference Include="FastEndpoints" Version="5.8.0" />
+    <PackageReference Include="Microsoft.Identity.Web" Version="2.5.0" />
   </ItemGroup>
 
   <ItemGroup>
