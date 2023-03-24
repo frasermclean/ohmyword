@@ -17,18 +17,35 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
+import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
-import { AdminContainerComponent } from './admin-container/admin-container.component';
+import { AdminPortalComponent } from './admin-portal/admin-portal.component';
 import { WordsState } from './words.state';
 import { WordListComponent } from './word-list/word-list.component';
 import { WordEditComponent } from './word-edit/word-edit.component';
 import { ConfirmationPromptComponent } from './confirmation-prompt/confirmation-prompt.component';
+import { UserListComponent } from './user-list/user-list.component';
 
-const routes: Routes = [{ path: '', component: AdminContainerComponent }];
+const routes: Routes = [
+  {
+    path: '',
+    component: AdminPortalComponent,
+    children: [
+      { path: 'words', title: 'OhMyWord - Words List', component: WordListComponent },
+      { path: 'users', title: 'OhMyWord - Users List', component: UserListComponent },
+    ],
+  },
+];
 
 @NgModule({
-  declarations: [AdminContainerComponent, WordListComponent, WordEditComponent, ConfirmationPromptComponent],
+  declarations: [
+    AdminPortalComponent,
+    WordListComponent,
+    WordEditComponent,
+    ConfirmationPromptComponent,
+    UserListComponent,
+  ],
   imports: [
     CommonModule,
     RouterModule.forChild(routes),
@@ -46,6 +63,7 @@ const routes: Routes = [{ path: '', component: AdminContainerComponent }];
     MatSelectModule,
     MatSortModule,
     MatTableModule,
+    MatTabsModule,
     MatTooltipModule,
   ],
 })
