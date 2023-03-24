@@ -3,10 +3,10 @@
     <h1>Site Administration</h1>
     <nav mat-tab-nav-bar [tabPanel]="tabPanel">
       <a
-      *ngFor="let link of links"
+        *ngFor="let link of links"
         mat-tab-link
         [routerLink]="link.path"
-        [active]="link === activeLink"
+        [active]="(activeUrl$ | async)?.endsWith(link.path)"
         [matTooltip]="link.tooltip"
       >
         {{ link.label | uppercase }}
