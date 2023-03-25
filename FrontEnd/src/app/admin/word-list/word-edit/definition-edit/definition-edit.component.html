@@ -1,0 +1,17 @@
+<form [formGroup]="formGroup">
+  <mat-form-field>
+    <mat-label>Part of Speech</mat-label>
+    <mat-select name="partOfSpeech" formControlName="partOfSpeech">
+      <mat-option *ngFor="let option of partOfSpeechOptions" [value]="option.value">{{ option.label }}</mat-option>
+    </mat-select>
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Definition</mat-label>
+    <input matInput name="value" placeholder="Enter the definition of the word" formControlName="value" />
+    <mat-error *ngIf="!formGroup.controls.value.valid">Definition is required</mat-error>
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Example</mat-label>
+    <input matInput name="example" placeholder="Example of word used in a sentence" formControlName="example" />
+  </mat-form-field>
+</form>

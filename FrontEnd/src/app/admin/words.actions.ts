@@ -1,16 +1,12 @@
 import { CreateWordRequest } from '../models/requests/create-word.request';
 import { SearchWordsRequest } from '../models/requests/search-words.request';
 import { UpdateWordRequest } from '../models/requests/update-word.request';
+import { Word } from '../models/word.model';
 
 export namespace Words {
   export class SearchWords {
     static readonly type = '[Words List] Search Words';
     constructor(public request: Partial<SearchWordsRequest>) {}
-  }
-
-  export class GetWord {
-    static readonly type = '[Words List] Get Word';
-    constructor(public id: string) {}
   }
 
   export class CreateWord {

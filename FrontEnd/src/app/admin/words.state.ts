@@ -18,7 +18,6 @@ interface WordsStateModel {
   filter: string;
   orderBy: SearchWordsOrderBy;
   direction: SortDirection;
-  currentWord: Word | null;
 }
 
 const WORDS_STATE_TOKEN = new StateToken<WordsStateModel>('words');
@@ -34,8 +33,7 @@ const WORDS_STATE_TOKEN = new StateToken<WordsStateModel>('words');
     total: 0,
     filter: '',
     orderBy: SearchWordsOrderBy.Id,
-    direction: SortDirection.Ascending,
-    currentWord: null,
+    direction: SortDirection.Ascending
   },
 })
 @Injectable()
@@ -68,20 +66,6 @@ export class WordsState {
           return of(error);
         })
       );
-  }
-
-  @Action(Words.GetWord)
-  getWord(context: StateContext<WordsStateModel>, action: Words.GetWord) {
-    context.patchState({ status: 'busy' });
-    return this.wordsService.getWord(action.id).pipe(
-      tap((word) => {
-        context.patchState({ status: 'ready', currentWord: word });
-      }),
-      catchError((error) => {
-        context.patchState({ status: 'error', error });
-        return of(error);
-      })
-    );
   }
 
   @Action(Words.CreateWord)

@@ -10,7 +10,7 @@ import { SearchWordsOrderBy } from 'src/app/models/enums/search-words-order-by.e
 import { SortDirection } from 'src/app/models/enums/sort-direction.enum';
 import { SearchWordsRequest } from 'src/app/models/requests/search-words.request';
 import { Word } from 'src/app/models/word.model';
-import { WordEditComponent } from '../word-edit/word-edit.component';
+import { WordEditComponent } from './word-edit/word-edit.component';
 import { Words } from '../words.actions';
 import { WordsState } from '../words.state';
 import {
@@ -91,7 +91,7 @@ export class WordListComponent implements OnInit, OnDestroy {
 
   editWord(word: Word) {
     this.dialog
-      .open(WordEditComponent, { data: { wordId: word.id } })
+      .open(WordEditComponent, { data: { word } })
       .afterClosed()
       .subscribe((result) => {
         if (!result) return;

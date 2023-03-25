@@ -1,0 +1,37 @@
+<h2 mat-dialog-title>{{ isEditing ? "Editing word" : "Add a new word" }}</h2>
+<mat-dialog-content>
+  <form>
+    <mat-form-field>
+      <mat-label>Word</mat-label>
+      <input matInput name="word" placeholder="Enter the word" [formControl]="idControl" />
+      <mat-error *ngIf="!idControl.valid">Word is required</mat-error>
+    </mat-form-field>
+
+    <div class="definition" *ngFor="let definition of word.definitions; let index = index">
+      <mat-divider *ngIf="word.definitions.length > 1"></mat-divider>
+      <h3 *ngIf="word.definitions.length > 1" class="title">Definition {{ index + 1 }}</h3>
+      <app-definition-edit
+        [definition]="definition"
+        (definitionChange)="onDefinitionChanged($event, index)"
+        (validChange)="onDefinitionValidChanged($event, index)"
+      ></app-definition-edit>
+      <button
+        *ngIf="word.definitions.length > 1"
+        mat-icon-button
+        color="warn"
+        (click)="removeDefinition(index)"
+        matTooltip="Remove definition"
+      >
+        <mat-icon>delete</mat-icon>
+      </button>
+    </div>
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button mat-raised-button color="primary" (click)="addDefinition()">ADD DEFINITION</button>
+  <div class="spacer"></div>
+  <button mat-raised-button color="accent" (click)="submit()" [disabled]="!idControl.valid">
+    {{ isEditing ? "UPDATE WORD" : "ADD WORD" }}
+  </button>
+  <button mat-raised-button color="warn" mat-dialog-close>CANCEL</button>
+</mat-dialog-actions>

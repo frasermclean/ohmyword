@@ -7,6 +7,7 @@ import { NgxsModule } from '@ngxs/store';
 // material modules
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule } from '@angular/material/dialog';
+import { MatDividerModule } from '@angular/material/divider';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -23,7 +24,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { AdminPortalComponent } from './admin-portal/admin-portal.component';
 import { WordsState } from './words.state';
 import { WordListComponent } from './word-list/word-list.component';
-import { WordEditComponent } from './word-edit/word-edit.component';
+import { WordEditComponent } from './word-list/word-edit/word-edit.component';
+import { DefinitionEditComponent } from './word-list/word-edit/definition-edit/definition-edit.component';
 import { ConfirmationPromptComponent } from './confirmation-prompt/confirmation-prompt.component';
 import { UserListComponent } from './user-list/user-list.component';
 
@@ -45,6 +47,7 @@ const routes: Routes = [
     WordEditComponent,
     ConfirmationPromptComponent,
     UserListComponent,
+    DefinitionEditComponent,
   ],
   imports: [
     CommonModule,
@@ -53,6 +56,7 @@ const routes: Routes = [
     ReactiveFormsModule,
     MatButtonModule,
     MatDialogModule,
+    MatDividerModule,
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
