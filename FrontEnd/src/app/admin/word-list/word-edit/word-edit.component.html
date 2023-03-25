@@ -1,36 +1,62 @@
 <h2 mat-dialog-title>{{ isEditing ? "Editing word" : "Add a new word" }}</h2>
 <mat-dialog-content>
-  <form>
+  <form [formGroup]="formGroup">
+    <!-- word id -->
     <mat-form-field>
       <mat-label>Word</mat-label>
-      <input matInput name="word" placeholder="Enter the word" [formControl]="idControl" />
-      <mat-error *ngIf="!idControl.valid">Word is required</mat-error>
+      <input matInput name="word" placeholder="Enter the word" formControlName="id" />
+      <mat-error *ngIf="!formGroup.controls.id.valid">Word is required</mat-error>
     </mat-form-field>
 
-    <div class="definition" *ngFor="let definition of word.definitions; let index = index">
-      <mat-divider *ngIf="word.definitions.length > 1"></mat-divider>
-      <h3 *ngIf="word.definitions.length > 1" class="title">Definition {{ index + 1 }}</h3>
-      <app-definition-edit
-        [definition]="definition"
-        (definitionChange)="onDefinitionChanged($event, index)"
-        (validChange)="onDefinitionValidChanged($event, index)"
-      ></app-definition-edit>
-      <button
-        *ngIf="word.definitions.length > 1"
-        mat-icon-button
-        color="warn"
-        (click)="removeDefinition(index)"
-        matTooltip="Remove definition"
-      >
-        <mat-icon>delete</mat-icon>
-      </button>
-    </div>
+    <!-- definitions array -->
+    <ng-container formArrayName="definitions">
+      <ng-container *ngFor="let definition of definitions.controls; index as i">
+        <div class="definition" [formGroup]="definition">
+          <mat-divider *ngIf="definitions.length > 1"></mat-divider>
+          <h3 *ngIf="definitions.length > 1" class="title">Definition {{ i + 1 }}</h3>
+
+          <!-- part of speech -->
+          <mat-form-field>
+            <mat-label>Part of Speech</mat-label>
+            <mat-select name="partOfSpeech" formControlName="partOfSpeech">
+              <mat-option *ngFor="let option of partOfSpeechOptions" [value]="option.value">{{
+                option.label
+              }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <!-- definition -->
+          <mat-form-field>
+            <mat-label>Definition</mat-label>
+            <input matInput name="value" placeholder="Enter the definition of the word" formControlName="value" />
+            <mat-error *ngIf="!definition.controls.value.valid">Definition is required</mat-error>
+          </mat-form-field>
+
+          <!-- example -->
+          <mat-form-field>
+            <mat-label>Example</mat-label>
+            <input matInput name="example" placeholder="Example of word used in a sentence" formControlName="example" />
+          </mat-form-field>
+
+          <!-- remove definition button -->
+          <button
+            *ngIf="definitions.length > 1"
+            mat-icon-button
+            color="warn"
+            (click)="removeDefinition(i)"
+            matTooltip="Remove definition"
+          >
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+      </ng-container>
+    </ng-container>
   </form>
 </mat-dialog-content>
 <mat-dialog-actions>
   <button mat-raised-button color="primary" (click)="addDefinition()">ADD DEFINITION</button>
   <div class="spacer"></div>
-  <button mat-raised-button color="accent" (click)="submit()" [disabled]="!idControl.valid">
+  <button mat-raised-button color="accent" (click)="submit()" [disabled]="!formGroup.touched && !formGroup.valid">
     {{ isEditing ? "UPDATE WORD" : "ADD WORD" }}
   </button>
   <button mat-raised-button color="warn" mat-dialog-close>CANCEL</button>

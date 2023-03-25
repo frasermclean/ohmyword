@@ -43,7 +43,9 @@ export class WordsService {
   }
 
   public updateWord(request: UpdateWordRequest) {
-    return this.httpClient.put<WordResponse>(this.baseUrl, request).pipe(map((response) => new Word(response)));
+    return this.httpClient
+      .put<WordResponse>(`${this.baseUrl}/${request.id}`, { definitions: request.definitions })
+      .pipe(map((response) => new Word(response)));
   }
 
   public deleteWord(id: string) {
