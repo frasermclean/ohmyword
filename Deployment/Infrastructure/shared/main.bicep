@@ -12,13 +12,21 @@ param domainName string
 @description('Total throughput of the Cosmos DB account')
 param totalThroughputLimit int
 
-@description('Public IP addresses allowed to access the Cosmos DB account')
-param cosmosDbAllowedIpAddresses array
+@description('Public IP addresses allowed to access Azure resources')
+param allowedIpAddresses array
 
 var tags = {
   workload: appName
   environment: 'shared'
 }
+
+var azurePortalIpAddresses = [
+  '104.42.195.92'
+  '40.76.54.131'
+  '52.176.6.30'
+  '52.169.50.45'
+  '52.187.184.26'
+]
 
 // dns zone for the application
 resource dnsZone 'Microsoft.Network/dnsZones@2018-05-01' = {
@@ -45,6 +53,7 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2022-09-01' = {
           addressPrefix: '10.3.1.0/24'
           serviceEndpoints: [
             { service: 'Microsoft.AzureCosmosDB' }
+            { service: 'Microsoft.Storage' }
           ]
           delegations: [
             {
@@ -93,7 +102,7 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-08-15' = {
         ignoreMissingVNetServiceEndpoint: false
       }
     ]
-    ipRules: [for ipAddress in cosmosDbAllowedIpAddresses: {
+    ipRules: [for ipAddress in concat(azurePortalIpAddresses, allowedIpAddresses): {
       ipAddressOrRange: ipAddress
     }]
   }
@@ -136,6 +145,23 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
   kind: 'StorageV2'
   sku: {
     name: 'Standard_LRS'
+  }
+  properties: {
+    supportsHttpsTrafficOnly: true
+    networkAcls: {
+      bypass: 'AzureServices'
+      defaultAction: 'Deny'
+      virtualNetworkRules: [
+        {
+          id: virtualNetwork::appServiceSubnet.id
+          action: 'Allow'
+        }
+      ]
+      ipRules: [for ipAddress in allowedIpAddresses: {
+        value: ipAddress
+        action: 'Allow'
+      }]
+    }
   }
 
   resource tableServices 'tableServices' = {
