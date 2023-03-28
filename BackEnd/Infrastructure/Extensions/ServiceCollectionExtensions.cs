@@ -26,7 +26,12 @@ public static class ServiceCollectionExtensions
             var options = serviceProvider.GetRequiredService<IOptions<CosmosDbOptions>>();
             var httpClientFactory = serviceProvider.GetRequiredService<IHttpClientFactory>();
 
-            return new CosmosClientBuilder(options.Value.ConnectionString)
+            // use managed identity if account endpoint specified, otherwise use connection string
+            var builder = string.IsNullOrEmpty(options.Value.AccountEndpoint)
+                ? new CosmosClientBuilder(options.Value.ConnectionString)
+                : new CosmosClientBuilder(options.Value.AccountEndpoint, new DefaultAzureCredential());
+
+            return builder
                 .WithApplicationName(options.Value.ApplicationName)
                 .WithHttpClientFactory(() => httpClientFactory.CreateClient("CosmosDb"))
                 .WithCustomSerializer(new EntitySerializer())
