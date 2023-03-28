@@ -67,7 +67,7 @@ module database 'database.bicep' = {
   scope: resourceGroup(sharedResourceGroup)
   params: {
     cosmosDbAccountName: cosmosDbAccount.name
-    databaseName: appEnv
+    databaseName: '${appName}-${appEnv}'
     databaseContainers: databaseContainers
     databaseThroughput: databaseThroughput
   }
