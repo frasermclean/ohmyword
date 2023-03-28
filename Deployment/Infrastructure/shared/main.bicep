@@ -12,6 +12,9 @@ param domainName string
 @description('Total throughput of the Cosmos DB account')
 param totalThroughputLimit int
 
+@description('Public IP addresses allowed to access the Cosmos DB account')
+param cosmosDbAllowedIpAddresses array
+
 var tags = {
   workload: appName
   environment: 'shared'
@@ -22,6 +25,43 @@ resource dnsZone 'Microsoft.Network/dnsZones@2018-05-01' = {
   name: domainName
   location: 'global'
   tags: tags
+}
+
+// virtual network
+resource virtualNetwork 'Microsoft.Network/virtualNetworks@2022-09-01' = {
+  name: 'vnet-${appName}'
+  location: location
+  tags: tags
+  properties: {
+    addressSpace: {
+      addressPrefixes: [
+        '10.3.0.0/16'
+      ]
+    }
+    subnets: [
+      {
+        name: 'AppServiceSubnet'
+        properties: {
+          addressPrefix: '10.3.1.0/24'
+          serviceEndpoints: [
+            { service: 'Microsoft.AzureCosmosDB' }
+          ]
+          delegations: [
+            {
+              name: 'dlg-serverFarms'
+              properties: {
+                serviceName: 'Microsoft.Web/serverFarms'
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+
+  resource appServiceSubnet 'subnets' existing = {
+    name: 'AppServiceSubnet'
+  }
 }
 
 // cosmos db account
@@ -46,6 +86,16 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-08-15' = {
         locationName: location
       }
     ]
+    isVirtualNetworkFilterEnabled: true
+    virtualNetworkRules: [
+      {
+        id: virtualNetwork::appServiceSubnet.id
+        ignoreMissingVNetServiceEndpoint: false
+      }
+    ]
+    ipRules: [for ipAddress in cosmosDbAllowedIpAddresses: {
+      ipAddressOrRange: ipAddress
+    }]
   }
 }
 
