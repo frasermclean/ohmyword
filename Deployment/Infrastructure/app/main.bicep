@@ -34,6 +34,7 @@ var tags = {
 
 var frontendHostname = appEnv == 'prod' ? domainName : 'test.${domainName}'
 var backendHostname = appEnv == 'prod' ? 'api.${domainName}' : 'test.api.${domainName}'
+var databaseId = '${appName}-${appEnv}'
 
 @description('Azure AD B2C client ID of single page application')
 var authClientId = appEnv == 'prod' ? 'ee95c3c0-c6f7-4675-9097-0e4d9bca14e3' : '1f427277-e4b2-4f9b-97b1-4f47f4ff03c0'
@@ -67,9 +68,10 @@ module database 'database.bicep' = {
   scope: resourceGroup(sharedResourceGroup)
   params: {
     cosmosDbAccountName: cosmosDbAccount.name
-    databaseName: '${appName}-${appEnv}'
+    databaseId: databaseId
     databaseContainers: databaseContainers
     databaseThroughput: databaseThroughput
+    appServicePrincipalId: appService.identity.principalId
   }
 }
 
@@ -168,12 +170,12 @@ resource appService 'Microsoft.Web/sites@2022-03-01' = {
           value: string(appSettings.postRoundDelay)
         }
         {
-          name: 'CosmosDb__ConnectionString'
-          value: cosmosDbAccount.listConnectionStrings().connectionStrings[0].connectionString
+          name: 'CosmosDb__AccountEndpoint'
+          value: cosmosDbAccount.properties.documentEndpoint
         }
         {
           name: 'CosmosDb__DatabaseId'
-          value: database.outputs.databaseName
+          value: databaseId
         }
         {
           name: 'CosmosDb__ContainerIds'

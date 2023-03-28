@@ -32,6 +32,9 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-08-15' = {
   properties: {
     databaseAccountOfferType: 'Standard'
     enableFreeTier: true
+    backupPolicy: {
+      type: 'Continuous'
+    }
     consistencyPolicy: {
       defaultConsistencyLevel: 'Session'
     }
