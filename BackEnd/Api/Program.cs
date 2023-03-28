@@ -62,7 +62,9 @@ public static class Program
                     .AddCosmosDbCollection(
                         context.Configuration["CosmosDb:AccountEndpoint"] ?? string.Empty, new DefaultAzureCredential(),
                         context.Configuration.GetValue<string>("CosmosDb:DatabaseId"),
-                        context.Configuration.GetValue<string[]>("CosmosDb:ContainerIds"));
+                        context.Configuration.GetValue<string[]>("CosmosDb:ContainerIds"))
+                    .AddAzureTable(new Uri(context.Configuration["TableService:Endpoint"] ?? string.Empty),
+                        new DefaultAzureCredential(), "users");
             });
 
         // build the application
