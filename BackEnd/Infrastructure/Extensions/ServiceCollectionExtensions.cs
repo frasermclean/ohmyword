@@ -60,6 +60,12 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IUsersRepository, UsersRepository>();
         services.AddSingleton<IWordsRepository, WordsRepository>();
 
+        // dictionary service
+        services.AddOptions<DictionaryOptions>()
+            .Bind(context.Configuration.GetSection(DictionaryOptions.SectionName));
+        services.AddHttpClient<IDictionaryService, DictionaryService>(client =>
+            client.BaseAddress = new Uri("https://www.dictionaryapi.com/api/v3/references/sd3/json"));
+
         return services;
     }
 }

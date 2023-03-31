@@ -37,11 +37,13 @@ public class WordsService : IWordsService
 {
     private readonly IWordsRepository wordsRepository;
     private readonly IDefinitionsRepository definitionsRepository;
+    private readonly IDictionaryService dictionaryService;
 
-    public WordsService(IWordsRepository wordsRepository, IDefinitionsRepository definitionsRepository)
+    public WordsService(IWordsRepository wordsRepository, IDefinitionsRepository definitionsRepository, IDictionaryService dictionaryService)
     {
         this.wordsRepository = wordsRepository;
         this.definitionsRepository = definitionsRepository;
+        this.dictionaryService = dictionaryService;
     }
 
     public IAsyncEnumerable<Word> SearchWords(int offset, int limit, string filter, SearchWordsOrderBy orderBy,
