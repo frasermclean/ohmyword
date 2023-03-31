@@ -29,6 +29,7 @@ var sharedResourceGroup = 'rg-${appName}-shared'
 
 var tags = {
   workload: appName
+  category: 'app'
   environment: appEnv
 }
 
@@ -46,13 +47,18 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2022-09-01' existing 
   name: 'vnet-${appName}'
   scope: resourceGroup(sharedResourceGroup)
 
-  resource appServiceSubnet 'subnets' existing = {
-    name: 'AppServiceSubnet'
+  resource subnet 'subnets' existing = {
+    name: appEnv == 'prod' ? 'ProductionSubnet' : 'TestSubnet'
   }
 }
 
 resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-08-15' existing = {
   name: 'cosmos-${appName}-shared'
+  scope: resourceGroup(sharedResourceGroup)
+}
+
+resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' existing = {
+  name: 'asp-${appName}-shared'
   scope: resourceGroup(sharedResourceGroup)
 }
 
@@ -67,7 +73,7 @@ resource b2cTenant 'Microsoft.AzureActiveDirectory/b2cDirectories@2021-04-01' ex
 }
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' existing = {
-  name: 'st${appName}shared'
+  name: '${appName}shared'
   scope: resourceGroup(sharedResourceGroup)
 }
 
@@ -97,20 +103,6 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   }
 }
 
-// app service plan
-resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
-  name: 'asp-${appName}-${appEnv}'
-  location: location
-  tags: tags
-  kind: 'linux'
-  sku: {
-    name: 'B1'
-  }
-  properties: {
-    reserved: true
-  }
-}
-
 // app service
 resource appService 'Microsoft.Web/sites@2022-03-01' = {
   name: toLower('app-${appName}-${appEnv}')
@@ -124,7 +116,7 @@ resource appService 'Microsoft.Web/sites@2022-03-01' = {
     enabled: true
     httpsOnly: true
     serverFarmId: appServicePlan.id
-    virtualNetworkSubnetId: virtualNetwork::appServiceSubnet.id
+    virtualNetworkSubnetId: virtualNetwork::subnet.id
     vnetRouteAllEnabled: true
     siteConfig: {
       linuxFxVersion: 'DOTNETCORE|7.0'

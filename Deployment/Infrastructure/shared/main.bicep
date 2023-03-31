@@ -28,6 +28,10 @@ var azurePortalIpAddresses = [
   '52.187.184.26'
 ]
 
+var productionSubnetName = 'ProductionSubnet'
+var testSubnetName = 'TestSubnet'
+var functionsSubnetName = 'FunctionsSubnet'
+
 // dns zone for the application
 resource dnsZone 'Microsoft.Network/dnsZones@2018-05-01' = {
   name: domainName
@@ -48,9 +52,45 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2022-09-01' = {
     }
     subnets: [
       {
-        name: 'AppServiceSubnet'
+        name: productionSubnetName
         properties: {
           addressPrefix: '10.3.1.0/24'
+          serviceEndpoints: [
+            { service: 'Microsoft.AzureCosmosDB' }
+            { service: 'Microsoft.Storage' }
+          ]
+          delegations: [
+            {
+              name: 'dlg-serverFarms'
+              properties: {
+                serviceName: 'Microsoft.Web/serverFarms'
+              }
+            }
+          ]
+        }
+      }
+      {
+        name: testSubnetName
+        properties: {
+          addressPrefix: '10.3.2.0/24'
+          serviceEndpoints: [
+            { service: 'Microsoft.AzureCosmosDB' }
+            { service: 'Microsoft.Storage' }
+          ]
+          delegations: [
+            {
+              name: 'dlg-serverFarms'
+              properties: {
+                serviceName: 'Microsoft.Web/serverFarms'
+              }
+            }
+          ]
+        }
+      }
+      {
+        name: functionsSubnetName
+        properties: {
+          addressPrefix: '10.3.3.0/24'
           serviceEndpoints: [
             { service: 'Microsoft.AzureCosmosDB' }
             { service: 'Microsoft.Storage' }
@@ -68,8 +108,16 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2022-09-01' = {
     ]
   }
 
-  resource appServiceSubnet 'subnets' existing = {
-    name: 'AppServiceSubnet'
+  resource productionSubnet 'subnets' existing = {
+    name: productionSubnetName
+  }
+
+  resource testSubnet 'subnets' existing = {
+    name: testSubnetName
+  }
+
+  resource functionsSubnet 'subnets' existing = {
+    name: functionsSubnetName
   }
 }
 
@@ -98,7 +146,15 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-08-15' = {
     isVirtualNetworkFilterEnabled: true
     virtualNetworkRules: [
       {
-        id: virtualNetwork::appServiceSubnet.id
+        id: virtualNetwork::productionSubnet.id
+        ignoreMissingVNetServiceEndpoint: false
+      }
+      {
+        id: virtualNetwork::testSubnet.id
+        ignoreMissingVNetServiceEndpoint: false
+      }
+      {
+        id: virtualNetwork::functionsSubnet.id
         ignoreMissingVNetServiceEndpoint: false
       }
     ]
@@ -124,22 +180,9 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10
   }
 }
 
-// application insights
-resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
-  name: toLower('ai-${appName}-shared')
-  location: location
-  tags: tags
-  kind: 'web'
-  properties: {
-    Application_Type: 'web'
-    Request_Source: 'rest'
-    WorkspaceResourceId: logAnalyticsWorkspace.id
-  }
-}
-
 // storage account
 resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
-  name: 'st${appName}shared'
+  name: '${appName}shared'
   location: location
   tags: tags
   kind: 'StorageV2'
@@ -147,13 +190,23 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
     name: 'Standard_LRS'
   }
   properties: {
+    allowSharedKeyAccess: true
     supportsHttpsTrafficOnly: true
+    minimumTlsVersion: 'TLS1_2'
     networkAcls: {
       bypass: 'AzureServices'
       defaultAction: 'Deny'
       virtualNetworkRules: [
         {
-          id: virtualNetwork::appServiceSubnet.id
+          id: virtualNetwork::productionSubnet.id
+          action: 'Allow'
+        }
+        {
+          id: virtualNetwork::testSubnet.id
+          action: 'Allow'
+        }
+        {
+          id: virtualNetwork::functionsSubnet.id
           action: 'Allow'
         }
       ]
@@ -172,84 +225,16 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
   }
 }
 
-// app service plan for the functions app (consumption plan)
+// app service plan for app services and function apps
 resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
   name: 'asp-${appName}-shared'
   location: location
   tags: tags
-  kind: 'functionapp'
+  kind: 'linux'
   sku: {
-    name: 'Y1'
+    name: 'B1'
   }
   properties: {
     reserved: true
-  }
-}
-
-// functions app
-resource functionsApp 'Microsoft.Web/sites@2022-03-01' = {
-  name: 'func-${appName}-shared'
-  location: location
-  tags: tags
-  kind: 'functionapp,linux'
-  identity: {
-    type: 'SystemAssigned'
-  }
-  properties: {
-    serverFarmId: appServicePlan.id
-    reserved: true
-    httpsOnly: true
-    siteConfig: {
-      linuxFxVersion: 'DOTNET-ISOLATED|7.0'
-      http20Enabled: true
-      ftpsState: 'Disabled'
-      appSettings: [
-        {
-          name: 'AzureWebJobsStorage'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};EndpointSuffix=${environment().suffixes.storage};AccountKey=${storageAccount.listKeys().keys[0].value}'
-        }
-        {
-          name: 'FUNCTIONS_EXTENSION_VERSION'
-          value: '~4'
-        }
-        {
-          name: 'FUNCTIONS_WORKER_RUNTIME'
-          value: 'dotnet-isolated'
-        }
-        {
-          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-          value: appInsights.properties.ConnectionString
-        }
-        {
-          name: 'ApplicationInsightsAgent_EXTENSION_VERSION'
-          value: '~3'
-        }
-        {
-          name: 'XDT_MicrosoftApplicationInsights_Mode'
-          value: 'Recommended'
-        }
-        {
-          name: 'TableService__Endpoint'
-          value: 'https://${storageAccount.name}.table.${environment().suffixes.storage}'
-        }
-      ]
-    }
-  }
-}
-
-// role definition for storage account
-resource roleDefinition 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
-  name: '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3' // Storage Blob Data Contributor
-  scope: resourceGroup()
-}
-
-// assign role to storage account
-resource roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(functionsApp.id, roleDefinition.id)
-  scope: storageAccount
-  properties: {
-    roleDefinitionId: roleDefinition.id
-    principalId: functionsApp.identity.principalId
-    principalType: 'ServicePrincipal'
   }
 }
