@@ -251,30 +251,37 @@ jobs:
     name: Build and deploy functions
     runs-on: ubuntu-latest
     if: github.event_name != 'pull_request'
+    environment: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
     permissions:
       id-token: write
     env:
       BUILD_CONFIGURATION: Release
+      RESOURCE_GROUP_NAME: rg-ohmyword-functions
       AZURE_FUNCTIONAPP_NAME: func-ohmyword-functions
       AZURE_FUNCTIONAPP_PACKAGE_PATH: ./BackEnd/Functions
       DOTNET_VERSION: 7.0.x
     steps:
+      # Check out the repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Setup .NET ${{ env.DOTNET_VERSION }}
-        uses: actions/setup-dotnet@v3
+      # Login to Azure
+      - uses: azure/login@v1
+        name: Login to Azure
         with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}      
       
       # Deploy functions infrastructure
       - uses: azure/arm-deploy@v1
         name: Deploy infrastructure
         with:
-          resourceGroupName: rg-ohmyword-functions
+          resourceGroupName: ${{ env.RESOURCE_GROUP_NAME }}
           template: ./Deployment/Infrastructure/functions/main.bicep
           parameters: ./Deployment/Infrastructure/functions/main.parameters.json
 
+      # Build the project
       - name: "Build project"
         shell: bash
         run: |
@@ -282,6 +289,7 @@ jobs:
           dotnet build --configuration ${{ env.BUILD_CONFIGURATION }} --output ./output
           popd
 
+      # Deploy the project
       - name: "Deploy Azure Function app"
         uses: Azure/functions-action@v1
         with:
