@@ -66,8 +66,7 @@
           <Protocol Name="Proprietary"
             Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
           <Metadata>
-            <Item Key="ServiceUrl">
-              https://func-ohmyword-shared.azurewebsites.net/api/get-user-claims</Item>
+            <Item Key="ServiceUrl">https://functions.ohmyword.live/api/get-user-claims</Item>
             <Item Key="SendClaimsIn">Body</Item>
             <Item Key="AuthenticationType">ApiKeyHeader</Item>
           </Metadata>
