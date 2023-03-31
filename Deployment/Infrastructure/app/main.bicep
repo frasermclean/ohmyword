@@ -248,7 +248,7 @@ resource managedCertificate 'Microsoft.Web/certificates@2022-03-01' = {
 }
 
 // use module to enable hostname SNI binding
-module sniEnable 'sniEnable.bicep' = {
+module sniEnable '../modules/sniEnable.bicep' = {
   name: 'sniEnable'
   params: {
     appServiceName: appService.name

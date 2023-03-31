@@ -13,6 +13,9 @@
     },
     "sharedResourceGroup": {
       "value": "rg-ohmyword-shared"
+    },
+    "domainName": {
+      "value": "ohmyword.live"
     }
   }
 }

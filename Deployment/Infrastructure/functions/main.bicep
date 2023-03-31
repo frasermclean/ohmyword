@@ -12,6 +12,9 @@ param location string
 @description('Name of the shared resource group')
 param sharedResourceGroup string
 
+@description('DNS domain name')
+param domainName string
+
 var tags = {
   workload: workload
   category: category
@@ -41,6 +44,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' existing 
   scope: resourceGroup(sharedResourceGroup)
 }
 
+// application insights
 resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   name: toLower('ai-${workload}-${category}')
   location: location
@@ -53,7 +57,20 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   }
 }
 
-resource functionsApp 'Microsoft.Web/sites@2022-03-01' = {
+// custom domain DNS records
+module customDomain '../modules/customDomain.bicep' = {
+  name: 'customDomain-${category}-${domainName}'
+  scope: resourceGroup(sharedResourceGroup)
+  params: {
+    domainName: domainName
+    subDomain: category
+    verificationId: functionApp.properties.customDomainVerificationId
+    hostNameOrIpAddress: '${functionApp.name}.azurewebsites.net'
+  }
+}
+
+// function app
+resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
   name: toLower('func-${workload}-${category}')
   location: location
   tags: tags
@@ -105,13 +122,47 @@ resource functionsApp 'Microsoft.Web/sites@2022-03-01' = {
       ]
     }
   }
+
+  // custom domain binding
+  resource hostNameBinding 'hostNameBindings' = {
+    name: '${category}.${domainName}'
+    properties: {
+      siteName: functionApp.name
+      hostNameType: 'Verified'
+    }
+    dependsOn: [
+      customDomain
+    ]
+  }
 }
 
+// app service managed certificate
+resource managedCertificate 'Microsoft.Web/certificates@2022-03-01' = {
+  name: 'cert-${workload}-${category}'
+  location: location
+  tags: tags
+  properties: {
+    serverFarmId: appServicePlan.id
+    canonicalName: functionApp::hostNameBinding.name
+  }
+}
+
+// use module to enable hostname SNI binding
+module sniEnable '../modules/sniEnable.bicep' = {
+  name: 'sniEnable'
+  params: {
+    appServiceName: functionApp.name
+    hostname: functionApp::hostNameBinding.name
+    certificateThumbprint: managedCertificate.properties.thumbprint
+  }
+}
+
+// role assignment for function app to access storage account
 module storageAccountRoleAssignment '../modules/roleAssignment.bicep' = {
-  name: 'roleAssignment-${storageAccount.name}-${functionsApp.name}'
+  name: 'roleAssignment-${storageAccount.name}-${functionApp.name}'
   scope: resourceGroup(sharedResourceGroup)
   params: {
-    principalId: functionsApp.identity.principalId
+    principalId: functionApp.identity.principalId
     principalType: 'ServicePrincipal'
     roleName: 'StorageTableDataContributor'
   }
