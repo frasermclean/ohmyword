@@ -38,7 +38,7 @@ public class UsersRepository : IUsersRepository
     public async Task<UserEntity?> GetUserAsync(string userId, CancellationToken cancellationToken = default)
     {
         var user = await tableClient
-            .QueryAsync<UserEntity>(entity => entity.PartitionKey == userId, cancellationToken: cancellationToken)
+            .QueryAsync<UserEntity>(entity => entity.RowKey == userId, cancellationToken: cancellationToken)
             .FirstOrDefaultAsync(cancellationToken);
 
         if (user is null)

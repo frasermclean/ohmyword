@@ -36,6 +36,7 @@ public sealed class UserFunctions
             Id = getUserClaimsRequest.UserId,
             Name = getUserClaimsRequest.Name,
             Email = getUserClaimsRequest.Email,
+            IdentityProvider = getUserClaimsRequest.IdentityProvider,
             Role = Role.User
         });
 
