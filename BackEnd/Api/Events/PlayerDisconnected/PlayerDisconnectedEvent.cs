@@ -1,3 +1,3 @@
-﻿namespace OhMyWord.Api.Events.VisitorDisconnected;
+﻿namespace OhMyWord.Api.Events.PlayerDisconnected;
 
 public record PlayerDisconnectedEvent(string ConnectionId) : IEvent;

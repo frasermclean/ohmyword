@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using OhMyWord.Api.Commands.RegisterPlayer;
 using OhMyWord.Api.Commands.SubmitGuess;
-using OhMyWord.Api.Events.VisitorDisconnected;
+using OhMyWord.Api.Events.PlayerDisconnected;
 using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Services;
 

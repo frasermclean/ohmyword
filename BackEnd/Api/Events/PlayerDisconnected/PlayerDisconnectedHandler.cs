@@ -1,5 +1,4 @@
-﻿using OhMyWord.Api.Events.VisitorDisconnected;
-using OhMyWord.Api.Services;
+﻿using OhMyWord.Api.Services;
 using OhMyWord.Domain.Services;
 
 namespace OhMyWord.Api.Events.PlayerDisconnected;
