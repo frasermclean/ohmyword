@@ -64,7 +64,7 @@ public static class ServiceCollectionExtensions
         services.AddOptions<DictionaryOptions>()
             .Bind(context.Configuration.GetSection(DictionaryOptions.SectionName));
         services.AddHttpClient<IDictionaryService, DictionaryService>(client =>
-            client.BaseAddress = new Uri("https://www.dictionaryapi.com/api/v3/references/sd3/json"));
+            client.BaseAddress = new Uri(DictionaryOptions.ApiBaseUrl));
 
         return services;
     }

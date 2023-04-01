@@ -39,7 +39,8 @@ public class WordsService : IWordsService
     private readonly IDefinitionsRepository definitionsRepository;
     private readonly IDictionaryService dictionaryService;
 
-    public WordsService(IWordsRepository wordsRepository, IDefinitionsRepository definitionsRepository, IDictionaryService dictionaryService)
+    public WordsService(IWordsRepository wordsRepository, IDefinitionsRepository definitionsRepository,
+        IDictionaryService dictionaryService)
     {
         this.wordsRepository = wordsRepository;
         this.definitionsRepository = definitionsRepository;
