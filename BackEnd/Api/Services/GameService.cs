@@ -120,12 +120,15 @@ public class GameService : IGameService
         }
 
         var wordId = shuffledWordIds.Pop();
-        var word = await wordsService.GetWordAsync(wordId, cancellationToken);
+        var result = await wordsService.GetWordAsync(wordId, cancellationToken);
 
-        if (word is not null) return word;
-
-        logger.LogError("Word not found in database. WordId: {WordId}", wordId);
-        return Word.Default;
+        return result.Match(
+            word => word,
+            _ =>
+            {
+                logger.LogError("Word not found in database. WordId: {WordId}", wordId);
+                return Word.Default;
+            });
     }
 
     private static async Task SendLetterHintsAsync(Round round)

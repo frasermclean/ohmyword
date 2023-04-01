@@ -2,6 +2,8 @@
 using OhMyWord.Domain.Models;
 using OhMyWord.Infrastructure.Entities;
 using OhMyWord.Infrastructure.Services;
+using OneOf;
+using OneOf.Types;
 
 namespace OhMyWord.Domain.Services;
 
@@ -27,7 +29,7 @@ public interface IWordsService
     /// <returns>The total word count.</returns>
     Task<int> GetTotalWordCountAsync(CancellationToken cancellationToken = default);
 
-    Task<Word?> GetWordAsync(string wordId, CancellationToken cancellationToken = default);
+    Task<OneOf<Word, NotFound>> GetWordAsync(string wordId, CancellationToken cancellationToken = default);
     Task<Word> CreateWordAsync(Word word, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -67,10 +69,12 @@ public class WordsService : IWordsService
     public Task<int> GetTotalWordCountAsync(CancellationToken cancellationToken = default) =>
         wordsRepository.GetTotalWordCountAsync(cancellationToken);
 
-    public async Task<Word?> GetWordAsync(string wordId, CancellationToken cancellationToken = default)
+    public async Task<OneOf<Word, NotFound>> GetWordAsync(string wordId, CancellationToken cancellationToken = default)
     {
         var wordEntity = await wordsRepository.GetWordAsync(wordId, cancellationToken);
-        return wordEntity is null ? default : await MapToWordAsync(wordEntity, cancellationToken);
+        return wordEntity is not null
+            ? await MapToWordAsync(wordEntity, cancellationToken)
+            : new NotFound();
     }
 
     public async Task<Word> CreateWordAsync(Word word, CancellationToken cancellationToken = default)

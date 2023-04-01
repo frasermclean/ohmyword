@@ -11,4 +11,8 @@
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="OneOf" Version="3.0.243" />
+  </ItemGroup>
+
 </Project>
