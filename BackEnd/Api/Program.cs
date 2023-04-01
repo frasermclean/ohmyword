@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Web;
 using OhMyWord.Api.Hubs;
 using OhMyWord.Api.Services;
+using OhMyWord.Domain.Extensions;
 using OhMyWord.Domain.Options;
 using OhMyWord.Domain.Services;
 using OhMyWord.Infrastructure.Extensions;
@@ -43,12 +44,8 @@ public static class Program
                     .ValidateDataAnnotations()
                     .ValidateOnStart();
 
-                // domain services
-                services.AddSingleton<IUsersService, UsersService>();
-                services.AddSingleton<IPlayerService, PlayerService>();
-                services.AddSingleton<IWordsService, WordsService>();
-
-                // infrastructure services
+                // local project services
+                services.AddDomainServices();
                 services.AddInfrastructureServices(context);
 
                 // development services

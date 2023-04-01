@@ -8,20 +8,13 @@ public static class DictionaryWordExtensions
 {
     public static Word ToWord(this DictionaryWord dictionaryWord) => new()
     {
-        Id = dictionaryWord.Metadata.Stems.First(), 
+        Id = dictionaryWord.Metadata.Stems.First(),
         Definitions = dictionaryWord.ShortDefinitions.Select(definition => new Definition
-        {            
-            PartOfSpeech = ParseFunctionalLabel(dictionaryWord.FunctionalLabel),
-            Value = definition,            
+        {
+            PartOfSpeech = ParseFunctionalLabel(dictionaryWord.FunctionalLabel), Value = definition,
         })
     };
 
-    private static PartOfSpeech ParseFunctionalLabel(string functionalLabel) => functionalLabel switch
-    {
-        "noun" => PartOfSpeech.Noun,
-        "verb" => PartOfSpeech.Verb,
-        "adjective" => PartOfSpeech.Adjective,
-        "adverb" => PartOfSpeech.Adverb,
-        _ => throw new InvalidDataException($"Unhandled functional label: {functionalLabel}")
-    };
+    private static PartOfSpeech ParseFunctionalLabel(string functionalLabel) =>
+        Enum.TryParse<PartOfSpeech>(functionalLabel, true, out var partOfSpeech) ? partOfSpeech : PartOfSpeech.Unknown;
 }
