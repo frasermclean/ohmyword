@@ -1,9 +1,13 @@
-﻿using OhMyWord.Domain.Extensions;
+﻿using Microsoft.Azure.Cosmos;
+using Microsoft.Extensions.Logging;
+using OhMyWord.Domain.Extensions;
 using OhMyWord.Domain.Models;
+using OhMyWord.Domain.Results;
 using OhMyWord.Infrastructure.Entities;
 using OhMyWord.Infrastructure.Services;
 using OneOf;
 using OneOf.Types;
+using System.Net;
 
 namespace OhMyWord.Domain.Services;
 
@@ -13,7 +17,6 @@ public interface IWordsService
         int limit = WordsRepository.LimitDefault, string filter = "",
         SearchWordsOrderBy orderBy = SearchWordsOrderBy.Id,
         SortDirection direction = SortDirection.Ascending, CancellationToken cancellationToken = default);
-
 
     /// <summary>
     /// Read all word IDs from the database.
@@ -30,7 +33,7 @@ public interface IWordsService
     Task<int> GetTotalWordCountAsync(CancellationToken cancellationToken = default);
 
     Task<OneOf<Word, NotFound>> GetWordAsync(string wordId, CancellationToken cancellationToken = default);
-    Task<Word> CreateWordAsync(Word word, CancellationToken cancellationToken = default);
+    Task<OneOf<Word, NotFound, Conflict>> CreateWordAsync(Word word, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Create a new word with the given ID automatically populated with definitions from the dictionary.
@@ -38,7 +41,7 @@ public interface IWordsService
     /// <param name="wordId">The word to create</param>
     /// <param name="cancellationToken">Task cancellation token</param>
     /// <returns></returns>
-    Task<Word> CreateWordAsync(string wordId, CancellationToken cancellationToken = default);
+    Task<OneOf<Word, NotFound, Conflict>> CreateWordAsync(string wordId, CancellationToken cancellationToken = default);
 
     Task UpdateWordAsync(Word word, CancellationToken cancellationToken = default);
     Task DeleteWordAsync(string wordId, CancellationToken cancellationToken = default);
@@ -46,13 +49,15 @@ public interface IWordsService
 
 public class WordsService : IWordsService
 {
+    private readonly ILogger<WordsService> logger;
     private readonly IWordsRepository wordsRepository;
     private readonly IDefinitionsRepository definitionsRepository;
     private readonly IDictionaryService dictionaryService;
 
-    public WordsService(IWordsRepository wordsRepository, IDefinitionsRepository definitionsRepository,
-        IDictionaryService dictionaryService)
+    public WordsService(ILogger<WordsService> logger, IWordsRepository wordsRepository,
+        IDefinitionsRepository definitionsRepository, IDictionaryService dictionaryService)
     {
+        this.logger = logger;
         this.wordsRepository = wordsRepository;
         this.definitionsRepository = definitionsRepository;
         this.dictionaryService = dictionaryService;
@@ -77,21 +82,13 @@ public class WordsService : IWordsService
             : new NotFound();
     }
 
-    public async Task<Word> CreateWordAsync(Word word, CancellationToken cancellationToken = default)
+    public async Task<OneOf<Word, NotFound, Conflict>> CreateWordAsync(string wordId,
+        CancellationToken cancellationToken = default)
     {
-        await wordsRepository.CreateWordAsync(
-            new WordEntity { Id = word.Id, DefinitionCount = word.Definitions.Count() },
-            cancellationToken);
+        var dictionaryWords = (await dictionaryService.LookupWordAsync(wordId, cancellationToken)).ToList();
 
-        await Task.WhenAll(word.Definitions.Select(definition =>
-            definitionsRepository.CreateDefinitionAsync(definition.ToEntity(word.Id), cancellationToken)));
+        if (dictionaryWords.Count == 0) return new NotFound();
 
-        return word;
-    }
-
-    public async Task<Word> CreateWordAsync(string wordId, CancellationToken cancellationToken = default)
-    {
-        var dictionaryWords = await dictionaryService.LookupWordAsync(wordId, cancellationToken);
         var words = dictionaryWords
             .Take(1)
             .Where(dictionaryWord =>
@@ -99,6 +96,25 @@ public class WordsService : IWordsService
             .Select(dictionaryWord => dictionaryWord.ToWord());
 
         return await CreateWordAsync(words.First(), cancellationToken);
+    }
+
+    public async Task<OneOf<Word, NotFound, Conflict>> CreateWordAsync(Word word,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await wordsRepository.CreateWordAsync(word.ToEntity(), cancellationToken);
+        }
+        catch (CosmosException cosmosException) when (cosmosException.StatusCode == HttpStatusCode.Conflict)
+        {
+            logger.LogWarning(cosmosException, "Word with ID: {WordId} already exists", word.Id);
+            return new Conflict($"Word with ID: {word.Id} already exists");
+        }
+
+        await Task.WhenAll(word.Definitions.Select(definition =>
+            definitionsRepository.CreateDefinitionAsync(definition.ToEntity(word.Id), cancellationToken)));
+
+        return word;
     }
 
     public async Task UpdateWordAsync(Word word, CancellationToken cancellationToken = default)
