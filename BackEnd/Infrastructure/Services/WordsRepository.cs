@@ -23,8 +23,8 @@ public interface IWordsRepository
     Task<int> GetTotalWordCountAsync(CancellationToken cancellationToken = default);
 
     Task<WordEntity?> GetWordAsync(string id, CancellationToken cancellationToken = default);
-    Task CreateWordAsync(WordEntity entity, CancellationToken cancellationToken = default);
-    Task UpdateWordAsync(WordEntity entity, CancellationToken cancellationToken = default);
+    Task<WordEntity> CreateWordAsync(WordEntity entity, CancellationToken cancellationToken = default);
+    Task<WordEntity> UpdateWordAsync(WordEntity entity, CancellationToken cancellationToken = default);
     Task DeleteWordAsync(string wordId, CancellationToken cancellationToken = default);
 }
 
@@ -78,10 +78,10 @@ public class WordsRepository : Repository<WordEntity>, IWordsRepository
     public Task<WordEntity?> GetWordAsync(string id, CancellationToken cancellationToken) =>
         ReadItemAsync(id, id, cancellationToken: cancellationToken);
 
-    public Task CreateWordAsync(WordEntity entity, CancellationToken cancellationToken) =>
+    public Task<WordEntity> CreateWordAsync(WordEntity entity, CancellationToken cancellationToken) =>
         CreateItemAsync(entity, cancellationToken);
 
-    public Task UpdateWordAsync(WordEntity entity, CancellationToken cancellationToken) =>
+    public Task<WordEntity> UpdateWordAsync(WordEntity entity, CancellationToken cancellationToken) =>
         UpdateItemAsync(entity, cancellationToken);
 
     public Task DeleteWordAsync(string wordId, CancellationToken cancellationToken) =>

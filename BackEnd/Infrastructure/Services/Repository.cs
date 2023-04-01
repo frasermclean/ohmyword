@@ -31,7 +31,7 @@ public abstract class Repository<TEntity> where TEntity : Entity
         entityTypeName = typeof(TEntity).Name;
     }
 
-    protected async Task CreateItemAsync(TEntity item, CancellationToken cancellationToken = default)
+    protected async Task<TEntity> CreateItemAsync(TEntity item, CancellationToken cancellationToken = default)
     {
         using var stream = new MemoryStream();
         await JsonSerializer.SerializeAsync(stream, item, serializerOptions, cancellationToken);
@@ -41,6 +41,8 @@ public abstract class Repository<TEntity> where TEntity : Entity
         response.EnsureSuccessStatusCode();
 
         logger.LogInformation("Created {TypeName} on partition: /{Partition}", entityTypeName, item.GetPartition());
+
+        return item;
     }
 
     protected async Task<TEntity?> ReadItemAsync(string id, string partition,
@@ -54,7 +56,7 @@ public abstract class Repository<TEntity> where TEntity : Entity
             : default;
     }
 
-    protected async Task UpdateItemAsync(TEntity item,
+    protected async Task<TEntity> UpdateItemAsync(TEntity item,
         CancellationToken cancellationToken = default)
     {
         using var stream = new MemoryStream();
@@ -65,6 +67,8 @@ public abstract class Repository<TEntity> where TEntity : Entity
         response.EnsureSuccessStatusCode();
 
         logger.LogInformation("Replaced {TypeName} on partition: /{Partition}", entityTypeName, item.GetPartition());
+
+        return item;
     }
 
     protected Task DeleteItemAsync(TEntity item) => DeleteItemAsync(item.Id, item.GetPartition());

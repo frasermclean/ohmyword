@@ -28,7 +28,16 @@ public interface IWordsService
     Task<int> GetTotalWordCountAsync(CancellationToken cancellationToken = default);
 
     Task<Word?> GetWordAsync(string wordId, CancellationToken cancellationToken = default);
-    Task CreateWordAsync(Word word, CancellationToken cancellationToken = default);
+    Task<Word> CreateWordAsync(Word word, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Create a new word with the given ID automatically populated with definitions from the dictionary.
+    /// </summary>
+    /// <param name="wordId">The word to create</param>
+    /// <param name="cancellationToken">Task cancellation token</param>
+    /// <returns></returns>
+    Task<Word> CreateWordAsync(string wordId, CancellationToken cancellationToken = default);
+
     Task UpdateWordAsync(Word word, CancellationToken cancellationToken = default);
     Task DeleteWordAsync(string wordId, CancellationToken cancellationToken = default);
 }
@@ -64,7 +73,7 @@ public class WordsService : IWordsService
         return wordEntity is null ? default : await MapToWordAsync(wordEntity, cancellationToken);
     }
 
-    public async Task CreateWordAsync(Word word, CancellationToken cancellationToken = default)
+    public async Task<Word> CreateWordAsync(Word word, CancellationToken cancellationToken = default)
     {
         await wordsRepository.CreateWordAsync(
             new WordEntity { Id = word.Id, DefinitionCount = word.Definitions.Count() },
@@ -72,6 +81,20 @@ public class WordsService : IWordsService
 
         await Task.WhenAll(word.Definitions.Select(definition =>
             definitionsRepository.CreateDefinitionAsync(definition.ToEntity(word.Id), cancellationToken)));
+
+        return word;
+    }
+
+    public async Task<Word> CreateWordAsync(string wordId, CancellationToken cancellationToken = default)
+    {
+        var dictionaryWords = await dictionaryService.LookupWordAsync(wordId, cancellationToken);
+        var words = dictionaryWords
+            .Take(1)
+            .Where(dictionaryWord =>
+                string.Equals(dictionaryWord.Metadata.Stems.First(), wordId, StringComparison.CurrentCultureIgnoreCase))
+            .Select(dictionaryWord => dictionaryWord.ToWord());
+
+        return await CreateWordAsync(words.First(), cancellationToken);
     }
 
     public async Task UpdateWordAsync(Word word, CancellationToken cancellationToken = default)

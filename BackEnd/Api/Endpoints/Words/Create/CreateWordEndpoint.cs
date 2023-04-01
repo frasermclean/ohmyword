@@ -20,8 +20,10 @@ public class CreateWordEndpoint : Endpoint<CreateWordRequest, Word>
 
     public override async Task HandleAsync(CreateWordRequest request, CancellationToken cancellationToken)
     {
-        var word = new Word { Id = request.Id, Definitions = request.Definitions };
-        await wordsService.CreateWordAsync(word, cancellationToken);
+        var word = request.Definitions.Any()
+            ? await wordsService.CreateWordAsync(new Word { Id = request.Id, Definitions = request.Definitions },
+                cancellationToken)
+            : await wordsService.CreateWordAsync(request.Id, cancellationToken);
 
         await SendCreatedAtAsync<GetWordEndpoint>(new { WordId = word.Id }, word, cancellation: cancellationToken);
     }

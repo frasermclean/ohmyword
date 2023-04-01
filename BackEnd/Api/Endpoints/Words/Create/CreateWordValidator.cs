@@ -7,6 +7,5 @@ public class CreateWordValidator : Validator<CreateWordRequest>
     public CreateWordValidator()
     {
         RuleFor(request => request.Id).NotEmpty();
-        RuleFor(request => request.Definitions).NotEmpty();
     }
 }
