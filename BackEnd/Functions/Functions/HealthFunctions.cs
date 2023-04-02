@@ -16,7 +16,7 @@ public class HealthFunctions
 
     [Function("GetHealth")]
     public async Task<HttpResponseData> GetHealthAsync(
-        [HttpTrigger("get", Route = "health")] HttpRequestData request)
+        [HttpTrigger(AuthorizationLevel.Anonymous, Route = "health")] HttpRequestData request)
     {
         var report = await healthCheckService.CheckHealthAsync();
         return report.Status == HealthStatus.Healthy
