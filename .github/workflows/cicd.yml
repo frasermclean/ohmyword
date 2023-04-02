@@ -136,6 +136,7 @@ jobs:
           parameters: >-
             ./Deployment/Infrastructure/shared/main.parameters.json
             dictionaryApiKey=${{ secrets.DICTIONARY_API_KEY }}
+            thesaurusApiKey=${{ secrets.THESAURUS_API_KEY }}
 
   # Deploy application infrastructure
   deploy-app-infra:

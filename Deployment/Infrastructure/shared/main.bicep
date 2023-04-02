@@ -19,6 +19,10 @@ param allowedIpAddresses array
 @description('API key for the dictionary API service')
 param dictionaryApiKey string = ''
 
+@secure()
+@description('API key for the thesaurus API service')
+param thesaurusApiKey string = ''
+
 var tags = {
   workload: appName
   environment: 'shared'
@@ -283,6 +287,14 @@ resource keyVault 'Microsoft.KeyVault/vaults@2022-11-01' = {
     name: 'DictionaryApiKey'
     properties: {
       value: dictionaryApiKey
+      contentType: 'text/plain'
+    }
+  }
+
+  resource thesaurusApiKeySecret 'secrets' = if (!empty(thesaurusApiKey)) {
+    name: 'ThesaurusApiKey'
+    properties: {
+      value: thesaurusApiKey
       contentType: 'text/plain'
     }
   }
