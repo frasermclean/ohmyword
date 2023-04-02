@@ -15,6 +15,10 @@ param totalThroughputLimit int
 @description('Public IP addresses allowed to access Azure resources')
 param allowedIpAddresses array
 
+@secure()
+@description('API key for the dictionary API service')
+param dictionaryApiKey string
+
 var tags = {
   workload: appName
   environment: 'shared'
@@ -238,3 +242,30 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
     reserved: true
   }
 }
+
+// key vault
+resource keyVault 'Microsoft.KeyVault/vaults@2022-11-01' = {
+  name: 'kv-${appName}-shared'
+  location: location
+  tags: tags
+  properties: {
+    enabledForDeployment: false
+    enabledForTemplateDeployment: true
+    enabledForDiskEncryption: false
+    enableRbacAuthorization: true
+    tenantId: subscription().tenantId
+    sku: {
+      name: 'standard'
+      family: 'A'
+    }
+  }
+
+  resource dictionaryApiKeySecret 'secrets' = {
+    name: 'DictionaryApiKey'
+    properties: {
+      value: dictionaryApiKey
+      contentType: 'text/plain'
+    }
+  }
+}
+
