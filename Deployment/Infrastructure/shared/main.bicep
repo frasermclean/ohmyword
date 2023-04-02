@@ -61,6 +61,7 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2022-09-01' = {
           addressPrefix: '10.3.1.0/24'
           serviceEndpoints: [
             { service: 'Microsoft.AzureCosmosDB' }
+            { service: 'Microsoft.KeyVault' }
             { service: 'Microsoft.Storage' }
           ]
           delegations: [
@@ -79,6 +80,7 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2022-09-01' = {
           addressPrefix: '10.3.2.0/24'
           serviceEndpoints: [
             { service: 'Microsoft.AzureCosmosDB' }
+            { service: 'Microsoft.KeyVault' }
             { service: 'Microsoft.Storage' }
           ]
           delegations: [
@@ -258,9 +260,26 @@ resource keyVault 'Microsoft.KeyVault/vaults@2022-11-01' = {
       name: 'standard'
       family: 'A'
     }
+    networkAcls: {
+      bypass: 'AzureServices'
+      defaultAction: 'Deny'
+      virtualNetworkRules: [
+        {
+          id: virtualNetwork::productionSubnet.id
+          ignoreMissingVnetServiceEndpoint: false
+        }
+        {
+          id: virtualNetwork::testSubnet.id
+          ignoreMissingVnetServiceEndpoint: false
+        }
+      ]
+      ipRules: [for ipAddress in allowedIpAddresses: {
+        value: ipAddress
+      }]
+    }
   }
 
-  resource dictionaryApiKeySecret 'secrets' = if(!empty(dictionaryApiKey)) {
+  resource dictionaryApiKeySecret 'secrets' = if (!empty(dictionaryApiKey)) {
     name: 'DictionaryApiKey'
     properties: {
       value: dictionaryApiKey
@@ -268,4 +287,3 @@ resource keyVault 'Microsoft.KeyVault/vaults@2022-11-01' = {
     }
   }
 }
-
