@@ -17,7 +17,7 @@ param allowedIpAddresses array
 
 @secure()
 @description('API key for the dictionary API service')
-param dictionaryApiKey string
+param dictionaryApiKey string = ''
 
 var tags = {
   workload: appName

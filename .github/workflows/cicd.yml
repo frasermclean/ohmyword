@@ -133,7 +133,9 @@ jobs:
         with:
           resourceGroupName: rg-ohmyword-shared
           template: ./Deployment/Infrastructure/shared/main.bicep
-          parameters: ./Deployment/Infrastructure/shared/main.parameters.json
+          parameters: >-
+            ./Deployment/Infrastructure/shared/main.parameters.json
+            dictionaryApiKey=${{ secrets.DICTIONARY_API_KEY }}
 
   # Deploy application infrastructure
   deploy-app-infra:
@@ -271,8 +273,8 @@ jobs:
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}      
-      
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
       # Deploy functions infrastructure
       - uses: azure/arm-deploy@v1
         name: Deploy infrastructure

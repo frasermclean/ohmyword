@@ -15,12 +15,7 @@
       "value": 1000
     },
     "allowedIpAddresses": {
-      "value": [
-        "180.150.54.161"
-      ]
-    },
-    "dictionaryApiKey": {
-      "value": ""
+      "value": ["180.150.54.161"]
     }
   }
 }
