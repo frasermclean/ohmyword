@@ -62,7 +62,9 @@ public static class ServiceCollectionExtensions
 
         // dictionary service
         services.AddOptions<DictionaryOptions>()
-            .Bind(context.Configuration.GetSection(DictionaryOptions.SectionName));
+            .Bind(context.Configuration.GetSection(DictionaryOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
         services.AddHttpClient<IDictionaryService, DictionaryService>(client =>
             client.BaseAddress = new Uri(DictionaryOptions.ApiBaseUrl));
 
