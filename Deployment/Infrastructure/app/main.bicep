@@ -256,3 +256,14 @@ module sniEnable '../modules/sniEnable.bicep' = {
     certificateThumbprint: managedCertificate.properties.thumbprint
   }
 }
+
+// role assignment for app service to access storage account
+module storageAccountRoleAssignment '../modules/roleAssignment.bicep' = {
+  name: 'roleAssignment-${storageAccount.name}-${appService.name}'
+  scope: resourceGroup(sharedResourceGroup)
+  params: {
+    principalId: appService.identity.principalId
+    principalType: 'ServicePrincipal'
+    roleName: 'StorageTableDataContributor'
+  }
+}
