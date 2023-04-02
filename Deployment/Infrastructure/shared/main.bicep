@@ -103,6 +103,7 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2022-09-01' = {
           addressPrefix: '10.3.3.0/24'
           serviceEndpoints: [
             { service: 'Microsoft.AzureCosmosDB' }
+            { service: 'Microsoft.KeyVault' }
             { service: 'Microsoft.Storage' }
           ]
           delegations: [
@@ -274,6 +275,10 @@ resource keyVault 'Microsoft.KeyVault/vaults@2022-11-01' = {
         }
         {
           id: virtualNetwork::testSubnet.id
+          ignoreMissingVnetServiceEndpoint: false
+        }
+        {
+          id: virtualNetwork::functionsSubnet.id
           ignoreMissingVnetServiceEndpoint: false
         }
       ]
