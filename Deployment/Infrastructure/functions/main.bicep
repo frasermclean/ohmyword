@@ -164,6 +164,6 @@ module storageAccountRoleAssignment '../modules/roleAssignment.bicep' = {
   params: {
     principalId: functionApp.identity.principalId
     principalType: 'ServicePrincipal'
-    roleName: 'StorageTableDataContributor'
+    roleNames: [ 'StorageTableDataContributor' ]
   }
 }

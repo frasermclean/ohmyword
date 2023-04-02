@@ -260,7 +260,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2022-11-01' = {
     }
   }
 
-  resource dictionaryApiKeySecret 'secrets' = {
+  resource dictionaryApiKeySecret 'secrets' = if(!empty(dictionaryApiKey)) {
     name: 'DictionaryApiKey'
     properties: {
       value: dictionaryApiKey

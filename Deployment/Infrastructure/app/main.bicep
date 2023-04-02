@@ -77,6 +77,11 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' existing 
   scope: resourceGroup(sharedResourceGroup)
 }
 
+resource keyVault 'Microsoft.KeyVault/vaults@2022-11-01' existing = {
+  name: 'kv-${appName}-shared'
+  scope: resourceGroup(sharedResourceGroup)
+}
+
 // database
 module database 'database.bicep' = {
   name: 'database-${appEnv}'
@@ -188,6 +193,10 @@ resource appService 'Microsoft.Web/sites@2022-03-01' = {
           name: 'TableService__Endpoint'
           value: 'https://${storageAccount.name}.table.${environment().suffixes.storage}'
         }
+        {
+          name: 'Dictionary__ApiKey'
+          value: '@Microsoft.KeyVault(VaultName=${keyVault.name};SecretName=DictionaryApiKey)'
+        }
       ]
     }
   }
@@ -264,6 +273,6 @@ module storageAccountRoleAssignment '../modules/roleAssignment.bicep' = {
   params: {
     principalId: appService.identity.principalId
     principalType: 'ServicePrincipal'
-    roleName: 'StorageTableDataContributor'
+    roleNames: [ 'StorageTableDataContributor', 'KeyVaultSecretsUser' ]
   }
 }
