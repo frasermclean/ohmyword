@@ -125,10 +125,8 @@ resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
           value: 'https://${storageAccount.name}.table.${environment().suffixes.storage}'
         }
         {
-          {
-            name: 'Dictionary__ApiKey'
-            value: '@Microsoft.KeyVault(VaultName=${keyVault.name};SecretName=DictionaryApiKey)'
-          }
+          name: 'Dictionary__ApiKey'
+          value: '@Microsoft.KeyVault(VaultName=${keyVault.name};SecretName=DictionaryApiKey)'
         }
       ]
     }
