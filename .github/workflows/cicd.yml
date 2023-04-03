@@ -38,10 +38,28 @@ jobs:
     name: Build functions application
     uses: ./.github/workflows/build-functions-app.yml
 
+  # Create infrastructure template artifacts
+  create-infra-templates:
+    name: Create infrastructure template artifacts
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Upload published application artifact
+        uses: actions/upload-artifact@v3
+        env:
+          TEMPLATE_ROOT: ./Deployment/Infrastructure
+        with:
+          name: infra-templates
+          path: ${{ env.TEMPLATE_ROOT }}
+
   # Deploy shared infrastructure
   deploy-shared-infra:
     name: Deploy shared infrastructure
     if: github.event_name != 'pull_request'
+    needs: create-infra-templates
     uses: ./.github/workflows/deploy-shared-infra.yml
     with:
       environment: ${{ github.ref_name == 'main' && 'prod' || 'test' }}

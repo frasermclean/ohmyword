@@ -18,16 +18,17 @@ on:
 
 jobs:
   deploy-shared-infra:
-    name: Deploy shared infrastructure
+    name: Deploy template
     runs-on: ubuntu-latest
-    if: github.event_name != 'pull_request'
     environment: ${{ inputs.environment }}
     permissions:
       id-token: write
     steps:
-      # Check out the repository
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      # Download application artifact
+      - name: Download application artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: infra-templates
 
       # Login to Azure
       - uses: azure/login@v1
@@ -42,7 +43,7 @@ jobs:
         name: Deploy shared infrastructure
         with:
           resourceGroupName: rg-ohmyword-shared
-          template: ./Deployment/Infrastructure/shared/main.bicep
+          template: ./infra-templates/shared/main.bicep
           parameters: >-
             ./Deployment/Infrastructure/shared/main.parameters.json
             dictionaryApiKey=${{ secrets.dictionary-api-key }}
