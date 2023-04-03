@@ -32,12 +32,12 @@ jobs:
 
       # Install dependencies
       - name: Install project dependencies
-        working-directory: $PROJECT_DIRECTORY
+        working-directory: ${{ env.PROJECT_DIRECTORY }}
         run: npm install
 
       # Build the client
       - name: Build client application
-        working-directory: $PROJECT_DIRECTORY
+        working-directory: ${{ env.PROJECT_DIRECTORY }}
         run: ng build --configuration $BUILD_CONFIGURATION
 
       # Copy static web app config
@@ -49,4 +49,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: frontend-app
-          path: $BUILD_DIRECTORY
+          path: ${{ env.BUILD_DIRECTORY }}
