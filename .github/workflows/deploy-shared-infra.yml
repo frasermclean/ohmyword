@@ -21,6 +21,8 @@ jobs:
     name: Deploy template
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
+    env:
+      TEMPLATE_ROOT: ${{ github.workspace }}/templates
     permissions:
       id-token: write
     steps:
@@ -29,6 +31,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: infra-templates
+          path: ${{ env.TEMPLATE_ROOT }}
 
       # Login to Azure
       - uses: azure/login@v1
@@ -43,7 +46,7 @@ jobs:
         name: Deploy shared infrastructure
         with:
           resourceGroupName: rg-ohmyword-shared
-          template: ./infra-templates/shared/main.bicep
+          template: ${{ env.TEMPLATE_ROOT }}/shared/main.bicep
           parameters: >-
             ./Deployment/Infrastructure/shared/main.parameters.json
             dictionaryApiKey=${{ secrets.dictionary-api-key }}
