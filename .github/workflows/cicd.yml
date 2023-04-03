@@ -23,52 +23,10 @@ on:
 jobs:
   # Build frontend application
   build-frontend-app:
-    runs-on: ubuntu-latest
     name: Build frontend application
-    env:
-      BUILD_CONFIGURATION: testing
-    steps:
-      # Checkout the repository
-      - uses: actions/checkout@v3
-        name: Checkout repository
-        with:
-          submodules: true
-
-      # Setup Node environment
-      - name: Set up Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: "18"
-
-      # Install Angular CLI globally
-      - name: Install Angular CLI
-        run: npm install -g @angular/cli
-
-      # Install dependencies
-      - name: Install project dependencies
-        working-directory: ./FrontEnd
-        run: npm ci
-
-      # Set production build configuration
-      - name: Set production configuration
-        if: github.ref_name == 'main'
-        run: echo "BUILD_CONFIGURATION=production"
-
-      # Build the client
-      - name: Build client application
-        working-directory: ./FrontEnd
-        run: ng build --configuration $BUILD_CONFIGURATION
-
-      # Copy static web app config
-      - name: Copy static web app config
-        run: cp ./FrontEnd/staticwebapp.config.json ./FrontEnd/dist
-
-      # Upload build artifact
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: frontend-app
-          path: ./FrontEnd/dist
+    uses: ./.github/workflows/build-frontend-app.yml
+    with:
+      build_configuration: ${{ github.ref_name == 'main' && 'production' || 'testing' }}
 
   # Build backend application
   build-backend-app:
@@ -108,6 +66,7 @@ jobs:
 
   # Build functions application
   build-functions-app:
+    name: Build functions application
     uses: ./.github/workflows/build-functions-app.yml
 
   # Deploy shared infrastructure

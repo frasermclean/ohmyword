@@ -3,7 +3,7 @@ on:
 
 jobs:
   build:
-    name: Build functions application
+    name: Build and publish
     runs-on: ubuntu-latest
     env:
       BUILD_CONFIGURATION: Release
