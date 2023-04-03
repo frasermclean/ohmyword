@@ -7,6 +7,7 @@ using OhMyWord.Domain.Extensions;
 using OhMyWord.Domain.Options;
 using OhMyWord.Domain.Services;
 using OhMyWord.Infrastructure.Extensions;
+using OhMyWord.Infrastructure.HealthChecks;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -63,7 +64,8 @@ public static class Program
                         context.Configuration.GetValue<string>("CosmosDb:DatabaseId"),
                         context.Configuration.GetValue<string[]>("CosmosDb:ContainerIds"))
                     .AddAzureTable(new Uri(context.Configuration["TableService:Endpoint"] ?? string.Empty),
-                        new DefaultAzureCredential(), "users");
+                        new DefaultAzureCredential(), "users")
+                    .AddCheck<DictionaryServiceHealthCheck>("DictionaryService");
             });
 
         // build the application
