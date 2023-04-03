@@ -253,6 +253,7 @@ jobs:
   build-deploy-functions:
     name: Build and deploy functions
     runs-on: ubuntu-latest
+    needs: deploy-shared-infra
     if: github.event_name != 'pull_request'
     environment: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
     permissions:
