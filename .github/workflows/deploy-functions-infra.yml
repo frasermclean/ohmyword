@@ -1,37 +1,47 @@
-on: workflow_call
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+    secrets:
+      client-id:
+        required: true
+      tenant-id:
+        required: true
+      subscription-id:
+        required: true
 
 jobs:
   deploy:
     name: Deploy functions infrastructure
     runs-on: ubuntu-latest
-    needs: deploy-shared-infra
-    if: github.event_name != 'pull_request'
-    environment: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
+    environment: ${{ inputs.environment }}
     permissions:
       id-token: write
     env:
-      BUILD_CONFIGURATION: Release
+      TEMPLATE_ROOT: ${{ github.workspace }}/templates
       RESOURCE_GROUP_NAME: rg-ohmyword-functions
-      AZURE_FUNCTIONAPP_NAME: func-ohmyword-functions
-      AZURE_FUNCTIONAPP_PACKAGE_PATH: ./BackEnd/Functions
-      DOTNET_VERSION: 7.0.x
     steps:
-      # Check out the repository
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      # Download application artifact
+      - name: Download application artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: infra-templates
+          path: ${{ env.TEMPLATE_ROOT }}
 
       # Login to Azure
       - uses: azure/login@v1
         name: Login to Azure
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          client-id: ${{ secrets.client-id }}
+          tenant-id: ${{ secrets.tenant-id }}
+          subscription-id: ${{ secrets.subscription-id }}
 
       # Deploy functions infrastructure
       - uses: azure/arm-deploy@v1
         name: Deploy infrastructure
         with:
           resourceGroupName: ${{ env.RESOURCE_GROUP_NAME }}
-          template: ./Deployment/Infrastructure/functions/main.bicep
-          parameters: ./Deployment/Infrastructure/functions/main.parameters.json
+          template: ${{ env.TEMPLATE_ROOT }}/functions/main.bicep
+          parameters: ${{ env.TEMPLATE_ROOT }}/functions/main.parameters.json

@@ -4,6 +4,9 @@ on:
       environment:
         required: true
         type: string
+      database-throughput:
+        required: true
+        type: number
     secrets:
       client-id:
         required: true
@@ -21,10 +24,14 @@ jobs:
       id-token: write
     env:
       RESOURCE_GROUP_NAME: rg-ohmyword-${{ inputs.environment }}
+      TEMPLATE_ROOT: ${{ github.workspace }}/templates
     steps:
-      # Check out the repository
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      # Download application artifact
+      - name: Download application artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: infra-templates
+          path: ${{ env.TEMPLATE_ROOT }}
 
       # Login to Azure
       - uses: azure/login@v1
@@ -37,12 +44,10 @@ jobs:
       # Deploy infrastructure
       - uses: azure/arm-deploy@v1
         name: Deploy infrastructure
-        env:
-          DATABASE_THROUGHPUT: ${{ inputs.environment == 'prod' && '600' || '400' }}
         with:
           resourceGroupName: ${{ env.RESOURCE_GROUP_NAME }}
-          template: ./Deployment/Infrastructure/app/main.bicep
+          template: ${{ env.TEMPLATE_ROOT }}/app/main.bicep
           parameters: >-
-            ./Deployment/Infrastructure/app/main.parameters.json
+            .${{ env.TEMPLATE_ROOT }}/app/main.parameters.json
             appEnv=${{ inputs.environment }}
-            databaseThroughput=${{ env.DATABASE_THROUGHPUT }}
+            databaseThroughput=${{ inputs.database-throughput } }}
