@@ -106,6 +106,10 @@ jobs:
           name: backend-app
           path: ${{ env.PUBLISH_DIRECTORY }}
 
+  # Build functions application
+  build-functions-app:
+    uses: .github/workflows/build-functions-app.yml
+
   # Deploy shared infrastructure
   deploy-shared-infra:
     name: Deploy shared infrastructure
@@ -248,55 +252,3 @@ jobs:
         uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ env.APP_NAME }}
-
-  # Deploy functions application
-  build-deploy-functions:
-    name: Build and deploy functions
-    runs-on: ubuntu-latest
-    needs: deploy-shared-infra
-    if: github.event_name != 'pull_request'
-    environment: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
-    permissions:
-      id-token: write
-    env:
-      BUILD_CONFIGURATION: Release
-      RESOURCE_GROUP_NAME: rg-ohmyword-functions
-      AZURE_FUNCTIONAPP_NAME: func-ohmyword-functions
-      AZURE_FUNCTIONAPP_PACKAGE_PATH: ./BackEnd/Functions
-      DOTNET_VERSION: 7.0.x
-    steps:
-      # Check out the repository
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      # Login to Azure
-      - uses: azure/login@v1
-        name: Login to Azure
-        with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-      # Deploy functions infrastructure
-      - uses: azure/arm-deploy@v1
-        name: Deploy infrastructure
-        with:
-          resourceGroupName: ${{ env.RESOURCE_GROUP_NAME }}
-          template: ./Deployment/Infrastructure/functions/main.bicep
-          parameters: ./Deployment/Infrastructure/functions/main.parameters.json
-
-      # Build the project
-      - name: "Build project"
-        shell: bash
-        run: |
-          pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
-          dotnet build --configuration ${{ env.BUILD_CONFIGURATION }} --output ./output
-          popd
-
-      # Deploy the project
-      - name: "Deploy Azure Function app"
-        uses: Azure/functions-action@v1
-        with:
-          app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
-          package: "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output"
-          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
