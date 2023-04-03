@@ -26,7 +26,7 @@ jobs:
     name: Build frontend application
     uses: ./.github/workflows/build-frontend-app.yml
     with:
-      build_configuration: ${{ github.ref_name == 'main' && 'production' || 'testing' }}
+      build-configuration: ${{ github.ref_name == 'main' && 'production' || 'testing' }}
 
   # Build backend application
   build-backend-app:
@@ -58,7 +58,10 @@ jobs:
       - deploy-shared-infra
     uses: ./.github/workflows/deploy-app-infra.yml
     with:
-      environment: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
+      enviroment: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
+      azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
+      azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+      azure-subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
   # Deploy frontend application
   deploy-frontend-app:
