@@ -4,6 +4,17 @@ on:
       environment:
         required: true
         type: string
+    secrets:
+      client-id:
+        required: true
+      tenant-id:
+        required: true
+      subscription-id:
+        required: true
+      dictionary-api-key:
+        required: true
+      thesaurus-api-key:
+        required: true
 
 jobs:
   deploy-shared-infra:
@@ -22,9 +33,9 @@ jobs:
       - uses: azure/login@v1
         name: Login to Azure
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          client-id: ${{ secrets.client-id }}
+          tenant-id: ${{ secrets.tenant-id }}
+          subscription-id: ${{ secrets.subscription-id }}
 
       # Deploy shared infrastructure
       - uses: azure/arm-deploy@v1
@@ -34,5 +45,5 @@ jobs:
           template: ./Deployment/Infrastructure/shared/main.bicep
           parameters: >-
             ./Deployment/Infrastructure/shared/main.parameters.json
-            dictionaryApiKey=${{ secrets.DICTIONARY_API_KEY }}
-            thesaurusApiKey=${{ secrets.THESAURUS_API_KEY }}
+            dictionaryApiKey=${{ secrets.dictionary-api-key }}
+            thesaurusApiKey=${{ secrets.thesaurus-api-key }}

@@ -45,6 +45,12 @@ jobs:
     uses: ./.github/workflows/deploy-shared-infra.yml
     with:
       environment: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
+    secrets:
+      client-id: ${{ secrets.AZURE_CLIENT_ID }}
+      tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+      subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      dictionary-api-key: ${{ secrets.DICTIONARY_API_KEY }}
+      thesaurus-api-key: ${{ secrets.THESAURUS_API_KEY }}
 
   # Deploy application infrastructure
   deploy-app-infra:
