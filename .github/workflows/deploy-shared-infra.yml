@@ -38,7 +38,6 @@ jobs:
   deploy-shared-infra:
     name: Deploy shared template
     runs-on: ubuntu-latest
-    needs: create-infra-templates
     environment: ${{ inputs.environment }}
     env:
       TEMPLATE_ROOT: ${{ github.workspace }}/templates
