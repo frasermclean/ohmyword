@@ -13,7 +13,7 @@ public static class Program
             .ConfigureServices((context, services) =>
             {
                 // services from infrastructure project
-                services.AddInfrastructureServices(context);                
+                services.AddCosmosDbRepositories(context);                
 
                 // local application services
                 services.AddSingleton<DataReader>();

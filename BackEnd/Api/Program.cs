@@ -46,7 +46,9 @@ public static class Program
 
                 // local project services
                 services.AddDomainServices();
-                services.AddInfrastructureServices(context);
+                services.AddCosmosDbRepositories(context);
+                services.AddUsersRepository(context);
+                services.AddDictionaryServices(context);
 
                 // development services
                 if (context.HostingEnvironment.IsDevelopment())

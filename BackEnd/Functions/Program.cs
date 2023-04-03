@@ -1,4 +1,5 @@
 ﻿using Azure.Core.Serialization;
+using Azure.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OhMyWord.Domain.Services;
@@ -27,12 +28,12 @@ public static class Program
             .ConfigureServices((context, services) =>
             {
                 services.AddSingleton<IUsersService, UsersService>();
-                services.AddSingleton<IUsersRepository, UsersRepository>();
-                services.AddInfrastructureServices(context);
+                services.AddUsersRepository(context);
                 
                 // health checks
-                services.AddHealthChecks();
-                //.AddAzureTable();
+                services.AddHealthChecks()
+                    .AddAzureTable(new Uri(context.Configuration["TableService:Endpoint"] ?? string.Empty),
+                        new DefaultAzureCredential(), "users");
             })
             .Build();
 

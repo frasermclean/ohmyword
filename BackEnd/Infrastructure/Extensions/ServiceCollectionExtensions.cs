@@ -11,7 +11,7 @@ namespace OhMyWord.Infrastructure.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddInfrastructureServices(this IServiceCollection services,
+    public static IServiceCollection AddCosmosDbRepositories(this IServiceCollection services,
         HostBuilderContext context)
     {
         services.AddHttpClient();
@@ -39,6 +39,16 @@ public static class ServiceCollectionExtensions
                 .Build();
         });
 
+        // repositories
+        services.AddSingleton<IDefinitionsRepository, DefinitionsRepository>();
+        services.AddSingleton<IPlayerRepository, PlayerRepository>();
+        services.AddSingleton<IWordsRepository, WordsRepository>();
+
+        return services;
+    }
+
+    public static IServiceCollection AddUsersRepository(this IServiceCollection services, HostBuilderContext context)
+    {
         services.AddAzureClients(builder =>
         {
             if (context.HostingEnvironment.IsDevelopment())
@@ -54,17 +64,18 @@ public static class ServiceCollectionExtensions
             }
         });
 
-        // repositories
-        services.AddSingleton<IDefinitionsRepository, DefinitionsRepository>();
-        services.AddSingleton<IPlayerRepository, PlayerRepository>();
         services.AddSingleton<IUsersRepository, UsersRepository>();
-        services.AddSingleton<IWordsRepository, WordsRepository>();
 
-        // dictionary service
+        return services;
+    }
+
+    public static IServiceCollection AddDictionaryServices(this IServiceCollection services, HostBuilderContext context)
+    {
         services.AddOptions<DictionaryOptions>()
             .Bind(context.Configuration.GetSection(DictionaryOptions.SectionName))
             .ValidateDataAnnotations()
             .ValidateOnStart();
+
         services.AddHttpClient<IDictionaryService, DictionaryService>(client =>
             client.BaseAddress = new Uri(DictionaryOptions.ApiBaseUrl));
 
