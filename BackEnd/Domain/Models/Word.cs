@@ -4,6 +4,9 @@ namespace OhMyWord.Domain.Models;
 
 public class Word
 {
+    public const int MinLength = 4;
+    public const int MaxLength = 16;
+    
     public required string Id { get; init; } = string.Empty;
 
     /// <summary>
