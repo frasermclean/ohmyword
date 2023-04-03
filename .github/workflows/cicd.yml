@@ -108,7 +108,7 @@ jobs:
 
   # Build functions application
   build-functions-app:
-    uses: .github/workflows/build-functions-app.yml
+    uses: .github/workflows/build-functions-app.yml@${{ github.sha }}
 
   # Deploy shared infrastructure
   deploy-shared-infra:
