@@ -1,0 +1,42 @@
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+
+jobs:
+  deploy-app-infra:
+    name: Deploy application infrastructure
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    permissions:
+      id-token: write
+    env:
+      RESOURCE_GROUP_NAME: ${{ github.ref_name == 'main' && 'rg-ohmyword-prod' || 'rg-ohmyword-test' }}
+    steps:
+      # Check out the repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Login to Azure
+      - uses: azure/login@v1
+        name: Login to Azure
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      # Deploy infrastructure
+      - uses: azure/arm-deploy@v1
+        name: Deploy infrastructure
+        env:
+          APP_ENV: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
+          DATABASE_THROUGHPUT: ${{ github.ref_name == 'main' && '600' || '400' }}
+        with:
+          resourceGroupName: ${{ env.RESOURCE_GROUP_NAME }}
+          template: ./Deployment/Infrastructure/app/main.bicep
+          parameters: >-
+            ./Deployment/Infrastructure/app/main.parameters.json
+            appEnv=${{ env.APP_ENV }}
+            databaseThroughput=${{ env.DATABASE_THROUGHPUT }}

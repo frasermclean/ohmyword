@@ -1,0 +1,38 @@
+on:
+  workflow_call:
+
+jobs:
+  build-publish:
+    runs-on: ubuntu-latest
+    name: Build and publish
+    env:
+      BUILD_CONFIGURATION: Release
+      PUBLISH_DIRECTORY: /tmp/app
+    steps:
+      # Check out the repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Install packages
+      - name: Install packages
+        run: dotnet restore
+
+      # Build solution
+      - name: Build solution
+        run: dotnet build --configuration $BUILD_CONFIGURATION
+
+      # Test solution
+      - name: Test solution
+        run: dotnet test --configuration $BUILD_CONFIGURATION
+
+      # Publish application
+      - name: Publish application
+        working-directory: ./BackEnd/Api
+        run: dotnet publish --configuration $BUILD_CONFIGURATION --output $PUBLISH_DIRECTORY
+
+      # Upload published application artifact
+      - name: Upload published application artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: backend-app
+          path: ${{ env.PUBLISH_DIRECTORY }}

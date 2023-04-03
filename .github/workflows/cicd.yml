@@ -30,117 +30,35 @@ jobs:
 
   # Build backend application
   build-backend-app:
-    runs-on: ubuntu-latest
     name: Build backend application
-    env:
-      BUILD_CONFIGURATION: Release
-      PUBLISH_DIRECTORY: /tmp/app
-    steps:
-      # Check out the repository
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      # Install packages
-      - name: Install packages
-        run: dotnet restore
-
-      # Build solution
-      - name: Build solution
-        run: dotnet build --configuration $BUILD_CONFIGURATION
-
-      # Test solution
-      - name: Test solution
-        run: dotnet test --configuration $BUILD_CONFIGURATION
-
-      # Publish application
-      - name: Publish application
-        working-directory: ./BackEnd/Api
-        run: dotnet publish --configuration $BUILD_CONFIGURATION --output $PUBLISH_DIRECTORY
-
-      # Upload published application artifact
-      - name: Upload published application artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: backend-app
-          path: ${{ env.PUBLISH_DIRECTORY }}
+    uses: ./.github/workflows/build-backend-app.yml
 
   # Build functions application
   build-functions-app:
     name: Build functions application
     uses: ./.github/workflows/build-functions-app.yml
+    with:
+      environment: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
 
   # Deploy shared infrastructure
   deploy-shared-infra:
     name: Deploy shared infrastructure
-    runs-on: ubuntu-latest
     if: github.event_name != 'pull_request'
-    environment: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
-    permissions:
-      id-token: write
-    steps:
-      # Check out the repository
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      # Login to Azure
-      - uses: azure/login@v1
-        name: Login to Azure
-        with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-      # Deploy shared infrastructure
-      - uses: azure/arm-deploy@v1
-        name: Deploy shared infrastructure
-        with:
-          resourceGroupName: rg-ohmyword-shared
-          template: ./Deployment/Infrastructure/shared/main.bicep
-          parameters: >-
-            ./Deployment/Infrastructure/shared/main.parameters.json
-            dictionaryApiKey=${{ secrets.DICTIONARY_API_KEY }}
-            thesaurusApiKey=${{ secrets.THESAURUS_API_KEY }}
+    uses: ./.github/workflows/deploy-shared-infra.yml
+    with:
+      environment: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
 
   # Deploy application infrastructure
   deploy-app-infra:
     name: Deploy application infrastructure
-    runs-on: ubuntu-latest
     if: github.event_name != 'pull_request'
     needs:
       - build-frontend-app
       - build-backend-app
       - deploy-shared-infra
-    environment: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
-    permissions:
-      id-token: write
-    env:
-      RESOURCE_GROUP_NAME: ${{ github.ref_name == 'main' && 'rg-ohmyword-prod' || 'rg-ohmyword-test' }}
-    steps:
-      # Check out the repository
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      # Login to Azure
-      - uses: azure/login@v1
-        name: Login to Azure
-        with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-      # Deploy infrastructure
-      - uses: azure/arm-deploy@v1
-        name: Deploy infrastructure
-        env:
-          APP_ENV: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
-          DATABASE_THROUGHPUT: ${{ github.ref_name == 'main' && '600' || '400' }}
-        with:
-          resourceGroupName: ${{ env.RESOURCE_GROUP_NAME }}
-          template: ./Deployment/Infrastructure/app/main.bicep
-          parameters: >-
-            ./Deployment/Infrastructure/app/main.parameters.json
-            appEnv=${{ env.APP_ENV }}
-            databaseThroughput=${{ env.DATABASE_THROUGHPUT }}
+    uses: ./.github/workflows/deploy-app-infra.yml
+    with:
+      environment: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
 
   # Deploy frontend application
   deploy-frontend-app:
