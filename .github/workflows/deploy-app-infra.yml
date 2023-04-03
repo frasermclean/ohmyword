@@ -5,11 +5,11 @@ on:
         required: true
         type: string
     secrets:
-      azure-client-id:
+      client-id:
         required: true
-      azure-tenant-id:
+      tenant-id:
         required: true
-      azure-subscription-id:
+      subscription-id:
         required: true
 
 jobs:
@@ -30,20 +30,19 @@ jobs:
       - uses: azure/login@v1
         name: Login to Azure
         with:
-          client-id: ${{ secrets.azure-client-idD }}
-          tenant-id: ${{ secrets.azure-tenant-id }}
-          subscription-id: ${{ secrets.azure-subscription-id }}
+          client-id: ${{ secrets.client-id }}
+          tenant-id: ${{ secrets.tenant-id }}
+          subscription-id: ${{ secrets.subscription-id }}
 
       # Deploy infrastructure
       - uses: azure/arm-deploy@v1
         name: Deploy infrastructure
         env:
-          APP_ENV: ${{ inputs.environment }}
           DATABASE_THROUGHPUT: ${{ inputs.environment == 'prod' && '600' || '400' }}
         with:
           resourceGroupName: ${{ env.RESOURCE_GROUP_NAME }}
           template: ./Deployment/Infrastructure/app/main.bicep
           parameters: >-
             ./Deployment/Infrastructure/app/main.parameters.json
-            appEnv=${{ env.APP_ENV }}
+            appEnv=${{ inputs.environment }}
             databaseThroughput=${{ env.DATABASE_THROUGHPUT }}
