@@ -37,8 +37,6 @@ jobs:
   build-functions-app:
     name: Build functions application
     uses: ./.github/workflows/build-functions-app.yml
-    with:
-      environment: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
 
   # Deploy shared infrastructure
   deploy-shared-infra:
