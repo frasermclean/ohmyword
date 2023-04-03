@@ -17,9 +17,28 @@ on:
         required: true
 
 jobs:
-  deploy-shared-infra:
-    name: Deploy template
+  # Create infrastructure template artifacts
+  create-infra-templates:
+    name: Create infra-templates artifact
     runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Upload published application artifact
+        uses: actions/upload-artifact@v3
+        env:
+          TEMPLATE_ROOT: ./Deployment/Infrastructure
+        with:
+          name: infra-templates
+          path: ${{ env.TEMPLATE_ROOT }}
+
+  # Deploy shared infrastructure
+  deploy-shared-infra:
+    name: Deploy shared template
+    runs-on: ubuntu-latest
+    needs: create-infra-templates
     environment: ${{ inputs.environment }}
     env:
       TEMPLATE_ROOT: ${{ github.workspace }}/templates
@@ -48,6 +67,6 @@ jobs:
           resourceGroupName: rg-ohmyword-shared
           template: ${{ env.TEMPLATE_ROOT }}/shared/main.bicep
           parameters: >-
-            ./Deployment/Infrastructure/shared/main.parameters.json
+            ${{ env.TEMPLATE_ROOT }}/shared/main.parameters.json
             dictionaryApiKey=${{ secrets.dictionary-api-key }}
             thesaurusApiKey=${{ secrets.thesaurus-api-key }}
