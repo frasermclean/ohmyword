@@ -1,18 +1,16 @@
-import { PartOfSpeech } from './enums/part-of-speech.enum';
+import { Definition } from './definition.model';
 import { WordResponse } from './responses/word.response';
 
 export class Word {
   readonly id: string;
-  readonly value: string;
-  readonly partOfSpeech: PartOfSpeech;
-  readonly definition: string;
+  readonly length: number;
+  readonly definitions: Definition[];
   readonly lastModifiedTime: Date;
 
   constructor(init?: Partial<WordResponse>) {
     this.id = init?.id || '';
-    this.value = init?.value || '';
-    this.partOfSpeech = init?.partOfSpeech || PartOfSpeech.Noun;
-    this.definition = init?.definition || '';
+    this.length = init?.length || 0;
+    this.definitions = init?.definitions?.map((response) => new Definition(response)) || [new Definition()];
     this.lastModifiedTime = init?.lastModifiedTime ? new Date(init.lastModifiedTime) : new Date();
   }
 }

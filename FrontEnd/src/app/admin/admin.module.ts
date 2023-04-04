@@ -7,6 +7,7 @@ import { NgxsModule } from '@ngxs/store';
 // material modules
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule } from '@angular/material/dialog';
+import { MatDividerModule } from '@angular/material/divider';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -17,18 +18,37 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
+import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
-import { AdminContainerComponent } from './admin-container/admin-container.component';
+import { AdminPortalComponent } from './admin-portal/admin-portal.component';
 import { WordsState } from './words.state';
 import { WordListComponent } from './word-list/word-list.component';
-import { WordEditComponent } from './word-edit/word-edit.component';
+import { WordEditComponent } from './word-list/word-edit/word-edit.component';
+import { DefinitionEditComponent } from './word-list/word-edit/definition-edit/definition-edit.component';
 import { ConfirmationPromptComponent } from './confirmation-prompt/confirmation-prompt.component';
+import { UserListComponent } from './user-list/user-list.component';
 
-const routes: Routes = [{ path: '', component: AdminContainerComponent }];
+const routes: Routes = [
+  {
+    path: '',
+    component: AdminPortalComponent,
+    children: [
+      { path: 'words', title: 'OhMyWord - Words List', component: WordListComponent },
+      { path: 'users', title: 'OhMyWord - Users List', component: UserListComponent },
+    ],
+  },
+];
 
 @NgModule({
-  declarations: [AdminContainerComponent, WordListComponent, WordEditComponent, ConfirmationPromptComponent],
+  declarations: [
+    AdminPortalComponent,
+    WordListComponent,
+    WordEditComponent,
+    ConfirmationPromptComponent,
+    UserListComponent,
+    DefinitionEditComponent,
+  ],
   imports: [
     CommonModule,
     RouterModule.forChild(routes),
@@ -36,6 +56,7 @@ const routes: Routes = [{ path: '', component: AdminContainerComponent }];
     ReactiveFormsModule,
     MatButtonModule,
     MatDialogModule,
+    MatDividerModule,
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
@@ -46,6 +67,7 @@ const routes: Routes = [{ path: '', component: AdminContainerComponent }];
     MatSelectModule,
     MatSortModule,
     MatTableModule,
+    MatTabsModule,
     MatTooltipModule,
   ],
 })

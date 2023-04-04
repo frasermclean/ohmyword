@@ -25,17 +25,12 @@ export class AuthService {
         filter((status) => status === InteractionStatus.None),
         takeUntil(this.destroyingSubject)
       )
-      .subscribe(() => {
-        const accounts = this.msalService.instance.getAllAccounts();
-        if (accounts.length === 0) return;
+      .subscribe(async () => {
+        const account = this.getActiveAccount();
+        if (!account) return;
 
-        const account = accounts[0];
         const name = account.name || '';
-        const role =
-          account.localAccountId === '377398a2-f436-4f5f-9076-89cca8435f34' || // TODO: replace this with token claim
-          account.localAccountId === 'f803a3a2-9edc-485e-98f9-3b6fea804d91'
-            ? Role.Admin
-            : Role.User;
+        const role = (account.idTokenClaims?.role as Role) || Role.Guest;
 
         this.store.dispatch(new Auth.LoggedIn(name, role));
       });
@@ -51,5 +46,29 @@ export class AuthService {
     this.msalService.logoutRedirect({
       postLogoutRedirectUri: window.location.origin,
     });
+  }
+
+  private getActiveAccount() {
+    let account = this.msalService.instance.getActiveAccount();
+
+    if (!account && this.msalService.instance.getAllAccounts().length > 0) {
+      const accounts = this.msalService.instance.getAllAccounts();
+      account = accounts[0];
+      this.msalService.instance.setActiveAccount(account);
+    }
+
+    return account;
+  }
+
+  public async getApiAccessToken() {
+    const account = this.getActiveAccount();
+    if (!account) return '';
+
+    const tokenResult = await this.msalService.instance.acquireTokenSilent({
+      account: account,
+      scopes: environment.auth.scopes,
+    });
+
+    return tokenResult.accessToken;
   }
 }

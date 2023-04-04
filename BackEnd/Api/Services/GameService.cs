@@ -1,10 +1,10 @@
-﻿using FastEndpoints;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using OhMyWord.Api.Events.GameStateChanged;
 using OhMyWord.Api.Events.LetterHintAdded;
-using OhMyWord.Api.Models;
-using OhMyWord.Api.Options;
-using OhMyWord.Data.Enums;
+using OhMyWord.Domain.Models;
+using OhMyWord.Domain.Options;
+using OhMyWord.Domain.Services;
+using OhMyWord.Infrastructure.Enums;
 
 namespace OhMyWord.Api.Services;
 
@@ -20,15 +20,15 @@ public interface IGameService
 
     Task ExecuteGameAsync(CancellationToken gameCancellationToken);
     Task<int> ProcessGuessAsync(string connectionId, Guid roundId, string value);
-    void AddVisitor(string visitorId);
-    void RemoveVisitor(string visitorId);
+    void AddPlayer(Player player);
+    void RemovePlayer(string connectionId);
 }
 
 public class GameService : IGameService
 {
     private readonly ILogger<GameService> logger;
     private readonly IWordsService wordsService;
-    private readonly IVisitorService visitorService;
+    private readonly IPlayerService playerService;
 
     private IReadOnlyList<string> allWordIds = new List<string>();
     private Stack<string> shuffledWordIds = new();
@@ -37,12 +37,12 @@ public class GameService : IGameService
     public Round Round { get; private set; } = Round.Default;
     public GameServiceOptions Options { get; }
 
-    public GameService(ILogger<GameService> logger, IWordsService wordsService, IVisitorService visitorService,
+    public GameService(ILogger<GameService> logger, IWordsService wordsService, IPlayerService playerService,
         IOptions<GameServiceOptions> options)
     {
         this.logger = logger;
         this.wordsService = wordsService;
-        this.visitorService = visitorService;
+        this.playerService = playerService;
 
         Options = options.Value;
     }
@@ -52,7 +52,7 @@ public class GameService : IGameService
         while (!gameCancellationToken.IsCancellationRequested)
         {
             // sleep while there are no visitors
-            if (visitorService.VisitorCount == 0)
+            if (playerService.PlayerCount == 0)
             {
                 await Task.Delay(1000, gameCancellationToken);
                 continue;
@@ -63,8 +63,8 @@ public class GameService : IGameService
             await UpdateStateAsync(true, Round.Number, Round.Id, Round.EndTime, Round.WordHint);
 
             logger.LogDebug(
-                "Round: {RoundNumber} has started with {VisitorCount} visitors. Current word is: {WordId}. Round duration: {Seconds} seconds",
-                Round.Number, Round.VisitorCount, Round.Word.Id, Round.Duration.Seconds);
+                "Round: {RoundNumber} has started with {PlayerCount} visitors. Current word is: {WordId}. Round duration: {Seconds} seconds",
+                Round.Number, Round.PlayerCount, Round.Word.Id, Round.Duration.Seconds);
 
             // send all letter hints
             try
@@ -97,7 +97,7 @@ public class GameService : IGameService
         var word = await GetNextWordAsync(cancellationToken);
         var duration = TimeSpan.FromSeconds(word.Length * Options.LetterHintDelay);
 
-        return new Round(roundNumber, word, duration, visitorService.VisitorIds);
+        return new Round(roundNumber, word, duration, playerService.PlayerIds);
     }
 
     private async Task<Word> GetNextWordAsync(CancellationToken cancellationToken)
@@ -120,12 +120,15 @@ public class GameService : IGameService
         }
 
         var wordId = shuffledWordIds.Pop();
-        var word = await wordsService.GetWordAsync(wordId, cancellationToken);
+        var result = await wordsService.GetWordAsync(wordId, cancellationToken);
 
-        if (word is not null) return word;
-
-        logger.LogError("Word not found in database. WordId: {WordId}", wordId);
-        return Word.Default;
+        return result.Match(
+            word => word,
+            _ =>
+            {
+                logger.LogError("Word not found in database. WordId: {WordId}", wordId);
+                return Word.Default;
+            });
     }
 
     private static async Task SendLetterHintsAsync(Round round)
@@ -152,7 +155,7 @@ public class GameService : IGameService
 
     public async Task<int> ProcessGuessAsync(string connectionId, Guid roundId, string value)
     {
-        var visitor = visitorService.GetVisitor(connectionId);
+        var player = playerService.GetPlayer(connectionId);
 
         // if round is not active then immediately return false
         if (!State.RoundActive || roundId != Round.Id) return 0;
@@ -161,47 +164,43 @@ public class GameService : IGameService
         if (!string.Equals(value, Round.Word.Id, StringComparison.InvariantCultureIgnoreCase))
             return 0;
 
-        var guessCountIncremented = Round.IncrementGuessCount(visitor.Id);
+        var guessCountIncremented = Round.IncrementGuessCount(player.Id);
         if (!guessCountIncremented)
-            logger.LogWarning("Couldn't increment guess count of visitor with ID: {VisitorId}", visitor.Id);
+            logger.LogWarning("Couldn't increment guess count of player with ID: {PlayerId}", player.Id);
 
-        var pointsAwarded = Round.AwardVisitor(visitor.Id);
-        if (pointsAwarded == 0)
-            logger.LogWarning("Zero points were awarded to visitor with ID: {VisitorId}", visitor.Id);
+        const int pointsToAward = 100; // TODO: Calculate points dynamically
+        var pointsAwarded = Round.AwardVisitor(player.Id, pointsToAward);
+        if (!pointsAwarded)
+            logger.LogWarning("Zero points were awarded to player with ID: {PlayerId}", player.Id);
 
-        await visitorService.IncrementVisitorScoreAsync(visitor.Id, pointsAwarded);
+        await playerService.IncrementPlayerScoreAsync(player.Id,
+            pointsToAward); // TODO: Write to database after round end
 
-        // end round if all visitors have been awarded points
-        if (Round.AllVisitorsAwarded)
-            Round.EndRound(RoundEndReason.AllVisitorsAwarded);
+        // end round if all players have been awarded points
+        if (Round.AllPlayersAwarded)
+            Round.EndRound(RoundEndReason.AllPlayersAwarded);
 
-        return pointsAwarded;
+        return pointsToAward;
     }
 
-    public void AddVisitor(string visitorId)
+    public void AddPlayer(Player player)
     {
-        // visitor joined while round wasn't active
+        // player joined while round wasn't active
         if (!State.RoundActive)
             return;
 
-        var wasAdded = Round.AddVisitor(visitorId);
-        if (!wasAdded)
-            logger.LogError("Couldn't add visitor with ID {VisitorId} to round", visitorId);
+        Round.AddPlayer(player.Id);
     }
 
-    public void RemoveVisitor(string visitorId)
+    public void RemovePlayer(string connectionId)
     {
-        // visitor left while round wasn't active
+        // player left while round wasn't active
         if (!State.RoundActive)
             return;
-
-        var wasRemoved = Round.RemoveVisitor(visitorId);
-        if (!wasRemoved)
-            logger.LogError("Couldn't remove visitor with ID {VisitorId} from round", visitorId);
 
         // last visitor left while round active
-        if (visitorService.VisitorCount == 0)
-            Round.EndRound(RoundEndReason.NoVisitorsLeft);
+        if (playerService.PlayerCount == 0)
+            Round.EndRound(RoundEndReason.NoPlayersLeft);
     }
 
     private async Task UpdateStateAsync(bool roundActive, int roundNumber, Guid roundId, DateTime expiration,

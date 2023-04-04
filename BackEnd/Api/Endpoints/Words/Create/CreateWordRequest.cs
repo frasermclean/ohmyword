@@ -1,4 +1,4 @@
-﻿using OhMyWord.Api.Models;
+﻿using OhMyWord.Domain.Models;
 
 namespace OhMyWord.Api.Endpoints.Words.Create;
 

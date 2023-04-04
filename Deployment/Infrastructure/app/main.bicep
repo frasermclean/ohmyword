@@ -16,6 +16,9 @@ param domainName string
 @description('Database request units per second.')
 param databaseThroughput int
 
+@description('Database containers to create')
+param databaseContainers array
+
 @description('Application specific settings')
 param appSettings object
 
@@ -26,17 +29,28 @@ var sharedResourceGroup = 'rg-${appName}-shared'
 
 var tags = {
   workload: appName
+  category: 'app'
   environment: appEnv
 }
 
 var frontendHostname = appEnv == 'prod' ? domainName : 'test.${domainName}'
 var backendHostname = appEnv == 'prod' ? 'api.${domainName}' : 'test.api.${domainName}'
+var databaseId = '${appName}-${appEnv}'
 
 @description('Azure AD B2C client ID of single page application')
 var authClientId = appEnv == 'prod' ? 'ee95c3c0-c6f7-4675-9097-0e4d9bca14e3' : '1f427277-e4b2-4f9b-97b1-4f47f4ff03c0'
 
 @description('Azure AD B2C audience for API to validate')
 var authAudience = appEnv == 'prod' ? '7a224ce3-b92f-4525-a563-a79856d04a78' : 'f1f90898-e7c9-40b0-8ebf-103c2b0b1e72'
+
+resource virtualNetwork 'Microsoft.Network/virtualNetworks@2022-09-01' existing = {
+  name: 'vnet-${appName}'
+  scope: resourceGroup(sharedResourceGroup)
+
+  resource subnet 'subnets' existing = {
+    name: appEnv == 'prod' ? 'ProductionSubnet' : 'TestSubnet'
+  }
+}
 
 resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-08-15' existing = {
   name: 'cosmos-${appName}-shared'
@@ -58,14 +72,26 @@ resource b2cTenant 'Microsoft.AzureActiveDirectory/b2cDirectories@2021-04-01' ex
   scope: resourceGroup(sharedResourceGroup)
 }
 
+resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' existing = {
+  name: '${appName}shared'
+  scope: resourceGroup(sharedResourceGroup)
+}
+
+resource keyVault 'Microsoft.KeyVault/vaults@2022-11-01' existing = {
+  name: 'kv-${appName}-shared'
+  scope: resourceGroup(sharedResourceGroup)
+}
+
 // database
 module database 'database.bicep' = {
   name: 'database-${appEnv}'
   scope: resourceGroup(sharedResourceGroup)
   params: {
     cosmosDbAccountName: cosmosDbAccount.name
-    databaseName: 'db-${appEnv}'
-    throughput: databaseThroughput
+    databaseId: databaseId
+    databaseContainers: databaseContainers
+    databaseThroughput: databaseThroughput
+    appServicePrincipalId: appService.identity.principalId
   }
 }
 
@@ -95,6 +121,8 @@ resource appService 'Microsoft.Web/sites@2022-03-01' = {
     enabled: true
     httpsOnly: true
     serverFarmId: appServicePlan.id
+    virtualNetworkSubnetId: virtualNetwork::subnet.id
+    vnetRouteAllEnabled: true
     siteConfig: {
       linuxFxVersion: 'DOTNETCORE|7.0'
       healthCheckPath: '/health'
@@ -139,7 +167,7 @@ resource appService 'Microsoft.Web/sites@2022-03-01' = {
         }
         {
           name: 'AzureAd__SignUpSignInPolicyId'
-          value: 'B2C_1_SignUp_SignIn'
+          value: 'B2C_1A_SignUp_SignIn'
         }
         {
           name: 'Game__LetterHintDelay'
@@ -150,16 +178,24 @@ resource appService 'Microsoft.Web/sites@2022-03-01' = {
           value: string(appSettings.postRoundDelay)
         }
         {
-          name: 'CosmosDb__ConnectionString'
-          value: cosmosDbAccount.listConnectionStrings().connectionStrings[0].connectionString
+          name: 'CosmosDb__AccountEndpoint'
+          value: cosmosDbAccount.properties.documentEndpoint
         }
         {
           name: 'CosmosDb__DatabaseId'
-          value: database.outputs.databaseName
+          value: databaseId
         }
         {
           name: 'CosmosDb__ContainerIds'
-          value: '["players", "words"]'
+          value: string(map(databaseContainers, container => container.id))
+        }
+        {
+          name: 'TableService__Endpoint'
+          value: 'https://${storageAccount.name}.table.${environment().suffixes.storage}'
+        }
+        {
+          name: 'Dictionary__ApiKey'
+          value: '@Microsoft.KeyVault(VaultName=${keyVault.name};SecretName=DictionaryApiKey)'
         }
       ]
     }
@@ -191,9 +227,6 @@ resource staticWebApp 'Microsoft.Web/staticSites@2022-03-01' = {
   // custom domain
   resource customDomain 'customDomains' = {
     name: frontendHostname
-    properties: {
-      validationMethod: 'dns-txt-token'
-    }
     dependsOn: [ dnsRecords ]
   }
 }
@@ -224,11 +257,22 @@ resource managedCertificate 'Microsoft.Web/certificates@2022-03-01' = {
 }
 
 // use module to enable hostname SNI binding
-module sniEnable 'sniEnable.bicep' = {
+module sniEnable '../modules/sniEnable.bicep' = {
   name: 'sniEnable'
   params: {
     appServiceName: appService.name
     hostname: appService::hostNameBinding.name
     certificateThumbprint: managedCertificate.properties.thumbprint
+  }
+}
+
+// role assignment for app service to access storage account
+module storageAccountRoleAssignment '../modules/roleAssignment.bicep' = {
+  name: 'roleAssignment-${storageAccount.name}-${appService.name}'
+  scope: resourceGroup(sharedResourceGroup)
+  params: {
+    principalId: appService.identity.principalId
+    principalType: 'ServicePrincipal'
+    roleNames: [ 'StorageTableDataContributor', 'KeyVaultSecretsUser' ]
   }
 }

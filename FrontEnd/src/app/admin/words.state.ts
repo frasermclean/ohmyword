@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Action, Selector, State, StateContext, StateToken } from '@ngxs/store';
 import { of } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
-import { GetWordsOrderBy } from '../models/enums/get-words-order-by.enum';
+import { SearchWordsOrderBy } from '../models/enums/search-words-order-by.enum';
 import { SortDirection } from '../models/enums/sort-direction.enum';
 import { Word } from '../models/word.model';
 import { WordsService } from '../services/words.service';
@@ -16,7 +16,7 @@ interface WordsStateModel {
   limit: number;
   total: number;
   filter: string;
-  orderBy: GetWordsOrderBy;
+  orderBy: SearchWordsOrderBy;
   direction: SortDirection;
 }
 
@@ -32,38 +32,33 @@ const WORDS_STATE_TOKEN = new StateToken<WordsStateModel>('words');
     limit: 10,
     total: 0,
     filter: '',
-    orderBy: GetWordsOrderBy.Id,
-    direction: SortDirection.Ascending,
+    orderBy: SearchWordsOrderBy.Id,
+    direction: SortDirection.Ascending
   },
 })
 @Injectable()
 export class WordsState {
   constructor(private wordsService: WordsService) {}
 
-  @Action(Words.GetWords)
-  getWords(context: StateContext<WordsStateModel>, action: Words.GetWords) {
+  @Action(Words.SearchWords)
+  getWords(context: StateContext<WordsStateModel>, action: Words.SearchWords) {
     context.patchState({ status: 'busy' });
     const state = context.getState();
     return this.wordsService
-      .getWords({
+      .searchWords({
         offset: action.request.offset || state.offset,
         limit: action.request.limit || state.limit,
-        filter: typeof (action.request.filter === 'string') ? action.request.filter! : state.filter,
+        filter: action.request.filter || state.filter,
         orderBy: action.request.orderBy || state.orderBy,
         direction: action.request.direction || state.direction,
       })
       .pipe(
         tap((response) =>
-          context.setState({
+          context.patchState({
             status: 'ready',
+            total: response.total,
             words: response.words,
             error: null,
-            offset: response.offset,
-            limit: response.limit,
-            total: response.total,
-            filter: response.filter,
-            orderBy: response.orderBy,
-            direction: response.direction,
           })
         ),
         catchError((error) => {
@@ -111,7 +106,7 @@ export class WordsState {
   deleteWord(context: StateContext<WordsStateModel>, action: Words.DeleteWord) {
     context.patchState({ status: 'busy' });
     const state = context.getState();
-    return this.wordsService.deleteWord(action.partOfSpeech, action.id).pipe(
+    return this.wordsService.deleteWord(action.id).pipe(
       tap(() => {
         const words = context.getState().words.filter((word) => word.id !== action.id);
         context.patchState({ status: 'ready', total: state.total - 1, words });
@@ -119,20 +114,6 @@ export class WordsState {
       catchError((error) => {
         context.patchState({ status: 'error', error });
         return of(error);
-      })
-    );
-  }
-
-  @Action(Words.Search)
-  search(context: StateContext<WordsStateModel>, action: Words.Search) {
-    const state = context.getState();
-    return context.dispatch(
-      new Words.GetWords({
-        offset: 0,
-        limit: state.limit,
-        filter: action.filter,
-        orderBy: state.orderBy,
-        direction: SortDirection.Ascending,
       })
     );
   }

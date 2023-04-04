@@ -8,6 +8,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { getActionTypeFromInstance, NgxsModule } from '@ngxs/store';
 import { NgxsLoggerPluginModule } from '@ngxs/logger-plugin';
 import { NgxsReduxDevtoolsPluginModule } from '@ngxs/devtools-plugin';
+import { NgxsRouterPluginModule } from '@ngxs/router-plugin';
 
 // angular material modules
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -40,6 +41,7 @@ const routes: Routes = [
     NgxsModule.forRoot([AuthState], {
       developmentMode: environment.name === 'development'
     }),
+    NgxsRouterPluginModule.forRoot(),
     NgxsLoggerPluginModule.forRoot({
       disabled: environment.name !== 'development', // disable logger in production
       filter: (action) => {

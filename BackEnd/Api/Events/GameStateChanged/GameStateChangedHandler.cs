@@ -1,5 +1,4 @@
-﻿using FastEndpoints;
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 using OhMyWord.Api.Hubs;
 
 namespace OhMyWord.Api.Events.GameStateChanged;

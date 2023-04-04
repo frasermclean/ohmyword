@@ -1,8 +1,6 @@
-import { PartOfSpeech } from "../enums/part-of-speech.enum";
+import { Definition } from "../definition.model";
 
 export interface UpdateWordRequest {
   id: string;
-  value: string;
-  partOfSpeech: PartOfSpeech;
-  definition: string;
+  definitions: Definition[];
 }

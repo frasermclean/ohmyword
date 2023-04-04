@@ -1,5 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngxs/store';
+import { AuthState } from 'src/app/auth/auth.state';
 import { Hub } from '../game.actions';
 import { GameState } from '../game.state';
 
@@ -14,11 +15,14 @@ export class GameContainerComponent implements OnInit, OnDestroy {
   roundActive$ = this.store.select(GameState.roundActive);
   interval$ = this.store.select(GameState.interval);
   guessedWord$ = this.store.select(GameState.guessedWord);
-  showKeyboard = false
+  authBusy$ = this.store.select(AuthState.busy);
+  showKeyboard = false;
 
   constructor(private store: Store) {}
 
-  ngOnInit(): void {
+  ngOnInit(): void {}
+
+  connect() {
     this.store.dispatch(new Hub.Connect());
   }
 

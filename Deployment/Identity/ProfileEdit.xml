@@ -4,12 +4,12 @@
   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
   xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06"
   PolicySchemaVersion="0.3.0.0"
-  TenantId="ohmywordb2c.onmicrosoft.com"
+  TenantId="ohmywordauth.onmicrosoft.com"
   PolicyId="B2C_1A_ProfileEdit"
-  PublicPolicyUri="http://ohmywordb2c.onmicrosoft.com/B2C_1A_ProfileEdit">
+  PublicPolicyUri="http://ohmywordauth.onmicrosoft.com/B2C_1A_ProfileEdit">
 
   <BasePolicy>
-    <TenantId>ohmywordb2c.onmicrosoft.com</TenantId>
+    <TenantId>ohmywordauth.onmicrosoft.com</TenantId>
     <PolicyId>B2C_1A_TrustFrameworkExtensions</PolicyId>
   </BasePolicy>
 

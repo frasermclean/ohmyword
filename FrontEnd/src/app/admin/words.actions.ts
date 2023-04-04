@@ -1,12 +1,12 @@
-import { PartOfSpeech } from '../models/enums/part-of-speech.enum';
 import { CreateWordRequest } from '../models/requests/create-word.request';
-import { GetWordsRequest } from '../models/requests/get-words.request';
+import { SearchWordsRequest } from '../models/requests/search-words.request';
 import { UpdateWordRequest } from '../models/requests/update-word.request';
+import { Word } from '../models/word.model';
 
 export namespace Words {
-  export class GetWords {
-    static readonly type = '[Words List] Get Words';
-    constructor(public request: Partial<GetWordsRequest>) {}
+  export class SearchWords {
+    static readonly type = '[Words List] Search Words';
+    constructor(public request: Partial<SearchWordsRequest>) {}
   }
 
   export class CreateWord {
@@ -21,11 +21,6 @@ export namespace Words {
 
   export class DeleteWord {
     static readonly type = '[Words List] Delete Word';
-    constructor(public partOfSpeech: PartOfSpeech, public id: string) {}
-  }
-
-  export class Search {
-    static readonly type = '[Words List] Search';
-    constructor(public filter: string) {}
+    constructor(public id: string) {}
   }
 }

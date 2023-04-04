@@ -1,6 +1,6 @@
 import { GameStateResponse } from '../models/responses/game-state-response';
 import { LetterHintResponse } from '../models/responses/letter-hint.response';
-import { RegisterVisitorResponse } from '../models/responses/register-visitor.response';
+import { RegisterPlayerResponse } from '../models/responses/register-player.response';
 import { WordHint } from '../models/word-hint.model';
 
 /**
@@ -36,11 +36,11 @@ export namespace Game {
   export class PlayerRegistered {
     static readonly type = '[Game Service] Game.PlayerRegistered';
 
-    playerCount = this.response.visitorCount;
+    playerCount = this.response.playerCount;
     score = this.response.score;
     gameState = this.response.gameState;
 
-    constructor(private response: RegisterVisitorResponse) {}
+    constructor(private response: RegisterPlayerResponse) {}
   }
 
   export class GameStateUpdated {

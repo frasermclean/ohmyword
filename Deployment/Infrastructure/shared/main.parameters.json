@@ -13,6 +13,9 @@
     },
     "totalThroughputLimit": {
       "value": 1000
+    },
+    "allowedIpAddresses": {
+      "value": ["180.150.54.161"]
     }
   }
 }

@@ -1,6 +1,4 @@
-﻿using FastEndpoints;
-
-namespace OhMyWord.Api.Commands.SubmitGuess;
+﻿namespace OhMyWord.Api.Commands.SubmitGuess;
 
 public class SubmitGuessCommand : ICommand<SubmitGuessResponse>
 {

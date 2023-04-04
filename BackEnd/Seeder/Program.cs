@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using OhMyWord.Data.Extensions;
+using OhMyWord.Infrastructure.Extensions;
 using OhMyWord.Seeder.Services;
 
 namespace OhMyWord.Seeder;
@@ -12,8 +12,8 @@ public static class Program
         var host = Host.CreateDefaultBuilder(args)
             .ConfigureServices((context, services) =>
             {
-                // services from data project
-                services.AddDataServices(context.Configuration);                
+                // services from infrastructure project
+                services.AddCosmosDbRepositories(context);                
 
                 // local application services
                 services.AddSingleton<DataReader>();

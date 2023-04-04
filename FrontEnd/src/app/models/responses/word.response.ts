@@ -1,9 +1,9 @@
 import { PartOfSpeech } from "../enums/part-of-speech.enum";
+import { DefinitionResponse } from "./definition-response";
 
 export interface WordResponse {
   id: string;
-  value: string;
-  partOfSpeech: PartOfSpeech;
-  definition: string;
+  length: number;
+  definitions: DefinitionResponse[];
   lastModifiedTime: string;
 }

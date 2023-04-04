@@ -1,4 +1,4 @@
-﻿using OhMyWord.Data.Entities;
+﻿using OhMyWord.Infrastructure.Entities;
 using OhMyWord.Seeder.Models;
 using System.Text.Json;
 using System.Text.Json.Serialization;

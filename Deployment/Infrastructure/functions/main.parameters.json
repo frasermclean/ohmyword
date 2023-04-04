@@ -1,0 +1,21 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workload": {
+      "value": "ohmyword"
+    },
+    "category": {
+      "value": "functions"
+    },
+    "location": {
+      "value": "australiaeast"
+    },
+    "sharedResourceGroup": {
+      "value": "rg-ohmyword-shared"
+    },
+    "domainName": {
+      "value": "ohmyword.live"
+    }
+  }
+}

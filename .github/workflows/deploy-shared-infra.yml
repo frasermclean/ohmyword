@@ -1,0 +1,71 @@
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+    secrets:
+      client-id:
+        required: true
+      tenant-id:
+        required: true
+      subscription-id:
+        required: true
+      dictionary-api-key:
+        required: true
+      thesaurus-api-key:
+        required: true
+
+jobs:
+  # Create infrastructure template artifacts
+  create-infra-templates:
+    name: Create infra-templates artifact
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Upload published application artifact
+        uses: actions/upload-artifact@v3
+        env:
+          TEMPLATE_ROOT: ./Deployment/Infrastructure
+        with:
+          name: infra-templates
+          path: ${{ env.TEMPLATE_ROOT }}
+
+  # Deploy shared infrastructure
+  deploy-shared-infra:
+    name: Deploy shared template
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    env:
+      TEMPLATE_ROOT: ${{ github.workspace }}/templates
+    permissions:
+      id-token: write
+    steps:
+      # Download application artifact
+      - name: Download application artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: infra-templates
+          path: ${{ env.TEMPLATE_ROOT }}
+
+      # Login to Azure
+      - uses: azure/login@v1
+        name: Login to Azure
+        with:
+          client-id: ${{ secrets.client-id }}
+          tenant-id: ${{ secrets.tenant-id }}
+          subscription-id: ${{ secrets.subscription-id }}
+
+      # Deploy shared infrastructure
+      - uses: azure/arm-deploy@v1
+        name: Deploy shared infrastructure
+        with:
+          resourceGroupName: rg-ohmyword-shared
+          template: ${{ env.TEMPLATE_ROOT }}/shared/main.bicep
+          parameters: >-
+            ${{ env.TEMPLATE_ROOT }}/shared/main.parameters.json
+            dictionaryApiKey=${{ secrets.dictionary-api-key }}
+            thesaurusApiKey=${{ secrets.thesaurus-api-key }}
