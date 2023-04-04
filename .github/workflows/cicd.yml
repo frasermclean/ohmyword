@@ -33,11 +33,6 @@ jobs:
     name: Build backend application
     uses: ./.github/workflows/build-backend-app.yml
 
-  # Build functions application
-  build-functions-app:
-    name: Build functions application
-    uses: ./.github/workflows/build-functions-app.yml
-
   # Deploy shared infrastructure
   deploy-shared-infra:
     name: Deploy shared infrastructure
@@ -64,21 +59,6 @@ jobs:
     with:
       environment: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
       database-throughput: ${{ github.ref_name == 'main' && 600 || 400 }}
-    secrets:
-      client-id: ${{ secrets.AZURE_CLIENT_ID }}
-      tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-      subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-  # Deploy functions infrastructure
-  deploy-functions-infra:
-    name: Deploy functions infrastructure
-    if: github.event_name != 'pull_request'
-    needs:
-      - build-functions-app
-      - deploy-shared-infra
-    uses: ./.github/workflows/deploy-functions-infra.yml
-    with:
-      environment: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
     secrets:
       client-id: ${{ secrets.AZURE_CLIENT_ID }}
       tenant-id: ${{ secrets.AZURE_TENANT_ID }}
