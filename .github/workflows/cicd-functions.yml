@@ -50,7 +50,7 @@ jobs:
     secrets: inherit
 
   # Deploy functions infrastructure
-  deploy:
+  deploy-functions-infra:
     name: Deploy functions infrastructure
     runs-on: ubuntu-latest
     environment: shared
@@ -82,3 +82,29 @@ jobs:
           resourceGroupName: rg-ohmyword-functions
           template: ${{ env.TEMPLATE_ROOT }}/functions/main.bicep
           parameters: ${{ env.TEMPLATE_ROOT }}/functions/main.parameters.json
+
+  # Deploy functions application
+  deploy-functions-app:
+    name: Deploy functions application
+    runs-on: ubuntu-latest
+    environment: shared
+    needs:
+      - build-publish
+      - deploy-functions-infra
+    env:
+      PACKAGE_DIRECTORY: ./package
+    steps:
+      # Download application artifact
+      - name: Download application artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: functions-app
+          path: ${{ env.PACKAGE_DIRECTORY }}
+
+      # Publish functions application
+      - name: Publish functions application
+        uses: Azure/functions-action@v1
+        with:
+          app-name: func-ohmyword-functions
+          package: ${{ env.PACKAGE_DIRECTORY }}
+          publish-profile: ${{ secrets.AZURE_FUNCTIONS_PUBLISH_PROFILE }}
