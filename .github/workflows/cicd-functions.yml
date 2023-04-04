@@ -46,7 +46,7 @@ jobs:
   deploy-shared-infra:
     name: Deploy shared infrastructure
     uses: ./.github/workflows/deploy-shared-infra.yml
-    if: github.event_name != 'pull_request'
+    #if: github.event_name != 'pull_request'
     secrets: inherit
 
   # Deploy functions infrastructure
