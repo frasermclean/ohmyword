@@ -1,0 +1,79 @@
+name: CI/CD Functions
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - .github/workflows/cicd-functions.yml
+      - Functions/**
+      - ./Deployment/Infrastructure/functions/**
+
+jobs:
+  # Build and publish functions application
+  build-publish:
+    name: Build and publish
+    runs-on: ubuntu-latest
+    env:
+      PROJECT_DIRECTORY: ./Functions
+      BUILD_CONFIGURATION: Release
+      PUBLISH_DIRECTORY: /tmp/app
+    steps:
+      # Check out the repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Build project
+      - name: Build solution
+        working-directory: ${{ env.PROJECT_DIRECTORY }}
+        run: dotnet build --configuration $BUILD_CONFIGURATION --output $PUBLISH_DIRECTORY
+
+      # Upload published application artifact
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: functions-app
+          path: ${{ env.PUBLISH_DIRECTORY }}
+
+  # # Deploy shared infrastructure
+  # deploy-shared-infra:
+  #   name: Deploy shared infrastructure
+  #   uses: ./.github/workflows/deploy-shared-infra.yml
+  #   secrets: inherit
+  #   with:
+  #     environment: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
+
+  # # Deploy functions infrastructure
+  # deploy:
+  #   name: Deploy functions infrastructure
+  #   runs-on: ubuntu-latest
+  #   environment: ${{ inputs.environment }}
+  #   permissions:
+  #     id-token: write
+  #   env:
+  #     TEMPLATE_ROOT: ${{ github.workspace }}/templates
+  #     RESOURCE_GROUP_NAME: rg-ohmyword-functions
+  #   steps:
+  #     # Download application artifact
+  #     - name: Download application artifact
+  #       uses: actions/download-artifact@v3
+  #       with:
+  #         name: infra-templates
+  #         path: ${{ env.TEMPLATE_ROOT }}
+
+  #     # Login to Azure
+  #     - uses: azure/login@v1
+  #       name: Login to Azure
+  #       with:
+  #         client-id: ${{ secrets.client-id }}
+  #         tenant-id: ${{ secrets.tenant-id }}
+  #         subscription-id: ${{ secrets.subscription-id }}
+
+  #     # Deploy functions infrastructure
+  #     - uses: azure/arm-deploy@v1
+  #       name: Deploy infrastructure
+  #       with:
+  #         resourceGroupName: ${{ env.RESOURCE_GROUP_NAME }}
+  #         template: ${{ env.TEMPLATE_ROOT }}/functions/main.bicep
+  #         parameters: ${{ env.TEMPLATE_ROOT }}/functions/main.parameters.json
