@@ -24,9 +24,48 @@ jobs:
   # Build frontend application
   build-frontend-app:
     name: Build frontend application
-    uses: ./.github/workflows/build-frontend-app.yml
-    with:
-      build-configuration: ${{ github.ref_name == 'main' && 'production' || 'testing' }}
+    runs-on: ubuntu-latest
+    env:
+      PROJECT_DIRECTORY: ./FrontEnd
+      BUILD_CONFIGURATION: ${{ github.ref_name == 'main' && 'production' || 'testing' }}
+      BUILD_DIRECTORY: ./FrontEnd/dist
+    steps:
+      # Checkout the repository
+      - uses: actions/checkout@v3
+        name: Checkout repository
+        with:
+          submodules: true
+
+      # Setup Node environment
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+
+      # Install Angular CLI globally
+      - name: Install Angular CLI
+        run: npm install -g @angular/cli
+
+      # Install dependencies
+      - name: Install project dependencies
+        working-directory: ${{ env.PROJECT_DIRECTORY }}
+        run: npm install
+
+      # Build the client
+      - name: Build client application
+        working-directory: ${{ env.PROJECT_DIRECTORY }}
+        run: ng build --configuration $BUILD_CONFIGURATION
+
+      # Copy static web app config
+      - name: Copy static web app config
+        run: cp $PROJECT_DIRECTORY/staticwebapp.config.json $BUILD_DIRECTORY
+
+      # Upload build artifact
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: frontend-app
+          path: ${{ env.BUILD_DIRECTORY }}
 
   # Build backend application
   build-backend-app:
