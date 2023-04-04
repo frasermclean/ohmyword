@@ -70,7 +70,38 @@ jobs:
   # Build backend application
   build-backend-app:
     name: Build backend application
-    uses: ./.github/workflows/build-backend-app.yml
+    runs-on: ubuntu-latest
+    env:
+      BUILD_CONFIGURATION: Release
+      PUBLISH_DIRECTORY: /tmp/app
+    steps:
+      # Check out the repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Install packages
+      - name: Install packages
+        run: dotnet restore
+
+      # Build solution
+      - name: Build solution
+        run: dotnet build --configuration $BUILD_CONFIGURATION
+
+      # Test solution
+      - name: Test solution
+        run: dotnet test --configuration $BUILD_CONFIGURATION
+
+      # Publish application
+      - name: Publish application
+        working-directory: ./BackEnd/Api
+        run: dotnet publish --configuration $BUILD_CONFIGURATION --output $PUBLISH_DIRECTORY
+
+      # Upload published application artifact
+      - name: Upload published application artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: backend-app
+          path: ${{ env.PUBLISH_DIRECTORY }}
 
   # Deploy shared infrastructure
   deploy-shared-infra:
