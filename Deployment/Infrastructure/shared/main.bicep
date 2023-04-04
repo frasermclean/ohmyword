@@ -294,3 +294,16 @@ resource keyVault 'Microsoft.KeyVault/vaults@2022-11-01' = {
     }
   }
 }
+
+// application insights for b2c logging
+resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
+  name: toLower('ai-${appName}-auth')
+  location: location
+  tags: tags
+  kind: 'web'
+  properties: {
+    Application_Type: 'web'
+    Request_Source: 'rest'
+    WorkspaceResourceId: logAnalyticsWorkspace.id
+  }
+}
