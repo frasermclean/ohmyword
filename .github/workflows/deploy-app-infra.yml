@@ -48,6 +48,6 @@ jobs:
           resourceGroupName: ${{ env.RESOURCE_GROUP_NAME }}
           template: ${{ env.TEMPLATE_ROOT }}/app/main.bicep
           parameters: >-
-            .${{ env.TEMPLATE_ROOT }}/app/main.parameters.json
+            ${{ env.TEMPLATE_ROOT }}/app/main.parameters.json
             appEnv=${{ inputs.environment }}
-            databaseThroughput=${{ inputs.database-throughput } }}
+            databaseThroughput=${{ inputs.database-throughput }}
