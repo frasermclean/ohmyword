@@ -20,9 +20,6 @@ on:
       - BackEnd/**
       - Deployment/**
 
-env:
-  APPLICATION_ENVIRONMENT: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
-
 jobs:
   # Build frontend application
   build-frontend-app:
@@ -30,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       PROJECT_DIRECTORY: ./FrontEnd
-      BUILD_CONFIGURATION: ${{ env.APPLICATION_ENVIRONMENT == 'prod' && 'production' || 'testing' }}
+      BUILD_CONFIGURATION: ${{ github.ref_name == 'main' && 'production' || 'testing' }}
       BUILD_DIRECTORY: ./FrontEnd/dist
     steps:
       # Checkout the repository
