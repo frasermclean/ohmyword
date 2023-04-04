@@ -9,8 +9,9 @@ import { RegisterPlayerResponse } from '../models/responses/register-player.resp
 import { GuessResponse } from '../models/responses/guess.response';
 import { LetterHintResponse } from '../models/responses/letter-hint.response';
 
-import { Game, Guess, Hub } from '../game/game.actions';
+import { Game, Hub } from '../game/game.actions';
 import { GameStateResponse } from '../models/responses/game-state-response';
+import { Guess } from '../game/guess.actions';
 
 @Injectable({
   providedIn: 'root',

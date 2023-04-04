@@ -13,7 +13,7 @@
     <!-- round is active -->
     <ng-container *ngIf="roundActive$ | async; else roundEnded">
       <!-- player has guessed the word -->
-      <ng-container *ngIf="guessedWord$ | async; else guess">
+      <ng-container *ngIf="guessedCorrectly$ | async; else guess">
         <h2>You guessed it!</h2>
         <p>Waiting for other players</p>
       </ng-container>

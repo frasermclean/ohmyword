@@ -5,7 +5,7 @@ import { RoundEndSummary } from '../models/round-end-summary.model';
 import { WordHint } from '../models/word-hint.model';
 import { GameService } from '../services/game.service';
 import { SoundService } from '../services/sound.service';
-import { Game, Guess, Hub } from './game.actions';
+import { Game, Hub } from './game.actions';
 
 interface GameStateModel {
   registered: boolean;
@@ -19,21 +19,14 @@ interface GameStateModel {
   };
   wordHint: WordHint;
   score: number;
-  guessedWord: boolean;
   roundEndSummary: RoundEndSummary;
   hub: {
     connectionState: HubConnectionState;
     error: any;
   };
-  guess: {
-    value: string;
-    count: number;
-    maxLength: number;
-  };
 }
 
-const GAME_STATE_TOKEN = new StateToken<GameStateModel>('game');
-export const GUESS_DEFAULT_CHAR = '_';
+export const GAME_STATE_TOKEN = new StateToken<GameStateModel>('game');
 
 @State<GameStateModel>({
   name: GAME_STATE_TOKEN,
@@ -49,16 +42,10 @@ export const GUESS_DEFAULT_CHAR = '_';
     },
     wordHint: WordHint.default,
     score: 0,
-    guessedWord: false,
     roundEndSummary: RoundEndSummary.default,
     hub: {
       connectionState: HubConnectionState.Disconnected,
       error: null,
-    },
-    guess: {
-      value: '',
-      count: 0,
-      maxLength: 0,
     },
   },
 })
@@ -172,59 +159,6 @@ export class GameState {
     });
   }
 
-  @Action(Guess.Append)
-  append(context: StateContext<GameStateModel>, action: Guess.Append) {
-    const state = context.getState();
-    if (state.guess.value.length === state.guess.maxLength) return;
-    context.patchState({
-      guess: {
-        ...state.guess,
-        value: state.guess.value + action.value,
-      },
-    });
-  }
-
-  @Action(Guess.Backspace)
-  backspace(context: StateContext<GameStateModel>) {
-    const state = context.getState();
-    if (state.guess.value.length === 0) return;
-    context.patchState({
-      guess: {
-        ...state.guess,
-        value: state.guess.value.slice(0, -1),
-      },
-    });
-  }
-
-  @Action(Guess.Submit)
-  submit(context: StateContext<GameStateModel>) {
-    const state = context.getState();
-    context.patchState({
-      guess: {
-        ...state.guess,
-        value: '',
-        count: state.guess.count + 1,
-      },
-    });
-
-    this.gameService.submitGuess(state.roundId, state.guess.value);
-  }
-
-  @Action(Guess.Succeeded)
-  guessSucceeded(context: StateContext<GameStateModel>, action: Guess.Succeeded) {
-    const state = context.getState();
-    context.patchState({
-      score: state.score + action.points,
-      guessedWord: true,
-    });
-    this.soundService.playCorrect();
-  }
-
-  @Action(Guess.Failed)
-  guessFailed() {
-    this.soundService.playIncorrect();
-  }
-
   @Selector([GAME_STATE_TOKEN])
   static connectionState(state: GameStateModel) {
     return state.hub.connectionState;
@@ -266,11 +200,6 @@ export class GameState {
   }
 
   @Selector([GAME_STATE_TOKEN])
-  static guessedWord(state: GameStateModel) {
-    return state.guessedWord;
-  }
-
-  @Selector([GAME_STATE_TOKEN])
   static playerCount(state: GameStateModel) {
     return state.playerCount;
   }
@@ -278,10 +207,5 @@ export class GameState {
   @Selector([GAME_STATE_TOKEN])
   static roundEndSummary(state: GameStateModel) {
     return state.roundEndSummary;
-  }
-
-  @Selector([GAME_STATE_TOKEN])
-  static guessChar(state: GameStateModel) {
-    return (index: number) => state.guess.value[index] || GUESS_DEFAULT_CHAR;
   }
 }

@@ -69,31 +69,11 @@ export namespace Game {
     static readonly type = '[Game Service] Game.PlayerCountUpdated';
     constructor(public count: number) {}
   }
-}
 
-/**
- * Guess actions and events
- */
-export namespace Guess {
-  export class Append {
-    static readonly type = '[Guess Component] Guess.Append';
-    constructor(public value: string) {}
-  }
-
-  export class Backspace {
-    static readonly type = '[Guess Component] Guess.Backspace';
-  }
-
-  export class Submit {
-    static readonly type = '[Guess Component] Guess.Submit';
-  }
-
-  export class Succeeded {
-    static readonly type = '[Guess Component] Guess.Succeeded';
+  export class AddPoints {
+    static readonly type = '[Guess State] Game.AddPoints';
     constructor(public points: number) {}
   }
-
-  export class Failed {
-    static readonly type = '[Guess Component] Guess.Failed';
-  }
 }
+
+
