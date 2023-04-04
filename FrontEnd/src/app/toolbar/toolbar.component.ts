@@ -9,18 +9,14 @@ import { environment } from 'src/environments/environment';
   templateUrl: './toolbar.component.html',
   styleUrls: ['./toolbar.component.scss'],
 })
-export class ToolbarComponent implements OnInit {
+export class ToolbarComponent {
   @Input() appName = 'Oh My Word!';
-  loggedIn$ = this.store.select(AuthState.loggedIn);
+  busy$ = this.store.select(AuthState.busy);
   displayName$ = this.store.select(AuthState.displayName);
   role$ = this.store.select(AuthState.role);
   environmentName = environment.name === 'production' ? '' : environment.name;
 
   constructor(private store: Store) {}
-
-  ngOnInit(): void {
-    this.store.dispatch(new Auth.Initialize());
-  }
 
   onLogin() {
     this.store.dispatch(new Auth.Login());

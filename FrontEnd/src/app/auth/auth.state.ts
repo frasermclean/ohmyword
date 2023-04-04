@@ -6,17 +6,17 @@ import { Auth } from './auth.actions';
 
 interface AuthStateModel {
   busy: boolean;
-  loggedIn: boolean;
   name: string;
   role: Role;
 }
+
+export const DEFAULT_DISPLAY_NAME = 'Guest';
 
 const AUTH_STATE_TOKEN = new StateToken<AuthStateModel>('auth');
 @State<AuthStateModel>({
   name: AUTH_STATE_TOKEN,
   defaults: {
     busy: true,
-    loggedIn: false,
     name: '',
     role: Role.Guest,
   },
@@ -25,22 +25,9 @@ const AUTH_STATE_TOKEN = new StateToken<AuthStateModel>('auth');
 export class AuthState {
   constructor(private authService: AuthService) {}
 
-  @Action(Auth.Initialize)
-  initialize() {}
-
   @Action(Auth.Login)
   login() {
     this.authService.login();
-  }
-
-  @Action(Auth.LoggedIn)
-  loggedIn(context: StateContext<AuthStateModel>, action: Auth.LoggedIn) {
-    context.setState({
-      busy: false,
-      loggedIn: true,
-      name: action.displayName,
-      role: action.role,
-    });
   }
 
   @Action(Auth.Logout)
@@ -48,14 +35,18 @@ export class AuthState {
     this.authService.logout();
   }
 
-  @Selector()
-  static busy(state: AuthStateModel) {
-    return state.busy;
+  @Action(Auth.Complete)
+  loggedIn(context: StateContext<AuthStateModel>, action: Auth.Complete) {
+    context.setState({
+      busy: false,
+      name: action.displayName,
+      role: action.role,
+    });
   }
 
   @Selector()
-  static loggedIn(state: AuthStateModel) {
-    return state.loggedIn;
+  static busy(state: AuthStateModel) {
+    return state.busy;
   }
 
   @Selector()

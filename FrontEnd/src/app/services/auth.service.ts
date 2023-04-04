@@ -8,6 +8,7 @@ import { environment } from 'src/environments/environment';
 import { Auth } from '../auth/auth.actions';
 
 import { Role } from '../models/role.enum';
+import { DEFAULT_DISPLAY_NAME } from '../auth/auth.state';
 
 @Injectable({
   providedIn: 'root',
@@ -27,12 +28,14 @@ export class AuthService {
       )
       .subscribe(async () => {
         const account = this.getActiveAccount();
-        if (!account) return;
 
-        const name = account.name || '';
-        const role = (account.idTokenClaims?.role as Role) || Role.Guest;
-
-        this.store.dispatch(new Auth.LoggedIn(name, role));
+        if (account) {
+          const name = account.name || '';
+          const role = (account.idTokenClaims?.role as Role) || Role.Guest;
+          this.store.dispatch(new Auth.Complete(name, role));
+        } else {
+          this.store.dispatch(new Auth.Complete(DEFAULT_DISPLAY_NAME, Role.Guest));
+        }
       });
   }
 
