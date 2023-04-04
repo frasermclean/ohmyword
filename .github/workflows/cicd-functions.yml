@@ -53,7 +53,7 @@ jobs:
   deploy:
     name: Deploy functions infrastructure
     runs-on: ubuntu-latest
-    environment: functions
+    environment: shared
     needs: deploy-shared-infra
     permissions:
       id-token: write
