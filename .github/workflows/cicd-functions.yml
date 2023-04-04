@@ -42,13 +42,11 @@ jobs:
           name: functions-app
           path: ${{ env.PUBLISH_DIRECTORY }}
 
-  # # Deploy shared infrastructure
-  # deploy-shared-infra:
-  #   name: Deploy shared infrastructure
-  #   uses: ./.github/workflows/deploy-shared-infra.yml
-  #   secrets: inherit
-  #   with:
-  #     environment: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
+  # Deploy shared infrastructure
+  deploy-shared-infra:
+    name: Deploy shared infrastructure
+    uses: ./.github/workflows/deploy-shared-infra.yml
+    secrets: inherit
 
   # # Deploy functions infrastructure
   # deploy:
