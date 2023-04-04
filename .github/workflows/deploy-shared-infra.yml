@@ -1,3 +1,5 @@
+name: Deploy shared infrastructure
+
 on: workflow_call
 
 jobs:
