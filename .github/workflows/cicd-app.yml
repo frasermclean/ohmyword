@@ -119,12 +119,14 @@ jobs:
       - build-backend-app
       - deploy-shared-infra
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
+    environment: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
     permissions:
       id-token: write
     env:
-      RESOURCE_GROUP_NAME: rg-ohmyword-${{ inputs.environment }}
       TEMPLATE_ROOT: ${{ github.workspace }}/templates
+      RESOURCE_GROUP_NAME: rg-ohmyword-${{ github.ref_name == 'main' && 'prod' || 'test' }}
+      APPLICATION_ENVIRONMENT: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
+      DATABASE_THROUGHPUT: ${{ github.ref_name == 'main' && 600 || 400 }}
     steps:
       # Download application artifact
       - name: Download application artifact
@@ -149,8 +151,8 @@ jobs:
           template: ${{ env.TEMPLATE_ROOT }}/app/main.bicep
           parameters: >-
             ${{ env.TEMPLATE_ROOT }}/app/main.parameters.json
-            appEnv=${{ inputs.environment }}
-            databaseThroughput=${{ inputs.database-throughput }}
+            appEnv=${{ env.APPLICATION_ENVIRONMENT }}
+            databaseThroughput=${{ env.DATABASE_THROUGHPUT }}
 
   # Deploy frontend application
   deploy-frontend-app:
