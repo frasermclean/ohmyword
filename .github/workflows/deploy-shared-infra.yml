@@ -3,9 +3,7 @@ name: Deploy shared infrastructure
 on: workflow_call
 
 jobs:
-  # Deploy shared infrastructure
-  deploy-shared-infra:
-    name: Deploy shared template
+  deploy:
     runs-on: ubuntu-latest
     environment: shared
     env:
