@@ -1,9 +1,11 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngxs/store';
 import { AuthState } from '@state/auth/auth.state';
-import { Hub } from '../state/game/game.actions';
+
 import { GameState } from '@state/game/game.state';
 import { GuessState } from '@state/guess/guess.state';
+import { Hub } from '@state/hub/hub.actions';
+import { HubState } from '@state/hub/hub.state';
 
 @Component({
   selector: 'app-game-root',
@@ -12,7 +14,7 @@ import { GuessState } from '@state/guess/guess.state';
 })
 export class GameRootComponent implements OnInit, OnDestroy {
   registered$ = this.store.select(GameState.registered);
-  connectionState$ = this.store.select(GameState.connectionState);
+  connectionState$ = this.store.select(HubState.connectionState);
   roundActive$ = this.store.select(GameState.roundActive);
   interval$ = this.store.select(GameState.interval);
   guessedCorrectly$ = this.store.select(GuessState.guessedCorrectly);
@@ -21,9 +23,7 @@ export class GameRootComponent implements OnInit, OnDestroy {
 
   constructor(private store: Store) {}
 
-  ngOnInit(): void {}
-
-  connect() {
+  ngOnInit(): void {
     this.store.dispatch(new Hub.Connect());
   }
 

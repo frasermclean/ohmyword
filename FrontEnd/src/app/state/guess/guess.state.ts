@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Action, Selector, State, StateContext, StateToken, Store } from '@ngxs/store';
-import { GameService } from '@services/game.service';
+import { HubService } from '@services/hub.service';
 import { SoundService } from '@services/sound.service';
 import { Game } from '../game/game.actions';
 import { GAME_STATE_TOKEN } from '../game/game.state';
@@ -27,7 +27,7 @@ export const GUESS_DEFAULT_CHAR = '_';
 })
 @Injectable()
 export class GuessState {
-  constructor(private store: Store, private gameService: GameService, private soundService: SoundService) {}
+  constructor(private store: Store, private hubService: HubService, private soundService: SoundService) {}
 
   @Action(Guess.Append)
   append(context: StateContext<GuessStateModel>, action: Guess.Append) {
@@ -56,7 +56,7 @@ export class GuessState {
     });
 
     const roundId = this.store.selectSnapshot(GAME_STATE_TOKEN).roundId;
-    this.gameService.submitGuess(roundId, state.value);
+    this.hubService.submitGuess(roundId, state.value);
   }
 
   @Action(Guess.Succeeded)

@@ -9,14 +9,15 @@ import { RegisterPlayerResponse } from '@models/responses/register-player.respon
 import { GuessResponse } from '@models/responses/guess.response';
 import { LetterHintResponse } from '@models/responses/letter-hint.response';
 
-import { Game, Hub } from '@state/game/game.actions';
+import { Game } from '@state/game/game.actions';
 import { GameStateResponse } from '@models/responses/game-state-response';
 import { Guess } from '@state/guess/guess.actions';
+import { Hub } from '@state/hub/hub.actions';
 
 @Injectable({
   providedIn: 'root',
 })
-export class GameService {
+export class HubService {
   private readonly hubConnection = new HubConnectionBuilder()
     .withUrl(`https://${environment.apiHost}/hub`, {
       accessTokenFactory: () => this.authService.getApiAccessToken(),
@@ -41,7 +42,7 @@ export class GameService {
       await this.hubConnection.start();
       this.store.dispatch(new Hub.Connected());
     } catch (error) {
-      this.store.dispatch(new Hub.ConnectFailed(error));
+      this.store.dispatch(new Hub.Disconnected(error));
     }
   }
 

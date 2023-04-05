@@ -10,6 +10,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 // states
 import { GameState } from '@state/game/game.state';
 import { GuessState } from '@state/guess/guess.state';
+import { HubState } from '@state/hub/hub.state';
 
 // components
 import { GameRootComponent } from './game.component';
@@ -37,7 +38,7 @@ const routes: Routes = [{ path: '', component: GameRootComponent }];
   imports: [
     CommonModule,
     RouterModule.forChild(routes),
-    NgxsModule.forFeature([GameState, GuessState]),
+    NgxsModule.forFeature([GameState, GuessState, HubState]),
     MatProgressBarModule,
     MatProgressSpinnerModule,
   ],

@@ -1,12 +1,11 @@
 import { Injectable } from '@angular/core';
-import { HubConnectionState } from '@microsoft/signalr';
 import { Action, Selector, State, StateContext, StateToken } from '@ngxs/store';
 import { RoundEndSummary } from '@models/round-end-summary.model';
 import { WordHint } from '@models/word-hint.model';
-import { GameService } from '@services/game.service';
-import { SoundService } from '@services/sound.service';
-import { Game, Hub } from './game.actions';
+import { HubService } from '@services/hub.service';
+import { Game } from './game.actions';
 import { Guess } from '../guess/guess.actions';
+import { Hub } from '@state/hub/hub.actions';
 
 interface GameStateModel {
   registered: boolean;
@@ -21,10 +20,6 @@ interface GameStateModel {
   wordHint: WordHint;
   score: number;
   roundEndSummary: RoundEndSummary;
-  hub: {
-    connectionState: HubConnectionState;
-    error: any;
-  };
 }
 
 export const GAME_STATE_TOKEN = new StateToken<GameStateModel>('game');
@@ -44,15 +39,16 @@ export const GAME_STATE_TOKEN = new StateToken<GameStateModel>('game');
     wordHint: WordHint.default,
     score: 0,
     roundEndSummary: RoundEndSummary.default,
-    hub: {
-      connectionState: HubConnectionState.Disconnected,
-      error: null,
-    },
   },
 })
 @Injectable()
 export class GameState {
-  constructor(private gameService: GameService, private soundService: SoundService) {}
+  constructor(private hubService: HubService) {}
+
+  @Action(Game.RegisterPlayer)
+  registerPlayer(context: StateContext<GameStateModel>) {
+    this.hubService.registerPlayer();
+  }
 
   @Action(Game.PlayerRegistered)
   registered(context: StateContext<GameStateModel>, action: Game.PlayerRegistered) {
@@ -114,66 +110,11 @@ export class GameState {
     context.patchState({ score: currentScore + action.points });
   }
 
-  @Action(Hub.Connect)
-  connect(context: StateContext<GameStateModel>) {
-    const state = context.getState();
-    context.patchState({
-      hub: {
-        ...state.hub,
-        connectionState: HubConnectionState.Connecting,
-      },
-    });
-    this.gameService.connect();
-  }
-
-  @Action(Hub.Disconnect)
-  disconnect(context: StateContext<GameStateModel>) {
-    const state = context.getState();
-    context.patchState({
-      hub: {
-        ...state.hub,
-        connectionState: HubConnectionState.Disconnecting,
-      },
-    });
-    this.gameService.disconnect();
-  }
-
-  @Action(Hub.Connected)
-  connected(context: StateContext<GameStateModel>) {
-    const state = context.getState();
-    context.patchState({
-      hub: {
-        ...state.hub,
-        connectionState: HubConnectionState.Connected,
-      },
-    });
-    this.gameService.registerPlayer();
-  }
-
   @Action(Hub.Disconnected)
-  disconnected(context: StateContext<GameStateModel>, action: Hub.Disconnected) {
+  hubDisconnected(context: StateContext<GameStateModel>) {
     context.patchState({
       registered: false,
-      hub: {
-        connectionState: HubConnectionState.Disconnected,
-        error: action.error,
-      },
     });
-  }
-
-  @Action(Hub.ConnectFailed)
-  connectionError(context: StateContext<GameStateModel>, action: Hub.ConnectFailed) {
-    context.patchState({
-      hub: {
-        connectionState: HubConnectionState.Disconnected,
-        error: action.error,
-      },
-    });
-  }
-
-  @Selector([GAME_STATE_TOKEN])
-  static connectionState(state: GameStateModel) {
-    return state.hub.connectionState;
   }
 
   @Selector([GAME_STATE_TOKEN])
