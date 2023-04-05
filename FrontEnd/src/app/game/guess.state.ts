@@ -73,6 +73,16 @@ export class GuessState {
     this.soundService.playIncorrect();
   }
 
+  @Action(Guess.SetNewWord)
+  setNewWord(context: StateContext<GuessStateModel>, action: Guess.SetNewWord) {
+    context.setState({
+      value: '',
+      count: 0,
+      maxLength: action.wordHint.length,
+      guessedCorrectly: false,
+    });
+  }
+
   @Selector([GUESS_STATE_TOKEN])
   static guessedCorrectly(state: GuessStateModel) {
     return state.guessedCorrectly;
@@ -80,6 +90,6 @@ export class GuessState {
 
   @Selector([GUESS_STATE_TOKEN])
   static guessChar(state: GuessStateModel) {
-    return (index: number) => state.value.length === 0 ? GUESS_DEFAULT_CHAR : state.value[index];
+    return (index: number) => (state.value.length === 0 ? GUESS_DEFAULT_CHAR : state.value[index]);
   }
 }
