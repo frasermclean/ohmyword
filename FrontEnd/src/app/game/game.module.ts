@@ -4,6 +4,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { NgxsModule } from '@ngxs/store';
 
 // material modules
+import { MatButtonModule } from '@angular/material/button';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
@@ -39,6 +40,7 @@ const routes: Routes = [{ path: '', component: GameRootComponent }];
     CommonModule,
     RouterModule.forChild(routes),
     NgxsModule.forFeature([GameState, GuessState, HubState]),
+    MatButtonModule,
     MatProgressBarModule,
     MatProgressSpinnerModule,
   ],

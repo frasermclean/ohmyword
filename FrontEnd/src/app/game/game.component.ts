@@ -24,10 +24,14 @@ export class GameRootComponent implements OnInit, OnDestroy {
   constructor(private store: Store) {}
 
   ngOnInit(): void {
-    this.store.dispatch(new Hub.Connect());
+    this.connect();
   }
 
   ngOnDestroy(): void {
     this.store.dispatch(new Hub.Disconnect());
+  }
+
+  connect() {
+    this.store.dispatch(new Hub.Connect());
   }
 }
