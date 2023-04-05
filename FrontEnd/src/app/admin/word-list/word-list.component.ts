@@ -11,8 +11,8 @@ import { SortDirection } from '@models/enums/sort-direction.enum';
 import { SearchWordsRequest } from '@models/requests/search-words.request';
 import { Word } from '@models/word.model';
 import { WordEditComponent, WordEditData, WordEditResult } from './word-edit/word-edit.component';
-import { Words } from '../words.actions';
-import { WordsState } from '../words.state';
+import { Words } from '@state/words/words.actions';
+import { WordsState } from '@state/words/words.state';
 import {
   ConfirmationPromptComponent,
   ConfirmationPromptData,

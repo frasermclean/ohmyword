@@ -5,10 +5,10 @@ import { Store } from '@ngxs/store';
 import { Subject } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
-import { Auth } from '../auth/auth.actions';
+import { Auth } from '../state/auth/auth.actions';
 
 import { Role } from '@models/role.enum';
-import { DEFAULT_DISPLAY_NAME } from '../auth/auth.state';
+import { DEFAULT_DISPLAY_NAME } from '../state/auth/auth.state';
 
 @Injectable({
   providedIn: 'root',

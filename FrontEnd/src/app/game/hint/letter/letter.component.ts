@@ -1,8 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Store } from '@ngxs/store';
 import { map } from 'rxjs/operators';
-import { GuessState, GUESS_DEFAULT_CHAR } from '../../guess.state';
-
+import { GuessState, GUESS_DEFAULT_CHAR } from '@state/guess/guess.state';
 
 @Component({
   selector: 'app-letter',

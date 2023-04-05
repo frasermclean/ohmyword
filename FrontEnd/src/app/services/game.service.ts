@@ -2,16 +2,16 @@ import { Injectable } from '@angular/core';
 import { HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
 import { Store } from '@ngxs/store';
 import { environment } from 'src/environments/environment';
-import { FingerprintService } from './fingerprint.service';
-import { AuthService } from './auth.service';
+import { FingerprintService } from '@services/fingerprint.service';
+import { AuthService } from '@services/auth.service';
 
 import { RegisterPlayerResponse } from '@models/responses/register-player.response';
 import { GuessResponse } from '@models/responses/guess.response';
 import { LetterHintResponse } from '@models/responses/letter-hint.response';
 
-import { Game, Hub } from '../game/game.actions';
+import { Game, Hub } from '@state/game/game.actions';
 import { GameStateResponse } from '@models/responses/game-state-response';
-import { Guess } from '../game/guess.actions';
+import { Guess } from '@state/guess/guess.actions';
 
 @Injectable({
   providedIn: 'root',

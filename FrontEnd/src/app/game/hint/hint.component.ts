@@ -1,6 +1,6 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { Store } from '@ngxs/store';
-import { GameState } from '../game.state';
+import { GameState } from '@state/game/game.state';
 
 export interface LetterData {
   hint: string | null;

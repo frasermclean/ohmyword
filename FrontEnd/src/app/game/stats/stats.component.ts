@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Store } from '@ngxs/store';
-import { GameState } from '../game.state';
+import { GameState } from '@state/game/game.state';
 
 @Component({
   selector: 'app-stats',

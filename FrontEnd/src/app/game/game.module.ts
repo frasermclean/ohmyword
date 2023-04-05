@@ -8,8 +8,8 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 // states
-import { GameState } from './game.state';
-import { GuessState } from './guess.state';
+import { GameState } from '@state/game/game.state';
+import { GuessState } from '@state/guess/guess.state';
 
 // components
 import { HintComponent } from './hint/hint.component';

@@ -1,9 +1,9 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngxs/store';
-import { AuthState } from 'src/app/auth/auth.state';
-import { Hub } from '../game.actions';
-import { GameState } from '../game.state';
-import { GuessState } from '../guess.state';
+import { AuthState } from '@state/auth/auth.state';
+import { Hub } from '../../state/game/game.actions';
+import { GameState } from '@state/game/game.state';
+import { GuessState } from '@state/guess/guess.state';
 
 @Component({
   selector: 'game-container',

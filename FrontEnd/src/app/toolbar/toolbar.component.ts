@@ -1,7 +1,7 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { Store } from '@ngxs/store';
-import { Auth } from '../auth/auth.actions';
-import { AuthState } from '../auth/auth.state';
+import { Auth } from '@state/auth/auth.actions';
+import { AuthState } from '@state/auth/auth.state';
 import { environment } from 'src/environments/environment';
 
 @Component({
@@ -11,6 +11,7 @@ import { environment } from 'src/environments/environment';
 })
 export class ToolbarComponent {
   @Input() appName = 'Oh My Word!';
+
   busy$ = this.store.select(AuthState.busy);
   displayName$ = this.store.select(AuthState.displayName);
   role$ = this.store.select(AuthState.role);
