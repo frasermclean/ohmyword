@@ -10,17 +10,12 @@ import { NgxsLoggerPluginModule } from '@ngxs/logger-plugin';
 import { NgxsReduxDevtoolsPluginModule } from '@ngxs/devtools-plugin';
 import { NgxsRouterPluginModule } from '@ngxs/router-plugin';
 
-// angular material modules
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatButtonModule } from '@angular/material/button';
-
 import { MsalModule, MsalGuard, MsalInterceptor, MsalRedirectComponent } from '@azure/msal-angular';
-
 import { msalInstance, guardConfig, interceptorConfig } from './auth.config';
 
+import { CoreModule } from './core/core.module';
 import { environment } from 'src/environments/environment';
 import { AppComponent } from './app.component';
-import { ToolbarComponent } from './toolbar/toolbar.component';
 import { Game } from '@state/game/game.actions';
 import { AuthState } from '@state/auth/auth.state';
 
@@ -35,7 +30,7 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  declarations: [AppComponent, ToolbarComponent],
+  declarations: [AppComponent],
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
@@ -57,9 +52,8 @@ const routes: Routes = [
     NgxsReduxDevtoolsPluginModule.forRoot({
       disabled: environment.name !== 'development', // disable devtools in production
     }),
-    MatToolbarModule,
-    MatButtonModule,
     MsalModule.forRoot(msalInstance, guardConfig, interceptorConfig),
+    CoreModule,
   ],
   providers: [{ provide: HTTP_INTERCEPTORS, useClass: MsalInterceptor, multi: true }, MsalGuard],
   bootstrap: [AppComponent, MsalRedirectComponent],
