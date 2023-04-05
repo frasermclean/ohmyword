@@ -108,6 +108,12 @@ export class GameState {
     context.patchState({ playerCount: action.count });
   }
 
+  @Action(Game.AddPoints)
+  addPoints(context: StateContext<GameStateModel>, action: Game.AddPoints) {
+    const currentScore = context.getState().score;
+    context.patchState({ score: currentScore + action.points });
+  }
+
   @Action(Hub.Connect)
   connect(context: StateContext<GameStateModel>) {
     const state = context.getState();
