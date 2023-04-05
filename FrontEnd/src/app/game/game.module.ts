@@ -19,7 +19,7 @@ import { HintComponent } from './hint/hint.component';
 import { GuessComponent } from './guess/guess.component';
 import { LetterComponent } from './hint/letter/letter.component';
 import { CountdownComponent } from './countdown/countdown.component';
-import { RoundEndSummaryComponent } from './round-end-summary/round-end-summary.component';
+import { RoundSummaryComponent } from './round-summary/round-summary.component';
 import { KeyboardComponent } from './keyboard/keyboard.component';
 import { StatsComponent } from './stats/stats.component';
 
@@ -32,7 +32,7 @@ const routes: Routes = [{ path: '', component: GameRootComponent }];
     GameRootComponent,
     LetterComponent,
     CountdownComponent,
-    RoundEndSummaryComponent,
+    RoundSummaryComponent,
     KeyboardComponent,
     StatsComponent,
   ],

@@ -1,6 +1,6 @@
 import { RoundEndReason } from './enums/round-end-reason';
 
-export class RoundEndSummary {
+export class RoundSummary {
   readonly word: string;
   readonly endReason: RoundEndReason;
   readonly nextRoundStart: Date;
@@ -10,6 +10,4 @@ export class RoundEndSummary {
     this.endReason = endReason;
     this.nextRoundStart = nextRoundStart;
   }
-
-  static default = new RoundEndSummary('', RoundEndReason.Timeout, new Date());
 }

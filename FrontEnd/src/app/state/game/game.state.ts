@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Action, Selector, State, StateContext, StateToken } from '@ngxs/store';
-import { RoundEndSummary } from '@models/round-end-summary.model';
+import { RoundSummary } from '@models/round-summary.model';
 import { WordHint } from '@models/word-hint.model';
 import { HubService } from '@services/hub.service';
 import { Game } from './game.actions';
@@ -19,7 +19,7 @@ interface GameStateModel {
   };
   wordHint: WordHint;
   score: number;
-  roundEndSummary: RoundEndSummary;
+  roundSummary: RoundSummary | null;
 }
 
 export const GAME_STATE_TOKEN = new StateToken<GameStateModel>('game');
@@ -38,7 +38,7 @@ export const GAME_STATE_TOKEN = new StateToken<GameStateModel>('game');
     },
     wordHint: WordHint.default,
     score: 0,
-    roundEndSummary: RoundEndSummary.default,
+    roundSummary: null,
   },
 })
 @Injectable()
@@ -158,7 +158,7 @@ export class GameState {
   }
 
   @Selector([GAME_STATE_TOKEN])
-  static roundEndSummary(state: GameStateModel) {
-    return state.roundEndSummary;
+  static roundSummary(state: GameStateModel) {
+    return state.roundSummary;
   }
 }
