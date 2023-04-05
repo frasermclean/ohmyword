@@ -2,8 +2,8 @@ import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angu
 import { FormBuilder, NonNullableFormBuilder, Validators } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { Definition } from 'src/app/models/definition.model';
-import { PartOfSpeech } from 'src/app/models/enums/part-of-speech.enum';
+import { Definition } from '@models/definition.model';
+import { PartOfSpeech } from '@models/enums/part-of-speech.enum';
 
 const partOfSpeechOptions = [
   { value: PartOfSpeech.Noun, label: 'Noun' },

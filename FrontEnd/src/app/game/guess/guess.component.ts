@@ -1,6 +1,6 @@
 import { Component, EventEmitter, HostListener, OnInit, Output } from '@angular/core';
-import { GuessResponse } from 'src/app/models/responses/guess.response';
 import { Store } from '@ngxs/store';
+import { GuessResponse } from '@models/responses/guess.response';
 import { Guess } from '../guess.actions';
 
 @Component({

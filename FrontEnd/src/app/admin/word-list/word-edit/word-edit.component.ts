@@ -1,9 +1,9 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { NonNullableFormBuilder, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { Definition } from 'src/app/models/definition.model';
-import { PartOfSpeech } from 'src/app/models/enums/part-of-speech.enum';
-import { Word } from 'src/app/models/word.model';
+import { Definition } from '@models/definition.model';
+import { PartOfSpeech } from '@models/enums/part-of-speech.enum';
+import { Word } from '@models/word.model';
 
 const partOfSpeechOptions = [
   { value: PartOfSpeech.Noun, label: 'Noun' },

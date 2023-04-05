@@ -1,4 +1,4 @@
-import { WordHint } from "../models/word-hint.model";
+import { WordHint } from "@models/word-hint.model";
 
 /**
  * Guess actions and events

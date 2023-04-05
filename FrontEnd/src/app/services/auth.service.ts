@@ -7,7 +7,7 @@ import { filter, takeUntil } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { Auth } from '../auth/auth.actions';
 
-import { Role } from '../models/role.enum';
+import { Role } from '@models/role.enum';
 import { DEFAULT_DISPLAY_NAME } from '../auth/auth.state';
 
 @Injectable({

@@ -1,7 +1,6 @@
-import { CreateWordRequest } from '../models/requests/create-word.request';
-import { SearchWordsRequest } from '../models/requests/search-words.request';
-import { UpdateWordRequest } from '../models/requests/update-word.request';
-import { Word } from '../models/word.model';
+import { CreateWordRequest } from '@models/requests/create-word.request';
+import { SearchWordsRequest } from '@models/requests/search-words.request';
+import { UpdateWordRequest } from '@models/requests/update-word.request';
 
 export namespace Words {
   export class SearchWords {

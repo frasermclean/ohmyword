@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Action, Selector, State, StateContext, StateToken, Store } from '@ngxs/store';
-import { GameService } from '../services/game.service';
-import { SoundService } from '../services/sound.service';
+import { GameService } from '@services/game.service';
+import { SoundService } from '@services/sound.service';
 import { Game } from './game.actions';
 import { GAME_STATE_TOKEN } from './game.state';
 import { Guess } from './guess.actions';

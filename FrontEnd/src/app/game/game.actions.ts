@@ -1,7 +1,7 @@
-import { GameStateResponse } from '../models/responses/game-state-response';
-import { LetterHintResponse } from '../models/responses/letter-hint.response';
-import { RegisterPlayerResponse } from '../models/responses/register-player.response';
-import { WordHint } from '../models/word-hint.model';
+import { GameStateResponse } from '@models/responses/game-state-response';
+import { LetterHintResponse } from '@models/responses/letter-hint.response';
+import { RegisterPlayerResponse } from '@models/responses/register-player.response';
+import { WordHint } from '@models/word-hint.model';
 
 /**
  * Hub actions and events

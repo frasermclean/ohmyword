@@ -2,10 +2,10 @@ import { Injectable } from '@angular/core';
 import { Action, Selector, State, StateContext, StateToken } from '@ngxs/store';
 import { of } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
-import { SearchWordsOrderBy } from '../models/enums/search-words-order-by.enum';
-import { SortDirection } from '../models/enums/sort-direction.enum';
-import { Word } from '../models/word.model';
-import { WordsService } from '../services/words.service';
+import { SearchWordsOrderBy } from '@models/enums/search-words-order-by.enum';
+import { SortDirection } from '@models/enums/sort-direction.enum';
+import { Word } from '@models/word.model';
+import { WordsService } from '@services/words.service';
 import { Words } from './words.actions';
 
 interface WordsStateModel {

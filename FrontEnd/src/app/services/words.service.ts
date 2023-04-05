@@ -2,13 +2,12 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
-import { PartOfSpeech } from '../models/enums/part-of-speech.enum';
-import { CreateWordRequest } from '../models/requests/create-word.request';
-import { SearchWordsRequest } from '../models/requests/search-words.request';
-import { UpdateWordRequest } from '../models/requests/update-word.request';
-import { SearchWordsResponse } from '../models/responses/search-words.response';
-import { WordResponse } from '../models/responses/word.response';
-import { Word } from '../models/word.model';
+import { CreateWordRequest } from '@models/requests/create-word.request';
+import { SearchWordsRequest } from '@models/requests/search-words.request';
+import { UpdateWordRequest } from '@models/requests/update-word.request';
+import { SearchWordsResponse } from '@models/responses/search-words.response';
+import { WordResponse } from '@models/responses/word.response';
+import { Word } from '@models/word.model';
 
 @Injectable({
   providedIn: 'root',

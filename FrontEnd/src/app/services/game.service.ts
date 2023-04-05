@@ -5,12 +5,12 @@ import { environment } from 'src/environments/environment';
 import { FingerprintService } from './fingerprint.service';
 import { AuthService } from './auth.service';
 
-import { RegisterPlayerResponse } from '../models/responses/register-player.response';
-import { GuessResponse } from '../models/responses/guess.response';
-import { LetterHintResponse } from '../models/responses/letter-hint.response';
+import { RegisterPlayerResponse } from '@models/responses/register-player.response';
+import { GuessResponse } from '@models/responses/guess.response';
+import { LetterHintResponse } from '@models/responses/letter-hint.response';
 
 import { Game, Hub } from '../game/game.actions';
-import { GameStateResponse } from '../models/responses/game-state-response';
+import { GameStateResponse } from '@models/responses/game-state-response';
 import { Guess } from '../game/guess.actions';
 
 @Injectable({

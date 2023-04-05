@@ -1,4 +1,4 @@
-import { Role } from '../models/role.enum';
+import { Role } from '@models/role.enum';
 
 export namespace Auth {
   export class Login {

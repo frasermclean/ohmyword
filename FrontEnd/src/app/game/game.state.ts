@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HubConnectionState } from '@microsoft/signalr';
 import { Action, Selector, State, StateContext, StateToken } from '@ngxs/store';
-import { RoundEndSummary } from '../models/round-end-summary.model';
-import { WordHint } from '../models/word-hint.model';
-import { GameService } from '../services/game.service';
-import { SoundService } from '../services/sound.service';
+import { RoundEndSummary } from '@models/round-end-summary.model';
+import { WordHint } from '@models/word-hint.model';
+import { GameService } from '@services/game.service';
+import { SoundService } from '@services/sound.service';
 import { Game, Hub } from './game.actions';
 import { Guess } from './guess.actions';
 
