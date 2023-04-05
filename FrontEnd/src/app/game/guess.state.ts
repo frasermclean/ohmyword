@@ -48,7 +48,7 @@ export class GuessState {
   }
 
   @Action(Guess.Submit)
-  submit(context: StateContext<GuessStateModel>, action: Guess.Submit) {
+  submit(context: StateContext<GuessStateModel>) {
     const state = context.getState();
     context.patchState({
       value: '',
@@ -90,6 +90,6 @@ export class GuessState {
 
   @Selector([GUESS_STATE_TOKEN])
   static guessChar(state: GuessStateModel) {
-    return (index: number) => (state.value.length === 0 ? GUESS_DEFAULT_CHAR : state.value[index]);
+    return (index: number) => (index < state.value.length ? state.value[index] : GUESS_DEFAULT_CHAR);
   }
 }
