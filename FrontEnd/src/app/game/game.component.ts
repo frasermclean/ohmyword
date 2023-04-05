@@ -1,16 +1,16 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngxs/store';
 import { AuthState } from '@state/auth/auth.state';
-import { Hub } from '../../state/game/game.actions';
+import { Hub } from '../state/game/game.actions';
 import { GameState } from '@state/game/game.state';
 import { GuessState } from '@state/guess/guess.state';
 
 @Component({
-  selector: 'game-container',
-  templateUrl: './game-container.component.html',
-  styleUrls: ['./game-container.component.scss'],
+  selector: 'app-game-root',
+  templateUrl: './game.component.html',
+  styleUrls: ['./game.component.scss'],
 })
-export class GameContainerComponent implements OnInit, OnDestroy {
+export class GameRootComponent implements OnInit, OnDestroy {
   registered$ = this.store.select(GameState.registered);
   connectionState$ = this.store.select(GameState.connectionState);
   roundActive$ = this.store.select(GameState.roundActive);

@@ -12,22 +12,22 @@ import { GameState } from '@state/game/game.state';
 import { GuessState } from '@state/guess/guess.state';
 
 // components
+import { GameRootComponent } from './game.component';
 import { HintComponent } from './hint/hint.component';
 import { GuessComponent } from './guess/guess.component';
-import { GameContainerComponent } from './game-container/game-container.component';
 import { LetterComponent } from './hint/letter/letter.component';
 import { CountdownComponent } from './countdown/countdown.component';
 import { RoundEndSummaryComponent } from './round-end-summary/round-end-summary.component';
 import { KeyboardComponent } from './keyboard/keyboard.component';
 import { StatsComponent } from './stats/stats.component';
 
-const routes: Routes = [{ path: '', component: GameContainerComponent }];
+const routes: Routes = [{ path: '', component: GameRootComponent }];
 
 @NgModule({
   declarations: [
     HintComponent,
     GuessComponent,
-    GameContainerComponent,
+    GameRootComponent,
     LetterComponent,
     CountdownComponent,
     RoundEndSummaryComponent,

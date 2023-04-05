@@ -9,7 +9,7 @@
   <div *ngIf="!(busy$ | async)" class="user-info">
     <span>{{ displayName$ | async }}</span>
     <ng-container *ngIf="role$ | async as role">
-      <button *ngIf="role === 'admin'" mat-raised-button color="accent" routerLink="/admin">ADMIN</button>
+      <button *ngIf="role === 'admin'" mat-raised-button color="accent" routerLink="/admin/words">ADMIN</button>
       <button *ngIf="role !== 'guest'" mat-raised-button color="accent" (click)="onLogout()">LOGOUT</button>
       <button *ngIf="role === 'guest'" mat-raised-button color="accent" (click)="onLogin()">LOGIN / REGISTER</button>
     </ng-container>
