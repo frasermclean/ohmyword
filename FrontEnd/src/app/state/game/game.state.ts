@@ -17,7 +17,7 @@ interface GameStateModel {
     startDate: Date;
     endDate: Date;
   };
-  wordHint: WordHint;
+  wordHint: WordHint | null;
   score: number;
   roundSummary: RoundSummary | null;
 }
@@ -36,7 +36,7 @@ export const GAME_STATE_TOKEN = new StateToken<GameStateModel>('game');
       startDate: new Date(),
       endDate: new Date(),
     },
-    wordHint: WordHint.default,
+    wordHint: null,
     score: 0,
     roundSummary: null,
   },
@@ -59,7 +59,7 @@ export class GameState {
       roundActive: action.gameState.roundActive,
       roundNumber: action.gameState.roundNumber,
       roundId: action.gameState.roundId,
-      wordHint: new WordHint(action.gameState.wordHint),
+      wordHint: action.gameState.wordHint ? new WordHint(action.gameState.wordHint) : null,
       interval: {
         startDate: new Date(action.gameState.intervalStart),
         endDate: new Date(action.gameState.intervalEnd),
@@ -74,6 +74,7 @@ export class GameState {
       roundNumber: action.roundNumber,
       roundId: action.roundId,
       wordHint: action.wordHint,
+      roundSummary: action.roundSummary,
       interval: {
         startDate: new Date(action.intervalStart),
         endDate: new Date(action.intervalEnd),
@@ -89,6 +90,10 @@ export class GameState {
   @Action(Game.LetterHintReceived)
   letterHintReceived(context: StateContext<GameStateModel>, action: Game.LetterHintReceived) {
     const state = context.getState();
+    if (!state.wordHint) {
+      console.warn('Received letter hint but word hint is null');
+      return;
+    }
     const letterHints = [...state.wordHint.letterHints];
     letterHints[action.position - 1] = action.value;
     context.patchState({

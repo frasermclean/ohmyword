@@ -15,9 +15,6 @@ public interface IGameService
     /// </summary>    
     GameState State { get; }
 
-    Round Round { get; }
-    GameServiceOptions Options { get; }
-
     Task ExecuteGameAsync(CancellationToken gameCancellationToken);
     Task<int> ProcessGuessAsync(string connectionId, Guid roundId, string value);
     void AddPlayer(Player player);
@@ -60,7 +57,7 @@ public class GameService : IGameService
 
             // start new round
             Round = await CreateRoundAsync(gameCancellationToken);
-            await UpdateStateAsync(true, Round.Number, Round.Id, Round.EndTime, Round.WordHint);
+            await UpdateStateAsync(true, Round, Round.EndTime);
 
             logger.LogDebug(
                 "Round: {RoundNumber} has started with {PlayerCount} visitors. Current word is: {WordId}. Round duration: {Seconds} seconds",
@@ -78,9 +75,7 @@ public class GameService : IGameService
 
             // end current round
             var postRoundDelay = TimeSpan.FromSeconds(Options.PostRoundDelay);
-            var nextRoundStart = DateTime.UtcNow + postRoundDelay;
-            await UpdateStateAsync(false, Round.Number, Round.Id, nextRoundStart);
-
+            await UpdateStateAsync(false, Round, DateTime.UtcNow + postRoundDelay);
 
             Round.Dispose();
 
@@ -203,16 +198,21 @@ public class GameService : IGameService
             Round.EndRound(RoundEndReason.NoPlayersLeft);
     }
 
-    private async Task UpdateStateAsync(bool roundActive, int roundNumber, Guid roundId, DateTime expiration,
-        WordHint? wordHint = default)
+    private async Task UpdateStateAsync(bool roundActive, Round round, DateTime intervalEnd)
     {
         State = new GameState
         {
             RoundActive = roundActive,
-            RoundNumber = roundNumber,
-            RoundId = roundId,
-            IntervalEnd = expiration,
-            WordHint = wordHint ?? WordHint.Default
+            RoundNumber = round.Number,
+            RoundId = round.Id,
+            IntervalEnd = intervalEnd,
+            WordHint = round.WordHint,
+            RoundSummary = !roundActive
+                ? new RoundSummary
+                {
+                    Word = round.Word.Id, PartOfSpeech = round.WordHint.PartOfSpeech, EndReason = round.EndReason,
+                }
+                : default
         };
 
         await new GameStateChangedEvent(State).PublishAsync();

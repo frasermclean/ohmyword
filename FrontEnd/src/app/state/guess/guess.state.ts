@@ -78,7 +78,7 @@ export class GuessState {
     context.setState({
       value: '',
       count: 0,
-      maxLength: action.wordHint.length,
+      maxLength: action.wordHint?.length || 0,
       guessedCorrectly: false,
     });
   }

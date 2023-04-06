@@ -3,5 +3,5 @@
     <app-letter *ngFor="let char of wordHint.letterHints; index as i" [hintChar]="char" [index]="i"></app-letter>
   </div>
 
-  <p>{{ wordHint.definition }}</p>
+  <p><span class="part-of-speech">{{ wordHint.partOfSpeech }}</span> - {{ wordHint.definition }}</p>
 </ng-container>

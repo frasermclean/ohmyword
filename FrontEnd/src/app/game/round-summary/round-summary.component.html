@@ -5,6 +5,6 @@
     <p *ngSwitchDefault>Time ran out before all players guess the word!</p>
   </div>
   <p class="word-reveal">
-    The word was: <strong>{{ summary.word | uppercase }}</strong>
+    The word was: <strong>{{ summary.word | uppercase }}</strong> ({{ summary.partOfSpeech }})
   </p>
 </ng-container>

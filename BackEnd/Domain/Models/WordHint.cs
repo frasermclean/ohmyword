@@ -1,4 +1,6 @@
-﻿namespace OhMyWord.Domain.Models;
+﻿using OhMyWord.Infrastructure.Enums;
+
+namespace OhMyWord.Domain.Models;
 
 public class WordHint
 {
@@ -6,14 +8,17 @@ public class WordHint
 
     public int Length { get; }
     public string Definition { get; }
+    public PartOfSpeech PartOfSpeech { get; }
+
     public IEnumerable<LetterHint> LetterHints => letterHintHints;
 
     public WordHint(Word word)
     {
-        var definitionIndex = Random.Shared.Next(word.Definitions.Count());
+        var definition = word.Definitions.ElementAt(Random.Shared.Next(word.Definitions.Count()));
 
         Length = word.Length;
-        Definition = word.Definitions.ElementAt(definitionIndex).Value;
+        Definition = definition.Value;
+        PartOfSpeech = definition.PartOfSpeech;
     }
 
     public static readonly WordHint Default = new(Word.Default);

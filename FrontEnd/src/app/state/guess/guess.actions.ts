@@ -1,4 +1,4 @@
-import { WordHint } from "@models/word-hint.model";
+import { WordHint } from '@models/word-hint.model';
 
 /**
  * Guess actions and events
@@ -28,6 +28,6 @@ export namespace Guess {
 
   export class SetNewWord {
     static readonly type = '[Game Service] Guess.SetNewWord';
-    constructor(public wordHint: WordHint) {}
+    constructor(public wordHint: WordHint | null) {}
   }
 }

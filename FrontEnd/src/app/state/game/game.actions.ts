@@ -34,7 +34,8 @@ export namespace Game {
     roundId = this.response.roundId;
     intervalStart = new Date(this.response.intervalStart);
     intervalEnd = new Date(this.response.intervalEnd);
-    wordHint = new WordHint(this.response.wordHint);
+    wordHint = this.response.wordHint ? new WordHint(this.response.wordHint) : null;
+    roundSummary = this.response.roundSummary;
 
     constructor(private response: GameStateResponse) {}
   }
