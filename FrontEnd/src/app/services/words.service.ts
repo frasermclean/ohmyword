@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { map } from 'rxjs/operators';
-import { environment } from 'src/environments/environment';
+import { environment } from '@environment';
 import { CreateWordRequest } from '@models/requests/create-word.request';
 import { SearchWordsRequest } from '@models/requests/search-words.request';
 import { UpdateWordRequest } from '@models/requests/update-word.request';

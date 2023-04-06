@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
 import { Store } from '@ngxs/store';
-import { environment } from 'src/environments/environment';
+import { environment } from '@environment';
 import { FingerprintService } from '@services/fingerprint.service';
 import { AuthService } from '@services/auth.service';
 

@@ -2,7 +2,7 @@ import { Component, Input } from '@angular/core';
 import { Store } from '@ngxs/store';
 import { Auth } from '@state/auth/auth.actions';
 import { AuthState } from '@state/auth/auth.state';
-import { environment } from 'src/environments/environment';
+import { environment } from '@environment';
 
 @Component({
   selector: 'app-toolbar',

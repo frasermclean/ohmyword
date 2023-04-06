@@ -13,8 +13,8 @@ import { NgxsRouterPluginModule } from '@ngxs/router-plugin';
 import { MsalModule, MsalGuard, MsalInterceptor, MsalRedirectComponent } from '@azure/msal-angular';
 import { msalInstance, guardConfig, interceptorConfig } from './auth.config';
 
+import { environment } from '@environment';
 import { CoreModule } from './core/core.module';
-import { environment } from 'src/environments/environment';
 import { AppComponent } from './app.component';
 import { Game } from '@state/game/game.actions';
 import { AuthState } from '@state/auth/auth.state';

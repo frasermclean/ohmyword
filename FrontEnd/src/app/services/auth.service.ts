@@ -4,7 +4,7 @@ import { InteractionStatus } from '@azure/msal-browser';
 import { Store } from '@ngxs/store';
 import { Subject } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
-import { environment } from 'src/environments/environment';
+import { environment } from '@environment';
 import { Auth } from '../state/auth/auth.actions';
 
 import { Role } from '@models/role.enum';

@@ -1,7 +1,7 @@
 import { MsalGuardConfiguration, MsalInterceptorConfiguration } from '@azure/msal-angular';
 import { PublicClientApplication, InteractionType, BrowserCacheLocation, LogLevel } from '@azure/msal-browser';
 
-import { environment } from 'src/environments/environment';
+import { environment } from '@environment';
 
 const isIE = window.navigator.userAgent.indexOf('MSIE ') > -1 || window.navigator.userAgent.indexOf('Trident/') > -1;
 const tenantName = 'ohmywordauth';
