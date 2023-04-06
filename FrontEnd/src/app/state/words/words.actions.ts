@@ -22,4 +22,9 @@ export namespace Words {
     static readonly type = '[Words List] Delete Word';
     constructor(public id: string) {}
   }
+
+  export class GetDefinitionSuggestions {
+    static readonly type = '[Word Edit] Get Definition Suggestions';
+    constructor(public wordId: string) {}
+  }
 }

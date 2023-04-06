@@ -4,7 +4,7 @@
     <!-- word id -->
     <mat-form-field>
       <mat-label>Word</mat-label>
-      <input matInput name="word" placeholder="Enter the word" formControlName="id" />
+      <input matInput name="word" placeholder="Enter the word" formControlName="id" minlength="4" maxlength="16" />
       <mat-error *ngIf="!formGroup.controls.id.valid">Word is required</mat-error>
     </mat-form-field>
 
@@ -28,14 +28,26 @@
           <!-- definition -->
           <mat-form-field>
             <mat-label>Definition</mat-label>
-            <input matInput name="value" placeholder="Enter the definition of the word" formControlName="value" />
+            <textarea
+              matInput
+              name="value"
+              placeholder="Enter the definition of the word"
+              formControlName="value"
+              [cdkTextareaAutosize]="true"
+            ></textarea>
             <mat-error *ngIf="!definition.controls.value.valid">Definition is required</mat-error>
           </mat-form-field>
 
           <!-- example -->
           <mat-form-field>
             <mat-label>Example</mat-label>
-            <input matInput name="example" placeholder="Example of word used in a sentence" formControlName="example" />
+            <textarea
+              matInput
+              name="example"
+              placeholder="Example of word used in a sentence"
+              formControlName="example"
+              [cdkTextareaAutosize]="true"
+            ></textarea>
           </mat-form-field>
 
           <!-- remove definition button -->
@@ -44,7 +56,7 @@
             mat-icon-button
             color="warn"
             (click)="removeDefinition(i)"
-            matTooltip="Remove definition"
+            matTooltip="Remove definition {{ i + 1 }}"
           >
             <mat-icon>delete</mat-icon>
           </button>
@@ -55,8 +67,21 @@
 </mat-dialog-content>
 <mat-dialog-actions>
   <button mat-raised-button color="primary" (click)="addDefinition()">ADD DEFINITION</button>
+
+  <!-- lookup definitions button -->
+  <button
+    mat-raised-button
+    color="primary"
+    *ngIf="!isEditing && formGroup.controls.definitions.length === 0"
+    [disabled]="!formGroup.controls.id.valid"
+    (click)="getDefinitionSuggestions(formGroup.controls.id.value)"
+    matTooltip="Perform dictionary lookup for word definitions"
+  >
+    LOOKUP DEFINITIONS
+  </button>
+
   <div class="spacer"></div>
-  <button mat-raised-button color="accent" (click)="submit()" [disabled]="!formGroup.touched && !formGroup.valid">
+  <button mat-raised-button color="accent" (click)="submit()" [disabled]="!formGroup.touched || !formGroup.valid">
     {{ isEditing ? "UPDATE WORD" : "ADD WORD" }}
   </button>
   <button mat-raised-button color="warn" mat-dialog-close>CANCEL</button>

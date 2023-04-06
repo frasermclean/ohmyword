@@ -1,8 +1,10 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { NonNullableFormBuilder, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { take, tap } from 'rxjs/operators';
 import { Definition } from '@models/definition.model';
 import { PartOfSpeech } from '@models/enums/part-of-speech.enum';
+import { DefinitionsService } from '@services/definitions.service';
 import { Word } from '@models/word.model';
 
 const partOfSpeechOptions = [
@@ -32,7 +34,7 @@ export class WordEditComponent implements OnInit {
   readonly partOfSpeechOptions = partOfSpeechOptions;
 
   formGroup = this.formBuilder.group({
-    id: [this.word.id, Validators.required],
+    id: [this.word.id, [Validators.required]],
     definitions: this.formBuilder.array(
       this.word.definitions.map((definition) =>
         this.formBuilder.group({
@@ -52,20 +54,31 @@ export class WordEditComponent implements OnInit {
   constructor(
     @Inject(MAT_DIALOG_DATA) private data: WordEditData,
     private formBuilder: NonNullableFormBuilder,
-    private dialogRef: MatDialogRef<WordEditComponent, WordEditResult>
+    private dialogRef: MatDialogRef<WordEditComponent, WordEditResult>,
+    private definitionService: DefinitionsService
   ) {}
 
   ngOnInit(): void {
     if (this.isEditing) this.formGroup.controls.id.disable(); // can't edit id
   }
 
-  addDefinition() {
+  getDefinitionSuggestions(wordId: string) {
+    this.definitionService
+      .getDefinitions(wordId)
+      .pipe(
+        tap((definitions) => definitions.forEach((definition) => this.addDefinition(definition))),
+        take(1)
+      )
+      .subscribe();
+  }
+
+  addDefinition(definition?: Definition) {
     this.definitions.push(
       this.formBuilder.group({
-        id: [''],
-        partOfSpeech: [PartOfSpeech.Noun, Validators.required],
-        value: ['', Validators.required],
-        example: [''],
+        id: [definition?.id || ''],
+        partOfSpeech: [definition?.partOfSpeech || PartOfSpeech.Noun, Validators.required],
+        value: [definition?.value || '', Validators.required],
+        example: [definition?.example || ''],
       })
     );
   }

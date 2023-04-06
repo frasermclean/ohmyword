@@ -10,7 +10,7 @@ export class Word {
   constructor(init?: Partial<WordResponse>) {
     this.id = init?.id || '';
     this.length = init?.length || 0;
-    this.definitions = init?.definitions?.map((response) => new Definition(response)) || [new Definition()];
+    this.definitions = init?.definitions?.map((response) => new Definition(response)) || [];
     this.lastModifiedTime = init?.lastModifiedTime ? new Date(init.lastModifiedTime) : new Date();
   }
 }

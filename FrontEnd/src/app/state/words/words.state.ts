@@ -7,6 +7,8 @@ import { SortDirection } from '@models/enums/sort-direction.enum';
 import { Word } from '@models/word.model';
 import { WordsService } from '@services/words.service';
 import { Words } from './words.actions';
+import { DefinitionsService } from '@services/definitions.service';
+import { Definition } from '@models/definition.model';
 
 interface WordsStateModel {
   status: 'ready' | 'busy' | 'error';
@@ -18,6 +20,7 @@ interface WordsStateModel {
   filter: string;
   orderBy: SearchWordsOrderBy;
   direction: SortDirection;
+  definitionSuggestions: Definition[];
 }
 
 const WORDS_STATE_TOKEN = new StateToken<WordsStateModel>('words');
@@ -33,12 +36,13 @@ const WORDS_STATE_TOKEN = new StateToken<WordsStateModel>('words');
     total: 0,
     filter: '',
     orderBy: SearchWordsOrderBy.Id,
-    direction: SortDirection.Ascending
+    direction: SortDirection.Ascending,
+    definitionSuggestions: [],
   },
 })
 @Injectable()
 export class WordsState {
-  constructor(private wordsService: WordsService) {}
+  constructor(private wordsService: WordsService, private definitionsService: DefinitionsService) {}
 
   @Action(Words.SearchWords)
   getWords(context: StateContext<WordsStateModel>, action: Words.SearchWords) {
@@ -118,6 +122,20 @@ export class WordsState {
     );
   }
 
+  @Action(Words.GetDefinitionSuggestions)
+  getDefinitionSuggestions(context: StateContext<WordsStateModel>, action: Words.GetDefinitionSuggestions) {
+    context.patchState({ status: 'busy' });
+    return this.definitionsService.getDefinitions(action.wordId).pipe(
+      tap((definitions) => {
+        context.patchState({ status: 'ready', definitionSuggestions: definitions });
+      }),
+      catchError((error) => {
+        context.patchState({ status: 'error', error });
+        return of(error);
+      })
+    );
+  }
+
   @Selector([WORDS_STATE_TOKEN])
   static status(state: WordsStateModel) {
     return state.status;
@@ -149,5 +167,10 @@ export class WordsState {
       orderBy: state.orderBy,
       direction: state.direction,
     };
+  }
+
+  @Selector([WORDS_STATE_TOKEN])
+  static definitionSuggestions(state: WordsStateModel) {
+    return state.definitionSuggestions;
   }
 }
