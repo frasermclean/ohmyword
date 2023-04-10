@@ -16,4 +16,9 @@ public record PlayerEntity : Entity
     /// Number of times this player has registered with the game server.
     /// </summary>
     public int RegistrationCount { get; init; } = 1;
+
+    /// <summary>
+    /// IP addresses this player has connected from.
+    /// </summary>
+    public SortedSet<string> IpAddresses { get; init; } = new();
 }

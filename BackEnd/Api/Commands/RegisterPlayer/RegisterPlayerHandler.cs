@@ -17,7 +17,8 @@ public class RegisterPlayerHandler : ICommandHandler<RegisterPlayerCommand, Regi
     public async Task<RegisterPlayerResponse> ExecuteAsync(RegisterPlayerCommand command,
         CancellationToken cancellationToken)
     {
-        var player = await playerService.AddPlayerAsync(command.VisitorId, command.ConnectionId, command.UserId);
+        var player = await playerService.AddPlayerAsync(command.VisitorId, command.ConnectionId, command.IpAddress,
+            command.UserId);
         gameService.AddPlayer(player);
 
         return new RegisterPlayerResponse

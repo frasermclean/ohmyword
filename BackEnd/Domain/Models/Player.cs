@@ -1,4 +1,6 @@
-﻿namespace OhMyWord.Domain.Models;
+﻿using System.Net;
+
+namespace OhMyWord.Domain.Models;
 
 public record Player
 {
@@ -26,4 +28,9 @@ public record Player
     /// Number of times this player has registered with the game server.
     /// </summary>
     public required int RegistrationCount { get; init; }
+
+    /// <summary>
+    /// IP addresses this player has connected from.
+    /// </summary>
+    public required IEnumerable<IPAddress> IpAddresses { get; init; } = Enumerable.Empty<IPAddress>();
 }

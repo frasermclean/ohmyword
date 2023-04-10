@@ -13,6 +13,7 @@ public interface IPlayerRepository
     Task DeletePlayerAsync(PlayerEntity playerEntity);
     Task<PlayerEntity> IncrementRegistrationCountAsync(string playerId);
     Task<PlayerEntity> IncrementScoreAsync(string playerId, long value);
+    Task AddIpAddressAsync(string playerId, string ipAddress);
 }
 
 public class PlayerRepository : Repository<PlayerEntity>, IPlayerRepository
@@ -39,4 +40,7 @@ public class PlayerRepository : Repository<PlayerEntity>, IPlayerRepository
 
     public Task<PlayerEntity> IncrementScoreAsync(string playerId, long value) =>
         PatchItemAsync(playerId, playerId, new[] { PatchOperation.Increment("/score", value) });
+
+    public Task AddIpAddressAsync(string playerId, string ipAddress)
+        => PatchItemAsync(playerId, playerId, new[] { PatchOperation.Add("/ipAddresses/-", ipAddress) });
 }
