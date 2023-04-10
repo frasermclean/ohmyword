@@ -58,7 +58,7 @@ public class PlayerService : IPlayerService
         // create player if existing player was not found
         player ??= (await playerRepository.CreatePlayerAsync(new PlayerEntity
             {
-                Id = visitorId, UserId = userId, IpAddresses = new SortedSet<string> { ipAddress.ToString() }
+                Id = visitorId, UserId = userId, IpAddresses = new[] { ipAddress.ToString() }
             }))
             .ToPlayer(connectionId);
 

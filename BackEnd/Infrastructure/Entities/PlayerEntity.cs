@@ -20,5 +20,5 @@ public record PlayerEntity : Entity
     /// <summary>
     /// IP addresses this player has connected from.
     /// </summary>
-    public SortedSet<string> IpAddresses { get; init; } = new();
+    public IEnumerable<string> IpAddresses { get; init; } = Enumerable.Empty<string>();
 }
