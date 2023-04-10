@@ -4,4 +4,5 @@ public class RegisterPlayerCommand : ICommand<RegisterPlayerResponse>
 {
     public string VisitorId { get; init; } = string.Empty;
     public string ConnectionId { get; init; } = string.Empty;
+    public Guid? UserId { get; init; }
 }

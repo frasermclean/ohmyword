@@ -2,6 +2,7 @@
 using OhMyWord.Api.Commands.RegisterPlayer;
 using OhMyWord.Api.Commands.SubmitGuess;
 using OhMyWord.Api.Events.PlayerDisconnected;
+using OhMyWord.Domain.Extensions;
 using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Services;
 
@@ -38,9 +39,17 @@ public class GameHub : Hub<IGameHub>
 
     public async Task<RegisterPlayerResponse> RegisterPlayer(string visitorId)
     {
-        logger.LogInformation("Attempting to register player with visitor ID: {VisitorId}", visitorId);
-        var response = await new RegisterPlayerCommand { VisitorId = visitorId, ConnectionId = Context.ConnectionId }
+        var userId = Context.User?.GetUserId();
+
+        logger.LogInformation("Attempting to register player with visitor ID: {VisitorId}, user ID: {UserId}",
+            visitorId, userId);
+
+        var response = await new RegisterPlayerCommand
+            {
+                VisitorId = visitorId, ConnectionId = Context.ConnectionId, UserId = userId
+            }
             .ExecuteAsync();
+
         await Clients.Others.SendPlayerCount(response.PlayerCount);
         return response;
     }

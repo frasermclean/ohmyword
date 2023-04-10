@@ -1,11 +1,11 @@
 using Azure.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Web;
+using Microsoft.IdentityModel.Tokens;
 using OhMyWord.Api.Hubs;
 using OhMyWord.Api.Services;
 using OhMyWord.Domain.Extensions;
 using OhMyWord.Domain.Options;
-using OhMyWord.Domain.Services;
 using OhMyWord.Infrastructure.Extensions;
 using OhMyWord.Infrastructure.HealthChecks;
 using System.Text.Json;
@@ -25,7 +25,37 @@ public static class Program
             {
                 // microsoft identity authentication services
                 services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                    .AddMicrosoftIdentityWebApi(context.Configuration);
+                    .AddMicrosoftIdentityWebApi(options =>
+                    {
+                        var configurationSection = context.Configuration.GetSection("AzureAd");
+                        configurationSection.Bind(options);
+
+                        options.TokenValidationParameters = new TokenValidationParameters
+                        {
+                            NameClaimType = "name", RoleClaimType = "role"
+                        };
+
+                        options.Events = new JwtBearerEvents
+                        {
+                            OnMessageReceived = receivedContext =>
+                            {
+                                if (receivedContext.Request.Path.Value != "/hub")
+                                    return Task.CompletedTask;
+
+                                // read the access token from the query string
+                                var accessToken = receivedContext.Request.Query["access_token"];
+                                if (!accessToken.Any())
+                                    return Task.CompletedTask;
+
+                                receivedContext.Token = accessToken;
+                                return Task.CompletedTask;
+                            }
+                        };
+                    }, options =>
+                    {
+                        context.Configuration.GetSection("AzureAd").Bind(options);
+                    });
+
 
                 // fast endpoints
                 services.AddFastEndpoints();
@@ -60,7 +90,8 @@ public static class Program
                 // health checks        
                 services.AddHealthChecks()
                     .AddCosmosDbCollection(
-                        context.Configuration["CosmosDb:AccountEndpoint"] ?? string.Empty, new DefaultAzureCredential(),
+                        context.Configuration["CosmosDb:AccountEndpoint"] ?? string.Empty,
+                        new DefaultAzureCredential(),
                         context.Configuration.GetValue<string>("CosmosDb:DatabaseId"),
                         context.Configuration.GetValue<string[]>("CosmosDb:ContainerIds"))
                     .AddAzureTable(new Uri(context.Configuration["TableService:Endpoint"] ?? string.Empty),

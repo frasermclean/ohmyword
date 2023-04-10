@@ -4,7 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OhMyWord.Domain.Services;
 using OhMyWord.Infrastructure.Extensions;
-using OhMyWord.Infrastructure.Services;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 

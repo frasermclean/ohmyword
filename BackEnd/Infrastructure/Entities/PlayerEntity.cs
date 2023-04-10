@@ -5,7 +5,7 @@ public record PlayerEntity : Entity
     /// <summary>
     /// User ID if this player has a registered account.
     /// </summary>
-    public string? UserId { get; init; }
+    public Guid? UserId { get; init; }
 
     /// <summary>
     /// Total points this player has ever scored.

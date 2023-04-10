@@ -15,7 +15,7 @@ public record Player
     /// <summary>
     /// User ID if this player has signed in.
     /// </summary>
-    public required string? UserId { get; init; }
+    public required Guid? UserId { get; init; }
 
     /// <summary>
     /// Total points this player has ever scored.

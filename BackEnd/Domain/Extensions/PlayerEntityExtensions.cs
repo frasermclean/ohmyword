@@ -3,7 +3,7 @@ using OhMyWord.Infrastructure.Entities;
 
 namespace OhMyWord.Domain.Extensions;
 
-public static class VisitorEntityExtensions
+public static class PlayerEntityExtensions
 {
     public static Player ToPlayer(this PlayerEntity entity, string connectionId) => new()
     {        
