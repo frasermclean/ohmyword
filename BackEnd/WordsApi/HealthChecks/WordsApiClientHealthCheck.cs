@@ -13,9 +13,9 @@ public class WordsApiClientHealthCheck : IHealthCheck
     }
 
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context,
-        CancellationToken cancellationToken = new CancellationToken())
+        CancellationToken cancellationToken)
     {
-        var details = await wordsApiClient.GetWordDetailsAsync("health", cancellationToken);
-        return details is not null ? HealthCheckResult.Healthy() : HealthCheckResult.Unhealthy();
+        await wordsApiClient.GetRandomWordDetailsAsync(cancellationToken);
+        return HealthCheckResult.Healthy();
     }
 }
