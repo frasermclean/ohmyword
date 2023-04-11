@@ -1,13 +1,13 @@
 using Azure.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Web;
-using Microsoft.IdentityModel.Tokens;
 using OhMyWord.Api.Hubs;
 using OhMyWord.Api.Services;
 using OhMyWord.Domain.Extensions;
 using OhMyWord.Domain.Options;
 using OhMyWord.Infrastructure.Extensions;
-using OhMyWord.Infrastructure.HealthChecks;
+using OhMyWord.WordsApi.HealthChecks;
+using OhMyWord.WordsApi.Services;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -27,14 +27,7 @@ public static class Program
                 services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                     .AddMicrosoftIdentityWebApi(options =>
                     {
-                        var configurationSection = context.Configuration.GetSection("AzureAd");
-                        configurationSection.Bind(options);
-
-                        options.TokenValidationParameters = new TokenValidationParameters
-                        {
-                            NameClaimType = "name", RoleClaimType = "role"
-                        };
-
+                        context.Configuration.GetSection("AzureAd").Bind(options);
                         options.Events = new JwtBearerEvents
                         {
                             OnMessageReceived = receivedContext =>
@@ -79,7 +72,7 @@ public static class Program
                 services.AddDomainServices();
                 services.AddCosmosDbRepositories(context);
                 services.AddUsersRepository(context);
-                services.AddDictionaryServices(context);
+                services.AddWordsApiClient(context);
 
                 // development services
                 if (context.HostingEnvironment.IsDevelopment())
@@ -96,7 +89,7 @@ public static class Program
                         context.Configuration.GetValue<string[]>("CosmosDb:ContainerIds"))
                     .AddAzureTable(new Uri(context.Configuration["TableService:Endpoint"] ?? string.Empty),
                         new DefaultAzureCredential(), "users")
-                    .AddCheck<DictionaryServiceHealthCheck>("DictionaryService");
+                    .AddCheck<WordsApiClientHealthCheck>("WordsApiClient");
             });
 
         // build the application

@@ -68,17 +68,4 @@ public static class ServiceCollectionExtensions
 
         return services;
     }
-
-    public static IServiceCollection AddDictionaryServices(this IServiceCollection services, HostBuilderContext context)
-    {
-        services.AddOptions<DictionaryOptions>()
-            .Bind(context.Configuration.GetSection(DictionaryOptions.SectionName))
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
-
-        services.AddHttpClient<IDictionaryService, DictionaryService>(client =>
-            client.BaseAddress = new Uri(DictionaryOptions.ApiBaseUrl));
-
-        return services;
-    }
 }
