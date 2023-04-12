@@ -105,18 +105,6 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   }
 }
 
-module appConfig 'appConfig.bicep' = {
-  name: 'appConfig-${appEnv}'
-  scope: resourceGroup(sharedResourceGroup)
-  params: {
-    appConfigName: appConfigName
-    appEnv: appEnv
-    azureAdAudience: authAudience
-    azureAdClientId: authClientId
-    cosmosDbDatabaseId: databaseId
-  }
-}
-
 // app service
 resource appService 'Microsoft.Web/sites@2022-03-01' = {
   name: toLower('app-${appName}-${appEnv}')
@@ -234,6 +222,19 @@ resource managedCertificate 'Microsoft.Web/certificates@2022-03-01' = {
   properties: {
     serverFarmId: appServicePlan.id
     canonicalName: appService::hostNameBinding.name
+  }
+}
+
+module appConfig 'appConfig.bicep' = {
+  name: 'appConfig-${appEnv}'
+  scope: resourceGroup(sharedResourceGroup)
+  params: {
+    appConfigName: appConfigName
+    appEnv: appEnv
+    azureAdAudience: authAudience
+    azureAdClientId: authClientId
+    cosmosDbDatabaseId: databaseId
+    principalId: appService.identity.principalId
   }
 }
 

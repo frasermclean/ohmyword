@@ -12,6 +12,9 @@ param azureAdAudience string
 @description('Azure AD client ID')
 param azureAdClientId string
 
+@description('Principal ID to assign access to')
+param principalId string
+
 @description('Application environment')
 @allowed([ 'prod', 'test' ])
 param appEnv string
@@ -44,4 +47,19 @@ resource appConfiguration 'Microsoft.AppConfiguration/configurationStores@2022-0
       contentType: item.contentType
     }
   }]
+}
+
+resource roleDefinition 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+  name: '516239f1-63e1-4d78-a4de-a74fb236a071' // app configuration data reader
+  scope: resourceGroup()
+}
+
+resource roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(resourceGroup().id, roleDefinition.id, principalId)
+  scope: appConfiguration
+  properties: {
+    roleDefinitionId: roleDefinition.id
+    principalId: principalId
+    principalType: 'ServicePrincipal'
+  }
 }
