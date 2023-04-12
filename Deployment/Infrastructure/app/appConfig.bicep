@@ -23,7 +23,7 @@ param appEnv string
 @description('RapidAPI key')
 param rapidApiKey string
 
-resource keyVault 'Microsoft.KeyVault/vaults@2023-02-01' existing = {
+resource keyVault 'Microsoft.KeyVault/vaults@2022-11-01' existing = {
   name: 'kv-ohmyword-shared'
 
   resource rapidApiKeySecret 'secrets' = if (!empty(rapidApiKey)) {
