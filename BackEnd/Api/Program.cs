@@ -1,13 +1,11 @@
 using Azure.Identity;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Identity.Web;
+using Microsoft.Extensions.Configuration.AzureAppConfiguration;
 using OhMyWord.Api.Extensions;
 using OhMyWord.Api.Hubs;
 using OhMyWord.Api.Services;
 using OhMyWord.Domain.Extensions;
 using OhMyWord.Domain.Options;
 using OhMyWord.Infrastructure.Extensions;
-using OhMyWord.WordsApi.HealthChecks;
 using OhMyWord.WordsApi.Services;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -20,70 +18,57 @@ public static class Program
     {
         var appBuilder = WebApplication.CreateBuilder(args);
 
-        // configure app host
-        appBuilder.Host
-            .ConfigureServices((context, services) =>
+        // azure app configuration
+        var appConfigEnabled = appBuilder.Configuration.GetValue("AppConfig:Enabled", true);
+        if (appConfigEnabled)
+            appBuilder.Configuration.AddAzureAppConfiguration(options =>
             {
-                // microsoft identity authentication services
-                services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                    .AddMicrosoftIdentityWebApi(options =>
-                    {
-                        context.Configuration.GetSection("AzureAd").Bind(options);
-                        options.Events = new JwtBearerEvents
-                        {
-                            OnMessageReceived = receivedContext =>
-                            {
-                                if (receivedContext.Request.Path.Value != "/hub")
-                                    return Task.CompletedTask;
-
-                                // read the access token from the query string
-                                var accessToken = receivedContext.Request.Query["access_token"];
-                                if (!accessToken.Any())
-                                    return Task.CompletedTask;
-
-                                receivedContext.Token = accessToken;
-                                return Task.CompletedTask;
-                            }
-                        };
-                    }, options =>
-                    {
-                        context.Configuration.GetSection("AzureAd").Bind(options);
-                    });
-
-
-                // fast endpoints
-                services.AddFastEndpoints();
-
-                // signalR services
-                services.AddSignalR()
-                    .AddJsonProtocol(options =>
-                        options.PayloadSerializerOptions.Converters.Add(
-                            new JsonStringEnumConverter(JsonNamingPolicy.CamelCase))
-                    );
-
-                // game services
-                services.AddHostedService<GameCoordinator>();
-                services.AddSingleton<IGameService, GameService>();
-                services.AddOptions<GameServiceOptions>()
-                    .Bind(context.Configuration.GetSection(GameServiceOptions.SectionName))
-                    .ValidateDataAnnotations()
-                    .ValidateOnStart();
-
-                // local project services
-                services.AddDomainServices();
-                services.AddCosmosDbRepositories(context);
-                services.AddUsersRepository(context);
-                services.AddWordsApiClient(context);
-
-                // development services
-                if (context.HostingEnvironment.IsDevelopment())
-                {
-                    services.AddCors();
-                }
-
-                // health checks        
-                services.AddApplicationHealthChecks(context);
+                var endpoint = appBuilder.Configuration["AppConfig:Endpoint"] ?? string.Empty;
+                var appEnv = appBuilder.Configuration.GetValue<string>("AppEnv", "dev");
+                options.Connect(new Uri(endpoint), new DefaultAzureCredential())
+                    .Select(KeyFilter.Any) // select keys with no label
+                    .Select(KeyFilter.Any, appEnv); // select keys with matching app environment label
             });
+
+        // configure app host
+        appBuilder.Host.ConfigureServices((context, services) =>
+        {
+            // microsoft identity authentication services
+            services.AddMicrosoftIdentityAuthentication(context);
+
+            // fast endpoints
+            services.AddFastEndpoints();
+
+            // signalR services
+            services.AddSignalR()
+                .AddJsonProtocol(options =>
+                    options.PayloadSerializerOptions.Converters.Add(
+                        new JsonStringEnumConverter(JsonNamingPolicy.CamelCase))
+                );
+
+            // game services
+            services.AddHostedService<GameCoordinator>();
+            services.AddSingleton<IGameService, GameService>();
+            services.AddOptions<GameServiceOptions>()
+                .Bind(context.Configuration.GetSection(GameServiceOptions.SectionName))
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
+
+            // local project services
+            services.AddDomainServices();
+            services.AddCosmosDbRepositories(context);
+            services.AddUsersRepository(context);
+            services.AddWordsApiClient(context);
+
+            // development services
+            if (context.HostingEnvironment.IsDevelopment())
+            {
+                services.AddCors();
+            }
+
+            // health checks
+            services.AddApplicationHealthChecks(context);
+        });
 
         // build the application
         var app = appBuilder.Build();

@@ -3,7 +3,7 @@ using OhMyWord.WordsApi.HealthChecks;
 
 namespace OhMyWord.Api.Extensions;
 
-public static class HealthChecksRegistrationExtensions
+public static class HealthChecksRegistration
 {
     public static IServiceCollection AddApplicationHealthChecks(this IServiceCollection services,
         HostBuilderContext context)

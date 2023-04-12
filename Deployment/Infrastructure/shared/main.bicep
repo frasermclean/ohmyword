@@ -40,6 +40,11 @@ var productionSubnetName = 'ProductionSubnet'
 var testSubnetName = 'TestSubnet'
 var functionsSubnetName = 'FunctionsSubnet'
 
+// b2c tenant (existing)
+resource b2cTenant 'Microsoft.AzureActiveDirectory/b2cDirectories@2021-04-01' existing = {
+  name: 'ohmywordauth.onmicrosoft.com'
+}
+
 // dns zone for the application
 resource dnsZone 'Microsoft.Network/dnsZones@2018-05-01' = {
   name: domainName
@@ -244,6 +249,70 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
   }
 }
 
+// app configuration
+resource appConfiguration 'Microsoft.AppConfiguration/configurationStores@2022-05-01' = {
+  name: 'ac-${appName}-shared'
+  location: location
+  tags: tags
+  sku: {
+    name: 'Free'
+  }
+  identity: {
+    type: 'SystemAssigned'
+  }
+  properties: {
+    disableLocalAuth: false
+  }
+
+  resource azureAdInstance 'keyValues' = {
+    name: 'AzureAd:Instance'
+    properties: {
+      value: 'https://ohmywordauth.b2clogin.com'
+      contentType: 'text/plain'
+    }
+  }
+
+  resource azureAdDomain 'keyValues' = {
+    name: 'AzureAd:Domain'
+    properties: {
+      value: 'ohmywordauth.onmicrosoft.com'
+      contentType: 'text/plain'
+    }
+  }
+
+  resource azureAdTenantId 'keyValues' = {
+    name: 'AzureAd:TenantId'
+    properties: {
+      value: b2cTenant.properties.tenantId
+      contentType: 'text/plain'
+    }
+  }
+
+  resource azureAdSignUpSignInPolicyId 'keyValues' = {
+    name: 'AzureAd:SignUpSignInPolicyId'
+    properties: {
+      value: 'B2C_1A_SignUp_SignIn'
+      contentType: 'text/plain'
+    }
+  }
+
+  resource cosmosDbAccountEndpoint 'keyValues' = {
+    name: 'CosmosDb:AccountEndpoint'
+    properties: {
+      value: cosmosDbAccount.properties.documentEndpoint
+      contentType: 'text/plain'
+    }
+  }
+
+  resource tableServiceEndpoint 'keyValues' = {
+    name: 'TableService:Endpoint'
+    properties: {
+      value: storageAccount.properties.primaryEndpoints.table
+      contentType: 'text/plain'
+    }
+  }
+}
+
 // key vault
 resource keyVault 'Microsoft.KeyVault/vaults@2022-11-01' = {
   name: 'kv-${appName}-shared'
@@ -292,6 +361,23 @@ resource keyVault 'Microsoft.KeyVault/vaults@2022-11-01' = {
       value: thesaurusApiKey
       contentType: 'text/plain'
     }
+  }
+}
+
+// key vault secrets user role definition
+resource keyVaultSecretsUserRoleDefinition 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+  name: '4633458b-17de-408a-b874-0445c86b69e6'
+  scope: resourceGroup()
+}
+
+// key vault secrets user role assignment
+resource roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(keyVault.id, keyVaultSecretsUserRoleDefinition.id, appConfiguration.id)
+  scope: keyVault
+  properties: {
+    principalId: appConfiguration.identity.principalId
+    principalType: 'ServicePrincipal'
+    roleDefinitionId: keyVaultSecretsUserRoleDefinition.id
   }
 }
 
