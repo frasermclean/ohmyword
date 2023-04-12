@@ -14,6 +14,7 @@ param location string
 param domainName string
 
 @description('Database request units per second.')
+@minValue(400)
 param databaseThroughput int
 
 @description('Database containers to create')
@@ -36,6 +37,7 @@ var tags = {
 var frontendHostname = appEnv == 'prod' ? domainName : 'test.${domainName}'
 var backendHostname = appEnv == 'prod' ? 'api.${domainName}' : 'test.api.${domainName}'
 var databaseId = '${appName}-${appEnv}'
+var appConfigName = 'ac-${appName}-shared'
 
 @description('Azure AD B2C client ID of single page application')
 var authClientId = appEnv == 'prod' ? 'ee95c3c0-c6f7-4675-9097-0e4d9bca14e3' : '1f427277-e4b2-4f9b-97b1-4f47f4ff03c0'
@@ -108,6 +110,18 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   }
 }
 
+module appConfig 'appConfig.bicep' = {
+  name: 'appConfig-${appEnv}'
+  scope: resourceGroup(sharedResourceGroup)
+  params: {
+    appConfigName: appConfigName
+    appEnv: appEnv
+    azureAdAudience: authAudience
+    azureAdClientId: authClientId
+    cosmosDbDatabaseId: databaseId
+  }
+}
+
 // app service
 resource appService 'Microsoft.Web/sites@2022-03-01' = {
   name: toLower('app-${appName}-${appEnv}')
@@ -134,6 +148,14 @@ resource appService 'Microsoft.Web/sites@2022-03-01' = {
       }
       appSettings: [
         {
+          name: 'AppConfig__Endpoint'
+          value: 'https://${appConfigName}.azconfig.io'
+        }
+        {
+          name: 'AppConfig__Environment'
+          value: appEnv
+        }
+        {
           name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
           value: appInsights.properties.ConnectionString
         }
@@ -146,30 +168,6 @@ resource appService 'Microsoft.Web/sites@2022-03-01' = {
           value: 'Recommended'
         }
         {
-          name: 'AzureAd__Instance'
-          value: 'https://ohmywordauth.b2clogin.com'
-        }
-        {
-          name: 'AzureAd__Domain'
-          value: 'ohmywordauth.onmicrosoft.com'
-        }
-        {
-          name: 'AzureAd__TenantId'
-          value: b2cTenant.properties.tenantId
-        }
-        {
-          name: 'AzureAd__ClientId'
-          value: authClientId
-        }
-        {
-          name: 'AzureAd__Audience'
-          value: authAudience
-        }
-        {
-          name: 'AzureAd__SignUpSignInPolicyId'
-          value: 'B2C_1A_SignUp_SignIn'
-        }
-        {
           name: 'Game__LetterHintDelay'
           value: string(appSettings.letterHintDelay)
         }
@@ -178,23 +176,11 @@ resource appService 'Microsoft.Web/sites@2022-03-01' = {
           value: string(appSettings.postRoundDelay)
         }
         {
-          name: 'CosmosDb__AccountEndpoint'
-          value: cosmosDbAccount.properties.documentEndpoint
-        }
-        {
-          name: 'CosmosDb__DatabaseId'
-          value: databaseId
-        }
-        {
           name: 'CosmosDb__ContainerIds'
           value: string(map(databaseContainers, container => container.id))
         }
         {
-          name: 'TableService__Endpoint'
-          value: 'https://${storageAccount.name}.table.${environment().suffixes.storage}'
-        }
-        {
-          name: 'Dictionary__ApiKey'
+          name: 'WordsApi__ApiKey'
           value: '@Microsoft.KeyVault(VaultName=${keyVault.name};SecretName=DictionaryApiKey)'
         }
       ]
