@@ -23,7 +23,8 @@ public static class Program
         if (appConfigEnabled)
             appBuilder.Configuration.AddAzureAppConfiguration(options =>
             {
-                var endpoint = appBuilder.Configuration.GetValue<string>("AppConfig:Endpoint") ?? string.Empty;
+                var endpoint = appBuilder.Configuration.GetValue<string>("AppConfig:Endpoint") ??
+                               throw new InvalidOperationException("Application configuration endpoint is not set.");
                 var appEnv = appBuilder.Configuration.GetValue<string>("AppConfig:Environment", "dev");
                 options.Connect(new Uri(endpoint), new DefaultAzureCredential())
                     .Select(KeyFilter.Any) // select keys with no label

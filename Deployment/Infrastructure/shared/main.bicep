@@ -15,14 +15,6 @@ param totalThroughputLimit int
 @description('Public IP addresses allowed to access Azure resources')
 param allowedIpAddresses array
 
-@secure()
-@description('API key for the dictionary API service')
-param dictionaryApiKey string = ''
-
-@secure()
-@description('API key for the thesaurus API service')
-param thesaurusApiKey string = ''
-
 var tags = {
   workload: appName
   environment: 'shared'
@@ -344,22 +336,6 @@ resource keyVault 'Microsoft.KeyVault/vaults@2022-11-01' = {
       ipRules: [for ipAddress in allowedIpAddresses: {
         value: ipAddress
       }]
-    }
-  }
-
-  resource dictionaryApiKeySecret 'secrets' = if (!empty(dictionaryApiKey)) {
-    name: 'DictionaryApiKey'
-    properties: {
-      value: dictionaryApiKey
-      contentType: 'text/plain'
-    }
-  }
-
-  resource thesaurusApiKeySecret 'secrets' = if (!empty(thesaurusApiKey)) {
-    name: 'ThesaurusApiKey'
-    properties: {
-      value: thesaurusApiKey
-      contentType: 'text/plain'
     }
   }
 }

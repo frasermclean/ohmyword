@@ -157,6 +157,7 @@ jobs:
             ${{ env.TEMPLATE_ROOT }}/app/main.parameters.json
             appEnv=${{ env.APPLICATION_ENVIRONMENT }}
             databaseThroughput=${{ env.DATABASE_THROUGHPUT }}
+            rapidApiKey=${{ secrets.RAPID_API_KEY }}
 
   # Deploy frontend application
   deploy-frontend-app:

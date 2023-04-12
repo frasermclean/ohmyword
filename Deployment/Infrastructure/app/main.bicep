@@ -26,6 +26,10 @@ param appSettings object
 @description('Location for the static web app')
 param staticWebAppLocation string = 'centralus'
 
+@secure()
+@description('RapidAPI key')
+param rapidApiKey string = ''
+
 var sharedResourceGroup = 'rg-${appName}-shared'
 
 var tags = {
@@ -71,11 +75,6 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' existing = {
   name: '${appName}shared'
-  scope: resourceGroup(sharedResourceGroup)
-}
-
-resource keyVault 'Microsoft.KeyVault/vaults@2022-11-01' existing = {
-  name: 'kv-${appName}-shared'
   scope: resourceGroup(sharedResourceGroup)
 }
 
@@ -162,10 +161,6 @@ resource appService 'Microsoft.Web/sites@2022-03-01' = {
           name: 'CosmosDb__ContainerIds'
           value: string(map(databaseContainers, container => container.id))
         }
-        {
-          name: 'WordsApi__ApiKey'
-          value: '@Microsoft.KeyVault(VaultName=${keyVault.name};SecretName=DictionaryApiKey)'
-        }
       ]
     }
   }
@@ -235,6 +230,7 @@ module appConfig 'appConfig.bicep' = {
     azureAdClientId: authClientId
     cosmosDbDatabaseId: databaseId
     principalId: appService.identity.principalId
+    rapidApiKey: rapidApiKey
   }
 }
 

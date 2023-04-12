@@ -19,7 +19,23 @@ param principalId string
 @allowed([ 'prod', 'test' ])
 param appEnv string
 
-var keyValues = [
+@secure()
+@description('RapidAPI key')
+param rapidApiKey string
+
+resource keyVault 'Microsoft.KeyVault/vaults@2023-02-01' existing = {
+  name: 'kv-ohmyword-shared'
+
+  resource rapidApiKeySecret 'secrets' = if (!empty(rapidApiKey)) {
+    name: 'RapidApiKey-${appEnv}'
+    properties: {
+      value: rapidApiKey
+      contentType: 'text/plain'
+    }
+  }
+}
+
+var appConfigurationKeyValues = [
   {
     name: 'AzureAd:ClientId$${appEnv}'
     value: azureAdClientId
@@ -35,12 +51,17 @@ var keyValues = [
     value: cosmosDbDatabaseId
     contentType: 'text/plain'
   }
+  {
+    name: 'WordsApi:ApiKey$${appEnv}'
+    value: '{"uri":"https://${keyVault.name}.${environment().suffixes.keyvaultDns}/secrets/${keyVault::rapidApiKeySecret.name}"}'
+    contentType: 'application/vnd.microsoft.appconfig.keyvaultref+json;charset=utf-8'
+  }
 ]
 
 resource appConfiguration 'Microsoft.AppConfiguration/configurationStores@2022-05-01' existing = {
   name: appConfigName
 
-  resource keyValue 'keyValues' = [for item in keyValues: {
+  resource keyValue 'keyValues' = [for item in appConfigurationKeyValues: {
     name: item.name
     properties: {
       value: item.value
