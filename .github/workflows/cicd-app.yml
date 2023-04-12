@@ -96,6 +96,10 @@ jobs:
         working-directory: ./BackEnd/Api
         run: dotnet publish --configuration $BUILD_CONFIGURATION --output $PUBLISH_DIRECTORY
 
+      # Delete app settings file
+      - name: Remove app settings file
+        run: rm $PUBLISH_DIRECTORY/appsettings.json
+
       # Upload published application artifact
       - name: Upload published application artifact
         uses: actions/upload-artifact@v3
