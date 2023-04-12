@@ -1,6 +1,7 @@
 using Azure.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Web;
+using OhMyWord.Api.Extensions;
 using OhMyWord.Api.Hubs;
 using OhMyWord.Api.Services;
 using OhMyWord.Domain.Extensions;
@@ -81,15 +82,7 @@ public static class Program
                 }
 
                 // health checks        
-                services.AddHealthChecks()
-                    .AddCosmosDbCollection(
-                        context.Configuration["CosmosDb:AccountEndpoint"] ?? string.Empty,
-                        new DefaultAzureCredential(),
-                        context.Configuration.GetValue<string>("CosmosDb:DatabaseId"),
-                        context.Configuration.GetValue<string[]>("CosmosDb:ContainerIds"))
-                    .AddAzureTable(new Uri(context.Configuration["TableService:Endpoint"] ?? string.Empty),
-                        new DefaultAzureCredential(), "users")
-                    .AddCheck<WordsApiClientHealthCheck>("WordsApiClient");
+                services.AddApplicationHealthChecks(context);
             });
 
         // build the application
