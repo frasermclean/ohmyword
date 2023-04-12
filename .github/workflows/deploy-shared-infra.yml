@@ -31,8 +31,6 @@ jobs:
           template: ${{ env.TEMPLATE_ROOT }}/shared/main.bicep
           parameters: >-
             ${{ env.TEMPLATE_ROOT }}/shared/main.parameters.json
-            dictionaryApiKey=${{ secrets.DICTIONARY_API_KEY }}
-            thesaurusApiKey=${{ secrets.THESAURUS_API_KEY }}
 
       # Upload published application artifact
       - name: Upload artifact
