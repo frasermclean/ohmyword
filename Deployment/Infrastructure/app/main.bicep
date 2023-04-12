@@ -69,11 +69,6 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10
   scope: resourceGroup(sharedResourceGroup)
 }
 
-resource b2cTenant 'Microsoft.AzureActiveDirectory/b2cDirectories@2021-04-01' existing = {
-  name: 'ohmywordauth.onmicrosoft.com'
-  scope: resourceGroup(sharedResourceGroup)
-}
-
 resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' existing = {
   name: '${appName}shared'
   scope: resourceGroup(sharedResourceGroup)
