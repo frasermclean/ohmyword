@@ -25,8 +25,7 @@ public static class HealthChecksRegistration
                 context.Configuration.GetValue<string>("CosmosDb:DatabaseId"),
                 context.Configuration.GetValue<string[]>("CosmosDb:ContainerIds"))
             .AddAzureTable(new Uri(context.Configuration["TableService:Endpoint"] ?? string.Empty),
-                new DefaultAzureCredential(), "users")
-            .AddCheck<WordsApiClientHealthCheck>("WordsApiClient");
+                new DefaultAzureCredential(), "users");
 
         return services;
     }
