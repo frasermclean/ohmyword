@@ -73,6 +73,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       BUILD_CONFIGURATION: Release
+      PUBLISH_OS: linux
       PUBLISH_DIRECTORY: ${{ github.workspace }}/app
     steps:
       # Check out the repository
@@ -94,7 +95,7 @@ jobs:
       # Publish application
       - name: Publish application
         working-directory: ./BackEnd/Api
-        run: dotnet publish --configuration $BUILD_CONFIGURATION --output $PUBLISH_DIRECTORY
+        run: dotnet publish --configuration $BUILD_CONFIGURATION --os $PUBLISH_OS --output $PUBLISH_DIRECTORY
 
       # Delete app settings file
       - name: Remove app settings file
