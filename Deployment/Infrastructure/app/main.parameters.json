@@ -38,6 +38,9 @@
         "letterHintDelay": 3,
         "postRoundDelay": 5
       }
+    },
+    "rapidApiKey": {
+      "value": ""
     }
   }
 }

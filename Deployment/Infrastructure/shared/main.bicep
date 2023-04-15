@@ -1,7 +1,7 @@
 targetScope = 'resourceGroup'
 
 @description('Name of the application / workload')
-param appName string
+param workload string
 
 @description('The default Azure location to deploy the resources to')
 param location string
@@ -15,16 +15,8 @@ param totalThroughputLimit int
 @description('Public IP addresses allowed to access Azure resources')
 param allowedIpAddresses array
 
-@secure()
-@description('API key for the dictionary API service')
-param dictionaryApiKey string = ''
-
-@secure()
-@description('API key for the thesaurus API service')
-param thesaurusApiKey string = ''
-
 var tags = {
-  workload: appName
+  workload: workload
   environment: 'shared'
 }
 
@@ -38,7 +30,11 @@ var azurePortalIpAddresses = [
 
 var productionSubnetName = 'ProductionSubnet'
 var testSubnetName = 'TestSubnet'
-var functionsSubnetName = 'FunctionsSubnet'
+
+// b2c tenant (existing)
+resource b2cTenant 'Microsoft.AzureActiveDirectory/b2cDirectories@2021-04-01' existing = {
+  name: 'ohmywordauth.onmicrosoft.com'
+}
 
 // dns zone for the application
 resource dnsZone 'Microsoft.Network/dnsZones@2018-05-01' = {
@@ -49,7 +45,7 @@ resource dnsZone 'Microsoft.Network/dnsZones@2018-05-01' = {
 
 // virtual network
 resource virtualNetwork 'Microsoft.Network/virtualNetworks@2022-09-01' = {
-  name: 'vnet-${appName}'
+  name: 'vnet-${workload}'
   location: location
   tags: tags
   properties: {
@@ -97,23 +93,6 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2022-09-01' = {
           ]
         }
       }
-      {
-        name: functionsSubnetName
-        properties: {
-          addressPrefix: '10.3.3.0/24'
-          serviceEndpoints: [
-            { service: 'Microsoft.Storage' }
-          ]
-          delegations: [
-            {
-              name: 'dlg-serverFarms'
-              properties: {
-                serviceName: 'Microsoft.Web/serverFarms'
-              }
-            }
-          ]
-        }
-      }
     ]
   }
 
@@ -124,15 +103,11 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2022-09-01' = {
   resource testSubnet 'subnets' existing = {
     name: testSubnetName
   }
-
-  resource functionsSubnet 'subnets' existing = {
-    name: functionsSubnetName
-  }
 }
 
 // cosmos db account
 resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-08-15' = {
-  name: 'cosmos-${appName}-shared'
+  name: 'cosmos-${workload}-shared'
   location: location
   tags: tags
   properties: {
@@ -171,7 +146,7 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-08-15' = {
 
 // log analytics workspace
 resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
-  name: 'law-${appName}-shared'
+  name: 'law-${workload}-shared'
   location: location
   tags: tags
   properties: {
@@ -187,7 +162,7 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10
 
 // storage account
 resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
-  name: '${appName}shared'
+  name: '${workload}shared'
   location: location
   tags: tags
   kind: 'StorageV2'
@@ -210,10 +185,6 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
           id: virtualNetwork::testSubnet.id
           action: 'Allow'
         }
-        {
-          id: virtualNetwork::functionsSubnet.id
-          action: 'Allow'
-        }
       ]
       ipRules: [for ipAddress in allowedIpAddresses: {
         value: ipAddress
@@ -232,7 +203,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
 
 // app service plan for app services and function apps
 resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
-  name: 'asp-${appName}-shared'
+  name: 'asp-${workload}-shared'
   location: location
   tags: tags
   kind: 'linux'
@@ -244,9 +215,73 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
   }
 }
 
+// app configuration
+resource appConfiguration 'Microsoft.AppConfiguration/configurationStores@2022-05-01' = {
+  name: 'ac-${workload}-shared'
+  location: location
+  tags: tags
+  sku: {
+    name: 'Free'
+  }
+  identity: {
+    type: 'SystemAssigned'
+  }
+  properties: {
+    disableLocalAuth: false
+  }
+
+  resource azureAdInstance 'keyValues' = {
+    name: 'AzureAd:Instance'
+    properties: {
+      value: 'https://ohmywordauth.b2clogin.com'
+      contentType: 'text/plain'
+    }
+  }
+
+  resource azureAdDomain 'keyValues' = {
+    name: 'AzureAd:Domain'
+    properties: {
+      value: 'ohmywordauth.onmicrosoft.com'
+      contentType: 'text/plain'
+    }
+  }
+
+  resource azureAdTenantId 'keyValues' = {
+    name: 'AzureAd:TenantId'
+    properties: {
+      value: b2cTenant.properties.tenantId
+      contentType: 'text/plain'
+    }
+  }
+
+  resource azureAdSignUpSignInPolicyId 'keyValues' = {
+    name: 'AzureAd:SignUpSignInPolicyId'
+    properties: {
+      value: 'B2C_1A_SignUp_SignIn'
+      contentType: 'text/plain'
+    }
+  }
+
+  resource cosmosDbAccountEndpoint 'keyValues' = {
+    name: 'CosmosDb:AccountEndpoint'
+    properties: {
+      value: cosmosDbAccount.properties.documentEndpoint
+      contentType: 'text/plain'
+    }
+  }
+
+  resource tableServiceEndpoint 'keyValues' = {
+    name: 'TableService:Endpoint'
+    properties: {
+      value: storageAccount.properties.primaryEndpoints.table
+      contentType: 'text/plain'
+    }
+  }
+}
+
 // key vault
 resource keyVault 'Microsoft.KeyVault/vaults@2022-11-01' = {
-  name: 'kv-${appName}-shared'
+  name: 'kv-${workload}-shared'
   location: location
   tags: tags
   properties: {
@@ -277,20 +312,45 @@ resource keyVault 'Microsoft.KeyVault/vaults@2022-11-01' = {
       }]
     }
   }
+}
 
-  resource dictionaryApiKeySecret 'secrets' = if (!empty(dictionaryApiKey)) {
-    name: 'DictionaryApiKey'
-    properties: {
-      value: dictionaryApiKey
-      contentType: 'text/plain'
-    }
+// key vault secrets user role definition
+resource keyVaultSecretsUserRoleDefinition 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+  name: '4633458b-17de-408a-b874-0445c86b69e6'
+  scope: resourceGroup()
+}
+
+// key vault secrets user role assignment
+resource roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(keyVault.id, keyVaultSecretsUserRoleDefinition.id, appConfiguration.id)
+  scope: keyVault
+  properties: {
+    principalId: appConfiguration.identity.principalId
+    principalType: 'ServicePrincipal'
+    roleDefinitionId: keyVaultSecretsUserRoleDefinition.id
   }
+}
 
-  resource thesaurusApiKeySecret 'secrets' = if (!empty(thesaurusApiKey)) {
-    name: 'ThesaurusApiKey'
-    properties: {
-      value: thesaurusApiKey
-      contentType: 'text/plain'
-    }
+// application insights for b2c logging
+resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
+  name: toLower('ai-${workload}-auth')
+  location: location
+  tags: tags
+  kind: 'web'
+  properties: {
+    Application_Type: 'web'
+    Request_Source: 'rest'
+    WorkspaceResourceId: logAnalyticsWorkspace.id
+  }
+}
+
+module functionApp 'functionApp.bicep' = {
+  name: 'functionApp'
+  params: {
+    workload: workload
+    location: location
+    domainName: domainName
+    logAnalyticsWorkspaceName: logAnalyticsWorkspace.name
+    storageAccountName: storageAccount.name
   }
 }

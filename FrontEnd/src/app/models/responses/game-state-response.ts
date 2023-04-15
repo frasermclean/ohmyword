@@ -1,4 +1,5 @@
-import { WordHintResponse } from "./word-hint.response";
+import { WordHintResponse } from './word-hint.response';
+import { RoundSummaryResponse } from './round-summary.response';
 
 export interface GameStateResponse {
   roundActive: boolean;
@@ -6,5 +7,6 @@ export interface GameStateResponse {
   roundId: string;
   intervalStart: string;
   intervalEnd: string;
-  wordHint: WordHintResponse;
+  wordHint: WordHintResponse | null;
+  roundSummary: RoundSummaryResponse | null;
 }

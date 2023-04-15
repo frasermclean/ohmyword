@@ -1,0 +1,10 @@
+<h2>The round has ended</h2>
+<ng-container *ngIf="summary$ | async as summary">
+  <div class="end-reason" [ngSwitch]="summary.endReason">
+    <p *ngSwitchCase="'allPlayersAwarded'">All players have guessed the word!</p>
+    <p *ngSwitchDefault>Time ran out before all players guess the word!</p>
+  </div>
+  <p class="word-reveal">
+    The word was: <strong>{{ summary.word | uppercase }}</strong> ({{ summary.partOfSpeech }})
+  </p>
+</ng-container>

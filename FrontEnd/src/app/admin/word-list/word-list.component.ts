@@ -6,13 +6,13 @@ import { Sort } from '@angular/material/sort';
 import { Store } from '@ngxs/store';
 import { Subject } from 'rxjs';
 import { debounceTime, map, takeUntil, tap, withLatestFrom } from 'rxjs/operators';
-import { SearchWordsOrderBy } from 'src/app/models/enums/search-words-order-by.enum';
-import { SortDirection } from 'src/app/models/enums/sort-direction.enum';
-import { SearchWordsRequest } from 'src/app/models/requests/search-words.request';
-import { Word } from 'src/app/models/word.model';
+import { SearchWordsOrderBy } from '@models/enums/search-words-order-by.enum';
+import { SortDirection } from '@models/enums/sort-direction.enum';
+import { SearchWordsRequest } from '@models/requests/search-words.request';
+import { Word } from '@models/word.model';
 import { WordEditComponent, WordEditData, WordEditResult } from './word-edit/word-edit.component';
-import { Words } from '../words.actions';
-import { WordsState } from '../words.state';
+import { Words } from '@state/words/words.actions';
+import { WordsState } from '@state/words/words.state';
 import {
   ConfirmationPromptComponent,
   ConfirmationPromptData,

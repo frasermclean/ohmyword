@@ -23,6 +23,6 @@ public class GetWordEndpoint : Endpoint<GetWordRequest, Word>
 
         await result.Match(
             word => SendOkAsync(word, cancellationToken),
-            notFound => SendNotFoundAsync(cancellationToken));
+            _ => SendNotFoundAsync(cancellationToken));
     }
 }

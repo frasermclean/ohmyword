@@ -1,5 +1,6 @@
 ﻿using OhMyWord.Infrastructure.Entities;
 using OhMyWord.Infrastructure.Enums;
+using System.Text.Json.Serialization;
 
 namespace OhMyWord.Domain.Models;
 
@@ -12,7 +13,8 @@ public class Definition
     /// <summary>
     /// Example of this <see cref="Definition"/> used in a sentence.
     /// </summary>
-    public string Example { get; init; } = string.Empty;
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Example { get; init; }
 
     public static Definition FromEntity(DefinitionEntity entity) => new()
     {

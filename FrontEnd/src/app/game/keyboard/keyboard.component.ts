@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Store } from '@ngxs/store';
-import { Guess } from '../game.actions';
+import { Guess } from '@state/guess/guess.actions';
 
 @Component({
   selector: 'app-keyboard',

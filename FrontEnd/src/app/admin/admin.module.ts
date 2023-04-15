@@ -22,7 +22,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { AdminPortalComponent } from './admin-portal/admin-portal.component';
-import { WordsState } from './words.state';
+import { WordsState } from '../state/words/words.state';
 import { WordListComponent } from './word-list/word-list.component';
 import { WordEditComponent } from './word-list/word-edit/word-edit.component';
 import { DefinitionEditComponent } from './word-list/word-edit/definition-edit/definition-edit.component';

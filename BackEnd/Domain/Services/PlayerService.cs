@@ -4,6 +4,7 @@ using OhMyWord.Domain.Models;
 using OhMyWord.Infrastructure.Entities;
 using OhMyWord.Infrastructure.Services;
 using System.Collections.Concurrent;
+using System.Net;
 
 namespace OhMyWord.Domain.Services;
 
@@ -16,7 +17,7 @@ public interface IPlayerService
     /// </summary>
     IEnumerable<string> PlayerIds { get; }
 
-    Task<Player> AddPlayerAsync(string visitorId, string connectionId);
+    Task<Player> AddPlayerAsync(string visitorId, string connectionId, IPAddress ipAddress, Guid? userId = default);
     void RemovePlayer(string connectionId);
     Player GetPlayer(string connectionId);
     Task IncrementPlayerScoreAsync(string visitorId, int points);
@@ -41,18 +42,24 @@ public class PlayerService : IPlayerService
         this.playerRepository = playerRepository;
     }
 
-    public async Task<Player> AddPlayerAsync(string visitorId, string connectionId)
+    public async Task<Player> AddPlayerAsync(string visitorId, string connectionId, IPAddress ipAddress, Guid? userId)
     {
         var player = (await playerRepository.GetPlayerAsync(visitorId))?.ToPlayer(connectionId);
         if (player is not null)
         {
+            logger.LogDebug("Found existing visitor with ID: {VisitorId}", visitorId);
+
             // TODO: Handle multiple connections with same visitor ID
             await playerRepository.IncrementRegistrationCountAsync(player.Id);
-            logger.LogDebug("Found existing visitor with ID: {VisitorId}", visitorId);
+            if (!player.IpAddresses.Contains(ipAddress))
+                await playerRepository.AddIpAddressAsync(player.Id, ipAddress.ToString());
         }
 
         // create player if existing player was not found
-        player ??= (await playerRepository.CreatePlayerAsync(new PlayerEntity { Id = visitorId }))
+        player ??= (await playerRepository.CreatePlayerAsync(new PlayerEntity
+            {
+                Id = visitorId, UserId = userId, IpAddresses = new[] { ipAddress.ToString() }
+            }))
             .ToPlayer(connectionId);
 
         var wasAdded = players.TryAdd(connectionId, player);

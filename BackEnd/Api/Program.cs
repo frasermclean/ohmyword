@@ -1,13 +1,12 @@
 using Azure.Identity;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Identity.Web;
+using Microsoft.Extensions.Configuration.AzureAppConfiguration;
+using OhMyWord.Api.Extensions;
 using OhMyWord.Api.Hubs;
 using OhMyWord.Api.Services;
 using OhMyWord.Domain.Extensions;
 using OhMyWord.Domain.Options;
-using OhMyWord.Domain.Services;
 using OhMyWord.Infrastructure.Extensions;
-using OhMyWord.Infrastructure.HealthChecks;
+using OhMyWord.WordsApi.Services;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -19,54 +18,59 @@ public static class Program
     {
         var appBuilder = WebApplication.CreateBuilder(args);
 
-        // configure app host
-        appBuilder.Host
-            .ConfigureServices((context, services) =>
+        // azure app configuration
+        var appConfigEnabled = appBuilder.Configuration.GetValue("AppConfig:Enabled", true);
+        if (appConfigEnabled)
+            appBuilder.Configuration.AddAzureAppConfiguration(options =>
             {
-                // microsoft identity authentication services
-                services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                    .AddMicrosoftIdentityWebApi(context.Configuration);
-
-                // fast endpoints
-                services.AddFastEndpoints();
-
-                // signalR services
-                services.AddSignalR()
-                    .AddJsonProtocol(options =>
-                        options.PayloadSerializerOptions.Converters.Add(
-                            new JsonStringEnumConverter(JsonNamingPolicy.CamelCase))
-                    );
-
-                // game services
-                services.AddHostedService<GameCoordinator>();
-                services.AddSingleton<IGameService, GameService>();
-                services.AddOptions<GameServiceOptions>()
-                    .Bind(context.Configuration.GetSection(GameServiceOptions.SectionName))
-                    .ValidateDataAnnotations()
-                    .ValidateOnStart();
-
-                // local project services
-                services.AddDomainServices();
-                services.AddCosmosDbRepositories(context);
-                services.AddUsersRepository(context);
-                services.AddDictionaryServices(context);
-
-                // development services
-                if (context.HostingEnvironment.IsDevelopment())
-                {
-                    services.AddCors();
-                }
-
-                // health checks        
-                services.AddHealthChecks()
-                    .AddCosmosDbCollection(
-                        context.Configuration["CosmosDb:AccountEndpoint"] ?? string.Empty, new DefaultAzureCredential(),
-                        context.Configuration.GetValue<string>("CosmosDb:DatabaseId"),
-                        context.Configuration.GetValue<string[]>("CosmosDb:ContainerIds"))
-                    .AddAzureTable(new Uri(context.Configuration["TableService:Endpoint"] ?? string.Empty),
-                        new DefaultAzureCredential(), "users")
-                    .AddCheck<DictionaryServiceHealthCheck>("DictionaryService");
+                var endpoint = appBuilder.Configuration.GetValue<string>("AppConfig:Endpoint") ??
+                               throw new InvalidOperationException("Application configuration endpoint is not set.");
+                var appEnv = appBuilder.Configuration.GetValue<string>("AppConfig:Environment", "dev");
+                options.Connect(new Uri(endpoint), new DefaultAzureCredential())
+                    .Select(KeyFilter.Any) // select keys with no label
+                    .Select(KeyFilter.Any, appEnv) // select keys with matching app environment label
+                    .ConfigureKeyVault(vaultOptions => vaultOptions.SetCredential(new DefaultAzureCredential()));
             });
+
+        // configure app host
+        appBuilder.Host.ConfigureServices((context, services) =>
+        {
+            // microsoft identity authentication services
+            services.AddMicrosoftIdentityAuthentication(context);
+
+            // fast endpoints
+            services.AddFastEndpoints();
+
+            // signalR services
+            services.AddSignalR()
+                .AddJsonProtocol(options =>
+                    options.PayloadSerializerOptions.Converters.Add(
+                        new JsonStringEnumConverter(JsonNamingPolicy.CamelCase))
+                );
+
+            // game services
+            services.AddHostedService<GameCoordinator>();
+            services.AddSingleton<IGameService, GameService>();
+            services.AddOptions<GameServiceOptions>()
+                .Bind(context.Configuration.GetSection(GameServiceOptions.SectionName))
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
+
+            // local project services
+            services.AddDomainServices();
+            services.AddCosmosDbRepositories(context);
+            services.AddUsersRepository(context);
+            services.AddWordsApiClient(context);
+
+            // development services
+            if (context.HostingEnvironment.IsDevelopment())
+            {
+                services.AddCors();
+            }
+
+            // health checks
+            services.AddApplicationHealthChecks(context);
+        });
 
         // build the application
         var app = appBuilder.Build();

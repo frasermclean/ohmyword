@@ -1,0 +1,39 @@
+<mat-toolbar color="primary" class="mat-elevation-z8">
+  <a routerLink="/">
+    <h1 class="app-name">{{ appName }}</h1>
+  </a>
+  <h5 *ngIf="environmentName" class="app-env">{{ environmentName | uppercase }}</h5>
+
+  <span class="spacer"></span>
+
+  <div *ngIf="!(busy$ | async)" class="user-info">
+    <span>{{ displayName$ | async }}</span>
+
+    <ng-container *ngIf="role$ | async as role">
+      <ng-container *ngIf="role !== 'guest'; else guest">
+        <button mat-mini-fab [matMenuTriggerFor]="menu">
+          <mat-icon>menu</mat-icon>
+        </button>
+
+        <!-- user menu -->
+        <mat-menu #menu>
+          <button mat-menu-item disabled>
+            <mat-icon>person</mat-icon>
+            <span>Profile</span>
+          </button>
+          <button mat-menu-item *ngIf="role === 'admin'" routerLink="/admin/words">
+            <mat-icon>settings</mat-icon>
+            <span>Administration</span>
+          </button>
+          <button mat-menu-item (click)="onLogout()">
+            <mat-icon>exit_to_app</mat-icon>
+            <span>Logout</span>
+          </button>
+        </mat-menu>
+      </ng-container>
+      <ng-template #guest>
+        <button *ngIf="role === 'guest'" mat-raised-button color="accent" (click)="onLogin()">LOGIN / REGISTER</button>
+      </ng-template>
+    </ng-container>
+  </div>
+</mat-toolbar>

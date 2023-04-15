@@ -14,7 +14,7 @@ on:
     paths:
       - .github/workflows/cicd-functions.yml
       - Functions/**
-      - ./Deployment/Infrastructure/functions/**
+      - ./Deployment/Infrastructure/shared/**
 
 jobs:
   # Build and publish functions application

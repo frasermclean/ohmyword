@@ -1,7 +1,11 @@
-﻿namespace OhMyWord.Api.Commands.RegisterPlayer;
+﻿using System.Net;
+
+namespace OhMyWord.Api.Commands.RegisterPlayer;
 
 public class RegisterPlayerCommand : ICommand<RegisterPlayerResponse>
 {
-    public string VisitorId { get; init; } = string.Empty;
-    public string ConnectionId { get; init; } = string.Empty;
+    public required string VisitorId { get; init; }
+    public required string ConnectionId { get; init; }
+    public required Guid? UserId { get; init; }
+    public required IPAddress IpAddress { get; init; }
 }

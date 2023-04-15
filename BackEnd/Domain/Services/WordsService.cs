@@ -34,15 +34,6 @@ public interface IWordsService
 
     Task<OneOf<Word, NotFound>> GetWordAsync(string wordId, CancellationToken cancellationToken = default);
     Task<OneOf<Word, NotFound, Conflict>> CreateWordAsync(Word word, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Create a new word with the given ID automatically populated with definitions from the dictionary.
-    /// </summary>
-    /// <param name="wordId">The word to create</param>
-    /// <param name="cancellationToken">Task cancellation token</param>
-    /// <returns></returns>
-    Task<OneOf<Word, NotFound, Conflict>> CreateWordAsync(string wordId, CancellationToken cancellationToken = default);
-
     Task UpdateWordAsync(Word word, CancellationToken cancellationToken = default);
     Task DeleteWordAsync(string wordId, CancellationToken cancellationToken = default);
 }
@@ -52,15 +43,14 @@ public class WordsService : IWordsService
     private readonly ILogger<WordsService> logger;
     private readonly IWordsRepository wordsRepository;
     private readonly IDefinitionsRepository definitionsRepository;
-    private readonly IDictionaryService dictionaryService;
+
 
     public WordsService(ILogger<WordsService> logger, IWordsRepository wordsRepository,
-        IDefinitionsRepository definitionsRepository, IDictionaryService dictionaryService)
+        IDefinitionsRepository definitionsRepository)
     {
         this.logger = logger;
         this.wordsRepository = wordsRepository;
         this.definitionsRepository = definitionsRepository;
-        this.dictionaryService = dictionaryService;
     }
 
     public IAsyncEnumerable<Word> SearchWords(int offset, int limit, string filter, SearchWordsOrderBy orderBy,
@@ -80,22 +70,6 @@ public class WordsService : IWordsService
         return wordEntity is not null
             ? await MapToWordAsync(wordEntity, cancellationToken)
             : new NotFound();
-    }
-
-    public async Task<OneOf<Word, NotFound, Conflict>> CreateWordAsync(string wordId,
-        CancellationToken cancellationToken = default)
-    {
-        var dictionaryWords = (await dictionaryService.LookupWordAsync(wordId, cancellationToken)).ToList();
-
-        if (dictionaryWords.Count == 0) return new NotFound();
-
-        var words = dictionaryWords
-            .Take(1)
-            .Where(dictionaryWord =>
-                string.Equals(dictionaryWord.Metadata.Stems.First(), wordId, StringComparison.CurrentCultureIgnoreCase))
-            .Select(dictionaryWord => dictionaryWord.ToWord());
-
-        return await CreateWordAsync(words.First(), cancellationToken);
     }
 
     public async Task<OneOf<Word, NotFound, Conflict>> CreateWordAsync(Word word,

@@ -1,0 +1,47 @@
+<div id="container" [ngSwitch]="connectionState$ | async">
+  <!-- connecting -->
+  <div *ngSwitchCase="'connecting'" id="connecting-container">
+    <mat-spinner color="accent"></mat-spinner>
+    <p>Connecting to server</p>
+  </div>
+
+  <!-- disconnected -->
+  <div *ngSwitchCase="'disconnected'" id="disconnected-container">
+    <h3>Not connected to server</h3>
+    <button mat-raised-button color="accent" (click)="connect()">RETRY CONNECTION</button>
+  </div>
+
+  <!-- connected -->
+  <ng-container *ngSwitchCase="'connected'">
+    <div *ngIf="registered$ | async" id="game-container">
+      <app-stats></app-stats>
+
+      <!-- round is active -->
+      <ng-container *ngIf="roundActive$ | async; else roundEnded">
+        <!-- player has guessed the word -->
+        <ng-container *ngIf="guessedCorrectly$ | async; else guess">
+          <h2>You guessed it!</h2>
+          <p>Waiting for other players</p>
+        </ng-container>
+
+        <!-- player is guessing the word -->
+        <ng-template #guess>
+          <app-hint></app-hint>
+          <app-guess></app-guess>
+          <app-keyboard *ngIf="showKeyboard"></app-keyboard>
+        </ng-template>
+      </ng-container>
+
+      <!-- round ended - post round summary -->
+      <ng-template #roundEnded>
+        <app-round-summary></app-round-summary>
+      </ng-template>
+
+      <app-countdown
+        *ngIf="interval$ | async as interval"
+        [startDate]="interval.startDate"
+        [endDate]="interval.endDate"
+      ></app-countdown>
+    </div>
+  </ng-container>
+</div>
