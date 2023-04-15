@@ -3,45 +3,32 @@ targetScope = 'resourceGroup'
 @description('Name of the application / workload')
 param workload string
 
-@description('Category of the workload')
-param category string
-
 @description('The default Azure location to deploy the resources to')
 param location string
 
-@description('Name of the shared resource group')
-param sharedResourceGroup string
+@description('Category of the workload')
+param category string = 'functions'
 
 @description('DNS domain name')
 param domainName string
+
+@description('Name of the shared log analytics workspace')
+param logAnalyticsWorkspaceName string
+
+@description('Name of the shared storage account')
+param storageAccountName string
 
 var tags = {
   workload: workload
   category: category
 }
 
-resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' existing = {
-  name: 'asp-${workload}-shared'
-  scope: resourceGroup(sharedResourceGroup)
-}
-
 resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' existing = {
-  name: toLower('law-${workload}-shared')
-  scope: resourceGroup(sharedResourceGroup)
-}
-
-resource virtualNetwork 'Microsoft.Network/virtualNetworks@2022-09-01' existing = {
-  name: toLower('vnet-${workload}')
-  scope: resourceGroup(sharedResourceGroup)
-
-  resource functionsSubnet 'subnets' existing = {
-    name: 'FunctionsSubnet'
-  }
+  name: logAnalyticsWorkspaceName
 }
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' existing = {
-  name: toLower('${workload}shared')
-  scope: resourceGroup(sharedResourceGroup)
+  name: storageAccountName
 }
 
 // application insights
@@ -57,15 +44,16 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   }
 }
 
-// custom domain DNS records
-module customDomain '../modules/customDomain.bicep' = {
-  name: 'customDomain-${category}-${domainName}'
-  scope: resourceGroup(sharedResourceGroup)
-  params: {
-    domainName: domainName
-    subDomain: category
-    verificationId: functionApp.properties.customDomainVerificationId
-    hostNameOrIpAddress: '${functionApp.name}.azurewebsites.net'
+resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
+  name: 'asp-${workload}-functions'
+  location: location
+  tags: tags
+  sku: {
+    name: 'Y1'
+    tier: 'Dynamic'
+  }
+  properties: {
+    reserved: true
   }
 }
 
@@ -80,14 +68,11 @@ resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
   }
   properties: {
     serverFarmId: appServicePlan.id
-    virtualNetworkSubnetId: virtualNetwork::functionsSubnet.id
-    vnetRouteAllEnabled: true
     reserved: true
     httpsOnly: true
     siteConfig: {
       linuxFxVersion: 'DOTNET-ISOLATED|7.0'
       http20Enabled: true
-      alwaysOn: true
       ftpsState: 'Disabled'
       healthCheckPath: '/api/health'
       appSettings: [
@@ -136,6 +121,17 @@ resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
   }
 }
 
+// custom domain DNS records
+module customDomain '../modules/customDomain.bicep' = {
+  name: 'customDomain-${category}-${domainName}'
+  params: {
+    domainName: domainName
+    subDomain: category
+    verificationId: functionApp.properties.customDomainVerificationId
+    hostNameOrIpAddress: '${functionApp.name}.azurewebsites.net'
+  }
+}
+
 // app service managed certificate
 resource managedCertificate 'Microsoft.Web/certificates@2022-03-01' = {
   name: 'cert-${workload}-${category}'
@@ -157,13 +153,20 @@ module sniEnable '../modules/sniEnable.bicep' = {
   }
 }
 
-// role assignment for function app to access storage account
-module storageAccountRoleAssignment '../modules/roleAssignment.bicep' = {
-  name: 'roleAssignment-${storageAccount.name}-${functionApp.name}'
-  scope: resourceGroup(sharedResourceGroup)
-  params: {
+var storageTableDataContributorRoleId = '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3'
+
+resource roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(storageAccount.id, storageTableDataContributorRoleId)
+  scope: storageAccount
+  properties: {
+    roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', storageTableDataContributorRoleId)
     principalId: functionApp.identity.principalId
     principalType: 'ServicePrincipal'
-    roleNames: [ 'StorageTableDataContributor' ]
   }
 }
+
+@description('The principal ID of the managed identity of function app')
+output functionAppPrincipalId string = functionApp.identity.principalId
+
+@description('Possible outbound IP addresses for the function app')
+output functionAppOutboundIpAddresses array = split(functionApp.properties.possibleOutboundIpAddresses, ',')
