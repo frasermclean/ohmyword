@@ -113,6 +113,9 @@ jobs:
     name: Deploy shared infrastructure
     uses: ./.github/workflows/deploy-shared-infra.yml
     if: github.event_name != 'pull_request'
+    with:
+      environment: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
+      resourceGroupName: rg-ohmyword-shared
     secrets: inherit
 
   # Deploy application infrastructure

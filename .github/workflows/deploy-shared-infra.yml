@@ -1,11 +1,21 @@
 name: Deploy shared infrastructure
 
-on: workflow_call
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: "The environment to deploy to"
+        required: true
+        type: string
+      resourceGroupName:
+        description: "The name of the resource group to deploy to"
+        required: true
+        type: string
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: shared
+    environment: ${{ inputs.environment }}
     env:
       TEMPLATE_ROOT: ./Deployment/Infrastructure
     permissions:
@@ -27,7 +37,7 @@ jobs:
       - uses: azure/arm-deploy@v1
         name: Deploy shared infrastructure
         with:
-          resourceGroupName: rg-ohmyword-shared
+          resourceGroupName: ${{ inputs.resourceGroupName }}
           template: ${{ env.TEMPLATE_ROOT }}/shared/main.bicep
           parameters: >-
             ${{ env.TEMPLATE_ROOT }}/shared/main.parameters.json
