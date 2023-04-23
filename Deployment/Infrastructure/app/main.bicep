@@ -188,10 +188,19 @@ resource staticWebApp 'Microsoft.Web/staticSites@2022-03-01' = {
     allowConfigFileUpdates: true
   }
 
-  // custom domain
-  resource customDomain 'customDomains' = {
+  // custom domain (subdomain in test)
+  resource testCustomDomain 'customDomains' = if (appEnv == 'test') {
     name: frontendHostname
     dependsOn: [ dnsRecords ]
+  }
+
+  // custom domain (apex domain in prod)
+  resource apexCustomDomain 'customDomains' = if (appEnv == 'prod') {
+    name: frontendHostname
+    dependsOn: [ dnsRecords ]
+    properties: {
+      validationMethod: 'dns-txt-token'
+    }
   }
 }
 
