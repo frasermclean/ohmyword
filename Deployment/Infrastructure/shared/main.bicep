@@ -321,7 +321,7 @@ resource keyVaultSecretsUserRoleDefinition 'Microsoft.Authorization/roleDefiniti
 }
 
 // key vault secrets user role assignment
-resource roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+resource keyVaultRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid(keyVault.id, keyVaultSecretsUserRoleDefinition.id, appConfiguration.id)
   scope: keyVault
   properties: {
@@ -344,13 +344,29 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   }
 }
 
-module functionApp 'functionApp.bicep' = {
-  name: 'functionApp'
+module functions 'functions.bicep' = {
+  name: 'functions'
+  scope: resourceGroup('rg-${workload}-functions')
   params: {
     workload: workload
     location: location
     domainName: domainName
     logAnalyticsWorkspaceName: logAnalyticsWorkspace.name
     storageAccountName: storageAccount.name
+    sharedResourceGroup: resourceGroup().name
+  }
+}
+
+module roleAssignments 'roleAssignments.bicep' = {
+  name: 'roleAssignments-shared'
+  params: {
+    keyVaultName: keyVault.name
+    storageAccountName: storageAccount.name
+    storageAccountRoles: [
+      {
+        principalId: functions.outputs.functionAppPrincipalId
+        roleDefinitionId: '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3'
+      }
+    ]
   }
 }
