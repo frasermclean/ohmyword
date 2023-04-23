@@ -18,6 +18,9 @@ param logAnalyticsWorkspaceName string
 @description('Name of the shared storage account')
 param storageAccountName string
 
+@description('Shared resource group name')
+param sharedResourceGroup string
+
 var tags = {
   workload: workload
   category: category
@@ -25,15 +28,17 @@ var tags = {
 
 resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' existing = {
   name: logAnalyticsWorkspaceName
+  scope: resourceGroup(sharedResourceGroup)
 }
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' existing = {
   name: storageAccountName
+  scope: resourceGroup(sharedResourceGroup)
 }
 
 // application insights
 resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
-  name: toLower('ai-${workload}-${category}')
+  name: toLower('appi-${workload}-${category}')
   location: location
   tags: tags
   kind: 'web'
@@ -44,6 +49,54 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   }
 }
 
+// action group
+resource actionGroup 'Microsoft.Insights/actionGroups@2023-01-01' = {
+  name: toLower('ag-${workload}-${category}')
+  location: 'global'
+  tags: tags
+  properties: {
+    enabled: true
+    groupShortName: 'SmartDetect'
+    armRoleReceivers: [
+      {
+        name: 'Monitoring Contributor'
+        roleId: '749f88d5-cbae-40b8-bcfc-e573ddc772fa'
+        useCommonAlertSchema: true
+      }
+      {
+        name: 'Monitoring Reader'
+        roleId: '43d0d8ad-25c7-4714-9337-8ba259a9fe05'
+        useCommonAlertSchema: true
+      }
+    ]
+  }
+}
+
+// smart detector alert rule
+resource smartDetectorAlertRule 'Microsoft.AlertsManagement/smartDetectorAlertRules@2021-04-01' = {
+  name: toLower('sdar-${workload}-${category}-fa')
+  location: 'global'
+  tags: tags
+  properties: {
+    description: 'Failure Anomalies notifies you of an unusual rise in the rate of failed HTTP requests or dependency calls.'
+    severity: 'Sev3'
+    state: 'Enabled'
+    frequency: 'PT1M'
+    detector: {
+      id: 'FailureAnomaliesDetector'
+    }
+    scope: [
+      appInsights.id
+    ]
+    actionGroups: {
+      groupIds: [
+        actionGroup.id
+      ]
+    }
+  }
+}
+
+// consumption app service plan
 resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
   name: 'asp-${workload}-functions'
   location: location
@@ -123,7 +176,8 @@ resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
 
 // custom domain DNS records
 module customDomain '../modules/customDomain.bicep' = {
-  name: 'customDomain-${category}-${domainName}'
+  name: 'customDomain-${functionApp.name}'
+  scope: resourceGroup(sharedResourceGroup)
   params: {
     domainName: domainName
     subDomain: category
@@ -150,18 +204,6 @@ module sniEnable '../modules/sniEnable.bicep' = {
     appServiceName: functionApp.name
     hostname: functionApp::hostNameBinding.name
     certificateThumbprint: managedCertificate.properties.thumbprint
-  }
-}
-
-var storageTableDataContributorRoleId = '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3'
-
-resource roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(storageAccount.id, storageTableDataContributorRoleId)
-  scope: storageAccount
-  properties: {
-    roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', storageTableDataContributorRoleId)
-    principalId: functionApp.identity.principalId
-    principalType: 'ServicePrincipal'
   }
 }
 
