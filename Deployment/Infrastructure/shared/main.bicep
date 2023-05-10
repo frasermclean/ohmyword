@@ -352,8 +352,8 @@ module functions 'functions.bicep' = {
     location: location
     domainName: domainName
     logAnalyticsWorkspaceName: logAnalyticsWorkspace.name
-    storageAccountName: storageAccount.name
     sharedResourceGroup: resourceGroup().name
+    sharedStorageAccountName: storageAccount.name
   }
 }
 
