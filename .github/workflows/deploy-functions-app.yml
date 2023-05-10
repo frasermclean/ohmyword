@@ -1,20 +1,10 @@
-name: CI/CD Functions
+name: Deploy Functions App
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - .github/workflows/cicd-functions.yml
-      - Functions/**
-      - ./Deployment/Infrastructure/functions/**
-  pull_request:
-    branches:
-      - main
-    paths:
-      - .github/workflows/cicd-functions.yml
-      - Functions/**
-      - ./Deployment/Infrastructure/shared/**
+  workflow_call:
+    secrets:
+      PUBLISH_PROFILE:
+        required: true
 
 jobs:
   # Build and publish functions application
@@ -42,24 +32,12 @@ jobs:
           name: functions-app
           path: ${{ env.PUBLISH_DIRECTORY }}
 
-  # Deploy shared infrastructure
-  deploy-shared-infra:
-    name: Deploy shared infrastructure
-    uses: ./.github/workflows/deploy-shared-infra.yml
-    if: github.event_name != 'pull_request'
-    with:
-      environment: prod
-      resourceGroupName: rg-ohmyword-shared
-    secrets: inherit
-
   # Deploy functions application
   deploy-functions-app:
     name: Deploy functions application
     runs-on: ubuntu-latest
-    environment: prod
     needs:
       - build-publish
-      - deploy-shared-infra
     env:
       PACKAGE_DIRECTORY: ${{ github.workspace }}/app
     steps:
@@ -76,4 +54,4 @@ jobs:
         with:
           app-name: func-ohmyword-functions
           package: ${{ env.PACKAGE_DIRECTORY }}
-          publish-profile: ${{ secrets.AZURE_FUNCTIONS_PUBLISH_PROFILE }}
+          publish-profile: ${{ secrets.PUBLISH_PROFILE }}
