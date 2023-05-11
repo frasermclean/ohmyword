@@ -228,4 +228,4 @@ module sniEnable '../modules/sniEnable.bicep' = {
 output functionAppPrincipalId string = functionApp.identity.principalId
 
 @description('Possible outbound IP addresses for the function app')
-output functionAppOutboundIpAddresses array = split(functionApp.properties.possibleOutboundIpAddresses, ',')
+output functionAppOutboundIpAddresses string = functionApp.properties.outboundIpAddresses
