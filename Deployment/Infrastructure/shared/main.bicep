@@ -28,8 +28,7 @@ var azurePortalIpAddresses = [
   '52.187.184.26'
 ]
 
-var productionSubnetName = 'ProductionSubnet'
-var testSubnetName = 'TestSubnet'
+var appServiceSubnetName = 'snet-apps'
 
 // b2c tenant (existing)
 resource b2cTenant 'Microsoft.AzureActiveDirectory/b2cDirectories@2021-04-01' existing = {
@@ -56,7 +55,7 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2022-09-01' = {
     }
     subnets: [
       {
-        name: productionSubnetName
+        name: appServiceSubnetName
         properties: {
           addressPrefix: '10.3.1.0/24'
           serviceEndpoints: [
@@ -73,36 +72,13 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2022-09-01' = {
             }
           ]
         }
-      }
-      {
-        name: testSubnetName
-        properties: {
-          addressPrefix: '10.3.2.0/24'
-          serviceEndpoints: [
-            { service: 'Microsoft.AzureCosmosDB' }
-            { service: 'Microsoft.KeyVault' }
-            { service: 'Microsoft.Storage' }
-          ]
-          delegations: [
-            {
-              name: 'dlg-serverFarms'
-              properties: {
-                serviceName: 'Microsoft.Web/serverFarms'
-              }
-            }
-          ]
-        }
-      }
+      }      
     ]
   }
 
-  resource productionSubnet 'subnets' existing = {
-    name: productionSubnetName
-  }
-
-  resource testSubnet 'subnets' existing = {
-    name: testSubnetName
-  }
+  resource appServiceSubnet 'subnets' existing = {
+    name: appServiceSubnetName
+  }  
 }
 
 // cosmos db account
@@ -130,13 +106,9 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-08-15' = {
     isVirtualNetworkFilterEnabled: true
     virtualNetworkRules: [
       {
-        id: virtualNetwork::productionSubnet.id
+        id: virtualNetwork::appServiceSubnet.id
         ignoreMissingVNetServiceEndpoint: false
-      }
-      {
-        id: virtualNetwork::testSubnet.id
-        ignoreMissingVNetServiceEndpoint: false
-      }
+      }      
     ]
     ipRules: [for ipAddress in concat(azurePortalIpAddresses, allowedIpAddresses): {
       ipAddressOrRange: ipAddress
@@ -175,16 +147,12 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
     minimumTlsVersion: 'TLS1_2'
     networkAcls: {
       bypass: 'AzureServices'
-      defaultAction: 'Allow'
+      defaultAction: 'Deny'
       virtualNetworkRules: [
         {
-          id: virtualNetwork::productionSubnet.id
+          id: virtualNetwork::appServiceSubnet.id
           action: 'Allow'
-        }
-        {
-          id: virtualNetwork::testSubnet.id
-          action: 'Allow'
-        }
+        }        
       ]
       ipRules: [for ipAddress in allowedIpAddresses: {
         value: ipAddress
@@ -202,7 +170,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
 }
 
 // app service plan for app services and function apps
-resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
+resource appServicePlan 'Microsoft.Web/serverfarms@2022-09-01' = {
   name: 'asp-${workload}-shared'
   location: location
   tags: tags
@@ -299,13 +267,9 @@ resource keyVault 'Microsoft.KeyVault/vaults@2022-11-01' = {
       defaultAction: 'Deny'
       virtualNetworkRules: [
         {
-          id: virtualNetwork::productionSubnet.id
+          id: virtualNetwork::appServiceSubnet.id
           ignoreMissingVnetServiceEndpoint: false
-        }
-        {
-          id: virtualNetwork::testSubnet.id
-          ignoreMissingVnetServiceEndpoint: false
-        }
+        }        
       ]
       ipRules: [for ipAddress in allowedIpAddresses: {
         value: ipAddress
@@ -333,7 +297,7 @@ resource keyVaultRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04
 
 // application insights for b2c logging
 resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
-  name: toLower('ai-${workload}-auth')
+  name: toLower('appi-${workload}-auth')
   location: location
   tags: tags
   kind: 'web'
@@ -352,8 +316,10 @@ module functions 'functions.bicep' = {
     location: location
     domainName: domainName
     logAnalyticsWorkspaceName: logAnalyticsWorkspace.name
+    appServicePlanName: appServicePlan.name
     sharedResourceGroup: resourceGroup().name
-    sharedStorageAccountName: storageAccount.name
+    storageAccountName: storageAccount.name
+    virtualNetworkSubnetId: virtualNetwork::appServiceSubnet.id
   }
 }
 

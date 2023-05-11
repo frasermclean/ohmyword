@@ -54,7 +54,7 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2022-09-01' existing 
   scope: resourceGroup(sharedResourceGroup)
 
   resource subnet 'subnets' existing = {
-    name: appEnv == 'prod' ? 'ProductionSubnet' : 'TestSubnet'
+    name: 'snet-apps'
   }
 }
 
@@ -93,7 +93,7 @@ module database 'database.bicep' = {
 
 // application insights
 resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
-  name: toLower('ai-${appName}-${appEnv}')
+  name: toLower('appi-${appName}-${appEnv}')
   location: location
   tags: tags
   kind: 'web'
