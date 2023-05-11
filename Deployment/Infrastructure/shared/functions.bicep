@@ -15,11 +15,17 @@ param domainName string
 @description('Name of the shared log analytics workspace')
 param logAnalyticsWorkspaceName string
 
+@description('Name of the shared app service plan')
+param appServicePlanName string
+
 @description('Name of the shared storage account')
-param sharedStorageAccountName string
+param storageAccountName string
 
 @description('Shared resource group name')
 param sharedResourceGroup string
+
+@description('Virtual network subnet resource id')
+param virtualNetworkSubnetId string
 
 var tags = {
   workload: workload
@@ -32,25 +38,14 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10
 }
 
 // shared storage account
-resource sharedStorageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' existing = {
-  name: sharedStorageAccountName
+resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' existing = {
+  name: storageAccountName
   scope: resourceGroup(sharedResourceGroup)
 }
 
-// local storage account
-resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
-  name: '${workload}${category}'
-  location: location
-  tags: tags
-  kind: 'StorageV2'
-  sku: {
-    name: 'Standard_LRS'
-  }
-  properties: {
-    allowSharedKeyAccess: true
-    supportsHttpsTrafficOnly: true
-    minimumTlsVersion: 'TLS1_2'
-  }
+resource appServicePlan 'Microsoft.Web/serverfarms@2022-09-01' existing = {
+  name: appServicePlanName
+  scope: resourceGroup(sharedResourceGroup)
 }
 
 // application insights
@@ -113,22 +108,8 @@ resource smartDetectorAlertRule 'Microsoft.AlertsManagement/smartDetectorAlertRu
   }
 }
 
-// consumption app service plan
-resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
-  name: 'asp-${workload}-functions'
-  location: location
-  tags: tags
-  sku: {
-    name: 'Y1'
-    tier: 'Dynamic'
-  }
-  properties: {
-    reserved: true
-  }
-}
-
 // function app
-resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
+resource functionApp 'Microsoft.Web/sites@2022-09-01' = {
   name: toLower('func-${workload}-${category}')
   location: location
   tags: tags
@@ -138,10 +119,13 @@ resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
   }
   properties: {
     serverFarmId: appServicePlan.id
+    virtualNetworkSubnetId: virtualNetworkSubnetId
+    vnetRouteAllEnabled: true
     reserved: true
     httpsOnly: true
     siteConfig: {
       linuxFxVersion: 'DOTNET-ISOLATED|7.0'
+      alwaysOn: true
       http20Enabled: true
       ftpsState: 'Disabled'
       healthCheckPath: '/api/health'
@@ -172,7 +156,7 @@ resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
         }
         {
           name: 'TableService__Endpoint'
-          value: 'https://${sharedStorageAccount.name}.table.${environment().suffixes.storage}'
+          value: 'https://${storageAccount.name}.table.${environment().suffixes.storage}'
         }
       ]
     }
