@@ -1,10 +1,9 @@
 @description('The name of the key vault.')
-param keyVaultName string
+param keyVaultName string = 'kv-ohmyword-shared'
 param keyVaultRoles array = []
 
 @description('The name of the storage account.')
-param storageAccountName string
-
+param storageAccountName string = 'stohmywordshared'
 param storageAccountRoles array = []
 
 resource keyVault 'Microsoft.KeyVault/vaults@2022-11-01' existing = {

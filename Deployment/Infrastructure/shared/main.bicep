@@ -72,13 +72,13 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2022-09-01' = {
             }
           ]
         }
-      }      
+      }
     ]
   }
 
   resource appServiceSubnet 'subnets' existing = {
     name: appServiceSubnetName
-  }  
+  }
 }
 
 // cosmos db account
@@ -108,7 +108,7 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-08-15' = {
       {
         id: virtualNetwork::appServiceSubnet.id
         ignoreMissingVNetServiceEndpoint: false
-      }      
+      }
     ]
     ipRules: [for ipAddress in concat(azurePortalIpAddresses, allowedIpAddresses): {
       ipAddressOrRange: ipAddress
@@ -152,7 +152,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
         {
           id: virtualNetwork::appServiceSubnet.id
           action: 'Allow'
-        }        
+        }
       ]
       ipRules: [for ipAddress in allowedIpAddresses: {
         value: ipAddress
@@ -190,9 +190,6 @@ resource appConfiguration 'Microsoft.AppConfiguration/configurationStores@2022-0
   tags: tags
   sku: {
     name: 'Free'
-  }
-  identity: {
-    type: 'SystemAssigned'
   }
   properties: {
     disableLocalAuth: false
@@ -245,6 +242,22 @@ resource appConfiguration 'Microsoft.AppConfiguration/configurationStores@2022-0
       contentType: 'text/plain'
     }
   }
+
+  resource gameLetterHintDelay 'keyValues' = {
+    name: 'Game:LetterHintDelay'
+    properties: {
+      value: '3'
+      contentType: 'text/plain'
+    }
+  }
+
+  resource gamePostRoundDelay 'keyValues' = {
+    name: 'Game:PostRoundDelay'
+    properties: {
+      value: '5'
+      contentType: 'text/plain'
+    }
+  }
 }
 
 // key vault
@@ -269,29 +282,12 @@ resource keyVault 'Microsoft.KeyVault/vaults@2022-11-01' = {
         {
           id: virtualNetwork::appServiceSubnet.id
           ignoreMissingVnetServiceEndpoint: false
-        }        
+        }
       ]
       ipRules: [for ipAddress in allowedIpAddresses: {
         value: ipAddress
       }]
     }
-  }
-}
-
-// key vault secrets user role definition
-resource keyVaultSecretsUserRoleDefinition 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
-  name: '4633458b-17de-408a-b874-0445c86b69e6'
-  scope: resourceGroup()
-}
-
-// key vault secrets user role assignment
-resource keyVaultRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(keyVault.id, keyVaultSecretsUserRoleDefinition.id, appConfiguration.id)
-  scope: keyVault
-  properties: {
-    principalId: appConfiguration.identity.principalId
-    principalType: 'ServicePrincipal'
-    roleDefinitionId: keyVaultSecretsUserRoleDefinition.id
   }
 }
 
@@ -323,15 +319,21 @@ module functions 'functions.bicep' = {
   }
 }
 
-module roleAssignments 'roleAssignments.bicep' = {
+module roleAssignments '../modules/roleAssignments.bicep' = {
   name: 'roleAssignments-shared'
   params: {
     keyVaultName: keyVault.name
+    keyVaultRoles: [
+      {
+        principalId: functions.outputs.functionAppPrincipalId
+        roleDefinitionId: '4633458b-17de-408a-b874-0445c86b69e6' // Key Vault Secrets User
+      }
+    ]
     storageAccountName: storageAccount.name
     storageAccountRoles: [
       {
         principalId: functions.outputs.functionAppPrincipalId
-        roleDefinitionId: '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3'
+        roleDefinitionId: '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3' // Storage Table Data Contributor
       }
     ]
   }
