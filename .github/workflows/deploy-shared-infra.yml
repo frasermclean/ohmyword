@@ -3,12 +3,8 @@ name: Deploy shared infrastructure
 on:
   workflow_call:
     inputs:
-      environment:
-        description: "The environment to deploy to"
-        required: true
-        type: string
       resourceGroupName:
-        description: "The name of the resource group to deploy to"
+        description: The name of the resource group to deploy to
         required: true
         type: string
 
@@ -16,7 +12,7 @@ jobs:
   deploy:
     name: Deploy template
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
+    environment: shared
     env:
       TEMPLATE_ROOT: ./Deployment/Infrastructure
     permissions:
