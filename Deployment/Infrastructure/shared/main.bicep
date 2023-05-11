@@ -175,7 +175,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
     minimumTlsVersion: 'TLS1_2'
     networkAcls: {
       bypass: 'AzureServices'
-      defaultAction: 'Deny'
+      defaultAction: 'Allow'
       virtualNetworkRules: [
         {
           id: virtualNetwork::productionSubnet.id
@@ -352,8 +352,8 @@ module functions 'functions.bicep' = {
     location: location
     domainName: domainName
     logAnalyticsWorkspaceName: logAnalyticsWorkspace.name
-    storageAccountName: storageAccount.name
     sharedResourceGroup: resourceGroup().name
+    sharedStorageAccountName: storageAccount.name
   }
 }
 

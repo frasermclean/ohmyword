@@ -118,6 +118,14 @@ jobs:
       resourceGroupName: rg-ohmyword-shared
     secrets: inherit
 
+  # Deploy Functions application
+  deploy-functions-app:
+    name: Deploy Functions application
+    uses: ./.github/workflows/deploy-functions-app.yml
+    needs: deploy-shared-infra
+    secrets:
+      PUBLISH_PROFILE: ${{ secrets.AZURE_FUNCTIONS_PUBLISH_PROFILE }}
+
   # Deploy application infrastructure
   deploy-app-infra:
     name: Deploy application infrastructure

@@ -16,7 +16,7 @@ param domainName string
 param logAnalyticsWorkspaceName string
 
 @description('Name of the shared storage account')
-param storageAccountName string
+param sharedStorageAccountName string
 
 @description('Shared resource group name')
 param sharedResourceGroup string
@@ -31,9 +31,26 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10
   scope: resourceGroup(sharedResourceGroup)
 }
 
-resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' existing = {
-  name: storageAccountName
+// shared storage account
+resource sharedStorageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' existing = {
+  name: sharedStorageAccountName
   scope: resourceGroup(sharedResourceGroup)
+}
+
+// local storage account
+resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
+  name: '${workload}${category}'
+  location: location
+  tags: tags
+  kind: 'StorageV2'
+  sku: {
+    name: 'Standard_LRS'
+  }
+  properties: {
+    allowSharedKeyAccess: true
+    supportsHttpsTrafficOnly: true
+    minimumTlsVersion: 'TLS1_2'
+  }
 }
 
 // application insights
@@ -155,7 +172,7 @@ resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
         }
         {
           name: 'TableService__Endpoint'
-          value: 'https://${storageAccount.name}.table.${environment().suffixes.storage}'
+          value: 'https://${sharedStorageAccount.name}.table.${environment().suffixes.storage}'
         }
       ]
     }
@@ -211,4 +228,4 @@ module sniEnable '../modules/sniEnable.bicep' = {
 output functionAppPrincipalId string = functionApp.identity.principalId
 
 @description('Possible outbound IP addresses for the function app')
-output functionAppOutboundIpAddresses array = split(functionApp.properties.possibleOutboundIpAddresses, ',')
+output functionAppOutboundIpAddresses string = functionApp.properties.outboundIpAddresses

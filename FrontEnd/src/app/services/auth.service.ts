@@ -5,10 +5,10 @@ import { Store } from '@ngxs/store';
 import { Subject } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
 import { environment } from '@environment';
-import { Auth } from '../state/auth/auth.actions';
+import { Auth } from '@state/auth/auth.actions';
 
 import { Role } from '@models/role.enum';
-import { DEFAULT_DISPLAY_NAME } from '../state/auth/auth.state';
+import { DEFAULT_DISPLAY_NAME } from '@state/auth/auth.state';
 
 @Injectable({
   providedIn: 'root',
@@ -24,7 +24,7 @@ export class AuthService {
     this.msalBroadcastService.inProgress$
       .pipe(
         filter((status) => status === InteractionStatus.None),
-        takeUntil(this.destroyingSubject)
+        takeUntil(this.destroyingSubject),
       )
       .subscribe(async () => {
         const account = this.getActiveAccount();
