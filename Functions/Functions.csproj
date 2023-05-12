@@ -11,6 +11,7 @@
     <PackageReference Include="AspNetCore.HealthChecks.CosmosDb" Version="6.1.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.14.1" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.0.13" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.ServiceBus" Version="5.7.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="1.10.0" OutputItemType="Analyzer" />
   </ItemGroup>
   <ItemGroup>
