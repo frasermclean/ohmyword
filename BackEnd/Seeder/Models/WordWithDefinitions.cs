@@ -1,4 +1,4 @@
-﻿using OhMyWord.Infrastructure.Entities;
+﻿using OhMyWord.Infrastructure.Models;
 
 namespace OhMyWord.Seeder.Models;
 

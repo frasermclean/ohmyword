@@ -1,4 +1,4 @@
-﻿namespace OhMyWord.Infrastructure.Entities;
+﻿namespace OhMyWord.Infrastructure.Models;
 
 public record PlayerEntity : Entity
 {

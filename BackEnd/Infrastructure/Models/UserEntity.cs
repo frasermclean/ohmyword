@@ -1,7 +1,7 @@
 ﻿using Azure;
 using Azure.Data.Tables;
 
-namespace OhMyWord.Infrastructure.Entities;
+namespace OhMyWord.Infrastructure.Models;
 
 public record UserEntity : ITableEntity
 {

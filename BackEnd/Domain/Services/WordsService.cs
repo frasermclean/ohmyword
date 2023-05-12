@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using OhMyWord.Domain.Extensions;
 using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Results;
-using OhMyWord.Infrastructure.Entities;
+using OhMyWord.Infrastructure.Models;
 using OhMyWord.Infrastructure.Services;
 using OneOf;
 using OneOf.Types;

@@ -1,4 +1,4 @@
-﻿using OhMyWord.Infrastructure.Enums;
+﻿using OhMyWord.Infrastructure.Models;
 
 namespace OhMyWord.Domain.Models;
 

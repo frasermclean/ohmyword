@@ -1,5 +1,5 @@
 ﻿using OhMyWord.Domain.Models;
-using OhMyWord.Infrastructure.Entities;
+using OhMyWord.Infrastructure.Models;
 using System.Net;
 
 namespace OhMyWord.Domain.Extensions;

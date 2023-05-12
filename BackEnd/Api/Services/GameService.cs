@@ -4,7 +4,7 @@ using OhMyWord.Api.Events.LetterHintAdded;
 using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Options;
 using OhMyWord.Domain.Services;
-using OhMyWord.Infrastructure.Enums;
+using OhMyWord.Infrastructure.Models;
 
 namespace OhMyWord.Api.Services;
 

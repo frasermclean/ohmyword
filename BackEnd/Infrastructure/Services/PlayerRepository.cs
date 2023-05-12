@@ -1,7 +1,7 @@
 ﻿using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using OhMyWord.Infrastructure.Entities;
+using OhMyWord.Infrastructure.Models;
 using OhMyWord.Infrastructure.Options;
 
 namespace OhMyWord.Infrastructure.Services;

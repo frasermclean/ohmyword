@@ -1,4 +1,4 @@
-﻿using OhMyWord.Infrastructure.Entities;
+﻿using OhMyWord.Infrastructure.Models;
 using User = OhMyWord.Domain.Models.User;
 
 namespace OhMyWord.Domain.Extensions;

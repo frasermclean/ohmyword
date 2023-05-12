@@ -1,7 +1,4 @@
-﻿using Microsoft.Extensions.Options;
-using OhMyWord.Infrastructure.Options;
-
-namespace OhMyWord.Infrastructure.Services.RapidApi.IpGeoLocation;
+﻿namespace OhMyWord.Infrastructure.Services.RapidApi.IpGeoLocation;
 
 public interface IIpGeoLocationService
 {
