@@ -6,6 +6,7 @@ using OhMyWord.Api.Services;
 using OhMyWord.Domain.Extensions;
 using OhMyWord.Domain.Options;
 using OhMyWord.Infrastructure.Extensions;
+using OhMyWord.Infrastructure.Services.RapidApi;
 using OhMyWord.WordsApi.Services;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -62,6 +63,7 @@ public static class Program
             services.AddCosmosDbRepositories(context);
             services.AddUsersRepository(context);
             services.AddMessagingServices(context);
+            services.AddRapidApiServices(context);
             services.AddWordsApiClient(context);
 
             // development services
