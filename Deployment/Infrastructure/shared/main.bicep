@@ -36,11 +36,8 @@ var serviceBusQueues = [
     name: 'dev-ip-lookup'
   }
   {
-    environment: 'test'
-    name: 'test-ip-lookup' }
-  {
-    environment: 'prod'
-    name: 'prod-ip-lookup'
+    environment: 'shared'
+    name: 'shared-ip-lookup'
   }
 ]
 
@@ -369,6 +366,8 @@ module functions 'functions.bicep' = {
     sharedResourceGroup: resourceGroup().name
     storageAccountName: storageAccount.name
     virtualNetworkSubnetId: virtualNetwork::appServiceSubnet.id
+    serviceBusNamespaceName: serviceBusNamespace.name
+    ipLookupQueueName: serviceBusQueues[1].name
   }
 }
 

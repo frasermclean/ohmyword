@@ -27,8 +27,9 @@ public static class Program
                                throw new InvalidOperationException("Application configuration endpoint is not set.");
                 var appEnv = appBuilder.Configuration.GetValue<string>("AppConfig:Environment", "dev");
                 options.Connect(new Uri(endpoint), new DefaultAzureCredential())
-                    .Select(KeyFilter.Any) // select keys with no label
-                    .Select(KeyFilter.Any, appEnv) // select keys with matching app environment label
+                    .Select(KeyFilter.Any)
+                    .Select(KeyFilter.Any, "shared")
+                    .Select(KeyFilter.Any, appEnv)
                     .ConfigureKeyVault(vaultOptions => vaultOptions.SetCredential(new DefaultAzureCredential()));
             });
 

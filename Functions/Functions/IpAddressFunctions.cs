@@ -15,10 +15,9 @@ public class IpAddressFunctions
     [Function("ProcessIpAddress")]
     public Task ProcessIpAddress(
         [ServiceBusTrigger("%ServiceBus:IpLookupQueueName%", Connection = "ServiceBus")]
-        string ipAddress,
-        FunctionContext context)
+        string ipAddress)
     {
-        logger.LogInformation("Processing IP address {IpAddress}", ipAddress);
+        logger.LogInformation("Processing IP address: {IpAddress}", ipAddress);
         return Task.CompletedTask;
     }
 }
