@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using OhMyWord.Api.Commands.RegisterPlayer;
 using OhMyWord.Api.Commands.SubmitGuess;
+using OhMyWord.Api.Events.PlayerConnected;
 using OhMyWord.Api.Events.PlayerDisconnected;
 using OhMyWord.Api.Extensions;
 using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Services;
-using OhMyWord.Infrastructure.Services.Messaging;
 
 namespace OhMyWord.Api.Hubs;
 
@@ -20,14 +20,17 @@ public class GameHub : Hub<IGameHub>
 {
     private readonly ILogger<GameHub> logger;
     private readonly IPlayerService playerService;
-    private readonly IIpAddressMessageSender ipAddressMessageSender;
 
-    public GameHub(ILogger<GameHub> logger, IPlayerService playerService,
-        IIpAddressMessageSender ipAddressMessageSender)
+    public GameHub(ILogger<GameHub> logger, IPlayerService playerService)
     {
         this.logger = logger;
         this.playerService = playerService;
-        this.ipAddressMessageSender = ipAddressMessageSender;
+    }
+
+    public override async Task OnConnectedAsync()
+    {
+        await new PlayerConnectedEvent(Context.ConnectionId, Context.GetIpAddress())
+            .PublishAsync(Mode.WaitForNone);
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)
@@ -37,7 +40,7 @@ public class GameHub : Hub<IGameHub>
         else
             logger.LogError(exception, "Client disconnected. Connection ID: {ConnectionId}", Context.ConnectionId);
 
-        await new PlayerDisconnectedEvent(Context.ConnectionId).PublishAsync();
+        await new PlayerDisconnectedEvent(Context.ConnectionId).PublishAsync(Mode.WaitForNone);
         await Clients.Others.SendPlayerCount(playerService.PlayerCount);
     }
 
@@ -54,9 +57,7 @@ public class GameHub : Hub<IGameHub>
             }
             .ExecuteAsync();
 
-        await Task.WhenAll(
-            Clients.Others.SendPlayerCount(response.PlayerCount),
-            ipAddressMessageSender.SendIpLookupMessageAsync(Context.GetIpAddress()));
+        await Clients.Others.SendPlayerCount(response.PlayerCount);
 
         return response;
     }
