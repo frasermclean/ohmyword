@@ -5,6 +5,7 @@ using OhMyWord.Api.Events.PlayerDisconnected;
 using OhMyWord.Api.Extensions;
 using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Services;
+using OhMyWord.Infrastructure.Services.Messaging;
 
 namespace OhMyWord.Api.Hubs;
 
@@ -19,11 +20,14 @@ public class GameHub : Hub<IGameHub>
 {
     private readonly ILogger<GameHub> logger;
     private readonly IPlayerService playerService;
+    private readonly IIpAddressMessageSender ipAddressMessageSender;
 
-    public GameHub(ILogger<GameHub> logger, IPlayerService playerService)
+    public GameHub(ILogger<GameHub> logger, IPlayerService playerService,
+        IIpAddressMessageSender ipAddressMessageSender)
     {
         this.logger = logger;
         this.playerService = playerService;
+        this.ipAddressMessageSender = ipAddressMessageSender;
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)
@@ -50,7 +54,10 @@ public class GameHub : Hub<IGameHub>
             }
             .ExecuteAsync();
 
-        await Clients.Others.SendPlayerCount(response.PlayerCount);
+        await Task.WhenAll(
+            Clients.Others.SendPlayerCount(response.PlayerCount),
+            ipAddressMessageSender.SendIpLookupMessageAsync(Context.GetIpAddress()));
+
         return response;
     }
 

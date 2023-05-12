@@ -60,6 +60,7 @@ public static class Program
             services.AddDomainServices();
             services.AddCosmosDbRepositories(context);
             services.AddUsersRepository(context);
+            services.AddMessagingServices(context);
             services.AddWordsApiClient(context);
 
             // development services

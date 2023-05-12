@@ -30,6 +30,20 @@ var azurePortalIpAddresses = [
 
 var appServiceSubnetName = 'snet-apps'
 
+var serviceBusQueues = [
+  {
+    environment: 'dev'
+    name: 'dev-ip-lookup'
+  }
+  {
+    environment: 'test'
+    name: 'test-ip-lookup' }
+  {
+    environment: 'prod'
+    name: 'prod-ip-lookup'
+  }
+]
+
 // b2c tenant (existing)
 resource b2cTenant 'Microsoft.AzureActiveDirectory/b2cDirectories@2021-04-01' existing = {
   name: 'ohmywordauth.onmicrosoft.com'
@@ -163,8 +177,13 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
 
   resource tableServices 'tableServices' = {
     name: 'default'
+
     resource usersTable 'tables' = {
       name: 'users'
+    }
+
+    resource ipAddressesTable 'tables' = {
+      name: 'ipAddresses'
     }
   }
 }
@@ -258,6 +277,22 @@ resource appConfiguration 'Microsoft.AppConfiguration/configurationStores@2022-0
       contentType: 'text/plain'
     }
   }
+
+  resource serviceBusNamespaceKeyValue 'keyValues' = {
+    name: 'ServiceBus:Namespace'
+    properties: {
+      value: '${serviceBusNamespace.name}.servicebus.windows.net'
+      contentType: 'text/plain'
+    }
+  }
+
+  resource serviceBusIpLookupQueuesKeyValues 'keyValues' = [for queue in serviceBusQueues: {
+    name: 'ServiceBus:IpLookupQueueName$${queue.environment}'
+    properties: {
+      value: queue.name
+      contentType: 'text/plain'
+    }
+  }]
 }
 
 // key vault
@@ -302,6 +337,24 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
     Request_Source: 'rest'
     WorkspaceResourceId: logAnalyticsWorkspace.id
   }
+}
+
+// service bus namespace
+resource serviceBusNamespace 'Microsoft.ServiceBus/namespaces@2022-10-01-preview' = {
+  name: 'sbns-${workload}-shared'
+  location: location
+  tags: tags
+  sku: {
+    name: 'Basic'
+  }
+  properties: {
+    disableLocalAuth: true
+    minimumTlsVersion: '1.2'
+  }
+
+  resource ipLookupQueues 'queues' = [for queue in serviceBusQueues: {
+    name: queue.name
+  }]
 }
 
 module functions 'functions.bicep' = {
