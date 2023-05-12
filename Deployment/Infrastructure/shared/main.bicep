@@ -388,5 +388,12 @@ module roleAssignments '../modules/roleAssignments.bicep' = {
         roleDefinitionId: '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3' // Storage Table Data Contributor
       }
     ]
+    serviceBusNamespaceName: serviceBusNamespace.name
+    serviceBusNamespaceRoles: [
+      {
+        principalId: functions.outputs.functionAppPrincipalId
+        roleDefinitionId: '4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0' // Azure Service Bus Data Receiver
+      }
+    ]
   }
 }

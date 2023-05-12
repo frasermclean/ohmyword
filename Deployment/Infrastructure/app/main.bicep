@@ -295,5 +295,11 @@ module storageAccountRoleAssignment '../modules/roleAssignments.bicep' = {
         roleDefinitionId: '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3' // Storage Table Data Contributor
       }
     ]
+    serviceBusNamespaceRoles: [
+      {
+        principalId: appService.identity.principalId
+        roleDefinitionId: '69a216fc-b8fb-44d8-bc22-1f3c2cd27a39' // Azure Service Bus Data Sender
+      }
+    ]
   }
 }
