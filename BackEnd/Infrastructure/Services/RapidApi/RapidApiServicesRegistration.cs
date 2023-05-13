@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using OhMyWord.Infrastructure.Options;
+using OhMyWord.Infrastructure.Services.RapidApi.WordsApi;
 
 namespace OhMyWord.Infrastructure.Services.RapidApi;
 
@@ -13,7 +15,12 @@ public static class RapidApiServicesRegistration
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        var apiKey = context.Configuration["RapidApi:ApiKey"] ?? string.Empty;
+        services.AddHttpClient<IWordsApiClient, WordsApiClient>((serviceProvider, httpClient) =>
+        {
+            var options = serviceProvider.GetRequiredService<IOptions<RapidApiOptions>>();
+            httpClient.BaseAddress = new Uri("https://wordsapiv1.p.rapidapi.com/words/");
+            httpClient.DefaultRequestHeaders.Add("X-RapidAPI-Key", options.Value.ApiKey);
+        });
 
         return services;
     }

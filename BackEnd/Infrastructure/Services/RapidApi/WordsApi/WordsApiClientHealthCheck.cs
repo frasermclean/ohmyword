@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Diagnostics.HealthChecks;
-using OhMyWord.WordsApi.Services;
 
-namespace OhMyWord.WordsApi.HealthChecks;
+namespace OhMyWord.Infrastructure.Services.RapidApi.WordsApi;
 
 public class WordsApiClientHealthCheck : IHealthCheck
 {

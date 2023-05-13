@@ -1,6 +1,6 @@
 ﻿using OhMyWord.Domain.Models;
 using OhMyWord.Infrastructure.Models;
-using OhMyWord.WordsApi.Models;
+using OhMyWord.Infrastructure.Models.WordsApi;
 
 namespace OhMyWord.Domain.Extensions;
 

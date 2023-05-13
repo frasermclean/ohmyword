@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
-using OhMyWord.WordsApi.Models;
+using OhMyWord.Infrastructure.Models.WordsApi;
 using System.Net;
 using System.Net.Http.Json;
 
-namespace OhMyWord.WordsApi.Services;
+namespace OhMyWord.Infrastructure.Services.RapidApi.WordsApi;
 
 public interface IWordsApiClient
 {
@@ -12,8 +12,8 @@ public interface IWordsApiClient
     /// </summary>
     /// <param name="word">The word to search for</param>
     /// <param name="cancellationToken">Operation cancellation token</param>
-    /// <returns>A populated <see cref="WordDetails"/> object if the word was found, null if not found.</returns>
-    /// <exception cref="HttpRequestException">Any error except for not found.</exception>
+    /// <returns>A populated <see cref="HttpRequestException"/> object if the word was found, null if not found.</returns>
+    /// <exception cref="WordDetails">Any error except for not found.</exception>
     Task<WordDetails?> GetWordDetailsAsync(string word, CancellationToken cancellationToken = default);
 
     Task<WordDetails> GetRandomWordDetailsAsync(CancellationToken cancellationToken = default);

@@ -1,5 +1,5 @@
 ﻿using Azure.Identity;
-using OhMyWord.WordsApi.HealthChecks;
+using OhMyWord.Infrastructure.Services.RapidApi.WordsApi;
 
 namespace OhMyWord.Api.Extensions;
 

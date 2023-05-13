@@ -1,4 +1,4 @@
-﻿namespace OhMyWord.WordsApi.Models;
+﻿namespace OhMyWord.Infrastructure.Models.WordsApi;
 
 public class DefinitionResult
 {
