@@ -6,6 +6,7 @@
         <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>
         <RootNamespace>Infrastructure.Tests</RootNamespace>
+        <UserSecretsId>9bd63fa5-8a79-4c89-ba9b-88b02470f3d5</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>
@@ -28,6 +29,9 @@
 
     <ItemGroup>
       <None Update="rooster.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="appsettings.json">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
     </ItemGroup>

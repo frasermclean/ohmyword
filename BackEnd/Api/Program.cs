@@ -62,7 +62,7 @@ public static class Program
             services.AddCosmosDbRepositories(context);
             services.AddUsersRepository(context);
             services.AddMessagingServices(context);
-            services.AddRapidApiServices(context);
+            services.AddRapidApiServices();
 
             // development services
             if (context.HostingEnvironment.IsDevelopment())

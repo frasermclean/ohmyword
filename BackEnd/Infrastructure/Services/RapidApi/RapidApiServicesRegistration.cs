@@ -1,14 +1,14 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using OhMyWord.Infrastructure.Options;
+using OhMyWord.Infrastructure.Services.RapidApi.IpGeoLocation;
 using OhMyWord.Infrastructure.Services.RapidApi.WordsApi;
 
 namespace OhMyWord.Infrastructure.Services.RapidApi;
 
 public static class RapidApiServicesRegistration
 {
-    public static IServiceCollection AddRapidApiServices(this IServiceCollection services, HostBuilderContext context)
+    public static IServiceCollection AddRapidApiServices(this IServiceCollection services)
     {
         services.AddOptions<RapidApiOptions>()
             .BindConfiguration(RapidApiOptions.SectionName)
@@ -19,6 +19,13 @@ public static class RapidApiServicesRegistration
         {
             var options = serviceProvider.GetRequiredService<IOptions<RapidApiOptions>>();
             httpClient.BaseAddress = new Uri("https://wordsapiv1.p.rapidapi.com/words/");
+            httpClient.DefaultRequestHeaders.Add("X-RapidAPI-Key", options.Value.ApiKey);
+        });
+
+        services.AddHttpClient<IIpGeoLocationService, IpGeoLocationService>((serviceProvider, httpClient) =>
+        {
+            var options = serviceProvider.GetRequiredService<IOptions<RapidApiOptions>>();
+            httpClient.BaseAddress = new Uri("https://ip-geo-location.p.rapidapi.com/ip/");
             httpClient.DefaultRequestHeaders.Add("X-RapidAPI-Key", options.Value.ApiKey);
         });
 
