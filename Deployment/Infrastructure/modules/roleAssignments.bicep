@@ -1,11 +1,14 @@
 @description('The name of the key vault.')
-param keyVaultName string
+param keyVaultName string = 'kv-ohmyword-shared'
 param keyVaultRoles array = []
 
 @description('The name of the storage account.')
-param storageAccountName string
-
+param storageAccountName string = 'ohmywordshared'
 param storageAccountRoles array = []
+
+@description('The name of the service bus namespace.')
+param serviceBusNamespaceName string = 'sbns-ohmyword-shared'
+param serviceBusNamespaceRoles array = []
 
 resource keyVault 'Microsoft.KeyVault/vaults@2022-11-01' existing = {
   name: keyVaultName
@@ -30,6 +33,21 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' existing 
 resource storageAccountRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [for item in storageAccountRoles: {
   name: guid(storageAccount.id, item.roleDefinitionId, item.principalId)
   scope: storageAccount
+  properties: {
+    roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', item.roleDefinitionId)
+    principalId: item.principalId
+    principalType: 'ServicePrincipal'
+  }
+}]
+
+resource serviceBusNamespace 'Microsoft.ServiceBus/namespaces@2022-10-01-preview' existing = {
+  name: serviceBusNamespaceName
+}
+
+// storage account role assignments
+resource serviceBusNamespaceRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [for item in serviceBusNamespaceRoles: {
+  name: guid(serviceBusNamespace.id, item.roleDefinitionId, item.principalId)
+  scope: serviceBusNamespace
   properties: {
     roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', item.roleDefinitionId)
     principalId: item.principalId

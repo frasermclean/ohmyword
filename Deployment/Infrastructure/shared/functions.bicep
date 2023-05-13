@@ -27,6 +27,12 @@ param sharedResourceGroup string
 @description('Virtual network subnet resource id')
 param virtualNetworkSubnetId string
 
+@description('Name of the service bus namespace')
+param serviceBusNamespaceName string
+
+@description('Name of the service bus queue for IP lookup')
+param ipLookupQueueName string
+
 var tags = {
   workload: workload
   category: category
@@ -158,6 +164,14 @@ resource functionApp 'Microsoft.Web/sites@2022-09-01' = {
           name: 'TableService__Endpoint'
           value: 'https://${storageAccount.name}.table.${environment().suffixes.storage}'
         }
+        {
+          name: 'ServiceBus__FullyQualifiedNamespace'
+          value: '${serviceBusNamespaceName}.servicebus.windows.net'
+        }
+        {
+          name: 'ServiceBus__IpLookupQueueName'
+          value: ipLookupQueueName
+        }
       ]
     }
   }
@@ -210,6 +224,3 @@ module sniEnable '../modules/sniEnable.bicep' = {
 
 @description('The principal ID of the managed identity of function app')
 output functionAppPrincipalId string = functionApp.identity.principalId
-
-@description('Possible outbound IP addresses for the function app')
-output functionAppOutboundIpAddresses string = functionApp.properties.outboundIpAddresses

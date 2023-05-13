@@ -6,6 +6,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using OhMyWord.Infrastructure.Options;
 using OhMyWord.Infrastructure.Services;
+using OhMyWord.Infrastructure.Services.Messaging;
 
 namespace OhMyWord.Infrastructure.Extensions;
 
@@ -65,6 +66,24 @@ public static class ServiceCollectionExtensions
         });
 
         services.AddSingleton<IUsersRepository, UsersRepository>();
+
+        return services;
+    }
+
+    public static IServiceCollection AddMessagingServices(this IServiceCollection services, HostBuilderContext context)
+    {
+        services.AddAzureClients(builder =>
+        {
+            builder.AddServiceBusClientWithNamespace(context.Configuration["ServiceBus:Namespace"]);
+            builder.UseCredential(new DefaultAzureCredential());
+        });
+
+        services.AddOptions<MessagingOptions>()
+            .Bind(context.Configuration.GetSection(MessagingOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.AddScoped<IIpAddressMessageSender, IpAddressMessageSender>();
 
         return services;
     }

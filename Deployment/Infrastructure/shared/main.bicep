@@ -30,6 +30,17 @@ var azurePortalIpAddresses = [
 
 var appServiceSubnetName = 'snet-apps'
 
+var serviceBusQueues = [
+  {
+    environment: 'dev'
+    name: 'dev-ip-lookup'
+  }
+  {
+    environment: 'shared'
+    name: 'shared-ip-lookup'
+  }
+]
+
 // b2c tenant (existing)
 resource b2cTenant 'Microsoft.AzureActiveDirectory/b2cDirectories@2021-04-01' existing = {
   name: 'ohmywordauth.onmicrosoft.com'
@@ -72,13 +83,13 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2022-09-01' = {
             }
           ]
         }
-      }      
+      }
     ]
   }
 
   resource appServiceSubnet 'subnets' existing = {
     name: appServiceSubnetName
-  }  
+  }
 }
 
 // cosmos db account
@@ -108,7 +119,7 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-08-15' = {
       {
         id: virtualNetwork::appServiceSubnet.id
         ignoreMissingVNetServiceEndpoint: false
-      }      
+      }
     ]
     ipRules: [for ipAddress in concat(azurePortalIpAddresses, allowedIpAddresses): {
       ipAddressOrRange: ipAddress
@@ -152,7 +163,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
         {
           id: virtualNetwork::appServiceSubnet.id
           action: 'Allow'
-        }        
+        }
       ]
       ipRules: [for ipAddress in allowedIpAddresses: {
         value: ipAddress
@@ -163,8 +174,13 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
 
   resource tableServices 'tableServices' = {
     name: 'default'
+
     resource usersTable 'tables' = {
       name: 'users'
+    }
+
+    resource ipAddressesTable 'tables' = {
+      name: 'ipAddresses'
     }
   }
 }
@@ -190,9 +206,6 @@ resource appConfiguration 'Microsoft.AppConfiguration/configurationStores@2022-0
   tags: tags
   sku: {
     name: 'Free'
-  }
-  identity: {
-    type: 'SystemAssigned'
   }
   properties: {
     disableLocalAuth: false
@@ -245,6 +258,38 @@ resource appConfiguration 'Microsoft.AppConfiguration/configurationStores@2022-0
       contentType: 'text/plain'
     }
   }
+
+  resource gameLetterHintDelay 'keyValues' = {
+    name: 'Game:LetterHintDelay'
+    properties: {
+      value: '3'
+      contentType: 'text/plain'
+    }
+  }
+
+  resource gamePostRoundDelay 'keyValues' = {
+    name: 'Game:PostRoundDelay'
+    properties: {
+      value: '5'
+      contentType: 'text/plain'
+    }
+  }
+
+  resource serviceBusNamespaceKeyValue 'keyValues' = {
+    name: 'ServiceBus:Namespace'
+    properties: {
+      value: '${serviceBusNamespace.name}.servicebus.windows.net'
+      contentType: 'text/plain'
+    }
+  }
+
+  resource serviceBusIpLookupQueuesKeyValues 'keyValues' = [for queue in serviceBusQueues: {
+    name: 'ServiceBus:IpLookupQueueName$${queue.environment}'
+    properties: {
+      value: queue.name
+      contentType: 'text/plain'
+    }
+  }]
 }
 
 // key vault
@@ -269,29 +314,12 @@ resource keyVault 'Microsoft.KeyVault/vaults@2022-11-01' = {
         {
           id: virtualNetwork::appServiceSubnet.id
           ignoreMissingVnetServiceEndpoint: false
-        }        
+        }
       ]
       ipRules: [for ipAddress in allowedIpAddresses: {
         value: ipAddress
       }]
     }
-  }
-}
-
-// key vault secrets user role definition
-resource keyVaultSecretsUserRoleDefinition 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
-  name: '4633458b-17de-408a-b874-0445c86b69e6'
-  scope: resourceGroup()
-}
-
-// key vault secrets user role assignment
-resource keyVaultRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(keyVault.id, keyVaultSecretsUserRoleDefinition.id, appConfiguration.id)
-  scope: keyVault
-  properties: {
-    principalId: appConfiguration.identity.principalId
-    principalType: 'ServicePrincipal'
-    roleDefinitionId: keyVaultSecretsUserRoleDefinition.id
   }
 }
 
@@ -308,6 +336,24 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   }
 }
 
+// service bus namespace
+resource serviceBusNamespace 'Microsoft.ServiceBus/namespaces@2022-10-01-preview' = {
+  name: 'sbns-${workload}-shared'
+  location: location
+  tags: tags
+  sku: {
+    name: 'Basic'
+  }
+  properties: {
+    disableLocalAuth: true
+    minimumTlsVersion: '1.2'
+  }
+
+  resource ipLookupQueues 'queues' = [for queue in serviceBusQueues: {
+    name: queue.name
+  }]
+}
+
 module functions 'functions.bicep' = {
   name: 'functions'
   scope: resourceGroup('rg-${workload}-functions')
@@ -320,18 +366,33 @@ module functions 'functions.bicep' = {
     sharedResourceGroup: resourceGroup().name
     storageAccountName: storageAccount.name
     virtualNetworkSubnetId: virtualNetwork::appServiceSubnet.id
+    serviceBusNamespaceName: serviceBusNamespace.name
+    ipLookupQueueName: serviceBusQueues[1].name
   }
 }
 
-module roleAssignments 'roleAssignments.bicep' = {
+module roleAssignments '../modules/roleAssignments.bicep' = {
   name: 'roleAssignments-shared'
   params: {
     keyVaultName: keyVault.name
+    keyVaultRoles: [
+      {
+        principalId: functions.outputs.functionAppPrincipalId
+        roleDefinitionId: '4633458b-17de-408a-b874-0445c86b69e6' // Key Vault Secrets User
+      }
+    ]
     storageAccountName: storageAccount.name
     storageAccountRoles: [
       {
         principalId: functions.outputs.functionAppPrincipalId
-        roleDefinitionId: '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3'
+        roleDefinitionId: '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3' // Storage Table Data Contributor
+      }
+    ]
+    serviceBusNamespaceName: serviceBusNamespace.name
+    serviceBusNamespaceRoles: [
+      {
+        principalId: functions.outputs.functionAppPrincipalId
+        roleDefinitionId: '4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0' // Azure Service Bus Data Receiver
       }
     ]
   }

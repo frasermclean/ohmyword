@@ -20,9 +20,6 @@ param databaseThroughput int
 @description('Database containers to create')
 param databaseContainers array
 
-@description('Application specific settings')
-param appSettings object
-
 @description('Location for the static web app')
 param staticWebAppLocation string = 'centralus'
 
@@ -150,14 +147,6 @@ resource appService 'Microsoft.Web/sites@2022-03-01' = {
           value: 'Recommended'
         }
         {
-          name: 'Game__LetterHintDelay'
-          value: string(appSettings.letterHintDelay)
-        }
-        {
-          name: 'Game__PostRoundDelay'
-          value: string(appSettings.postRoundDelay)
-        }
-        {
           name: 'CosmosDb__ContainerIds'
           value: string(map(databaseContainers, container => container.id))
         }
@@ -171,6 +160,47 @@ resource appService 'Microsoft.Web/sites@2022-03-01' = {
       siteName: appService.name
       hostNameType: 'Verified'
     }
+  }
+}
+
+// diagnostic settings
+resource appServiceDiagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: appService.name
+  scope: appService
+  properties: {
+    workspaceId: logAnalyticsWorkspace.id
+    logs: [
+      {
+        category: 'AppServiceHTTPLogs'
+        enabled: true
+      }
+      {
+        category: 'AppServiceConsoleLogs'
+        enabled: true
+      }
+      {
+        category: 'AppServiceAppLogs'
+        enabled: true
+      }
+      {
+        category: 'AppServiceAuditLogs'
+        enabled: true
+      }
+      {
+        category: 'AppServiceIPSecAuditLogs'
+        enabled: true
+      }
+      {
+        category: 'AppServicePlatformLogs'
+        enabled: true
+      }
+    ]
+    metrics: [
+      {
+        category: 'AllMetrics'
+        enabled: true
+      }
+    ]
   }
 }
 
@@ -254,12 +284,22 @@ module sniEnable '../modules/sniEnable.bicep' = {
 }
 
 // role assignment for app service to access storage account
-module storageAccountRoleAssignment '../modules/roleAssignment.bicep' = {
+module storageAccountRoleAssignment '../modules/roleAssignments.bicep' = {
   name: 'roleAssignment-${storageAccount.name}-${appService.name}'
   scope: resourceGroup(sharedResourceGroup)
   params: {
-    principalId: appService.identity.principalId
-    principalType: 'ServicePrincipal'
-    roleNames: [ 'StorageTableDataContributor', 'KeyVaultSecretsUser' ]
+    storageAccountName: storageAccount.name
+    storageAccountRoles: [
+      {
+        principalId: appService.identity.principalId
+        roleDefinitionId: '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3' // Storage Table Data Contributor
+      }
+    ]
+    serviceBusNamespaceRoles: [
+      {
+        principalId: appService.identity.principalId
+        roleDefinitionId: '69a216fc-b8fb-44d8-bc22-1f3c2cd27a39' // Azure Service Bus Data Sender
+      }
+    ]
   }
 }

@@ -28,11 +28,20 @@ public static class Program
             {
                 services.AddSingleton<IUsersService, UsersService>();
                 services.AddUsersRepository(context);
-                
+
                 // health checks
-                services.AddHealthChecks()
-                    .AddAzureTable(new Uri(context.Configuration["TableService:Endpoint"] ?? string.Empty),
-                        new DefaultAzureCredential(), "users");
+                if (context.HostingEnvironment.IsDevelopment())
+                {
+                    services.AddHealthChecks()
+                        .AddAzureTable("UseDevelopmentStorage=true", "users");
+                }
+                else
+                {
+                    var endpointUri = new Uri(context.Configuration["TableService:Endpoint"] ?? string.Empty);
+                    var credential = new DefaultAzureCredential();
+                    services.AddHealthChecks()
+                        .AddAzureTable(endpointUri, credential, "users");
+                }
             })
             .Build();
 

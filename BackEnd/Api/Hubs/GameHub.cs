@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using OhMyWord.Api.Commands.RegisterPlayer;
 using OhMyWord.Api.Commands.SubmitGuess;
+using OhMyWord.Api.Events.PlayerConnected;
 using OhMyWord.Api.Events.PlayerDisconnected;
 using OhMyWord.Api.Extensions;
 using OhMyWord.Domain.Models;
@@ -26,6 +27,12 @@ public class GameHub : Hub<IGameHub>
         this.playerService = playerService;
     }
 
+    public override async Task OnConnectedAsync()
+    {
+        await new PlayerConnectedEvent(Context.ConnectionId, Context.GetIpAddress())
+            .PublishAsync(Mode.WaitForNone);
+    }
+
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
         if (exception is null)
@@ -33,7 +40,7 @@ public class GameHub : Hub<IGameHub>
         else
             logger.LogError(exception, "Client disconnected. Connection ID: {ConnectionId}", Context.ConnectionId);
 
-        await new PlayerDisconnectedEvent(Context.ConnectionId).PublishAsync();
+        await new PlayerDisconnectedEvent(Context.ConnectionId).PublishAsync(Mode.WaitForNone);
         await Clients.Others.SendPlayerCount(playerService.PlayerCount);
     }
 
@@ -51,6 +58,7 @@ public class GameHub : Hub<IGameHub>
             .ExecuteAsync();
 
         await Clients.Others.SendPlayerCount(response.PlayerCount);
+
         return response;
     }
 
