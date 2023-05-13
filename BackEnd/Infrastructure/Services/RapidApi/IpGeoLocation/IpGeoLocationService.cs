@@ -15,6 +15,7 @@ public interface IIpGeoLocationService
 
 public class IpGeoLocationService : IIpGeoLocationService
 {
+    private readonly ILogger<IpGeoLocationService> logger;
     private readonly HttpClient httpClient;
 
     private static readonly JsonSerializerOptions SerializerOptions = new()
@@ -24,13 +25,16 @@ public class IpGeoLocationService : IIpGeoLocationService
 
     public IpGeoLocationService(ILogger<IpGeoLocationService> logger, HttpClient httpClient)
     {
+        this.logger = logger;
         this.httpClient = httpClient;
     }
 
     public async Task<IpGeoLocationData> GetIpAddressInfoAsync(string ipAddress,
         CancellationToken cancellationToken = default)
     {
-        var uri = new Uri($"{ipAddress}?filter=asn,city,country,continent", UriKind.Relative);
+        logger.LogInformation("Getting IP address info for: {IpAddress}", ipAddress);
+
+        var uri = new Uri($"{ipAddress}?filter=city,country", UriKind.Relative);
         var ipAddressInfo =
             await httpClient.GetFromJsonAsync<IpGeoLocationData>(uri, SerializerOptions, cancellationToken);
 
