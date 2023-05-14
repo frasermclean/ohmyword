@@ -181,7 +181,7 @@ resource functionApp 'Microsoft.Web/sites@2022-09-01' = {
           value: ipLookupQueueName
         }
         {
-          name: 'RapidApi:ApiKey'
+          name: 'RapidApi__ApiKey'
           value: '@Microsoft.KeyVault(VaultName=${keyVault.name};SecretName=RapidApiKey-prod)'
         }
       ]
@@ -221,6 +221,21 @@ resource managedCertificate 'Microsoft.Web/certificates@2022-03-01' = {
   properties: {
     serverFarmId: appServicePlan.id
     canonicalName: functionApp::hostNameBinding.name
+  }
+}
+
+// diagnostic settings
+resource diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: functionApp.name
+  scope: functionApp
+  properties: {
+    workspaceId: logAnalyticsWorkspace.id
+    logs: [
+      {
+        category: 'FunctionAppLogs'
+        enabled: true
+      }
+    ]
   }
 }
 
