@@ -5,8 +5,7 @@ using OhMyWord.Api.Hubs;
 using OhMyWord.Api.Services;
 using OhMyWord.Domain.Extensions;
 using OhMyWord.Domain.Options;
-using OhMyWord.Infrastructure.Extensions;
-using OhMyWord.Infrastructure.Services.RapidApi;
+using OhMyWord.Infrastructure.DependencyInjection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 

@@ -3,8 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OhMyWord.Domain.Extensions;
 using OhMyWord.Domain.Services;
-using OhMyWord.Infrastructure.Extensions;
-using OhMyWord.Infrastructure.Services.RapidApi;
+using OhMyWord.Infrastructure.DependencyInjection;
 
 namespace Domain.Tests;
 

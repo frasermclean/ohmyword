@@ -4,7 +4,7 @@ using OhMyWord.Infrastructure.Options;
 using OhMyWord.Infrastructure.Services.RapidApi.IpGeoLocation;
 using OhMyWord.Infrastructure.Services.RapidApi.WordsApi;
 
-namespace OhMyWord.Infrastructure.Services.RapidApi;
+namespace OhMyWord.Infrastructure.DependencyInjection;
 
 public static class RapidApiClientsRegistration
 {

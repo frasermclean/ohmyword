@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using OhMyWord.Infrastructure.Services.RapidApi;
+using OhMyWord.Infrastructure.DependencyInjection;
 
 namespace Infrastructure.Tests.Services.RapidApi;
 

@@ -2,7 +2,6 @@
 using Azure.Data.Tables;
 using Microsoft.Extensions.Logging;
 using OhMyWord.Infrastructure.Models;
-using OhMyWord.Infrastructure.Models.IpGeoLocation;
 
 namespace OhMyWord.Infrastructure.Services;
 

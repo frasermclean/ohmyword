@@ -1,16 +1,14 @@
 ﻿using Azure.Identity;
 using Microsoft.Azure.Cosmos.Fluent;
-using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using OhMyWord.Infrastructure.Options;
 using OhMyWord.Infrastructure.Services;
-using OhMyWord.Infrastructure.Services.Messaging;
 
-namespace OhMyWord.Infrastructure.Extensions;
+namespace OhMyWord.Infrastructure.DependencyInjection;
 
-public static class ServiceCollectionExtensions
+public static class CosmosDbRepositoriesRegistration
 {
     public static IServiceCollection AddCosmosDbRepositories(this IServiceCollection services,
         HostBuilderContext context)
@@ -44,47 +42,6 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IDefinitionsRepository, DefinitionsRepository>();
         services.AddSingleton<IPlayerRepository, PlayerRepository>();
         services.AddSingleton<IWordsRepository, WordsRepository>();
-
-        return services;
-    }
-
-    public static IServiceCollection AddTableRepositories(this IServiceCollection services, HostBuilderContext context)
-    {
-        services.AddAzureClients(builder =>
-        {
-            if (context.HostingEnvironment.IsDevelopment())
-            {
-                // use local storage emulator
-                builder.AddTableServiceClient("UseDevelopmentStorage=true");
-            }
-            else
-            {
-                // use managed identity
-                builder.AddTableServiceClient(context.Configuration.GetSection("TableService"));
-                builder.UseCredential(new DefaultAzureCredential());
-            }
-        });
-
-        services.AddSingleton<IUsersRepository, UsersRepository>();
-        services.AddSingleton<IGeoLocationRepository, GeoLocationRepository>();
-
-        return services;
-    }
-
-    public static IServiceCollection AddMessagingServices(this IServiceCollection services, HostBuilderContext context)
-    {
-        services.AddAzureClients(builder =>
-        {
-            builder.AddServiceBusClientWithNamespace(context.Configuration["ServiceBus:Namespace"]);
-            builder.UseCredential(new DefaultAzureCredential());
-        });
-
-        services.AddOptions<MessagingOptions>()
-            .Bind(context.Configuration.GetSection(MessagingOptions.SectionName))
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
-
-        services.AddScoped<IIpAddressMessageSender, IpAddressMessageSender>();
 
         return services;
     }
