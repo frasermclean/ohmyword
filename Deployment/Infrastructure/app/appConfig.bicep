@@ -52,7 +52,7 @@ var appConfigurationKeyValues = [
     contentType: 'text/plain'
   }
   {
-    name: 'WordsApi:ApiKey$${appEnv}'
+    name: 'RapidApi:ApiKey$${appEnv}'
     value: '{"uri":"https://${keyVault.name}${environment().suffixes.keyvaultDns}/secrets/${keyVault::rapidApiKeySecret.name}"}'
     contentType: 'application/vnd.microsoft.appconfig.keyvaultref+json;charset=utf-8'
   }
