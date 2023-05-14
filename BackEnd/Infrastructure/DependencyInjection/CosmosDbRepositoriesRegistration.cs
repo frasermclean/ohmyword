@@ -17,7 +17,9 @@ public static class CosmosDbRepositoriesRegistration
 
         // options
         services.AddOptions<CosmosDbOptions>()
-            .Bind(context.Configuration.GetSection(CosmosDbOptions.SectionName));
+            .Bind(context.Configuration.GetSection(CosmosDbOptions.SectionName))
+            .Validate(CosmosDbOptions.Validate, "Invalid CosmosDb configuration")
+            .ValidateOnStart();
 
         // cosmos client
         services.AddSingleton(serviceProvider =>
