@@ -6,7 +6,7 @@ using OhMyWord.Infrastructure.Services.RapidApi.WordsApi;
 
 namespace OhMyWord.Infrastructure.Services.RapidApi;
 
-public static class RapidApiServicesRegistration
+public static class RapidApiClientsRegistration
 {
     public static IServiceCollection AddRapidApiServices(this IServiceCollection services)
     {
@@ -22,7 +22,7 @@ public static class RapidApiServicesRegistration
             httpClient.DefaultRequestHeaders.Add("X-RapidAPI-Key", options.Value.ApiKey);
         });
 
-        services.AddHttpClient<IIpGeoLocationService, IpGeoLocationService>((serviceProvider, httpClient) =>
+        services.AddHttpClient<IIpGeoLocationApiClient, IpGeoLocationApiClient>((serviceProvider, httpClient) =>
         {
             var options = serviceProvider.GetRequiredService<IOptions<RapidApiOptions>>();
             httpClient.BaseAddress = new Uri("https://ip-geo-location.p.rapidapi.com/ip/");

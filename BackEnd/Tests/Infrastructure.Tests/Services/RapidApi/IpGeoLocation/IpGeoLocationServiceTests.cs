@@ -8,11 +8,11 @@ namespace Infrastructure.Tests.Services.RapidApi.IpGeoLocation;
 [Trait("Category", "Integration")]
 public class IpGeoLocationServiceTests : IClassFixture<RapidApiFixture>
 {
-    private readonly IIpGeoLocationService ipGeoLocationService;
+    private readonly IIpGeoLocationApiClient ipGeoLocationApiClient;
 
     public IpGeoLocationServiceTests(RapidApiFixture fixture)
     {
-        ipGeoLocationService = fixture.ServiceProvider.GetRequiredService<IIpGeoLocationService>();
+        ipGeoLocationApiClient = fixture.ServiceProvider.GetRequiredService<IIpGeoLocationApiClient>();
     }
 
     [Theory]
@@ -22,15 +22,15 @@ public class IpGeoLocationServiceTests : IClassFixture<RapidApiFixture>
         IpVersion expectedVersion)
     {
         // act
-        var data = await ipGeoLocationService.GetIpAddressInfoAsync(ipAddress);
+        var entity = await ipGeoLocationApiClient.GetIpAddressInfoAsync(ipAddress);
 
         // assert
-        data.IpAddress.Should().Be(ipAddress);
-        data.IpVersion.Should().Be(expectedVersion);
-        data.City.Name.Should().NotBeEmpty();
-        data.Country.Name.Should().NotBeEmpty();
-        data.Country.Code.Should().NotBeEmpty();
-        data.Country.Flag.Url.Should().NotBeEmpty();
+        entity.PartitionKey.Should().Be(expectedVersion.ToString());
+        entity.RowKey.Should().Be(ipAddress);
+        entity.City.Should().NotBeEmpty();
+        entity.Country.Should().NotBeEmpty();
+        entity.Country.Should().NotBeEmpty();
+        entity.FlagUrl.Should().NotBeEmpty();
     }
 
     [Theory]
@@ -40,14 +40,14 @@ public class IpGeoLocationServiceTests : IClassFixture<RapidApiFixture>
         IpVersion expectedVersion)
     {
         // act
-        var data = await ipGeoLocationService.GetIpAddressInfoAsync(IPAddress.Parse(ipAddress));
+        var entity = await ipGeoLocationApiClient.GetIpAddressInfoAsync(IPAddress.Parse(ipAddress));
 
         // assert
-        data.IpAddress.Should().Be(ipAddress);
-        data.IpVersion.Should().Be(expectedVersion);
-        data.City.Name.Should().NotBeEmpty();
-        data.Country.Name.Should().NotBeEmpty();
-        data.Country.Code.Should().NotBeEmpty();
-        data.Country.Flag.Url.Should().NotBeEmpty();
+        entity.PartitionKey.Should().Be(expectedVersion.ToString());
+        entity.RowKey.Should().Be(ipAddress);
+        entity.City.Should().NotBeEmpty();
+        entity.Country.Should().NotBeEmpty();
+        entity.Country.Should().NotBeEmpty();
+        entity.FlagUrl.Should().NotBeEmpty();
     }
 }

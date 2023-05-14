@@ -2,7 +2,7 @@
 
 namespace OhMyWord.Infrastructure.Models.IpGeoLocation;
 
-public class Flag
+internal class Flag
 {
-    [JsonPropertyName("file")] public string Url { get; set; } = string.Empty;
+    [JsonPropertyName("file")] public string? Url { get; set; }
 }

@@ -1,6 +1,6 @@
 ﻿using OhMyWord.Infrastructure.Models;
 
-namespace Infrastructure.Tests;
+namespace Infrastructure.Tests.Models;
 
 public class DataFixture
 {

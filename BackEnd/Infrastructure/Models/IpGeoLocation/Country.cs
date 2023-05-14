@@ -1,8 +1,6 @@
-﻿using System.Text.Json.Serialization;
+﻿namespace OhMyWord.Infrastructure.Models.IpGeoLocation;
 
-namespace OhMyWord.Infrastructure.Models.IpGeoLocation;
-
-public class Country
+internal class Country
 {
     public string? Name { get; set; } = string.Empty;
     public string? Code { get; set; } = string.Empty;    
