@@ -16,11 +16,11 @@ public class IpAddressFunctions
     }
 
     [Function("ProcessIpAddress")]
-    public Task ProcessIpAddress(
+    public async Task ProcessIpAddress(
         [ServiceBusTrigger("%ServiceBus:IpLookupQueueName%", Connection = "ServiceBus")]
         string ipAddress)
     {
         logger.LogInformation("Processing IP address: {IpAddress}", ipAddress);
-        return Task.CompletedTask;
+        await geoLocationService.GetGeoLocationAsync(ipAddress);
     }
 }

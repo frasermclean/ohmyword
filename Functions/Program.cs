@@ -2,8 +2,9 @@
 using Azure.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using OhMyWord.Domain.Services;
+using OhMyWord.Domain.Extensions;
 using OhMyWord.Infrastructure.Extensions;
+using OhMyWord.Infrastructure.Services.RapidApi;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -26,7 +27,8 @@ public static class Program
             })
             .ConfigureServices((context, services) =>
             {
-                services.AddSingleton<IUsersService, UsersService>();
+                services.AddDomainServices();
+                services.AddRapidApiServices();
                 services.AddTableRepositories(context);
 
                 // health checks
