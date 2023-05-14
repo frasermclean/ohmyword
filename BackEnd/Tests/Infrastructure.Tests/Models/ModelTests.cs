@@ -1,13 +1,13 @@
 using OhMyWord.Infrastructure.Models;
 
-namespace Infrastructure.Tests;
+namespace Infrastructure.Tests.Models;
 
 [Trait("Category", "Unit")]
-public class EntityTests : IClassFixture<DataFixture>
+public class ModelTests : IClassFixture<DataFixture>
 {
     private readonly DataFixture fixture;
 
-    public EntityTests(DataFixture fixture)
+    public ModelTests(DataFixture fixture)
     {
         this.fixture = fixture;
     }

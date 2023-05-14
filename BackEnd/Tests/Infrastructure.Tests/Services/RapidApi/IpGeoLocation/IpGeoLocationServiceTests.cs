@@ -5,6 +5,7 @@ using System.Net;
 
 namespace Infrastructure.Tests.Services.RapidApi.IpGeoLocation;
 
+[Trait("Category", "Integration")]
 public class IpGeoLocationServiceTests : IClassFixture<RapidApiFixture>
 {
     private readonly IIpGeoLocationService ipGeoLocationService;
