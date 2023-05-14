@@ -1,13 +1,15 @@
-﻿using Azure.Data.Tables;
+﻿using Azure;
+using Azure.Data.Tables;
 using Microsoft.Extensions.Logging;
 using OhMyWord.Infrastructure.Models;
+using OhMyWord.Infrastructure.Models.IpGeoLocation;
 
 namespace OhMyWord.Infrastructure.Services;
 
 public interface IGeoLocationRepository
 {
     Task<GeoLocationEntity?> GetGeoLocationAsync(string ipAddress, CancellationToken cancellationToken = default);
-    Task AddGeoLocationAsync(GeoLocationEntity geoLocationEntity);
+    Task AddGeoLocationAsync(GeoLocationEntity entity);
 }
 
 public class GeoLocationRepository : IGeoLocationRepository
@@ -24,19 +26,24 @@ public class GeoLocationRepository : IGeoLocationRepository
     public async Task<GeoLocationEntity?> GetGeoLocationAsync(string ipAddress, CancellationToken cancellationToken)
     {
         var partitionKey = ipAddress.Contains(':') ? "IPv6" : "IPv4";
-        var response = await tableClient.GetEntityAsync<GeoLocationEntity>(partitionKey, ipAddress,
-            cancellationToken: cancellationToken);
 
-        if (response.HasValue)
+        try
+        {
+            var result = await tableClient.GetEntityAsync<GeoLocationEntity>(partitionKey, ipAddress,
+                cancellationToken: cancellationToken);
             logger.LogInformation("GeoLocation for IP address: {IpAddress} was found", ipAddress);
-        else
-            logger.LogWarning("GeoLocation for IP address: {IpAddress} was not found", ipAddress);
-
-        return response;
+            return result;
+        }
+        catch (RequestFailedException exception)
+        {
+            logger.LogWarning(exception, "GeoLocation for IP address: {IpAddress} was not found", ipAddress);
+            return default;
+        }
     }
 
-    public Task AddGeoLocationAsync(GeoLocationEntity geoLocationEntity)
+    public async Task AddGeoLocationAsync(GeoLocationEntity entity)
     {
-        throw new NotImplementedException();
+        await tableClient.AddEntityAsync(entity);
+        logger.LogInformation("GeoLocation for IP address: {IpAddress} was added", entity.RowKey);
     }
 }
