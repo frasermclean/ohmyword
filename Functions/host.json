@@ -1,6 +1,11 @@
 {
   "version": "2.0",
   "logging": {
+    "logLevel": {
+      "default": "Information",
+      "Microsoft": "Warning",
+      "Azure.Core": "Warning"
+    },
     "applicationInsights": {
       "samplingSettings": {
         "isEnabled": true,
