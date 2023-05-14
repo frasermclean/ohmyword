@@ -33,6 +33,9 @@ param serviceBusNamespaceName string
 @description('Name of the service bus queue for IP lookup')
 param ipLookupQueueName string
 
+@description('Name of the key vault')
+param keyVaultName string
+
 var tags = {
   workload: workload
   category: category
@@ -51,6 +54,11 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' existing 
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2022-09-01' existing = {
   name: appServicePlanName
+  scope: resourceGroup(sharedResourceGroup)
+}
+
+resource keyVault 'Microsoft.KeyVault/vaults@2023-02-01' existing = {
+  name: keyVaultName
   scope: resourceGroup(sharedResourceGroup)
 }
 
@@ -171,6 +179,10 @@ resource functionApp 'Microsoft.Web/sites@2022-09-01' = {
         {
           name: 'ServiceBus__IpLookupQueueName'
           value: ipLookupQueueName
+        }
+        {
+          name: 'RapidApi:ApiKey'
+          value: '@Microsoft.KeyVault(VaultName=${keyVault.name};SecretName=RapidApiKey-prod)'
         }
       ]
     }

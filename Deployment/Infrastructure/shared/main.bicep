@@ -293,7 +293,7 @@ resource appConfiguration 'Microsoft.AppConfiguration/configurationStores@2022-0
 }
 
 // key vault
-resource keyVault 'Microsoft.KeyVault/vaults@2022-11-01' = {
+resource keyVault 'Microsoft.KeyVault/vaults@2023-02-01' = {
   name: 'kv-${workload}-shared'
   location: location
   tags: tags
@@ -368,6 +368,7 @@ module functions 'functions.bicep' = {
     virtualNetworkSubnetId: virtualNetwork::appServiceSubnet.id
     serviceBusNamespaceName: serviceBusNamespace.name
     ipLookupQueueName: serviceBusQueues[1].name
+    keyVaultName: keyVault.name
   }
 }
 
