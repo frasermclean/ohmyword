@@ -1,5 +1,5 @@
 ﻿using OhMyWord.Domain.Models;
-using OhMyWord.Infrastructure.Models;
+using OhMyWord.Infrastructure.Models.Entities;
 using OhMyWord.Infrastructure.Models.IpGeoLocation;
 
 namespace OhMyWord.Domain.Extensions;

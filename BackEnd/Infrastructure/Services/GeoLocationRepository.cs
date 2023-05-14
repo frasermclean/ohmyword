@@ -1,7 +1,7 @@
 ﻿using Azure;
 using Azure.Data.Tables;
 using Microsoft.Extensions.Logging;
-using OhMyWord.Infrastructure.Models;
+using OhMyWord.Infrastructure.Models.Entities;
 
 namespace OhMyWord.Infrastructure.Services;
 

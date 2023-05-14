@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Services;
 using OhMyWord.Functions.Models;
-using OhMyWord.Infrastructure.Models;
+using OhMyWord.Infrastructure.Models.Entities;
 
 namespace OhMyWord.Functions.Functions;
 

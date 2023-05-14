@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using OhMyWord.Infrastructure.Extensions;
-using OhMyWord.Infrastructure.Models;
+using OhMyWord.Infrastructure.Models.Entities;
 using OhMyWord.Infrastructure.Models.IpGeoLocation;
 using System.Net;
 using System.Net.Http.Json;

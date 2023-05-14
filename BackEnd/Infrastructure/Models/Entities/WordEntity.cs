@@ -1,4 +1,4 @@
-﻿namespace OhMyWord.Infrastructure.Models;
+﻿namespace OhMyWord.Infrastructure.Models.Entities;
 
 public sealed record WordEntity : Entity
 {

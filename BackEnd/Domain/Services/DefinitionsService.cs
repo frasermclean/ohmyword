@@ -1,6 +1,6 @@
 ﻿using OhMyWord.Domain.Extensions;
 using OhMyWord.Domain.Models;
-using OhMyWord.Infrastructure.Models;
+using OhMyWord.Infrastructure.Models.Entities;
 using OhMyWord.Infrastructure.Services.RapidApi.WordsApi;
 
 namespace OhMyWord.Domain.Services;

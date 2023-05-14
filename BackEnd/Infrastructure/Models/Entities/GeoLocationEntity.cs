@@ -1,7 +1,7 @@
 ﻿using Azure;
 using Azure.Data.Tables;
 
-namespace OhMyWord.Infrastructure.Models;
+namespace OhMyWord.Infrastructure.Models.Entities;
 
 public record GeoLocationEntity : ITableEntity
 {
