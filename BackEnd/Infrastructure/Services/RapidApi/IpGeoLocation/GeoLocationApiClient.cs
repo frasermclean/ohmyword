@@ -9,15 +9,15 @@ using System.Text.Json.Serialization;
 
 namespace OhMyWord.Infrastructure.Services.RapidApi.IpGeoLocation;
 
-public interface IIpGeoLocationApiClient
+public interface IGeoLocationApiClient
 {
-    Task<IpGeoLocationEntity> GetIpAddressInfoAsync(string ipAddress, CancellationToken cancellationToken = default);
-    Task<IpGeoLocationEntity> GetIpAddressInfoAsync(IPAddress ipAddress, CancellationToken cancellationToken = default);
+    Task<GeoLocationEntity> GetGetLocationAsync(string ipAddress, CancellationToken cancellationToken = default);
+    Task<GeoLocationEntity> GetGetLocationAsync(IPAddress ipAddress, CancellationToken cancellationToken = default);
 }
 
-public class IpGeoLocationApiClient : IIpGeoLocationApiClient
+public class GeoLocationApiClient : IGeoLocationApiClient
 {
-    private readonly ILogger<IpGeoLocationApiClient> logger;
+    private readonly ILogger<GeoLocationApiClient> logger;
     private readonly HttpClient httpClient;
 
     private static readonly JsonSerializerOptions SerializerOptions = new()
@@ -25,13 +25,13 @@ public class IpGeoLocationApiClient : IIpGeoLocationApiClient
         PropertyNameCaseInsensitive = true, Converters = { new JsonStringEnumConverter() }
     };
 
-    public IpGeoLocationApiClient(ILogger<IpGeoLocationApiClient> logger, HttpClient httpClient)
+    public GeoLocationApiClient(ILogger<GeoLocationApiClient> logger, HttpClient httpClient)
     {
         this.logger = logger;
         this.httpClient = httpClient;
     }
 
-    public async Task<IpGeoLocationEntity> GetIpAddressInfoAsync(string ipAddress,
+    public async Task<GeoLocationEntity> GetGetLocationAsync(string ipAddress,
         CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Getting IP address info for: {IpAddress}", ipAddress);
@@ -46,6 +46,6 @@ public class IpGeoLocationApiClient : IIpGeoLocationApiClient
         return apiResponse.ToEntity();
     }
 
-    public Task<IpGeoLocationEntity> GetIpAddressInfoAsync(IPAddress ipAddress, CancellationToken cancellationToken)
-        => GetIpAddressInfoAsync(ipAddress.ToString(), cancellationToken);
+    public Task<GeoLocationEntity> GetGetLocationAsync(IPAddress ipAddress, CancellationToken cancellationToken)
+        => GetGetLocationAsync(ipAddress.ToString(), cancellationToken);
 }

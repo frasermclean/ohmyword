@@ -22,7 +22,7 @@ public static class RapidApiClientsRegistration
             httpClient.DefaultRequestHeaders.Add("X-RapidAPI-Key", options.Value.ApiKey);
         });
 
-        services.AddHttpClient<IIpGeoLocationApiClient, IpGeoLocationApiClient>((serviceProvider, httpClient) =>
+        services.AddHttpClient<IGeoLocationApiClient, GeoLocationApiClient>((serviceProvider, httpClient) =>
         {
             var options = serviceProvider.GetRequiredService<IOptions<RapidApiOptions>>();
             httpClient.BaseAddress = new Uri("https://ip-geo-location.p.rapidapi.com/ip/");

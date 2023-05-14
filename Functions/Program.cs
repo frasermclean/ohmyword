@@ -27,7 +27,7 @@ public static class Program
             .ConfigureServices((context, services) =>
             {
                 services.AddSingleton<IUsersService, UsersService>();
-                services.AddUsersRepository(context);
+                services.AddTableRepositories(context);
 
                 // health checks
                 if (context.HostingEnvironment.IsDevelopment())

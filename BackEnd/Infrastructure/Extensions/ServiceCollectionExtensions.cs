@@ -48,7 +48,7 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddUsersRepository(this IServiceCollection services, HostBuilderContext context)
+    public static IServiceCollection AddTableRepositories(this IServiceCollection services, HostBuilderContext context)
     {
         services.AddAzureClients(builder =>
         {
@@ -66,6 +66,7 @@ public static class ServiceCollectionExtensions
         });
 
         services.AddSingleton<IUsersRepository, UsersRepository>();
+        services.AddSingleton<IGeoLocationRepository, GeoLocationRepository>();
 
         return services;
     }

@@ -8,11 +8,11 @@ namespace Infrastructure.Tests.Services.RapidApi.IpGeoLocation;
 [Trait("Category", "Integration")]
 public class IpGeoLocationServiceTests : IClassFixture<RapidApiFixture>
 {
-    private readonly IIpGeoLocationApiClient ipGeoLocationApiClient;
+    private readonly IGeoLocationApiClient geoLocationApiClient;
 
     public IpGeoLocationServiceTests(RapidApiFixture fixture)
     {
-        ipGeoLocationApiClient = fixture.ServiceProvider.GetRequiredService<IIpGeoLocationApiClient>();
+        geoLocationApiClient = fixture.ServiceProvider.GetRequiredService<IGeoLocationApiClient>();
     }
 
     [Theory]
@@ -22,7 +22,7 @@ public class IpGeoLocationServiceTests : IClassFixture<RapidApiFixture>
         IpVersion expectedVersion)
     {
         // act
-        var entity = await ipGeoLocationApiClient.GetIpAddressInfoAsync(ipAddress);
+        var entity = await geoLocationApiClient.GetGetLocationAsync(ipAddress);
 
         // assert
         entity.PartitionKey.Should().Be(expectedVersion.ToString());
@@ -40,7 +40,7 @@ public class IpGeoLocationServiceTests : IClassFixture<RapidApiFixture>
         IpVersion expectedVersion)
     {
         // act
-        var entity = await ipGeoLocationApiClient.GetIpAddressInfoAsync(IPAddress.Parse(ipAddress));
+        var entity = await geoLocationApiClient.GetGetLocationAsync(IPAddress.Parse(ipAddress));
 
         // assert
         entity.PartitionKey.Should().Be(expectedVersion.ToString());

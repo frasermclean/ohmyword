@@ -1,15 +1,18 @@
 ﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
+using OhMyWord.Domain.Services;
 
 namespace OhMyWord.Functions.Functions;
 
 public class IpAddressFunctions
 {
     private readonly ILogger<IpAddressFunctions> logger;
+    private readonly IGeoLocationService geoLocationService;
 
-    public IpAddressFunctions(ILogger<IpAddressFunctions> logger)
+    public IpAddressFunctions(ILogger<IpAddressFunctions> logger, IGeoLocationService geoLocationService)
     {
         this.logger = logger;
+        this.geoLocationService = geoLocationService;
     }
 
     [Function("ProcessIpAddress")]

@@ -3,7 +3,7 @@ using Azure.Data.Tables;
 
 namespace OhMyWord.Infrastructure.Models;
 
-public record IpGeoLocationEntity : ITableEntity
+public record GeoLocationEntity : ITableEntity
 {
     /// <summary>
     /// PartitionKey is IP version
