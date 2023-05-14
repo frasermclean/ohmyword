@@ -165,7 +165,7 @@ resource appService 'Microsoft.Web/sites@2022-03-01' = {
 
 // diagnostic settings
 resource appServiceDiagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: 'diag-${appName}-${appEnv}'
+  name: appService.name
   scope: appService
   properties: {
     workspaceId: logAnalyticsWorkspace.id
