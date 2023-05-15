@@ -42,7 +42,8 @@ export const GAME_STATE_TOKEN = new StateToken<GameStateModel>('game');
 })
 @Injectable()
 export class GameState {
-  constructor(private hubService: HubService) {}
+  constructor(private hubService: HubService) {
+  }
 
   @Action(Game.RegisterPlayer)
   registerPlayer(context: StateContext<GameStateModel>) {
@@ -81,6 +82,22 @@ export class GameState {
     });
   }
 
+  @Action(Game.RoundEnded)
+  roundEnded(context: StateContext<GameStateModel>, action: Game.RoundEnded) {
+    context.patchState({
+      roundActive: false,
+      roundSummary: new RoundSummary({
+        word: action.word,
+        partOfSpeech: action.partOfSpeech,
+        endReason: action.endReason,
+      }),
+      interval: {
+        startDate: new Date(),
+        endDate: new Date(action.nextRoundStart)
+      }
+    });
+  }
+
   @Action(Game.LetterHintReceived)
   letterHintReceived(context: StateContext<GameStateModel>, action: Game.LetterHintReceived) {
     const state = context.getState();
@@ -100,13 +117,13 @@ export class GameState {
 
   @Action(Game.PlayerCountUpdated)
   playerCountUpdated(context: StateContext<GameStateModel>, action: Game.PlayerCountUpdated) {
-    context.patchState({ playerCount: action.count });
+    context.patchState({playerCount: action.count});
   }
 
   @Action(Game.AddPoints)
   addPoints(context: StateContext<GameStateModel>, action: Game.AddPoints) {
     const currentScore = context.getState().score;
-    context.patchState({ score: currentScore + action.points });
+    context.patchState({score: currentScore + action.points});
   }
 
   @Action(Hub.Disconnected)

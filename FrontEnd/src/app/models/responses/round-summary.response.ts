@@ -1,5 +1,4 @@
-import { PartOfSpeech } from '@models/enums/part-of-speech.enum';
-import { RoundEndReason } from '@models/enums/round-end-reason';
+import { PartOfSpeech, RoundEndReason } from "@models/enums";
 
 export interface RoundSummaryResponse {
   word: string;

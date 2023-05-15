@@ -1,5 +1,5 @@
-import { PartOfSpeech } from '@models/enums/part-of-speech.enum';
 import { LetterHintResponse } from './letter-hint.response';
+import { PartOfSpeech } from "@models/enums";
 
 export interface WordHintResponse {
   length: number;

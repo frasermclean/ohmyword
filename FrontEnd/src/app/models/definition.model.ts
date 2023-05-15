@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
-import { PartOfSpeech } from './enums/part-of-speech.enum';
 import { DefinitionResponse } from './responses/definition-response';
+import { PartOfSpeech } from "@models/enums";
 
 export class Definition {
   readonly id: string;

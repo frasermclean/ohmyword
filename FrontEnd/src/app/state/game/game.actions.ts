@@ -2,6 +2,7 @@ import { GameStateResponse } from '@models/responses/game-state-response';
 import { LetterHintResponse } from '@models/responses/letter-hint.response';
 import { RegisterPlayerResponse } from '@models/responses/register-player.response';
 import { WordHint } from '@models/word-hint.model';
+import { RoundEndedEventResponse } from "@models/responses/round-ended-event.response";
 
 /**
  * Game actions and events
@@ -38,6 +39,18 @@ export namespace Game {
     roundSummary = this.response.roundSummary;
 
     constructor(private response: GameStateResponse) {}
+  }
+
+  export class RoundEnded {
+    static readonly type = '[Game Service] Game.RoundEnded';
+
+    word = this.response.word;
+    partOfSpeech = this.response.partOfSpeech;
+    endReason = this.response.endReason;
+    nextRoundStart = new Date(this.response.nextRoundStart);
+    scores = this.response.scores;
+
+    constructor(private response: RoundEndedEventResponse) {}
   }
 
   export class LetterHintReceived {

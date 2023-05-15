@@ -13,6 +13,7 @@ import { Game } from '@state/game/game.actions';
 import { GameStateResponse } from '@models/responses/game-state-response';
 import { Guess } from '@state/guess/guess.actions';
 import { Hub } from '@state/hub/hub.actions';
+import { RoundEndedEventResponse } from "@models/responses/round-ended-event.response";
 
 @Injectable({
   providedIn: 'root',
@@ -87,6 +88,11 @@ export class HubService {
     // server sent game state
     this.hubConnection.on('SendGameState', (response: GameStateResponse) =>
       this.store.dispatch(new Game.GameStateUpdated(response))
+    );
+
+    // round ended
+    this.hubConnection.on('SendRoundEnded', (response: RoundEndedEventResponse) =>
+      this.store.dispatch(new Game.RoundEnded(response))
     );
 
     // player count changed
