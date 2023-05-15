@@ -70,7 +70,7 @@ public static class Program
             }
 
             // health checks
-            services.AddApplicationHealthChecks(context);
+            services.AddApplicationHealthChecks(context.Configuration);
         });
 
         // build the application
