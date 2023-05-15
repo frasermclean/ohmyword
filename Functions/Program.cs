@@ -28,7 +28,7 @@ public static class Program
             {
                 services.AddDomainServices();
                 services.AddRapidApiServices();
-                services.AddTableRepositories(context);
+                services.AddTableRepositories(context.Configuration);
 
                 // health checks
                 if (context.HostingEnvironment.IsDevelopment())
@@ -41,7 +41,7 @@ public static class Program
                     var endpointUri = new Uri(context.Configuration["TableService:Endpoint"] ?? string.Empty);
                     var credential = new DefaultAzureCredential();
                     services.AddHealthChecks()
-                        .AddAzureTable(endpointUri, credential, "users");
+                        .AddAzureTable(endpointUri, credential, "users"); // TODO: Refactor functions health checks
                 }
             })
             .Build();

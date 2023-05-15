@@ -59,7 +59,7 @@ public static class Program
             // local project services
             services.AddDomainServices();
             services.AddCosmosDbRepositories(context);
-            services.AddTableRepositories(context);
+            services.AddTableRepositories(context.Configuration);
             services.AddMessagingServices(context);
             services.AddRapidApiServices();
 

@@ -1,27 +1,36 @@
 ﻿using Azure.Identity;
 using Microsoft.Extensions.Azure;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using OhMyWord.Infrastructure.Options;
 using OhMyWord.Infrastructure.Services;
 
 namespace OhMyWord.Infrastructure.DependencyInjection;
 
 public static class TableRepositoriesRegistration
 {
-    public static IServiceCollection AddTableRepositories(this IServiceCollection services, HostBuilderContext context)
+    public static IServiceCollection AddTableRepositories(this IServiceCollection services,
+        IConfiguration configuration)
     {
+        services.AddOptions<TableServiceOptions>()
+            .Bind(configuration.GetSection(TableServiceOptions.SectionName))
+            .Validate(TableServiceOptions.Validate, "Invalid TableService configuration")
+            .ValidateOnStart();
+
         services.AddAzureClients(builder =>
         {
-            if (context.HostingEnvironment.IsDevelopment())
+            var options = configuration.GetSection(TableServiceOptions.SectionName).Get<TableServiceOptions>();
+
+            // use managed identity if endpoint specified, otherwise use connection string
+            if (!string.IsNullOrEmpty(options?.Endpoint))
             {
-                // use local storage emulator
-                builder.AddTableServiceClient("UseDevelopmentStorage=true");
+                var uri = new Uri(options.Endpoint);
+                builder.AddTableServiceClient(uri);
+                builder.UseCredential(new DefaultAzureCredential());
             }
             else
             {
-                // use managed identity
-                builder.AddTableServiceClient(context.Configuration.GetSection("TableService"));
-                builder.UseCredential(new DefaultAzureCredential());
+                builder.AddTableServiceClient(options?.ConnectionString!);
             }
         });
 

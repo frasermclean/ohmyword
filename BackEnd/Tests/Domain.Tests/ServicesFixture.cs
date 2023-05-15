@@ -24,7 +24,7 @@ public class ServicesFixture
             {
                 collection.AddDomainServices();
                 collection.AddRapidApiServices();
-                collection.AddTableRepositories(context);
+                collection.AddTableRepositories(context.Configuration);
             })
             .Build();
 

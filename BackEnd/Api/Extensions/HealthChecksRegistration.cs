@@ -1,5 +1,4 @@
 ﻿using Azure.Identity;
-using OhMyWord.Infrastructure.Services.RapidApi.WordsApi;
 
 namespace OhMyWord.Api.Extensions;
 
@@ -35,14 +34,17 @@ public static class HealthChecksRegistration
     private static IHealthChecksBuilder AddTableStorageChecks(this IHealthChecksBuilder builder,
         IConfiguration configuration)
     {
-        var serviceEndpoint = configuration["TableService:Endpoint"] ?? string.Empty;
-
-        if (string.IsNullOrEmpty(serviceEndpoint)) return builder;
+        var connectionString = configuration["TableService:ConnectionString"];
+        var endpoint = configuration["TableService:Endpoint"] ?? string.Empty;
 
         foreach (var table in TableStorageTables)
         {
-            builder.AddAzureTable(new Uri(serviceEndpoint),
-                new DefaultAzureCredential(), table, $"table-{table}");
+            var checkName = $"table-{table}";
+            
+            if (!string.IsNullOrEmpty(connectionString))
+                builder.AddAzureTable(connectionString, table, checkName);
+            else
+                builder.AddAzureTable(new Uri(endpoint), new DefaultAzureCredential(), table, checkName);
         }
 
         return builder;
