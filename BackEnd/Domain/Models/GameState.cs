@@ -8,5 +8,4 @@ public record GameState
     public DateTime IntervalStart { get; init; } = DateTime.UtcNow;
     public DateTime IntervalEnd { get; init; }
     public WordHint WordHint { get; init; } = WordHint.Default;
-    public RoundSummary? RoundSummary { get; init; }
 }

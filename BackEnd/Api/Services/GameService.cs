@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using OhMyWord.Api.Events.GameStateChanged;
 using OhMyWord.Api.Events.LetterHintAdded;
+using OhMyWord.Api.Events.RoundEnded;
 using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Options;
 using OhMyWord.Domain.Services;
@@ -207,14 +208,11 @@ public class GameService : IGameService
             RoundId = round.Id,
             IntervalEnd = intervalEnd,
             WordHint = round.WordHint,
-            RoundSummary = !roundActive
-                ? new RoundSummary
-                {
-                    Word = round.Word.Id, PartOfSpeech = round.WordHint.PartOfSpeech, EndReason = round.EndReason,
-                }
-                : default
         };
 
         await new GameStateChangedEvent(State).PublishAsync();
+
+        if (!roundActive)
+            await new RoundEndedEvent(round, intervalEnd).PublishAsync();
     }
 }
