@@ -4,7 +4,6 @@ import { RoundSummary } from '@models/round-summary.model';
 import { WordHint } from '@models/word-hint.model';
 import { HubService } from '@services/hub.service';
 import { Game } from './game.actions';
-import { Guess } from '../guess/guess.actions';
 import { Hub } from '@state/hub/hub.actions';
 
 interface GameStateModel {
@@ -80,11 +79,6 @@ export class GameState {
         endDate: new Date(action.intervalEnd),
       },
     });
-
-    // reset guess on new round
-    if (action.roundActive) {
-      context.dispatch(new Guess.SetNewWord(action.wordHint));
-    }
   }
 
   @Action(Game.LetterHintReceived)

@@ -1,8 +1,7 @@
-<h2>Have a guess!</h2>
+<form [formGroup]="formGroup" (ngSubmit)="submitGuess()">
+  <mat-form-field appearance="fill" class="guess-field">
+    <mat-label>Have a guess</mat-label>
+    <input matInput formControlName="guess" autofocus placeholder="What's the word?" [maxlength]="maxLength$ | async">
+  </mat-form-field>
+</form>
 
-<div *ngIf="response">
-  <p>
-    Your last guess of "{{ response.value }}" was
-    {{ response.correct ? "correct" : "incorrect" }}
-  </p>
-</div>
