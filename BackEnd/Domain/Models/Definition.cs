@@ -1,5 +1,4 @@
-﻿using OhMyWord.Infrastructure.Entities;
-using OhMyWord.Infrastructure.Enums;
+﻿using OhMyWord.Infrastructure.Models.Entities;
 using System.Text.Json.Serialization;
 
 namespace OhMyWord.Domain.Models;

@@ -89,8 +89,8 @@ jobs:
         run: dotnet build --configuration $BUILD_CONFIGURATION
 
       # Test solution
-      - name: Test solution
-        run: dotnet test --configuration $BUILD_CONFIGURATION
+      - name: Run unit tests
+        run: dotnet test --configuration $BUILD_CONFIGURATION --filter Category=Unit
 
       # Publish application
       - name: Publish application
@@ -98,8 +98,8 @@ jobs:
         run: dotnet publish --configuration $BUILD_CONFIGURATION --os $PUBLISH_OS --output $PUBLISH_DIRECTORY
 
       # Delete app settings file
-      - name: Remove app settings file
-        run: rm $PUBLISH_DIRECTORY/appsettings.json
+      - name: Remove development settings
+        run: rm $PUBLISH_DIRECTORY/appsettings.Development.json
 
       # Upload published application artifact
       - name: Upload published application artifact

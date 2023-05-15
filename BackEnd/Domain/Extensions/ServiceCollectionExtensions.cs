@@ -9,6 +9,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddSingleton<IDefinitionsService, DefinitionsService>();
         services.AddSingleton<IUsersService, UsersService>();
+        services.AddSingleton<IGeoLocationService, GeoLocationService>();
         services.AddSingleton<IPlayerService, PlayerService>();
         services.AddSingleton<IWordsService, WordsService>();
 

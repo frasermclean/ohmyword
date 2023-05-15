@@ -1,7 +1,7 @@
 ﻿using OhMyWord.Domain.Extensions;
 using OhMyWord.Domain.Models;
-using OhMyWord.Infrastructure.Enums;
-using OhMyWord.WordsApi.Services;
+using OhMyWord.Infrastructure.Models.Entities;
+using OhMyWord.Infrastructure.Services.RapidApi.WordsApi;
 
 namespace OhMyWord.Domain.Services;
 

@@ -1,4 +1,4 @@
-﻿using OhMyWord.Infrastructure.Enums;
+﻿using OhMyWord.Infrastructure.Models.Entities;
 using System.Collections.Concurrent;
 using System.Text.Json.Serialization;
 

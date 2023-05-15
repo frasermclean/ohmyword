@@ -89,7 +89,7 @@ export class HubService {
       this.store.dispatch(new Game.GameStateUpdated(response))
     );
 
-    // vistor count changed
+    // player count changed
     this.hubConnection.on('SendPlayerCount', (count: number) =>
       this.store.dispatch(new Game.PlayerCountUpdated(count))
     );

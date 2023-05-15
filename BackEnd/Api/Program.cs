@@ -5,8 +5,7 @@ using OhMyWord.Api.Hubs;
 using OhMyWord.Api.Services;
 using OhMyWord.Domain.Extensions;
 using OhMyWord.Domain.Options;
-using OhMyWord.Infrastructure.Extensions;
-using OhMyWord.WordsApi.Services;
+using OhMyWord.Infrastructure.DependencyInjection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -60,9 +59,9 @@ public static class Program
             // local project services
             services.AddDomainServices();
             services.AddCosmosDbRepositories(context);
-            services.AddUsersRepository(context);
+            services.AddTableRepositories(context);
             services.AddMessagingServices(context);
-            services.AddWordsApiClient(context);
+            services.AddRapidApiServices();
 
             // development services
             if (context.HostingEnvironment.IsDevelopment())
@@ -71,7 +70,7 @@ public static class Program
             }
 
             // health checks
-            services.AddApplicationHealthChecks(context);
+            services.AddApplicationHealthChecks(context.Configuration);
         });
 
         // build the application

@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using OhMyWord.Domain.Extensions;
 using OhMyWord.Domain.Models;
-using OhMyWord.Infrastructure.Entities;
+using OhMyWord.Infrastructure.Models.Entities;
 using OhMyWord.Infrastructure.Services;
 using System.Collections.Concurrent;
 using System.Net;

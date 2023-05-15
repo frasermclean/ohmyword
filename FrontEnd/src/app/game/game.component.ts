@@ -1,6 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngxs/store';
-import { AuthState } from '@state/auth/auth.state';
 
 import { GameState } from '@state/game/game.state';
 import { GuessState } from '@state/guess/guess.state';
@@ -17,10 +16,7 @@ export class GameRootComponent implements OnInit, OnDestroy {
   registered$ = this.store.select(GameState.registered);
   roundActive$ = this.store.select(GameState.roundActive);
   interval$ = this.store.select(GameState.interval);
-  postRoundSummary$ = this.store.select(GameState.roundSummary);
   guessedCorrectly$ = this.store.select(GuessState.guessedCorrectly);
-  authBusy$ = this.store.select(AuthState.busy);
-  showKeyboard = false;
 
   constructor(private store: Store) {}
 

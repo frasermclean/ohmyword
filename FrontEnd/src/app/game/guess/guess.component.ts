@@ -1,48 +1,42 @@
-import { Component, EventEmitter, HostListener, OnInit, Output } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { FormControl, NonNullableFormBuilder } from '@angular/forms';
 import { Store } from '@ngxs/store';
-import { GuessResponse } from '@models/responses/guess.response';
 import { Guess } from '@state/guess/guess.actions';
+import { GuessState } from "@state/guess/guess.state";
+import { takeUntil, tap } from "rxjs/operators";
+import { Subject } from "rxjs";
 
 @Component({
   selector: 'app-guess',
   templateUrl: './guess.component.html',
   styleUrls: ['./guess.component.scss'],
 })
-export class GuessComponent implements OnInit {
-  response: GuessResponse | null = null;
+export class GuessComponent implements OnInit, OnDestroy {
+  formGroup = this.formBuilder.group({
+    guess: ''
+  })
 
-  @Output()
-  valueChanged = new EventEmitter<string>();
+  maxLength$ = this.store.select(GuessState.maxLength);
+  private destroying$ = new Subject<void>();
 
-  @HostListener('window:keyup', ['$event'])
-  onKeyUpEvent(event: KeyboardEvent) {
-    switch (event.key) {
-      case 'Backspace':
-        this.deleteCharFromGuess();
-        break;
-      case 'Enter':
-        this.submitGuess();
-        break;
-      default:
-        if (event.key.length !== 1 || !event.key[0].match(/[A-z]/g)) return;
-        this.addCharToGuess(event.key.toLowerCase());
-        break;
-    }
+  constructor(private store: Store, private formBuilder: NonNullableFormBuilder) {
   }
 
-  constructor(private store: Store) {}
-
-  ngOnInit(): void {}
-
-  addCharToGuess(char: string) {
-    this.store.dispatch(new Guess.Append(char));
+  ngOnInit(): void {
+    this.formGroup.controls.guess.valueChanges.pipe(
+      takeUntil(this.destroying$),
+      tap(value => this.store.dispatch(new Guess.SetValue(value)))
+    ).subscribe();
   }
 
-  deleteCharFromGuess() {
-    this.store.dispatch(new Guess.Backspace());
+  ngOnDestroy(): void {
+    this.destroying$.next();
+    this.destroying$.complete();
   }
 
   submitGuess() {
-    this.store.dispatch(new Guess.Submit());
+    const value = this.formGroup.controls.guess.value;
+    this.store.dispatch(new Guess.Submit(value));
+    this.formGroup.reset();
   }
 }

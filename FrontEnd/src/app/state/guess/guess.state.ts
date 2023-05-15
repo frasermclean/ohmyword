@@ -13,13 +13,14 @@ interface GuessStateModel {
   guessedCorrectly: boolean;
 }
 
+const GUESS_VALUE_DEFAULT = '';
 const GUESS_STATE_TOKEN = new StateToken<GuessStateModel>('guess');
 export const GUESS_DEFAULT_CHAR = '_';
 
 @State<GuessStateModel>({
   name: GUESS_STATE_TOKEN,
   defaults: {
-    value: '',
+    value: GUESS_VALUE_DEFAULT,
     count: 0,
     maxLength: 0,
     guessedCorrectly: false,
@@ -27,41 +28,32 @@ export const GUESS_DEFAULT_CHAR = '_';
 })
 @Injectable()
 export class GuessState {
-  constructor(private store: Store, private hubService: HubService, private soundService: SoundService) {}
-
-  @Action(Guess.Append)
-  append(context: StateContext<GuessStateModel>, action: Guess.Append) {
-    const state = context.getState();
-    if (state.value.length === state.maxLength) return;
-    context.patchState({
-      value: state.value + action.value,
-    });
+  constructor(private store: Store, private hubService: HubService, private soundService: SoundService) {
   }
 
-  @Action(Guess.Backspace)
-  backspace(context: StateContext<GuessStateModel>) {
-    const state = context.getState();
-    if (state.value.length === 0) return;
+  @Action(Guess.SetValue)
+  setValue(context: StateContext<GuessStateModel>, action: Guess.SetValue) {
     context.patchState({
-      value: state.value.slice(0, -1),
+      value: action.value,
     });
   }
 
   @Action(Guess.Submit)
-  submit(context: StateContext<GuessStateModel>) {
+  submit(context: StateContext<GuessStateModel>, action: Guess.Submit) {
     const state = context.getState();
     context.patchState({
-      value: '',
+      value: action.value,
       count: state.count + 1,
     });
 
     const roundId = this.store.selectSnapshot(GAME_STATE_TOKEN).roundId;
-    this.hubService.submitGuess(roundId, state.value);
+    this.hubService.submitGuess(roundId, action.value);
   }
 
   @Action(Guess.Succeeded)
   guessSucceeded(context: StateContext<GuessStateModel>, action: Guess.Succeeded) {
     context.patchState({
+      value: GUESS_VALUE_DEFAULT,
       guessedCorrectly: true,
     });
     context.dispatch(new Game.AddPoints(action.points));
@@ -69,18 +61,26 @@ export class GuessState {
   }
 
   @Action(Guess.Failed)
-  guessFailed() {
+  guessFailed(context: StateContext<GuessStateModel>) {
     this.soundService.playIncorrect();
+    context.patchState({
+      value: GUESS_VALUE_DEFAULT,
+    })
   }
 
-  @Action(Guess.SetNewWord)
-  setNewWord(context: StateContext<GuessStateModel>, action: Guess.SetNewWord) {
+  @Action(Game.GameStateUpdated)
+  setNewWord(context: StateContext<GuessStateModel>, action: Game.GameStateUpdated) {
     context.setState({
-      value: '',
+      value: GUESS_VALUE_DEFAULT,
       count: 0,
       maxLength: action.wordHint?.length || 0,
       guessedCorrectly: false,
     });
+  }
+
+  @Selector([GUESS_STATE_TOKEN])
+  static maxLength(state: GuessStateModel) {
+    return state.maxLength;
   }
 
   @Selector([GUESS_STATE_TOKEN])
