@@ -5,12 +5,12 @@ namespace Infrastructure.Tests.Options;
 public class CosmosDbOptionsTests
 {
     [Theory]
-    [InlineData("connectionString", "", "databaseId", new[] { "containerId" }, true)]
-    [InlineData("", "accountEndpoint", "databaseId", new[] { "containerId" }, true)]
-    [InlineData("", "", "databaseId", new[] { "containerId" }, false)]
-    [InlineData("connectionString", "", "", null, false)]
+    [InlineData("connectionString", "", "databaseId", true)]
+    [InlineData("", "accountEndpoint", "databaseId", true)]
+    [InlineData("", "", "databaseId", false)]
+    [InlineData("connectionString", "", "", false)]
     public void CosmosDbOptions_Validation_Should_Return_ExpectedResult(string connectionString, string accountEndpoint,
-        string databaseId, string[] containerIds, bool expectedResult)
+        string databaseId, bool expectedResult)
     {
         // arrange
         var options = new CosmosDbOptions
@@ -18,8 +18,7 @@ public class CosmosDbOptionsTests
             ApplicationName = "Test Application",
             ConnectionString = connectionString,
             AccountEndpoint = accountEndpoint,
-            DatabaseId = databaseId,
-            ContainerIds = containerIds,
+            DatabaseId = databaseId
         };
 
         // act
