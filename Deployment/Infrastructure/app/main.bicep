@@ -146,10 +146,6 @@ resource appService 'Microsoft.Web/sites@2022-03-01' = {
           name: 'XDT_MicrosoftApplicationInsights_Mode'
           value: 'Recommended'
         }
-        {
-          name: 'CosmosDb__ContainerIds'
-          value: string(map(databaseContainers, container => container.id))
-        }
       ]
     }
   }
