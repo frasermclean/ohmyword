@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Action, Selector, State, StateContext, StateToken } from '@ngxs/store';
-import { Role } from '@models/role.enum';
+import { Role } from '@models/enums';
 import { AuthService } from '@services/auth.service';
 import { Auth } from './auth.actions';
 
