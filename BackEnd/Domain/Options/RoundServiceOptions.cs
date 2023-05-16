@@ -2,9 +2,9 @@
 
 namespace OhMyWord.Domain.Options;
 
-public class GameServiceOptions
+public class RoundServiceOptions
 {
-    public const string SectionName = "Game";
+    public const string SectionName = "Round";
 
     [Range(1, 10)] public double LetterHintDelay { get; init; } = 3;
     [Range(1, 60)] public double PostRoundDelay { get; init; } = 5;

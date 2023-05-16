@@ -12,8 +12,8 @@ namespace OhMyWord.Api.Hubs;
 
 public interface IGameHub
 {
-    Task SendGameState(GameState gameState);
-    Task SendRoundEnded(RoundEndedEvent endedEvent, CancellationToken cancellationToken);
+    Task SendRoundStarted(RoundStartData data, CancellationToken cancellationToken = default);
+    Task SendRoundEnded(RoundEndedEvent endedEvent, CancellationToken cancellationToken = default);
     Task SendPlayerCount(int count);
     Task SendLetterHint(LetterHint letterHint);
 }

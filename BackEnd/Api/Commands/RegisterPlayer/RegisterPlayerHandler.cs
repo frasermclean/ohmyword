@@ -19,11 +19,11 @@ public class RegisterPlayerHandler : ICommandHandler<RegisterPlayerCommand, Regi
     {
         var player = await playerService.AddPlayerAsync(command.VisitorId, command.ConnectionId, command.IpAddress,
             command.UserId);
-        gameService.AddPlayer(player);
+        gameService.AddPlayer(player.Id);
 
         return new RegisterPlayerResponse
         {
-            PlayerCount = playerService.PlayerCount, Score = player.Score, GameState = gameService.State,
+            PlayerCount = playerService.PlayerCount, Score = player.Score, GameState = gameService.GameState
         };
     }
 }

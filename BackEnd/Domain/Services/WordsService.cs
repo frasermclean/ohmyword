@@ -44,7 +44,6 @@ public class WordsService : IWordsService
     private readonly IWordsRepository wordsRepository;
     private readonly IDefinitionsRepository definitionsRepository;
 
-
     public WordsService(ILogger<WordsService> logger, IWordsRepository wordsRepository,
         IDefinitionsRepository definitionsRepository)
     {

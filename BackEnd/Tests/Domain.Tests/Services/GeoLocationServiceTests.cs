@@ -4,7 +4,7 @@ using OhMyWord.Infrastructure.Models.IpGeoLocation;
 namespace Domain.Tests.Services;
 
 [Trait("Category", "Integration")]
-public class GeoLocationServiceTests : IClassFixture<ServicesFixture>
+public class GeoLocationServiceTests
 {
     private readonly IGeoLocationService geoLocationService;
 

@@ -26,7 +26,7 @@ public static class Program
             })
             .ConfigureServices((context, services) =>
             {
-                services.AddDomainServices();
+                services.AddDomainServices(context.Configuration);
                 services.AddRapidApiServices();
                 services.AddTableRepositories(context.Configuration);
 
