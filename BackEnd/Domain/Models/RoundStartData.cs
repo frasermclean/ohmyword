@@ -6,6 +6,5 @@ public readonly struct RoundStartData
     public required Guid RoundId { get; init; }
     public required WordHint WordHint { get; init; }
     public required DateTime StartTime { get; init; }
-    public required DateTime EndTime { get; init; }
-    public TimeSpan Duration => EndTime - StartTime;
+    public required DateTime EndTime { get; init; }    
 }

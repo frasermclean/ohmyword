@@ -67,17 +67,17 @@ export class GameState {
     });
   }
 
-  @Action(Game.GameStateUpdated)
-  gameStateUpdated(context: StateContext<GameStateModel>, action: Game.GameStateUpdated) {
+  @Action(Game.RoundStarted)
+  gameStateUpdated(context: StateContext<GameStateModel>, action: Game.RoundStarted) {
     context.patchState({
-      roundActive: action.roundActive,
+      roundActive: true,
       roundNumber: action.roundNumber,
       roundId: action.roundId,
       wordHint: action.wordHint,
-      roundSummary: action.roundSummary,
+      roundSummary: null,
       interval: {
-        startDate: new Date(action.intervalStart),
-        endDate: new Date(action.intervalEnd),
+        startDate: action.endDate,
+        endDate: action.endDate,
       },
     });
   }

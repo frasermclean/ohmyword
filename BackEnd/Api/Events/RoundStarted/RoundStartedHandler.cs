@@ -12,6 +12,6 @@ public class RoundStartedHandler : IEventHandler<RoundStartedEvent>
         this.gameHubContext = gameHubContext;
     }
 
-    public Task HandleAsync(RoundStartedEvent eventModel, CancellationToken cancellationToken)
-        => gameHubContext.Clients.All.SendRoundStarted(eventModel.Data, cancellationToken);
+    public Task HandleAsync(RoundStartedEvent roundStarted, CancellationToken cancellationToken)
+        => gameHubContext.Clients.All.SendRoundStarted(roundStarted.Data, cancellationToken);
 }

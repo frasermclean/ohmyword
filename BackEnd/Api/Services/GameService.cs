@@ -129,7 +129,8 @@ public class GameService : IGameService
     private static async Task SendLetterHintsAsync(RoundStartData data, Word word, CancellationToken cancellationToken)
     {
         var wordHint = data.WordHint;
-        var letterDelay = data.Duration / word.Length;
+        var duration = data.EndTime - data.StartTime;
+        var letterDelay = duration / word.Length;
         var previousIndices = new List<int>();
 
         while (previousIndices.Count < word.Length && !cancellationToken.IsCancellationRequested)
