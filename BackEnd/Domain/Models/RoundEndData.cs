@@ -2,10 +2,11 @@
 
 namespace OhMyWord.Domain.Models;
 
-public class RoundSummary
+public struct RoundEndData
 {
+    public required Guid RoundId { get; init; }
     public required string Word { get; init; }
-    public required PartOfSpeech PartOfSpeech { get; init; }
     public required RoundEndReason EndReason { get; init; }
-    public required IEnumerable<ScoreLine> Scores { get; init; }
+    public required TimeSpan PostRoundDelay { get; init; }
+    public required DateTime NextRoundStart { get; init; }
 }

@@ -5,15 +5,14 @@ import { environment } from '@environment';
 import { FingerprintService } from '@services/fingerprint.service';
 import { AuthService } from '@services/auth.service';
 
+import { Game } from '@state/game/game.actions';
+import { Guess } from '@state/guess/guess.actions';
+import { Hub } from '@state/hub/hub.actions';
 import { RegisterPlayerResponse } from '@models/responses/register-player.response';
 import { GuessResponse } from '@models/responses/guess.response';
 import { LetterHintResponse } from '@models/responses/letter-hint.response';
-
-import { Game } from '@state/game/game.actions';
-import { GameStateResponse } from '@models/responses/game-state-response';
-import { Guess } from '@state/guess/guess.actions';
-import { Hub } from '@state/hub/hub.actions';
-import { RoundEndedEventResponse } from "@models/responses/round-ended-event.response";
+import { RoundEndedResponse } from "@models/responses/round-ended.response";
+import { RoundStartedResponse } from "@models/responses/round-started.response";
 
 @Injectable({
   providedIn: 'root',
@@ -86,12 +85,12 @@ export class HubService {
     this.hubConnection.onclose((error) => this.store.dispatch(new Hub.Disconnected(error)));
 
     // server sent game state
-    this.hubConnection.on('SendGameState', (response: GameStateResponse) =>
-      this.store.dispatch(new Game.GameStateUpdated(response))
+    this.hubConnection.on('SendRoundStarted', (response: RoundStartedResponse) =>
+      this.store.dispatch(new Game.RoundStarted(response))
     );
 
     // round ended
-    this.hubConnection.on('SendRoundEnded', (response: RoundEndedEventResponse) =>
+    this.hubConnection.on('SendRoundEnded', (response: RoundEndedResponse) =>
       this.store.dispatch(new Game.RoundEnded(response))
     );
 

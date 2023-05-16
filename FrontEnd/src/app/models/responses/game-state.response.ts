@@ -8,5 +8,4 @@ export interface GameStateResponse {
   intervalStart: string;
   intervalEnd: string;
   wordHint: WordHintResponse | null;
-  roundSummary: RoundSummaryResponse | null;
 }

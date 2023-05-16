@@ -18,7 +18,7 @@ public interface IPlayerService
     IEnumerable<string> PlayerIds { get; }
 
     Task<Player> AddPlayerAsync(string visitorId, string connectionId, IPAddress ipAddress, Guid? userId = default);
-    void RemovePlayer(string connectionId);
+    Player? RemovePlayer(string connectionId);
     Player GetPlayer(string connectionId);
     Task IncrementPlayerScoreAsync(string visitorId, int points);
 }
@@ -62,28 +62,22 @@ public class PlayerService : IPlayerService
             }))
             .ToPlayer(connectionId);
 
-        var wasAdded = players.TryAdd(connectionId, player);
-        if (!wasAdded)
-            logger.LogWarning("Player with connection ID: {ConnectionId} already exists in the local cache",
-                connectionId);
-
-        logger.LogInformation("Player with ID: {VisitorId} joined the game. Player count: {PlayerCount}", player.Id,
-            PlayerCount);
+        players[connectionId] = player;
+        logger.LogInformation("Player with ID: {PlayerId} joined the game", player.Id);
 
         return player;
     }
 
-    public void RemovePlayer(string connectionId)
+    public Player? RemovePlayer(string connectionId)
     {
-        if (players.TryRemove(connectionId, out var visitor))
+        if (players.TryRemove(connectionId, out var player))
         {
-            logger.LogInformation("Player with ID: {VisitorId} left the game. Player count: {PlayerCount}",
-                visitor.Id, PlayerCount);
+            logger.LogInformation("Player with ID: {PlayerID} left the game", player.Id);
+            return player;
         }
-        else
-        {
-            logger.LogError("Couldn't remove visitor with connection ID: {ConnectionId} from cache", connectionId);
-        }
+
+        logger.LogError("Couldn't remove player with connection ID: {ConnectionId} from cache", connectionId);
+        return default;
     }
 
     public Player GetPlayer(string connectionId) => players[connectionId];

@@ -4,7 +4,6 @@ using OhMyWord.Api.Extensions;
 using OhMyWord.Api.Hubs;
 using OhMyWord.Api.Services;
 using OhMyWord.Domain.Extensions;
-using OhMyWord.Domain.Options;
 using OhMyWord.Infrastructure.DependencyInjection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -49,15 +48,11 @@ public static class Program
                 );
 
             // game services
-            services.AddHostedService<GameCoordinator>();
+            services.AddHostedService<GameBackgroundService>();
             services.AddSingleton<IGameService, GameService>();
-            services.AddOptions<GameServiceOptions>()
-                .Bind(context.Configuration.GetSection(GameServiceOptions.SectionName))
-                .ValidateDataAnnotations()
-                .ValidateOnStart();
 
             // local project services
-            services.AddDomainServices();
+            services.AddDomainServices(context.Configuration);
             services.AddCosmosDbRepositories(context);
             services.AddTableRepositories(context.Configuration);
             services.AddMessagingServices(context);

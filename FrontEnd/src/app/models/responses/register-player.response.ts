@@ -1,4 +1,4 @@
-import { GameStateResponse } from './game-state-response';
+import { GameStateResponse } from './game-state.response';
 
 export interface RegisterPlayerResponse {
   playerCount: number;

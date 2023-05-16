@@ -12,8 +12,8 @@ public class RoundEndedHandler : IEventHandler<RoundEndedEvent>
         this.gameHubContext = gameHubContext;
     }
     
-    public Task HandleAsync(RoundEndedEvent eventModel, CancellationToken cancellationToken)
+    public Task HandleAsync(RoundEndedEvent roundEnded, CancellationToken cancellationToken)
     {
-        return gameHubContext.Clients.All.SendRoundEnded(eventModel, cancellationToken);
+        return gameHubContext.Clients.All.SendRoundEnded(roundEnded.Data, cancellationToken);
     }
 }
