@@ -129,7 +129,7 @@ public class GameService : IGameService
     private static async Task SendLetterHintsAsync(RoundStartData data, Word word, CancellationToken cancellationToken)
     {
         var wordHint = data.WordHint;
-        var duration = data.EndTime - data.StartTime;
+        var duration = data.EndDate - data.StartDate;
         var letterDelay = duration / word.Length;
         var previousIndices = new List<int>();
 

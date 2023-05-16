@@ -100,8 +100,8 @@ public sealed class RoundService : IRoundService
             RoundNumber = RoundNumber,
             RoundId = RoundId,
             WordHint = WordHint,
-            StartTime = IntervalStart,
-            EndTime = IntervalEnd,
+            StartDate = IntervalStart,
+            EndDate = IntervalEnd,
         };
 
         return (data, cancellationTokenSource.Token);

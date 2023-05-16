@@ -35,8 +35,8 @@ public class RoundServiceTests
         data.WordHint.Definition.Should().Be(definition);
         data.WordHint.PartOfSpeech.Should().Be(partOfSpeech);
         data.WordHint.LetterHints.Should().BeEmpty();
-        data.StartTime.Should().BeBefore(DateTime.UtcNow);
-        data.EndTime.Should().BeAfter(DateTime.UtcNow);        
+        data.StartDate.Should().BeBefore(DateTime.UtcNow);
+        data.EndDate.Should().BeAfter(DateTime.UtcNow);        
     }
 
     [Fact]
