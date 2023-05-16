@@ -12,8 +12,7 @@ import { HubState } from '@state/hub/hub.state';
   styleUrls: ['./game.component.scss'],
 })
 export class GameRootComponent implements OnInit, OnDestroy {
-  connectionState$ = this.store.select(HubState.connectionState);
-  registered$ = this.store.select(GameState.registered);
+  connection$ = this.store.select(GameState.connection);
   roundActive$ = this.store.select(GameState.roundActive);
   interval$ = this.store.select(GameState.interval);
   guessedCorrectly$ = this.store.select(GuessState.guessedCorrectly);

@@ -33,8 +33,8 @@ export namespace Game {
 
     roundNumber = this.response.roundNumber;
     roundId = this.response.roundId;
-    startDate = new Date(this.response.startTime);
-    endDate = new Date(this.response.endTime);
+    startDate = new Date(this.response.startDate);
+    endDate = new Date(this.response.endDate);
     wordHint = new WordHint(this.response.wordHint);
 
     constructor(private response: RoundStartedResponse) {}

@@ -4,6 +4,6 @@ export interface RoundStartedResponse {
   roundNumber: number;
   roundId: string;
   wordHint: WordHintResponse;
-  startTime: string;
-  endTime: string;
+  startDate: string;
+  endDate: string;
 }
