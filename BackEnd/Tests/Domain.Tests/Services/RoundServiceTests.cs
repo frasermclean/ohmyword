@@ -6,37 +6,45 @@ using OhMyWord.Infrastructure.Models.Entities;
 
 namespace Domain.Tests.Services;
 
-public class RoundServiceTests
+public sealed class RoundServiceTests : IDisposable
 {
-    private readonly IRoundService roundService;
+    private readonly RoundService roundService;
 
     public RoundServiceTests()
     {
+        var playerServiceMock = new Mock<IPlayerService>();
+        playerServiceMock.Setup(service => service.PlayerIds)
+            .Returns(new[] { "abc123", "def456" });
+
         var options = Options.Create(new RoundServiceOptions { LetterHintDelay = 3, PostRoundDelay = 5 });
-        roundService = new RoundService(options);
+        roundService = new RoundService(options, playerServiceMock.Object);
     }
 
     [Theory]
-    [InlineData("test", PartOfSpeech.Verb, "Test verb")]
-    [InlineData("happy", PartOfSpeech.Adjective, "Test adjective")]
-    public void StartRound_Should_ReturnExpectedResults(string wordId, PartOfSpeech partOfSpeech, string definition)
+    [InlineData("test", 1, PartOfSpeech.Verb, "Test verb")]
+    [InlineData("happy", 2, PartOfSpeech.Adjective, "Test adjective")]
+    [InlineData("town", 3, PartOfSpeech.Noun, "Test noun")]
+    public void StartRound_Should_ReturnExpectedResults(string wordId, int roundNumber, PartOfSpeech partOfSpeech,
+        string definition)
     {
         // arrange
         var word = CreateTestWord(wordId, partOfSpeech, definition);
 
         // act
-        var (data, _) = roundService.StartRound(word);
+        var (data, _) = roundService.StartRound(word, roundNumber);
 
         // assert
-        roundService.RoundNumber.Should().Be(1);
-        data.RoundNumber.Should().Be(1);
+        roundService.RoundNumber.Should().Be(roundNumber);
+        roundService.IsRoundActive.Should().BeTrue();
+        roundService.AllPlayersGuessed.Should().BeFalse();
+        data.RoundNumber.Should().Be(roundNumber);
         data.RoundId.Should().NotBeEmpty();
         data.WordHint.Length.Should().Be(wordId.Length);
         data.WordHint.Definition.Should().Be(definition);
         data.WordHint.PartOfSpeech.Should().Be(partOfSpeech);
         data.WordHint.LetterHints.Should().BeEmpty();
         data.StartDate.Should().BeBefore(DateTime.UtcNow);
-        data.EndDate.Should().BeAfter(DateTime.UtcNow);        
+        data.EndDate.Should().BeAfter(DateTime.UtcNow);
     }
 
     [Fact]
@@ -46,7 +54,7 @@ public class RoundServiceTests
         var word = CreateTestWord("word", PartOfSpeech.Adverb, "Test adverb");
 
         // act
-        roundService.StartRound(word);
+        roundService.StartRound(word, 1);
         var data = roundService.EndRound(RoundEndReason.AllPlayersGuessed);
 
         // assert
@@ -62,4 +70,9 @@ public class RoundServiceTests
     {
         Id = wordId, Definitions = new[] { new Definition { PartOfSpeech = partOfSpeech, Value = definition } }
     };
+
+    public void Dispose()
+    {
+        roundService.Dispose();
+    }
 }

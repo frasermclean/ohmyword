@@ -2,6 +2,7 @@
 using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Options;
 using OhMyWord.Infrastructure.Models.Entities;
+using System.Collections.Concurrent;
 
 namespace OhMyWord.Domain.Services;
 
@@ -48,11 +49,17 @@ public interface IRoundService
     RoundEndReason LastEndReason { get; }
 
     /// <summary>
+    /// True if all players have guessed the word.
+    /// </summary>
+    bool AllPlayersGuessed { get; }
+
+    /// <summary>
     /// Starts a new round.
     /// </summary>
     /// <param name="word">The word to use for the round.</param>
+    /// <param name="roundNumber">The round number to create the round with.</param>
     /// <returns>Data pertaining to the started round.</returns>
-    (RoundStartData, CancellationToken) StartRound(Word word);
+    (RoundStartData, CancellationToken) StartRound(Word word, int roundNumber);
 
     /// <summary>
     /// End the current round.
@@ -60,19 +67,33 @@ public interface IRoundService
     /// <param name="endReason">The reason for ending the round.</param>
     /// <returns></returns>
     RoundEndData EndRound(RoundEndReason endReason = RoundEndReason.Timeout);
+
+    /// <summary>
+    /// Add a player to the current round.
+    /// </summary>
+    /// <param name="playerId">The ID of the <see cref="Player"/> to add.</param>
+    /// <returns>True if successful, false on failure.</returns>
+    bool AddPlayer(string playerId);
+
+    bool IncrementGuessCount(string playerId);
+    bool AwardPoints(string playerId, int points);
 }
 
-public sealed class RoundService : IRoundService
+public sealed class RoundService : IRoundService, IDisposable
 {
+    private readonly IPlayerService playerService;
     private readonly TimeSpan letterHintDelay;
     private readonly TimeSpan postRoundDelay;
+    private readonly int guessLimit;
+    private readonly ConcurrentDictionary<string, RoundPlayerData> playerData = new();
+    private readonly CancellationTokenSource cancellationTokenSource = new();
 
-    private CancellationTokenSource? cancellationTokenSource;
-
-    public RoundService(IOptions<RoundServiceOptions> options)
+    public RoundService(IOptions<RoundServiceOptions> options, IPlayerService playerService)
     {
+        this.playerService = playerService;
         letterHintDelay = TimeSpan.FromSeconds(options.Value.LetterHintDelay);
         postRoundDelay = TimeSpan.FromSeconds(options.Value.PostRoundDelay);
+        guessLimit = options.Value.GuessLimit;
     }
 
     public bool IsRoundActive { get; private set; }
@@ -83,21 +104,25 @@ public sealed class RoundService : IRoundService
     public DateTime IntervalStart { get; private set; }
     public DateTime IntervalEnd { get; private set; }
     public RoundEndReason LastEndReason { get; private set; }
+    public bool AllPlayersGuessed => playerData.Values.All(player => player.PointsAwarded > 0);
 
-    public (RoundStartData, CancellationToken) StartRound(Word word)
+    public (RoundStartData, CancellationToken) StartRound(Word word, int roundNumber)
     {
         IsRoundActive = true;
-        RoundNumber++;
+        RoundNumber = roundNumber;
         RoundId = Guid.NewGuid();
         Word = word;
         WordHint = new WordHint(word);
         IntervalStart = DateTime.UtcNow;
         IntervalEnd = IntervalStart + word.Length * letterHintDelay;
-        cancellationTokenSource = new CancellationTokenSource();
+
+        // add currently connected players to the round
+        foreach (var playerId in playerService.PlayerIds)
+            AddPlayer(playerId);
 
         var data = new RoundStartData
         {
-            RoundNumber = RoundNumber,
+            RoundNumber = roundNumber,
             RoundId = RoundId,
             WordHint = WordHint,
             StartDate = IntervalStart,
@@ -111,10 +136,7 @@ public sealed class RoundService : IRoundService
     {
         IsRoundActive = false;
         LastEndReason = endReason;
-
-        cancellationTokenSource?.Cancel();
-        cancellationTokenSource?.Dispose();
-        cancellationTokenSource = null;
+        cancellationTokenSource.Cancel();
 
         return new RoundEndData
         {
@@ -124,5 +146,34 @@ public sealed class RoundService : IRoundService
             PostRoundDelay = postRoundDelay,
             NextRoundStart = DateTime.UtcNow + postRoundDelay
         };
+    }
+
+    public bool AddPlayer(string playerId)
+        => IsRoundActive && playerData.TryAdd(playerId, new RoundPlayerData());
+
+    public bool IncrementGuessCount(string playerId)
+    {
+        if (!playerData.TryGetValue(playerId, out var data))
+            return false;
+
+        if (data.GuessCount >= guessLimit)
+            return false;
+
+        data.GuessCount++;
+        return true;
+    }
+
+    public bool AwardPoints(string playerId, int points)
+    {
+        if (!playerData.TryGetValue(playerId, out var data))
+            return false;
+
+        data.PointsAwarded = points;
+        return true;
+    }
+
+    public void Dispose()
+    {
+        cancellationTokenSource.Dispose();
     }
 }
