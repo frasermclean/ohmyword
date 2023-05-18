@@ -1,4 +1,5 @@
-﻿using OhMyWord.Infrastructure.Models.Entities;
+﻿using OhMyWord.Domain.Options;
+using OhMyWord.Infrastructure.Models.Entities;
 using System.Collections.Concurrent;
 
 namespace OhMyWord.Domain.Models;
@@ -8,18 +9,22 @@ public sealed class Round : IDisposable
     private readonly ConcurrentDictionary<string, RoundPlayerData> playerData;
     private readonly CancellationTokenSource cancellationTokenSource = new();
 
-    internal Round(Word word, int number, IEnumerable<string> playerIds, double letterHintDelay, int guessLimit)
+    internal Round(Word word, Guid id = default, int number = default,
+        IEnumerable<string>? playerIds = default, double letterHintDelay = RoundOptions.LetterHintDelayDefault,
+        int guessLimit = RoundOptions.GuessLimitDefault)
     {
-        playerData = new ConcurrentDictionary<string, RoundPlayerData>(playerIds.Select(id =>
-            new KeyValuePair<string, RoundPlayerData>(id, new RoundPlayerData())));
-
         Number = number;
-        Id = Guid.NewGuid();
+        Id = id;
         Word = word;
         WordHint = new WordHint(word);
         GuessLimit = guessLimit;
         StartDate = DateTime.UtcNow;
         EndDate = StartDate + word.Length * TimeSpan.FromSeconds(letterHintDelay);
+
+        playerData = playerIds is null
+            ? new ConcurrentDictionary<string, RoundPlayerData>()
+            : new ConcurrentDictionary<string, RoundPlayerData>(playerIds.Select(playerId =>
+                new KeyValuePair<string, RoundPlayerData>(playerId, new RoundPlayerData())));
     }
 
     public Guid Id { get; }
@@ -31,7 +36,8 @@ public sealed class Round : IDisposable
     public DateTime EndDate { get; }
     public RoundEndReason EndReason { get; private set; }
     public CancellationToken CancellationToken => cancellationTokenSource.Token;
-    public bool AllPlayersGuessed => playerData.Values.All(player => player.PointsAwarded > 0);
+    public int PlayerCount => playerData.Count;
+    public bool AllPlayersGuessed => !playerData.IsEmpty && playerData.Values.All(player => player.PointsAwarded > 0);
 
     public bool AddPlayer(string playerId)
         => playerData.TryAdd(playerId, new RoundPlayerData());
@@ -68,5 +74,5 @@ public sealed class Round : IDisposable
         cancellationTokenSource.Dispose();
     }
 
-    public static Round Default => new(Word.Default, 0, Enumerable.Empty<string>(), 0, 0);
+    public static Round Default => new(Word.Default);
 }

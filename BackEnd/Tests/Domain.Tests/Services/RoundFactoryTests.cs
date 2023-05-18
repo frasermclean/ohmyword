@@ -10,6 +10,7 @@ namespace Domain.Tests.Services;
 public sealed class RoundFactoryTests
 {
     private readonly RoundFactory roundFactory;
+    private readonly RoundOptions options = new() { LetterHintDelay = 3, PostRoundDelay = 5, GuessLimit = 3 };
 
     public RoundFactoryTests()
     {
@@ -17,8 +18,8 @@ public sealed class RoundFactoryTests
         playerServiceMock.Setup(service => service.PlayerIds)
             .Returns(new[] { "abc123", "def456" });
 
-        var options = Options.Create(new RoundOptions { LetterHintDelay = 3, PostRoundDelay = 5, GuessLimit = 3 });
-        roundFactory = new RoundFactory(options, Mock.Of<ILogger<RoundFactory>>(), playerServiceMock.Object);
+        roundFactory = new RoundFactory(Options.Create(options), Mock.Of<ILogger<RoundFactory>>(),
+            playerServiceMock.Object);
     }
 
     [Theory]
@@ -45,8 +46,9 @@ public sealed class RoundFactoryTests
         round.WordHint.Definition.Should().Be(definition);
         round.WordHint.PartOfSpeech.Should().Be(partOfSpeech);
         round.WordHint.LetterHints.Should().BeEmpty();
-        round.GuessLimit.Should().Be(3);
+        round.GuessLimit.Should().Be(options.GuessLimit);
         round.StartDate.Should().BeBefore(DateTime.UtcNow);
         round.EndDate.Should().BeAfter(DateTime.UtcNow);
+        round.PlayerCount.Should().Be(2);
     }
 }
