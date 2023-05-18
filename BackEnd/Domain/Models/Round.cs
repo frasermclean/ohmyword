@@ -24,7 +24,7 @@ public sealed class Round : IDisposable
         playerData = playerIds is null
             ? new ConcurrentDictionary<string, RoundPlayerData>()
             : new ConcurrentDictionary<string, RoundPlayerData>(playerIds.Select(playerId =>
-                new KeyValuePair<string, RoundPlayerData>(playerId, new RoundPlayerData())));
+                new KeyValuePair<string, RoundPlayerData>(playerId, new RoundPlayerData(playerId))));
     }
 
     public Guid Id { get; }
@@ -40,7 +40,7 @@ public sealed class Round : IDisposable
     public bool AllPlayersGuessed => !playerData.IsEmpty && playerData.Values.All(player => player.PointsAwarded > 0);
 
     public bool AddPlayer(string playerId)
-        => playerData.TryAdd(playerId, new RoundPlayerData());
+        => playerData.TryAdd(playerId, new RoundPlayerData(playerId));
 
     public void EndRound(RoundEndReason endReason)
     {
@@ -66,8 +66,12 @@ public sealed class Round : IDisposable
             return false;
 
         data.PointsAwarded = points;
+        data.GuessTime = DateTime.UtcNow - StartDate;
+
         return true;
     }
+
+    public IEnumerable<RoundPlayerData> GetPlayerData() => playerData.Values;
 
     public void Dispose()
     {

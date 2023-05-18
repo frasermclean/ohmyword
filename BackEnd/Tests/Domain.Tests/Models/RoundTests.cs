@@ -105,6 +105,30 @@ public class RoundTests
         result2.Should().BeFalse();
     }
 
+    [Theory, AutoData]
+    public void GetPlayerData_Should_ReturnExpectedResult(Word word, int roundNumber, string[] playerIds, int points)
+    {
+        // arrange
+        using var round = new Round(word, number: roundNumber);
+        
+
+        // act
+        foreach (var playerId in playerIds)
+        {
+            round.AddPlayer(playerId);
+            round.IncrementGuessCount(playerId);
+            round.AwardPoints(playerId, points);
+        }
+        var playerData = round.GetPlayerData().ToArray();
+
+        // assert
+        playerData.Length.Should().Be(playerIds.Length);
+        playerData.Should().AllSatisfy(data => data.PlayerId.Should().NotBeEmpty());
+        playerData.Should().AllSatisfy(data => data.GuessCount.Should().BePositive());
+        playerData.Should().AllSatisfy(data => data.PointsAwarded.Should().BePositive());
+        playerData.Should().AllSatisfy(data => data.GuessTime.Should().BePositive());
+    }
+
     [Fact]
     public void DefaultRound_Should_HaveExpectedProperties()
     {
