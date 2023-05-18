@@ -16,7 +16,7 @@ public sealed class RoundServiceTests : IDisposable
         playerServiceMock.Setup(service => service.PlayerIds)
             .Returns(new[] { "abc123", "def456" });
 
-        var options = Options.Create(new RoundServiceOptions { LetterHintDelay = 3, PostRoundDelay = 5 });
+        var options = Options.Create(new RoundOptions { LetterHintDelay = 3, PostRoundDelay = 5 });
         roundService = new RoundService(options, playerServiceMock.Object);
     }
 

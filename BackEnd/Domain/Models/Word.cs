@@ -6,7 +6,7 @@ public class Word
 {
     public const int MinLength = 4;
     public const int MaxLength = 16;
-    
+
     public required string Id { get; init; } = string.Empty;
 
     /// <summary>
@@ -18,6 +18,8 @@ public class Word
     public DateTime LastModifiedTime { get; init; }
 
     public LetterHint GetLetterHint(int position) => new(position, Id[position - 1]);
+
+    public override string ToString() => Id;
 
     public static readonly Word Default = new()
     {

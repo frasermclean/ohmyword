@@ -2,7 +2,7 @@
 
 namespace OhMyWord.Domain.Options;
 
-public class RoundServiceOptions
+public class RoundOptions
 {
     public const string SectionName = "Round";
 

@@ -88,7 +88,7 @@ public sealed class RoundService : IRoundService, IDisposable
     private readonly ConcurrentDictionary<string, RoundPlayerData> playerData = new();
     private readonly CancellationTokenSource cancellationTokenSource = new();
 
-    public RoundService(IOptions<RoundServiceOptions> options, IPlayerService playerService)
+    public RoundService(IOptions<RoundOptions> options, IPlayerService playerService)
     {
         this.playerService = playerService;
         letterHintDelay = TimeSpan.FromSeconds(options.Value.LetterHintDelay);
