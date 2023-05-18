@@ -19,7 +19,15 @@ public interface IPlayerService
 
     Task<Player> AddPlayerAsync(string visitorId, string connectionId, IPAddress ipAddress, Guid? userId = default);
     Player? RemovePlayer(string connectionId);
-    Player GetPlayer(string connectionId);
+    Player? GetPlayerByConnectionId(string connectionId);
+
+    /// <summary>
+    /// Get a <see cref="Player"/> by it's ID.
+    /// </summary>
+    /// <param name="playerId">The ID of the player to look up.</param>
+    /// <returns>The <see cref="Player"/> object if found, null if not.</returns>
+    Player? GetPlayerById(string playerId);
+
     Task IncrementPlayerScoreAsync(string visitorId, int points);
 }
 
@@ -80,7 +88,11 @@ public class PlayerService : IPlayerService
         return default;
     }
 
-    public Player GetPlayer(string connectionId) => players[connectionId];
+    public Player? GetPlayerById(string playerId)
+        => players.FirstOrDefault(pair => pair.Value.Id == playerId).Value;
+
+    public Player? GetPlayerByConnectionId(string connectionId)
+        => players.TryGetValue(connectionId, out var player) ? player : default;
 
     public Task IncrementPlayerScoreAsync(string visitorId, int points) =>
         playerRepository.IncrementScoreAsync(visitorId, points); // TODO: Update local cache to keep points in sync

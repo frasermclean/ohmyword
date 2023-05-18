@@ -2,6 +2,7 @@
 using OhMyWord.Api.Events.LetterHintAdded;
 using OhMyWord.Api.Events.RoundEnded;
 using OhMyWord.Api.Events.RoundStarted;
+using OhMyWord.Api.Models;
 using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Options;
 using OhMyWord.Domain.Services;
@@ -69,33 +70,7 @@ public class GameService : IGameService
                 continue;
             }
 
-            // start new round
-            var word = await GetNextWordAsync(cancellationToken);
-            using (round = roundFactory.CreateRound(word, ++roundNumber))
-            {
-                isRoundActive = true;
-                await new RoundStartedEvent
-                {
-                    RoundNumber = round.Number,
-                    RoundId = round.Id,
-                    WordHint = round.WordHint,
-                    StartDate = round.StartDate,
-                    EndDate = default
-                }.PublishAsync(cancellation: cancellationToken);
-
-                // send all letter hints
-                try
-                {
-                    await SendLetterHintsAsync(round, round.CancellationToken);
-                }
-                catch (TaskCanceledException)
-                {
-                    logger.LogInformation("Round {RoundNumber} has been terminated early. Reason: {EndReason}",
-                        round.Number, round.EndReason);
-                }
-
-                isRoundActive = false;
-            }
+            await ExecuteRoundAsync(cancellationToken);
 
             // end current round            
             await Task.WhenAll(
@@ -104,9 +79,52 @@ public class GameService : IGameService
                     RoundId = round.Id,
                     Word = round.Word.Id,
                     EndReason = round.EndReason,
-                    NextRoundStart = DateTime.UtcNow + postRoundDelay
+                    NextRoundStart = DateTime.UtcNow + postRoundDelay,
+                    Scores = round.GetPlayerData().Select(data =>
+                    {
+                        var player = playerService.GetPlayerById(data.PlayerId);
+                        return new ScoreLine
+                        {
+                            PlayerName = string.Empty, // TODO: Calculate player name
+                            ConnectionId = player?.ConnectionId ?? string.Empty,
+                            CountryCode = string.Empty, // TODO: Calculate country code
+                            PointsAwarded = data.PointsAwarded,
+                            GuessCount = data.GuessCount,
+                        };
+                    })
                 }.PublishAsync(cancellation: cancellationToken),
                 Task.Delay(postRoundDelay, cancellationToken));
+        }
+    }
+
+    private async Task ExecuteRoundAsync(CancellationToken cancellationToken)
+    {
+        // start new round
+        var word = await GetNextWordAsync(cancellationToken);
+        using (round = roundFactory.CreateRound(word, ++roundNumber))
+        {
+            isRoundActive = true;
+            await new RoundStartedEvent
+            {
+                RoundNumber = round.Number,
+                RoundId = round.Id,
+                WordHint = round.WordHint,
+                StartDate = round.StartDate,
+                EndDate = default
+            }.PublishAsync(cancellation: cancellationToken);
+
+            // send all letter hints
+            try
+            {
+                await SendLetterHintsAsync(round, round.CancellationToken);
+            }
+            catch (TaskCanceledException)
+            {
+                logger.LogInformation("Round {RoundNumber} has been terminated early. Reason: {EndReason}",
+                    round.Number, round.EndReason);
+            }
+
+            isRoundActive = false;
         }
     }
 
@@ -169,7 +187,12 @@ public class GameService : IGameService
         var isCorrect = string.Equals(value, round.Word.Id, StringComparison.InvariantCultureIgnoreCase);
         if (!isCorrect) return 0;
 
-        var player = playerService.GetPlayer(connectionId);
+        var player = playerService.GetPlayerByConnectionId(connectionId);
+        if (player is null)
+        {
+            logger.LogError("Player not found. ConnectionId: {ConnectionId}", connectionId);
+            return 0;
+        }
 
         round.IncrementGuessCount(player.Id);
 
