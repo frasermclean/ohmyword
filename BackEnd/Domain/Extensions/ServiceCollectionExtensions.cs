@@ -18,8 +18,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IUsersService, UsersService>();
         services.AddSingleton<IGeoLocationService, GeoLocationService>();
         services.AddSingleton<IPlayerService, PlayerService>();
-        services.AddSingleton<IRoundFactory, RoundFactory>();
-        services.AddSingleton<IRoundService, RoundService>();
+        services.AddSingleton<IRoundFactory, RoundFactory>();        
         services.AddSingleton<IWordsService, WordsService>();
 
         return services;

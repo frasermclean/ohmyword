@@ -3,6 +3,8 @@ using OhMyWord.Api.Commands.RegisterPlayer;
 using OhMyWord.Api.Commands.SubmitGuess;
 using OhMyWord.Api.Events.PlayerConnected;
 using OhMyWord.Api.Events.PlayerDisconnected;
+using OhMyWord.Api.Events.RoundEnded;
+using OhMyWord.Api.Events.RoundStarted;
 using OhMyWord.Api.Extensions;
 using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Services;
@@ -11,8 +13,8 @@ namespace OhMyWord.Api.Hubs;
 
 public interface IGameHub
 {
-    Task SendRoundStarted(RoundStartData data, CancellationToken cancellationToken = default);
-    Task SendRoundEnded(RoundEndData data, CancellationToken cancellationToken = default);
+    Task SendRoundStarted(RoundStartedEvent roundStarted, CancellationToken cancellationToken = default);
+    Task SendRoundEnded(RoundEndedEvent roundEnded, CancellationToken cancellationToken = default);
     Task SendPlayerCount(int count);
     Task SendLetterHint(LetterHint letterHint);
 }

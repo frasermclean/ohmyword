@@ -8,13 +8,13 @@ public sealed class Round : IDisposable
     private readonly ConcurrentDictionary<string, RoundPlayerData> playerData;
     private readonly CancellationTokenSource cancellationTokenSource = new();
 
-    internal Round(Word word, int roundNumber, IEnumerable<string> playerIds, double letterHintDelay, int guessLimit)
+    internal Round(Word word, int number, IEnumerable<string> playerIds, double letterHintDelay, int guessLimit)
     {
         playerData = new ConcurrentDictionary<string, RoundPlayerData>(playerIds.Select(id =>
             new KeyValuePair<string, RoundPlayerData>(id, new RoundPlayerData())));
 
-        RoundNumber = roundNumber;
-        RoundId = Guid.NewGuid();
+        Number = number;
+        Id = Guid.NewGuid();
         Word = word;
         WordHint = new WordHint(word);
         GuessLimit = guessLimit;
@@ -22,8 +22,8 @@ public sealed class Round : IDisposable
         EndDate = StartDate + word.Length * TimeSpan.FromSeconds(letterHintDelay);
     }
 
-    public int RoundNumber { get; }
-    public Guid RoundId { get; }
+    public Guid Id { get; }
+    public int Number { get; }
     public Word Word { get; }
     public WordHint WordHint { get; }
     public int GuessLimit { get; }
@@ -35,6 +35,12 @@ public sealed class Round : IDisposable
 
     public bool AddPlayer(string playerId)
         => playerData.TryAdd(playerId, new RoundPlayerData());
+
+    public void EndRound(RoundEndReason endReason)
+    {
+        EndReason = endReason;
+        cancellationTokenSource.Cancel();
+    }
 
     public bool IncrementGuessCount(string playerId)
     {
@@ -61,4 +67,6 @@ public sealed class Round : IDisposable
     {
         cancellationTokenSource.Dispose();
     }
+
+    public static Round Default => new(Word.Default, 0, Enumerable.Empty<string>(), 0, 0);
 }
