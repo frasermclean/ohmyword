@@ -40,7 +40,7 @@ export class HubService {
 
     try {
       await this.hubConnection.start();
-      this.store.dispatch(new Hub.Connected());
+      this.store.dispatch(new Hub.Connected(this.hubConnection.connectionId));
     } catch (error) {
       this.store.dispatch(new Hub.Disconnected(error));
     }

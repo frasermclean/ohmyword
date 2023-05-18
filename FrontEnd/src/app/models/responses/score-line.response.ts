@@ -1,6 +1,6 @@
 export interface ScoreLineResponse {
   playerName: string;
-  isMyself: boolean;
+  connectionId: string;
   countryCode: string;
   pointsAwarded: number;
   guessCount: number;

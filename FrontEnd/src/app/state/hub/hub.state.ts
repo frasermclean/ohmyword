@@ -7,6 +7,7 @@ import { Game } from '@state/game/game.actions';
 
 interface HubStateModel {
   connectionState: 'disconnected' | 'connecting' | 'connected' | 'disconnecting';
+  connectionId: string | null;
   error: any;
 }
 
@@ -16,6 +17,7 @@ export const HUB_STATE_TOKEN = new StateToken<HubStateModel>('hub');
   name: HUB_STATE_TOKEN,
   defaults: {
     connectionState: 'disconnected',
+    connectionId: null,
     error: null,
   },
 })
@@ -43,6 +45,7 @@ export class HubState {
   connected(context: StateContext<HubStateModel>, action: Hub.Connected) {
     context.patchState({
       connectionState: 'connected',
+      connectionId: action.connectionId,
       error: null,
     });
     context.dispatch(new Game.RegisterPlayer());
@@ -52,6 +55,7 @@ export class HubState {
   connectionError(context: StateContext<HubStateModel>, action: Hub.Disconnected) {
     context.patchState({
       connectionState: 'disconnected',
+      connectionId: null,
       error: action.error,
     });
   }
