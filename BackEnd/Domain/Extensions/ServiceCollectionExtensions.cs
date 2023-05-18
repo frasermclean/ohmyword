@@ -9,8 +9,8 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddDomainServices(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddOptions<RoundServiceOptions>()
-            .Bind(configuration.GetSection(RoundServiceOptions.SectionName))
+        services.AddOptions<RoundOptions>()
+            .Bind(configuration.GetSection(RoundOptions.SectionName))
             .ValidateDataAnnotations()
             .ValidateOnStart();
         
@@ -18,7 +18,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IUsersService, UsersService>();
         services.AddSingleton<IGeoLocationService, GeoLocationService>();
         services.AddSingleton<IPlayerService, PlayerService>();
-        services.AddSingleton<IRoundService, RoundService>();
+        services.AddSingleton<IRoundFactory, RoundFactory>();        
         services.AddSingleton<IWordsService, WordsService>();
 
         return services;

@@ -15,4 +15,8 @@
     <PackageReference Include="OneOf" Version="3.0.243" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="$(AssemblyName).Tests" />
+  </ItemGroup>
+
 </Project>

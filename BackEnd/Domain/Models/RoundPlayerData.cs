@@ -2,7 +2,13 @@
 
 public record RoundPlayerData
 {
-    public bool GuessedCorrectly { get; set; }
+    public string PlayerId { get; }
     public int GuessCount { get; set; }
+    public TimeSpan GuessTime { get; set; }
     public int PointsAwarded { get; set; }
+
+    internal RoundPlayerData(string playerId)
+    {
+        PlayerId = playerId;
+    }
 };
