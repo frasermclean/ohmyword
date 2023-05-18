@@ -1,5 +1,4 @@
-﻿using AutoFixture.Xunit2;
-using OhMyWord.Domain.Models;
+﻿using OhMyWord.Domain.Models;
 using OhMyWord.Infrastructure.Models.Entities;
 
 namespace Domain.Tests.Models;
