@@ -1,4 +1,5 @@
 ﻿using OhMyWord.Domain.Models;
+using OhMyWord.Domain.Options;
 using OhMyWord.Infrastructure.Models.Entities;
 
 namespace Domain.Tests.Models;
@@ -10,7 +11,7 @@ public class RoundTests
     public void NewRound_WithDefaultParameters_Should_HaveExpectedProperties(Word word)
     {
         // arrange
-        using var round = new Round(word);
+        using var round = CreateRound(word);
 
         // assert
         round.Id.Should().BeEmpty();
@@ -22,14 +23,15 @@ public class RoundTests
         round.AllPlayersGuessed.Should().BeFalse();
         round.CancellationToken.IsCancellationRequested.Should().BeFalse();
         round.PlayerCount.Should().Be(0);
+        round.SessionId.Should().BeEmpty();
     }
 
     [Theory, AutoData]
     public void NewRound_WithSpecifiedParameters_Should_HaveExpectedProperties(Word word, Guid id, int number,
-        string[] playerIds)
+        string[] playerIds, Guid sessionId)
     {
         // arrange
-        using var round = new Round(word, id, number, playerIds);
+        using var round = CreateRound(word, number, id, playerIds, sessionId);
 
         // assert
         round.Id.Should().NotBeEmpty();
@@ -41,26 +43,28 @@ public class RoundTests
         round.AllPlayersGuessed.Should().BeFalse();
         round.CancellationToken.IsCancellationRequested.Should().BeFalse();
         round.PlayerCount.Should().Be(playerIds.Length);
+        round.SessionId.Should().Be(sessionId);
     }
 
     [Theory, AutoData]
     public void AddPlayer_Should_IncreasePlayerCount(Word word, int roundNumber, string playerId)
     {
         // arrange
-        using var round = new Round(word, number: roundNumber);
+        using var round = CreateRound(word, roundNumber);
 
         // act
-        round.AddPlayer(playerId);
+        var result = round.AddPlayer(playerId);
 
         // assert
         round.PlayerCount.Should().Be(1);
+        result.Should().BeTrue();
     }
 
     [Theory, AutoData]
     public void EndRound_Should_SetEndReason(Word word, int roundNumber, RoundEndReason endReason)
     {
         // arrange
-        using var round = new Round(word, number: roundNumber);
+        using var round = CreateRound(word, roundNumber);
 
         // act
         round.EndRound(endReason);
@@ -74,7 +78,7 @@ public class RoundTests
     public void IncrementGuessCount_Should_ReturnCorrectResult(Word word, int roundNumber, string playerId)
     {
         // arrange
-        using var round = new Round(word, number: roundNumber, guessLimit: 1);
+        using var round = CreateRound(word, roundNumber, options: new RoundOptions { GuessLimit = 1 });
         round.AddPlayer(playerId);
 
         // act
@@ -92,7 +96,7 @@ public class RoundTests
     public void AwardPoints_Should_ReturnExpectedResult(Word word, int roundNumber, string playerId, int points)
     {
         // arrange
-        using var round = new Round(word, number: roundNumber);
+        using var round = CreateRound(word, roundNumber);
         round.AddPlayer(playerId);
 
         // act
@@ -108,8 +112,8 @@ public class RoundTests
     public void GetPlayerData_Should_ReturnExpectedResult(Word word, int roundNumber, string[] playerIds, int points)
     {
         // arrange
-        using var round = new Round(word, number: roundNumber);
-        
+        using var round = CreateRound(word, roundNumber);
+
 
         // act
         foreach (var playerId in playerIds)
@@ -118,6 +122,7 @@ public class RoundTests
             round.IncrementGuessCount(playerId);
             round.AwardPoints(playerId, points);
         }
+
         var playerData = round.GetPlayerData().ToArray();
 
         // assert
@@ -138,4 +143,8 @@ public class RoundTests
         round.Number.Should().Be(0);
         round.Word.Should().Be(Word.Default);
     }
+
+    private static Round CreateRound(Word word, int number = default, Guid id = default,
+        IEnumerable<string>? playerIds = default, Guid sessionId = default, RoundOptions? options = default) =>
+        new(word, options, playerIds) { Id = id, Number = number, SessionId = sessionId };
 }

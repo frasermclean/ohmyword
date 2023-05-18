@@ -9,17 +9,14 @@ public sealed class Round : IDisposable
     private readonly ConcurrentDictionary<string, RoundPlayerData> playerData;
     private readonly CancellationTokenSource cancellationTokenSource = new();
 
-    internal Round(Word word, Guid id = default, int number = default,
-        IEnumerable<string>? playerIds = default, double letterHintDelay = RoundOptions.LetterHintDelayDefault,
-        int guessLimit = RoundOptions.GuessLimitDefault)
+    internal Round(Word word, RoundOptions? options = default, IEnumerable<string>? playerIds = default)
     {
-        Number = number;
-        Id = id;
         Word = word;
         WordHint = new WordHint(word);
-        GuessLimit = guessLimit;
+        GuessLimit = options?.GuessLimit ?? RoundOptions.GuessLimitDefault;
         StartDate = DateTime.UtcNow;
-        EndDate = StartDate + word.Length * TimeSpan.FromSeconds(letterHintDelay);
+        EndDate = StartDate + word.Length *
+            TimeSpan.FromSeconds(options?.LetterHintDelay ?? RoundOptions.LetterHintDelayDefault);
 
         playerData = playerIds is null
             ? new ConcurrentDictionary<string, RoundPlayerData>()
@@ -27,14 +24,15 @@ public sealed class Round : IDisposable
                 new KeyValuePair<string, RoundPlayerData>(playerId, new RoundPlayerData(playerId))));
     }
 
-    public Guid Id { get; }
-    public int Number { get; }
+    public Guid Id { get; init; }
+    public int Number { get; init; }
     public Word Word { get; }
     public WordHint WordHint { get; }
     public int GuessLimit { get; }
     public DateTime StartDate { get; }
     public DateTime EndDate { get; }
     public RoundEndReason EndReason { get; private set; }
+    public required Guid SessionId { get; init; }
     public CancellationToken CancellationToken => cancellationTokenSource.Token;
     public int PlayerCount => playerData.Count;
     public bool AllPlayersGuessed => !playerData.IsEmpty && playerData.Values.All(player => player.PointsAwarded > 0);
@@ -78,5 +76,5 @@ public sealed class Round : IDisposable
         cancellationTokenSource.Dispose();
     }
 
-    public static Round Default => new(Word.Default);
+    public static Round Default => new(Word.Default) { SessionId = Session.Default.Id };
 }

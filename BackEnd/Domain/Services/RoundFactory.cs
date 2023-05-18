@@ -26,7 +26,10 @@ public class RoundFactory : IRoundFactory
     public Round CreateRound(Word word, int roundNumber)
     {
         logger.LogInformation("Creating round {RoundNumber} with word {Word}", roundNumber, word);
-        return new Round(word, Guid.NewGuid(), roundNumber, playerService.PlayerIds,
-            options.LetterHintDelay, options.GuessLimit);
+
+        return new Round(word, options, playerService.PlayerIds)
+        {
+            Id = Guid.NewGuid(), Number = roundNumber, SessionId = Guid.NewGuid(),
+        };
     }
 }
