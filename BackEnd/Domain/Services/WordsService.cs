@@ -32,6 +32,13 @@ public interface IWordsService
     /// <returns>The total word count.</returns>
     Task<int> GetTotalWordCountAsync(CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Get a random word from the database.
+    /// </summary>
+    /// <param name="cancellationToken">Task cancellation token</param>
+    /// <returns>A random word from the database</returns>
+    Task<Word> GetRandomWordAsync(CancellationToken cancellationToken = default);
+
     Task<OneOf<Word, NotFound>> GetWordAsync(string wordId, CancellationToken cancellationToken = default);
     Task<OneOf<Word, NotFound, Conflict>> CreateWordAsync(Word word, CancellationToken cancellationToken = default);
     Task UpdateWordAsync(Word word, CancellationToken cancellationToken = default);
@@ -62,6 +69,17 @@ public class WordsService : IWordsService
 
     public Task<int> GetTotalWordCountAsync(CancellationToken cancellationToken = default) =>
         wordsRepository.GetTotalWordCountAsync(cancellationToken);
+
+    public async Task<Word> GetRandomWordAsync(CancellationToken cancellationToken = default)
+    {
+        var wordIds = await GetAllWordIds(cancellationToken).ToListAsync(cancellationToken);
+        var wordId = wordIds[Random.Shared.Next(wordIds.Count)];
+        var wordEntity = await wordsRepository.GetWordAsync(wordId, cancellationToken);
+
+        return wordEntity is not null
+            ? await MapToWordAsync(wordEntity, cancellationToken)
+            : throw new InvalidOperationException($"Could not find a random word with ID: {wordId}");
+    }
 
     public async Task<OneOf<Word, NotFound>> GetWordAsync(string wordId, CancellationToken cancellationToken = default)
     {
