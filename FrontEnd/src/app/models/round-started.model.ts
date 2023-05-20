@@ -1,6 +1,6 @@
 import { WordHintResponse } from "@models/responses/word-hint.response";
 
-export interface RoundStartedResponse {
+export interface RoundStartedModel {
   roundNumber: number;
   roundId: string;
   wordHint: WordHintResponse;

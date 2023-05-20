@@ -1,5 +1,4 @@
 import { WordHintResponse } from './word-hint.response';
-import { RoundSummaryResponse } from './round-summary.response';
 
 export interface GameStateResponse {
   roundActive: boolean;

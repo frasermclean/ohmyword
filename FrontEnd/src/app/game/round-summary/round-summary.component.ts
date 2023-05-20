@@ -8,7 +8,7 @@ import { GameState } from '@state/game/game.state';
   styleUrls: ['./round-summary.component.scss'],
 })
 export class RoundSummaryComponent {
-  summary$ = this.store.select(GameState.roundSummary);
+  roundSummary$ = this.store.select(GameState.roundSummary);
 
   constructor(private store: Store) {}
 }

@@ -11,8 +11,8 @@ import { Hub } from '@state/hub/hub.actions';
 import { RegisterPlayerResponse } from '@models/responses/register-player.response';
 import { GuessResponse } from '@models/responses/guess.response';
 import { LetterHintResponse } from '@models/responses/letter-hint.response';
-import { RoundEndedResponse } from "@models/responses/round-ended.response";
-import { RoundStartedResponse } from "@models/responses/round-started.response";
+import { RoundEndedModel } from "@models/round-ended.model";
+import { RoundStartedModel } from "@models/round-started.model";
 
 @Injectable({
   providedIn: 'root',
@@ -85,13 +85,13 @@ export class HubService {
     this.hubConnection.onclose((error) => this.store.dispatch(new Hub.Disconnected(error)));
 
     // server sent game state
-    this.hubConnection.on('SendRoundStarted', (response: RoundStartedResponse) =>
+    this.hubConnection.on('SendRoundStarted', (response: RoundStartedModel) =>
       this.store.dispatch(new Game.RoundStarted(response))
     );
 
     // round ended
-    this.hubConnection.on('SendRoundEnded', (response: RoundEndedResponse) =>
-      this.store.dispatch(new Game.RoundEnded(response))
+    this.hubConnection.on('SendRoundEnded', (data: RoundEndedModel) =>
+      this.store.dispatch(new Game.RoundEnded(data))
     );
 
     // player count changed

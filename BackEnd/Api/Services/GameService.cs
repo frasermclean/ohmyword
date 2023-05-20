@@ -76,9 +76,10 @@ public class GameService : IGameService
             await Task.WhenAll(
                 new RoundEndedEvent
                 {
-                    RoundId = round.Id,
                     Word = round.Word.Id,
                     EndReason = round.EndReason,
+                    RoundId = round.Id,                    
+                    DefinitionId = round.WordHint.DefinitionId,                    
                     NextRoundStart = DateTime.UtcNow + postRoundDelay,
                     Scores = round.GetPlayerData().Select(data =>
                     {
@@ -90,6 +91,7 @@ public class GameService : IGameService
                             CountryCode = string.Empty, // TODO: Calculate country code
                             PointsAwarded = data.PointsAwarded,
                             GuessCount = data.GuessCount,
+                            GuessTimeMilliseconds = data.GuessTime.TotalMilliseconds
                         };
                     })
                 }.PublishAsync(cancellation: cancellationToken),
@@ -110,7 +112,7 @@ public class GameService : IGameService
                 RoundId = round.Id,
                 WordHint = round.WordHint,
                 StartDate = round.StartDate,
-                EndDate = default
+                EndDate = round.EndDate
             }.PublishAsync(cancellation: cancellationToken);
 
             // send all letter hints

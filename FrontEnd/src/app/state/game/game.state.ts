@@ -1,24 +1,30 @@
 import { Injectable } from '@angular/core';
 import { Action, Selector, State, StateContext, StateToken } from '@ngxs/store';
-import { RoundSummary } from '@models/round-summary.model';
 import { WordHint } from '@models/word-hint.model';
 import { HubService } from '@services/hub.service';
 import { Game } from './game.actions';
 import { Hub } from '@state/hub/hub.actions';
+import { PartOfSpeech, RoundEndReason } from '@models/enums';
+import { ScoreLineModel } from '@models/score-line.model';
 
 interface GameStateModel {
-  connection: 'disconnected' | 'connecting' | 'connected' | 'registering' | 'registered' | 'disconnecting'
+  connection: 'disconnected' | 'connecting' | 'connected' | 'registering' | 'registered' | 'disconnecting';
   playerCount: number;
   roundActive: boolean;
   roundNumber: number;
   roundId: string;
+  score: number;
   interval: {
     startDate: Date;
     endDate: Date;
   };
   wordHint: WordHint | null;
-  score: number;
-  roundSummary: RoundSummary | null;
+  roundSummary: {
+    word: string;
+    partOfSpeech: PartOfSpeech;
+    endReason: RoundEndReason;
+    scores: ScoreLineModel[];
+  } | null;
 }
 
 export const GAME_STATE_TOKEN = new StateToken<GameStateModel>('game');
@@ -31,19 +37,18 @@ export const GAME_STATE_TOKEN = new StateToken<GameStateModel>('game');
     roundActive: false,
     roundNumber: 0,
     roundId: '',
+    score: 0,
     interval: {
       startDate: new Date(),
       endDate: new Date(),
     },
     wordHint: null,
-    score: 0,
     roundSummary: null,
   },
 })
 @Injectable()
 export class GameState {
-  constructor(private hubService: HubService) {
-  }
+  constructor(private hubService: HubService) {}
 
   @Action(Game.RegisterPlayer)
   registerPlayer(context: StateContext<GameStateModel>) {
@@ -74,30 +79,32 @@ export class GameState {
   gameStateUpdated(context: StateContext<GameStateModel>, action: Game.RoundStarted) {
     context.patchState({
       roundActive: true,
-      roundNumber: action.roundNumber,
-      roundId: action.roundId,
-      wordHint: action.wordHint,
+      roundNumber: action.data.roundNumber,
+      roundId: action.data.roundId,
+      wordHint: new WordHint(action.data.wordHint),
       roundSummary: null,
       interval: {
-        startDate: action.startDate,
-        endDate: action.endDate,
+        startDate: new Date(action.data.startDate),
+        endDate: new Date(action.data.endDate),
       },
     });
   }
 
   @Action(Game.RoundEnded)
   roundEnded(context: StateContext<GameStateModel>, action: Game.RoundEnded) {
+    const state = context.getState();
     context.patchState({
       roundActive: false,
-      roundSummary: new RoundSummary({
-        word: action.word,
-        partOfSpeech: action.partOfSpeech,
-        endReason: action.endReason,
-      }),
+      roundSummary: {
+        word: action.data.word,
+        partOfSpeech: state.wordHint?.partOfSpeech ?? PartOfSpeech.Unknown,
+        endReason: action.data.endReason,
+        scores: action.data.scores,
+      },
       interval: {
         startDate: new Date(),
-        endDate: new Date(action.nextRoundStart)
-      }
+        endDate: new Date(action.data.nextRoundStart),
+      },
     });
   }
 
@@ -120,33 +127,33 @@ export class GameState {
 
   @Action(Game.PlayerCountUpdated)
   playerCountUpdated(context: StateContext<GameStateModel>, action: Game.PlayerCountUpdated) {
-    context.patchState({playerCount: action.count});
+    context.patchState({ playerCount: action.count });
   }
 
   @Action(Game.AddPoints)
   addPoints(context: StateContext<GameStateModel>, action: Game.AddPoints) {
     const currentScore = context.getState().score;
-    context.patchState({score: currentScore + action.points});
+    context.patchState({ score: currentScore + action.points });
   }
 
   @Action(Hub.Connect)
   hubConnecting(context: StateContext<GameStateModel>) {
     context.patchState({
-      connection: 'connecting'
+      connection: 'connecting',
     });
   }
 
   @Action(Hub.Connected)
   hubConnected(context: StateContext<GameStateModel>) {
     context.patchState({
-      connection: 'connected'
+      connection: 'connected',
     });
   }
 
   @Action(Hub.Disconnected)
   hubDisconnected(context: StateContext<GameStateModel>) {
     context.patchState({
-      connection: 'disconnected'
+      connection: 'disconnected',
     });
   }
 

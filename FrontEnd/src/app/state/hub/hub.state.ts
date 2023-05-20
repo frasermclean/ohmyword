@@ -34,7 +34,7 @@ export class HubState {
   }
 
   @Action(Hub.Disconnect)
-  disconnect(context: StateContext<HubStateModel>, action: Hub.Disconnect) {
+  disconnect(context: StateContext<HubStateModel>) {
     context.patchState({
       connectionState: 'disconnecting',
     });
