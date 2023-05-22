@@ -33,7 +33,7 @@ public interface IWordsService
     Task<int> GetTotalWordCountAsync(CancellationToken cancellationToken = default);
 
     Task<OneOf<Word, NotFound>> GetWordAsync(string wordId, CancellationToken cancellationToken = default);
-    Task<OneOf<Word, NotFound, Conflict>> CreateWordAsync(Word word, CancellationToken cancellationToken = default);
+    Task<CreateResult<Word>> CreateWordAsync(Word word, CancellationToken cancellationToken = default);
     Task UpdateWordAsync(Word word, CancellationToken cancellationToken = default);
     Task DeleteWordAsync(string wordId, CancellationToken cancellationToken = default);
 }
@@ -71,7 +71,7 @@ public class WordsService : IWordsService
             : new NotFound();
     }
 
-    public async Task<OneOf<Word, NotFound, Conflict>> CreateWordAsync(Word word,
+    public async Task<CreateResult<Word>> CreateWordAsync(Word word,
         CancellationToken cancellationToken = default)
     {
         try
