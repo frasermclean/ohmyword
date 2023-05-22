@@ -10,7 +10,7 @@ public abstract record Entity
     /// UNIX timestamp of last modification date.
     /// </summary>
     [JsonPropertyName("_ts")]
-    public long Timestamp { get; init; }
+    public long Timestamp { get; init; } = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
     public DateTime LastModifiedTime => DateTimeOffset.FromUnixTimeSeconds(Timestamp).UtcDateTime;
 
