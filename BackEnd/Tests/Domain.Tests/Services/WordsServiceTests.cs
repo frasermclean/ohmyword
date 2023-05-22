@@ -5,6 +5,7 @@ using OhMyWord.Domain.Results;
 using OhMyWord.Domain.Services;
 using OhMyWord.Infrastructure.Models.Entities;
 using OhMyWord.Infrastructure.Services;
+using OneOf.Types;
 using System.Net;
 
 namespace Domain.Tests.Services;
@@ -54,5 +55,41 @@ public class WordsServiceTests
 
         // assert
         result.Value.Should().BeOfType<Conflict>();
+    }
+
+    [Theory, AutoData]
+    public async Task GetWordAsync_Should_ReturnWord(WordEntity wordEntity, DefinitionEntity[] definitionEntities)
+    {
+        wordsRepositoryMock
+            .Setup(repository => repository.GetWordAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(wordEntity);
+
+        definitionsRepositoryMock
+            .Setup(repository => repository.GetDefinitionsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns(definitionEntities.ToAsyncEnumerable());
+
+        // act
+        var result = await wordsService.GetWordAsync(wordEntity.Id);
+        var word = result.AsT0;
+
+        // assert
+        result.Value.Should().BeOfType<Word>();
+        word.Id.Should().Be(wordEntity.Id);
+        word.Definitions.Should().HaveCount(definitionEntities.Length);
+    }
+
+    [Theory, AutoData]
+    public async Task GetWordAsync_Should_ReturnNotFound(string wordId)
+    {
+        // arrange
+        wordsRepositoryMock
+            .Setup(repository => repository.GetWordAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(null as WordEntity);
+
+        // act
+        var result = await wordsService.GetWordAsync(wordId);
+
+        // assert
+        result.Value.Should().BeOfType<NotFound>();
     }
 }

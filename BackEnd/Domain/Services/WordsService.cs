@@ -32,7 +32,7 @@ public interface IWordsService
     /// <returns>The total word count.</returns>
     Task<int> GetTotalWordCountAsync(CancellationToken cancellationToken = default);
 
-    Task<OneOf<Word, NotFound>> GetWordAsync(string wordId, CancellationToken cancellationToken = default);
+    Task<ReadResult<Word>> GetWordAsync(string wordId, CancellationToken cancellationToken = default);
     Task<CreateResult<Word>> CreateWordAsync(Word word, CancellationToken cancellationToken = default);
     Task UpdateWordAsync(Word word, CancellationToken cancellationToken = default);
     Task DeleteWordAsync(string wordId, CancellationToken cancellationToken = default);
@@ -63,7 +63,7 @@ public class WordsService : IWordsService
     public Task<int> GetTotalWordCountAsync(CancellationToken cancellationToken = default) =>
         wordsRepository.GetTotalWordCountAsync(cancellationToken);
 
-    public async Task<OneOf<Word, NotFound>> GetWordAsync(string wordId, CancellationToken cancellationToken = default)
+    public async Task<ReadResult<Word>> GetWordAsync(string wordId, CancellationToken cancellationToken = default)
     {
         var wordEntity = await wordsRepository.GetWordAsync(wordId, cancellationToken);
         return wordEntity is not null
