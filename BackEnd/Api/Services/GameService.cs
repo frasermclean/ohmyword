@@ -28,33 +28,36 @@ public class GameService : IGameService
     private readonly ILogger<GameService> logger;
     private readonly IWordsService wordsService;
     private readonly IPlayerService playerService;
-    private readonly IRoundFactory roundFactory;
+    private readonly IRoundService roundService;
 
     private readonly TimeSpan postRoundDelay;
 
-    private bool isRoundActive;
+
     private int roundNumber;
-    private Round round = Round.Default;
     private IReadOnlyList<string> allWordIds = new List<string>();
     private Stack<string> shuffledWordIds = new();
 
     public GameState GameState => new()
     {
-        RoundActive = isRoundActive,
-        RoundNumber = round.Number,
-        RoundId = round.Id,
-        IntervalStart = isRoundActive ? round.StartDate : default,
-        IntervalEnd = isRoundActive ? round.EndDate : default,
-        WordHint = isRoundActive ? round.WordHint : default,
+        RoundActive = Round != Round.Default,
+        RoundNumber = Round.Number,
+        RoundId = Round.Id,
+        IntervalStart = IsRoundActive ? Round.StartDate : default,
+        IntervalEnd = IsRoundActive ? Round.EndDate : default,
+        WordHint = IsRoundActive ? Round.WordHint : default,
     };
 
+    private Guid SessionId { get; } = Guid.NewGuid(); // TODO: Refactor to use a session service
+    private Round Round { get; set; } = Round.Default;
+    private bool IsRoundActive => Round != Round.Default;
+
     public GameService(ILogger<GameService> logger, IOptions<RoundOptions> roundOptions, IWordsService wordsService,
-        IPlayerService playerService, IRoundFactory roundFactory)
+        IPlayerService playerService, IRoundService roundService)
     {
         this.logger = logger;
         this.wordsService = wordsService;
         this.playerService = playerService;
-        this.roundFactory = roundFactory;
+        this.roundService = roundService;
 
         postRoundDelay = TimeSpan.FromSeconds(roundOptions.Value.PostRoundDelay);
     }
@@ -70,63 +73,43 @@ public class GameService : IGameService
                 continue;
             }
 
-            await ExecuteRoundAsync(cancellationToken);
+            using (Round = await roundService.CreateRoundAsync(++roundNumber, SessionId, cancellationToken))
+            {
+                await ExecuteRoundAsync(Round, cancellationToken);
 
-            // end current round            
-            await Task.WhenAll(
-                new RoundEndedEvent
-                {
-                    Word = round.Word.Id,
-                    EndReason = round.EndReason,
-                    RoundId = round.Id,                    
-                    DefinitionId = round.WordHint.DefinitionId,                    
-                    NextRoundStart = DateTime.UtcNow + postRoundDelay,
-                    Scores = round.GetPlayerData().Select(data =>
-                    {
-                        var player = playerService.GetPlayerById(data.PlayerId);
-                        return new ScoreLine
-                        {
-                            PlayerName = string.Empty, // TODO: Calculate player name
-                            ConnectionId = player?.ConnectionId ?? string.Empty,
-                            CountryCode = string.Empty, // TODO: Calculate country code
-                            PointsAwarded = data.PointsAwarded,
-                            GuessCount = data.GuessCount,
-                            GuessTimeMilliseconds = data.GuessTime.TotalMilliseconds
-                        };
-                    })
-                }.PublishAsync(cancellation: cancellationToken),
-                Task.Delay(postRoundDelay, cancellationToken));
+                // end current round            
+                await Task.WhenAll(CreateRoundEndedEvent(Round).PublishAsync(cancellation: cancellationToken),
+                    Task.Delay(postRoundDelay, cancellationToken));
+            }
+
+            Round = Round.Default;
         }
     }
 
-    private async Task ExecuteRoundAsync(CancellationToken cancellationToken)
+    private async Task ExecuteRoundAsync(Round round, CancellationToken cancellationToken)
     {
-        // start new round
-        var word = await GetNextWordAsync(cancellationToken);
-        using (round = roundFactory.CreateRound(word, ++roundNumber))
+        await new RoundStartedEvent
         {
-            isRoundActive = true;
-            await new RoundStartedEvent
-            {
-                RoundNumber = round.Number,
-                RoundId = round.Id,
-                WordHint = round.WordHint,
-                StartDate = round.StartDate,
-                EndDate = round.EndDate
-            }.PublishAsync(cancellation: cancellationToken);
+            RoundNumber = round.Number,
+            RoundId = round.Id,
+            WordHint = round.WordHint,
+            StartDate = round.StartDate,
+            EndDate = round.EndDate
+        }.PublishAsync(cancellation: cancellationToken);
 
-            // send all letter hints
-            try
-            {
-                await SendLetterHintsAsync(round, round.CancellationToken);
-            }
-            catch (TaskCanceledException)
-            {
-                logger.LogInformation("Round {RoundNumber} has been terminated early. Reason: {EndReason}",
-                    round.Number, round.EndReason);
-            }
-
-            isRoundActive = false;
+        // send all letter hints
+        try
+        {
+            await SendLetterHintsAsync(round, round.CancellationToken);
+        }
+        catch (TaskCanceledException)
+        {
+            logger.LogInformation("Round {RoundNumber} has been terminated early. Reason: {EndReason}",
+                round.Number, round.EndReason);
+        }
+        finally
+        {
+            await roundService.SaveRoundAsync(round, cancellationToken);
         }
     }
 
@@ -180,13 +163,37 @@ public class GameService : IGameService
         }
     }
 
+    private RoundEndedEvent CreateRoundEndedEvent(Round round) => new()
+    {
+        Word = round.Word.Id,
+        EndReason = round.EndReason,
+        RoundId = round.Id,
+        DefinitionId = round.WordHint.DefinitionId,
+        NextRoundStart = DateTime.UtcNow + postRoundDelay,
+        Scores = round.GetPlayerData()
+            .Where(data => data.PointsAwarded > 0)
+            .Select(data =>
+            {
+                var player = playerService.GetPlayerById(data.PlayerId);
+                return new ScoreLine
+                {
+                    PlayerName = string.Empty, // TODO: Calculate player name
+                    ConnectionId = player?.ConnectionId ?? string.Empty,
+                    CountryCode = string.Empty, // TODO: Calculate country code
+                    PointsAwarded = data.PointsAwarded,
+                    GuessCount = data.GuessCount,
+                    GuessTimeMilliseconds = data.GuessTime.TotalMilliseconds
+                };
+            })
+    };
+
     public async Task<int> ProcessGuessAsync(string connectionId, Guid roundId, string value)
     {
         // validate round state
-        if (!isRoundActive || roundId != round.Id) return 0;
+        if (!IsRoundActive || roundId != Round.Id) return 0;
 
         // compare value to current word value
-        var isCorrect = string.Equals(value, round.Word.Id, StringComparison.InvariantCultureIgnoreCase);
+        var isCorrect = string.Equals(value, Round.Word.Id, StringComparison.InvariantCultureIgnoreCase);
         if (!isCorrect) return 0;
 
         var player = playerService.GetPlayerByConnectionId(connectionId);
@@ -196,10 +203,10 @@ public class GameService : IGameService
             return 0;
         }
 
-        round.IncrementGuessCount(player.Id);
+        Round.IncrementGuessCount(player.Id);
 
         const int pointsToAward = 100; // TODO: Calculate points dynamically
-        var pointsAwarded = round.AwardPoints(player.Id, pointsToAward);
+        var pointsAwarded = Round.AwardPoints(player.Id, pointsToAward);
         if (!pointsAwarded)
             logger.LogWarning("Zero points were awarded to player with ID: {PlayerId}", player.Id);
 
@@ -207,26 +214,26 @@ public class GameService : IGameService
             pointsToAward); // TODO: Write to database after round end
 
         // end round if all players have been awarded points
-        if (round.AllPlayersGuessed)
-            round.EndRound(RoundEndReason.AllPlayersGuessed);
+        if (Round.AllPlayersGuessed)
+            Round.EndRound(RoundEndReason.AllPlayersGuessed);
 
         return pointsToAward;
     }
 
     public void AddPlayer(string playerId)
     {
-        if (isRoundActive)
-            round.AddPlayer(playerId);
+        if (IsRoundActive)
+            Round.AddPlayer(playerId);
     }
 
     public void RemovePlayer(string playerId)
     {
         // player left while round wasn't active
-        if (!isRoundActive)
+        if (!IsRoundActive)
             return;
 
         // last visitor left while round active
         if (playerService.PlayerCount == 0)
-            round.EndRound(RoundEndReason.NoPlayersLeft);
+            Round.EndRound(RoundEndReason.NoPlayersLeft);
     }
 }
