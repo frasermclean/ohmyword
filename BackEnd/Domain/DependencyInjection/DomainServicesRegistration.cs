@@ -3,9 +3,9 @@ using Microsoft.Extensions.DependencyInjection;
 using OhMyWord.Domain.Options;
 using OhMyWord.Domain.Services;
 
-namespace OhMyWord.Domain.Extensions;
+namespace OhMyWord.Domain.DependencyInjection;
 
-public static class ServiceCollectionExtensions
+public static class DomainServicesRegistration
 {
     public static IServiceCollection AddDomainServices(this IServiceCollection services, IConfiguration configuration)
     {
@@ -13,12 +13,13 @@ public static class ServiceCollectionExtensions
             .Bind(configuration.GetSection(RoundOptions.SectionName))
             .ValidateDataAnnotations()
             .ValidateOnStart();
-        
+
         services.AddSingleton<IDefinitionsService, DefinitionsService>();
         services.AddSingleton<IUsersService, UsersService>();
         services.AddSingleton<IGeoLocationService, GeoLocationService>();
         services.AddSingleton<IPlayerService, PlayerService>();
-        services.AddSingleton<IRoundService, RoundService>();        
+        services.AddSingleton<IRoundService, RoundService>();
+        services.AddSingleton<ISessionManager, SessionManager>();
         services.AddSingleton<IWordsService, WordsService>();
 
         return services;

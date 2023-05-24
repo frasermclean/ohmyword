@@ -14,7 +14,7 @@ public class RoundTests
         using var round = CreateRound(word);
 
         // assert
-        round.Id.Should().BeEmpty();
+        round.Id.Should().NotBeEmpty();
         round.Number.Should().Be(0);
         round.Word.Should().Be(word);
         round.StartDate.Should().BeBefore(DateTime.UtcNow);
@@ -27,11 +27,11 @@ public class RoundTests
     }
 
     [Theory, AutoData]
-    public void NewRound_WithSpecifiedParameters_Should_HaveExpectedProperties(Word word, Guid id, int number,
+    public void NewRound_WithSpecifiedParameters_Should_HaveExpectedProperties(Word word, int number,
         string[] playerIds, Guid sessionId)
     {
         // arrange
-        using var round = CreateRound(word, number, id, playerIds, sessionId);
+        using var round = CreateRound(word, number, playerIds, sessionId);
 
         // assert
         round.Id.Should().NotBeEmpty();
@@ -78,7 +78,7 @@ public class RoundTests
     public void IncrementGuessCount_Should_ReturnCorrectResult(Word word, int roundNumber, string playerId)
     {
         // arrange
-        using var round = CreateRound(word, roundNumber, options: new RoundOptions { GuessLimit = 1 });
+        using var round = CreateRound(word, roundNumber, guessLimit: 1);
         round.AddPlayer(playerId);
 
         // act
@@ -114,7 +114,6 @@ public class RoundTests
         // arrange
         using var round = CreateRound(word, roundNumber);
 
-
         // act
         foreach (var playerId in playerIds)
         {
@@ -144,7 +143,8 @@ public class RoundTests
         round.Word.Should().Be(Word.Default);
     }
 
-    private static Round CreateRound(Word word, int number = default, Guid id = default,
-        IEnumerable<string>? playerIds = default, Guid sessionId = default, RoundOptions? options = default) =>
-        new(word, options, playerIds) { Id = id, Number = number, SessionId = sessionId };
+    private static Round CreateRound(Word word, int number = default, IEnumerable<string>? playerIds = default,
+        Guid sessionId = default, double letterHintDelay = RoundOptions.LetterHintDelayDefault,
+        int guessLimit = RoundOptions.GuessLimitDefault) =>
+        new(word, letterHintDelay, playerIds) { Number = number, GuessLimit = guessLimit, SessionId = sessionId };
 }

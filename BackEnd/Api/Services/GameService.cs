@@ -27,26 +27,22 @@ public interface IGameService
 public class GameService : IGameService
 {
     private readonly ILogger<GameService> logger;
-    private readonly IWordsService wordsService;
+    private readonly ISessionManager sessionManager;
     private readonly IPlayerService playerService;
     private readonly IRoundService roundService;
 
     private readonly TimeSpan postRoundDelay;
-
-
     private int roundNumber;
-    private IReadOnlyList<string> allWordIds = new List<string>();
-    private Stack<string> shuffledWordIds = new();
 
     private Guid SessionId { get; } = Guid.NewGuid(); // TODO: Refactor to use a session service
     private Round Round { get; set; } = Round.Default;
     private bool IsRoundActive => Round != Round.Default;
 
-    public GameService(ILogger<GameService> logger, IOptions<RoundOptions> roundOptions, IWordsService wordsService,
+    public GameService(ILogger<GameService> logger, IOptions<RoundOptions> roundOptions, ISessionManager sessionManager,
         IPlayerService playerService, IRoundService roundService)
     {
         this.logger = logger;
-        this.wordsService = wordsService;
+        this.sessionManager = sessionManager;
         this.playerService = playerService;
         this.roundService = roundService;
 
@@ -57,12 +53,14 @@ public class GameService : IGameService
     {
         while (!cancellationToken.IsCancellationRequested)
         {
-            // sleep while there are no visitors
+            // sleep while there are no players
             if (playerService.PlayerCount == 0)
             {
                 await Task.Delay(1000, cancellationToken);
                 continue;
             }
+
+            await sessionManager.ExecuteSessionAsync(cancellationToken);
 
             using (Round = await roundService.CreateRoundAsync(++roundNumber, SessionId, cancellationToken))
             {
@@ -102,37 +100,6 @@ public class GameService : IGameService
         {
             await roundService.SaveRoundAsync(round, cancellationToken);
         }
-    }
-
-    private async Task<Word> GetNextWordAsync(CancellationToken cancellationToken)
-    {
-        if (allWordIds.Count == 0)
-            allWordIds = await wordsService
-                .GetAllWordIds(cancellationToken)
-                .ToListAsync(cancellationToken);
-
-        if (allWordIds.Count == 0)
-        {
-            logger.LogError("No words found in database");
-            return Word.Default;
-        }
-
-        if (shuffledWordIds.Count == 0)
-        {
-            logger.LogInformation("Detected empty shuffled word stack. Shuffling words: {Count}", allWordIds.Count);
-            shuffledWordIds = new Stack<string>(allWordIds.OrderBy(_ => Random.Shared.Next()));
-        }
-
-        var wordId = shuffledWordIds.Pop();
-        var result = await wordsService.GetWordAsync(wordId, cancellationToken);
-
-        return result.Match(
-            word => word,
-            _ =>
-            {
-                logger.LogError("Word not found in database. WordId: {WordId}", wordId);
-                return Word.Default;
-            });
     }
 
     private static async Task SendLetterHintsAsync(Round round, CancellationToken cancellationToken)

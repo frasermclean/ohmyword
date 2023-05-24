@@ -49,9 +49,11 @@ public class RoundService : IRoundService
         var word = await wordsService.GetRandomWordAsync(cancellationToken);
         logger.LogInformation("Creating round {RoundNumber} with word {Word}", roundNumber, word);
 
-        return new Round(word, options, playerService.PlayerIds)
+        return new Round(word, options.LetterHintDelay, playerService.PlayerIds)
         {
-            Id = Guid.NewGuid(), Number = roundNumber, SessionId = sessionId,
+            Number = roundNumber,
+            GuessLimit = options.GuessLimit,
+            SessionId = sessionId,
         };
     }
 

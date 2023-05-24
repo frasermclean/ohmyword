@@ -9,14 +9,11 @@ public sealed class Round : IDisposable
     private readonly ConcurrentDictionary<string, RoundPlayerData> playerData;
     private readonly CancellationTokenSource cancellationTokenSource = new();
 
-    internal Round(Word word, RoundOptions? options = default, IEnumerable<string>? playerIds = default)
+    internal Round(Word word, double letterHintDelay, IEnumerable<string>? playerIds = default)
     {
         Word = word;
         WordHint = new WordHint(word);
-        GuessLimit = options?.GuessLimit ?? RoundOptions.GuessLimitDefault;
-        StartDate = DateTime.UtcNow;
-        EndDate = StartDate + word.Length *
-            TimeSpan.FromSeconds(options?.LetterHintDelay ?? RoundOptions.LetterHintDelayDefault);
+        EndDate = StartDate + word.Length * TimeSpan.FromSeconds(letterHintDelay);
 
         playerData = playerIds is null
             ? new ConcurrentDictionary<string, RoundPlayerData>()
@@ -24,12 +21,12 @@ public sealed class Round : IDisposable
                 new KeyValuePair<string, RoundPlayerData>(playerId, new RoundPlayerData(playerId))));
     }
 
-    public Guid Id { get; init; }
-    public int Number { get; init; }
+    public Guid Id { get; private init; } = Guid.NewGuid();
+    public required int Number { get; init; }
     public Word Word { get; }
     public WordHint WordHint { get; }
-    public int GuessLimit { get; }
-    public DateTime StartDate { get; }
+    public required int GuessLimit { get; init; }
+    public DateTime StartDate { get; } = DateTime.UtcNow;
     public DateTime EndDate { get; }
     public RoundEndReason EndReason { get; private set; }
     public required Guid SessionId { get; init; }
@@ -76,5 +73,11 @@ public sealed class Round : IDisposable
         cancellationTokenSource.Dispose();
     }
 
-    public static Round Default => new(Word.Default) { SessionId = Session.Default.Id };
+    public static Round Default => new(Word.Default, RoundOptions.LetterHintDelayDefault)
+    {
+        Id = Guid.Empty,
+        Number = default,
+        SessionId = Session.Default.Id,
+        GuessLimit = RoundOptions.GuessLimitDefault
+    };
 }
