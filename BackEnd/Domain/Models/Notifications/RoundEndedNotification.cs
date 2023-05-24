@@ -1,9 +1,9 @@
-﻿using OhMyWord.Api.Models;
+﻿using MediatR;
 using OhMyWord.Infrastructure.Models.Entities;
 
-namespace OhMyWord.Api.Events.RoundEnded;
+namespace OhMyWord.Domain.Models.Notifications;
 
-public class RoundEndedEvent : IEvent
+public class RoundEndedNotification : INotification
 {
     public required string Word { get; init; }
     public required RoundEndReason EndReason { get; init; }

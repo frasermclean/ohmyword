@@ -1,20 +1,19 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using OhMyWord.Api.Events.PlayerConnected;
 using OhMyWord.Api.Events.PlayerDisconnected;
-using OhMyWord.Api.Events.RoundEnded;
-using OhMyWord.Api.Events.RoundStarted;
 using OhMyWord.Api.Extensions;
 using OhMyWord.Api.Models;
 using OhMyWord.Api.Services;
 using OhMyWord.Domain.Models;
+using OhMyWord.Domain.Models.Notifications;
 using OhMyWord.Domain.Services;
 
 namespace OhMyWord.Api.Hubs;
 
 public interface IGameHub
 {
-    Task SendRoundStarted(RoundStartedEvent roundStarted, CancellationToken cancellationToken = default);
-    Task SendRoundEnded(RoundEndedEvent roundEnded, CancellationToken cancellationToken = default);
+    Task SendRoundStarted(RoundStartedNotification notification, CancellationToken cancellationToken = default);
+    Task SendRoundEnded(RoundEndedNotification notification, CancellationToken cancellationToken = default);
     Task SendPlayerCount(int count);
     Task SendLetterHint(LetterHint letterHint);
 }

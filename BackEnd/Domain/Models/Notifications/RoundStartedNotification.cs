@@ -1,8 +1,8 @@
-﻿using OhMyWord.Domain.Models;
+﻿using MediatR;
 
-namespace OhMyWord.Api.Events.RoundStarted;
+namespace OhMyWord.Domain.Models.Notifications;
 
-public class RoundStartedEvent : IEvent
+public class RoundStartedNotification : INotification
 {
     public required int RoundNumber { get; init; }
     public required Guid RoundId { get; init; }

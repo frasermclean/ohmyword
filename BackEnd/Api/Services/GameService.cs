@@ -1,10 +1,5 @@
-﻿using Microsoft.Extensions.Options;
-using OhMyWord.Api.Events.LetterHintAdded;
-using OhMyWord.Api.Events.RoundEnded;
-using OhMyWord.Api.Events.RoundStarted;
-using OhMyWord.Api.Models;
+﻿using OhMyWord.Api.Models;
 using OhMyWord.Domain.Models;
-using OhMyWord.Domain.Options;
 using OhMyWord.Domain.Services;
 using OhMyWord.Infrastructure.Models.Entities;
 using System.Net;
@@ -14,8 +9,6 @@ namespace OhMyWord.Api.Services;
 public interface IGameService
 {
     Task ExecuteGameLoopAsync(CancellationToken cancellationToken);
-
-
     void RemovePlayer(string playerId);
 
     Task<RegisterPlayerResult> RegisterPlayerAsync(string connectionId, string visitorId, IPAddress ipAddress,
@@ -27,26 +20,17 @@ public interface IGameService
 public class GameService : IGameService
 {
     private readonly ILogger<GameService> logger;
-    private readonly ISessionManager sessionManager;
+    private readonly IServiceProvider serviceProvider;
     private readonly IPlayerService playerService;
-    private readonly IRoundService roundService;
 
-    private readonly TimeSpan postRoundDelay;
-    private int roundNumber;
-
-    private Guid SessionId { get; } = Guid.NewGuid(); // TODO: Refactor to use a session service
     private Round Round { get; set; } = Round.Default;
     private bool IsRoundActive => Round != Round.Default;
 
-    public GameService(ILogger<GameService> logger, IOptions<RoundOptions> roundOptions, ISessionManager sessionManager,
-        IPlayerService playerService, IRoundService roundService)
+    public GameService(ILogger<GameService> logger, IServiceProvider serviceProvider, IPlayerService playerService)
     {
         this.logger = logger;
-        this.sessionManager = sessionManager;
+        this.serviceProvider = serviceProvider;
         this.playerService = playerService;
-        this.roundService = roundService;
-
-        postRoundDelay = TimeSpan.FromSeconds(roundOptions.Value.PostRoundDelay);
     }
 
     public async Task ExecuteGameLoopAsync(CancellationToken cancellationToken)
@@ -60,94 +44,14 @@ public class GameService : IGameService
                 continue;
             }
 
-            await sessionManager.ExecuteSessionAsync(cancellationToken);
-
-            using (Round = await roundService.CreateRoundAsync(++roundNumber, SessionId, cancellationToken))
-            {
-                await ExecuteRoundAsync(Round, cancellationToken);
-
-                // end current round            
-                await Task.WhenAll(CreateRoundEndedEvent(Round).PublishAsync(cancellation: cancellationToken),
-                    Task.Delay(postRoundDelay, cancellationToken));
-            }
-
-            Round = Round.Default;
+            using var scope = serviceProvider.CreateScope();
+            var sessionManager = scope.ServiceProvider.GetRequiredService<ISessionManager>();
+            await sessionManager.ExecuteAsync(cancellationToken);
         }
     }
-
-    private async Task ExecuteRoundAsync(Round round, CancellationToken cancellationToken)
-    {
-        await new RoundStartedEvent
-        {
-            RoundNumber = round.Number,
-            RoundId = round.Id,
-            WordHint = round.WordHint,
-            StartDate = round.StartDate,
-            EndDate = round.EndDate
-        }.PublishAsync(cancellation: cancellationToken);
-
-        // send all letter hints
-        try
-        {
-            await SendLetterHintsAsync(round, round.CancellationToken);
-        }
-        catch (TaskCanceledException)
-        {
-            logger.LogInformation("Round {RoundNumber} has been terminated early. Reason: {EndReason}",
-                round.Number, round.EndReason);
-        }
-        finally
-        {
-            await roundService.SaveRoundAsync(round, cancellationToken);
-        }
-    }
-
-    private static async Task SendLetterHintsAsync(Round round, CancellationToken cancellationToken)
-    {
-        var previousIndices = new List<int>();
-
-        while (previousIndices.Count < round.Word.Length && !cancellationToken.IsCancellationRequested)
-        {
-            await Task.Delay((round.EndDate - round.StartDate) / round.Word.Length, round.CancellationToken);
-
-            int index;
-            do index = Random.Shared.Next(round.Word.Length);
-            while (previousIndices.Contains(index));
-            previousIndices.Add(index);
-
-            var letterHint = round.Word.GetLetterHint(index + 1);
-            round.WordHint.AddLetterHint(letterHint);
-            await new LetterHintAddedEvent(letterHint).PublishAsync(cancellation: cancellationToken);
-        }
-    }
-
-    private RoundEndedEvent CreateRoundEndedEvent(Round round) => new()
-    {
-        Word = round.Word.Id,
-        EndReason = round.EndReason,
-        RoundId = round.Id,
-        DefinitionId = round.WordHint.DefinitionId,
-        NextRoundStart = DateTime.UtcNow + postRoundDelay,
-        Scores = round.GetPlayerData()
-            .Where(data => data.PointsAwarded > 0)
-            .Select(data =>
-            {
-                var player = playerService.GetPlayerById(data.PlayerId);
-                return new ScoreLine
-                {
-                    PlayerName = string.Empty, // TODO: Calculate player name
-                    ConnectionId = player?.ConnectionId ?? string.Empty,
-                    CountryCode = string.Empty, // TODO: Calculate country code
-                    PointsAwarded = data.PointsAwarded,
-                    GuessCount = data.GuessCount,
-                    GuessTimeMilliseconds = data.GuessTime.TotalMilliseconds
-                };
-            })
-    };
 
     public async Task<RegisterPlayerResult> RegisterPlayerAsync(string connectionId, string visitorId,
-        IPAddress ipAddress,
-        Guid? userId, CancellationToken cancellationToken)
+        IPAddress ipAddress, Guid? userId, CancellationToken cancellationToken)
     {
         var player = await playerService.AddPlayerAsync(visitorId, connectionId, ipAddress, userId);
 

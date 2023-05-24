@@ -1,4 +1,4 @@
-﻿namespace OhMyWord.Api.Models;
+﻿namespace OhMyWord.Domain.Models;
 
 public class ScoreLine
 {
