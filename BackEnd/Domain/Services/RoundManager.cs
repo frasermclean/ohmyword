@@ -63,7 +63,10 @@ public class RoundManager : IRoundManager
                 round.Number, round.EndReason);
         }
 
-        await SendRoundEndedNotificationAsync(round, cancellationToken);
+        // post round delay
+        var postRoundDelay = TimeSpan.FromSeconds(options.PostRoundDelay);
+        await SendRoundEndedNotificationAsync(round, postRoundDelay, cancellationToken);
+        await Task.Delay(postRoundDelay, cancellationToken);
     }
 
     public async Task SaveRoundAsync(Round round, CancellationToken cancellationToken)
@@ -111,7 +114,8 @@ public class RoundManager : IRoundManager
         return publisher.Publish(notification, cancellationToken);
     }
 
-    private Task SendRoundEndedNotificationAsync(Round round, CancellationToken cancellationToken)
+    private Task SendRoundEndedNotificationAsync(Round round, TimeSpan postRoundDelay,
+        CancellationToken cancellationToken)
     {
         var notification = new RoundEndedNotification
         {
@@ -119,7 +123,7 @@ public class RoundManager : IRoundManager
             EndReason = round.EndReason,
             RoundId = round.Id,
             DefinitionId = round.WordHint.DefinitionId,
-            NextRoundStart = DateTime.UtcNow + TimeSpan.FromSeconds(options.PostRoundDelay),
+            NextRoundStart = DateTime.UtcNow + postRoundDelay,
             Scores = round.GetPlayerData()
                 .Where(data => data.PointsAwarded > 0)
                 .Select(data =>
