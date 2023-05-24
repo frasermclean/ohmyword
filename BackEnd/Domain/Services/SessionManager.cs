@@ -5,8 +5,6 @@ namespace OhMyWord.Domain.Services;
 
 public interface ISessionManager
 {
-    bool IsActive { get; }
-
     /// <summary>
     /// Starts and executes new session.
     /// </summary>
@@ -16,19 +14,18 @@ public interface ISessionManager
 public sealed class SessionManager : ISessionManager
 {
     private readonly ILogger<SessionManager> logger;
+    private readonly IStateProvider state;
     private readonly IRoundManager roundManager;
     private readonly IPlayerService playerService;
 
-    private Session session = Session.Default;
-
-    public SessionManager(ILogger<SessionManager> logger, IRoundManager roundManager, IPlayerService playerService)
+    public SessionManager(ILogger<SessionManager> logger, IStateProvider state, IRoundManager roundManager,
+        IPlayerService playerService)
     {
         this.logger = logger;
+        this.state = state;
         this.roundManager = roundManager;
         this.playerService = playerService;
     }
-
-    public bool IsActive => session != Session.Default;
 
     public async Task ExecuteAsync(CancellationToken cancellationToken = default)
     {
@@ -42,18 +39,27 @@ public sealed class SessionManager : ISessionManager
             }
 
             // create new session
-            session = new Session();
-            logger.LogInformation("Starting new session {SessionId}", session.Id);
+            var session = state.StartSession();
+            logger.LogInformation("Starting new session {SessionId}", state.Session.Id);
 
             // create and execute rounds while there are players
-            do
-            {
-                await roundManager.CreateRoundAsync(session.Id, ++session.RoundCount, cancellationToken);
-                await roundManager.ExecuteRoundAsync(cancellationToken);
-            } while (roundManager.IsActive);
+            do await ExecuteRoundAsync(session, cancellationToken);
+            while (playerService.PlayerCount > 0);
 
-            logger.LogInformation("Ending session {SessionId}", session.Id);
-            session = Session.Default;
+            logger.LogInformation("Ending session {SessionId}", state.Session.Id);
+            state.Session.EndDate = DateTime.UtcNow;
+
+            state.Reset();
+        }
+    }
+
+    private async Task ExecuteRoundAsync(Session session, CancellationToken cancellationToken)
+    {
+        var roundNumber = state.IncrementRoundCount();
+        using (state.Round = await roundManager.CreateRoundAsync(session.Id, roundNumber, cancellationToken))
+        {
+            await roundManager.ExecuteRoundAsync(state.Round, cancellationToken);
+            await roundManager.SaveRoundAsync(state.Round, cancellationToken);
         }
     }
 }

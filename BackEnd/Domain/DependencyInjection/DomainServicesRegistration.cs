@@ -20,6 +20,7 @@ public static class DomainServicesRegistration
         services.AddSingleton<IPlayerService, PlayerService>();
         services.AddSingleton<IRoundManager, RoundManager>();
         services.AddSingleton<ISessionManager, SessionManager>();
+        services.AddSingleton<IStateProvider, StateProvider>();
         services.AddSingleton<IWordsService, WordsService>();
 
         return services;

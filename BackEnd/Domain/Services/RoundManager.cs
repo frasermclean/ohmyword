@@ -11,11 +11,9 @@ namespace OhMyWord.Domain.Services;
 
 public interface IRoundManager
 {
-    bool IsActive { get; }
-    
-    Task CreateRoundAsync(Guid sessionId, int roundNumber, CancellationToken cancellationToken = default);
-    Task ExecuteRoundAsync(CancellationToken cancellationToken = default);
-    Task SaveRoundAsync(CancellationToken cancellationToken = default);
+    Task<Round> CreateRoundAsync(Guid sessionId, int roundNumber, CancellationToken cancellationToken = default);
+    Task ExecuteRoundAsync(Round round, CancellationToken cancellationToken = default);
+    Task SaveRoundAsync(Round round, CancellationToken cancellationToken = default);
 }
 
 public class RoundManager : IRoundManager
@@ -26,8 +24,6 @@ public class RoundManager : IRoundManager
     private readonly IPlayerService playerService;
     private readonly IRoundsRepository roundsRepository;
     private readonly RoundOptions options;
-
-    private Round round = Round.Default;
 
     public RoundManager(ILogger<RoundManager> logger, IPublisher publisher, IOptions<RoundOptions> options,
         IWordsService wordsService, IPlayerService playerService, IRoundsRepository roundsRepository)
@@ -40,28 +36,26 @@ public class RoundManager : IRoundManager
         this.options = options.Value;
     }
 
-    public bool IsActive => playerService.PlayerCount > 0;
-
-    public async Task CreateRoundAsync(Guid sessionId, int roundNumber, CancellationToken cancellationToken)
+    public async Task<Round> CreateRoundAsync(Guid sessionId, int roundNumber, CancellationToken cancellationToken)
     {
         var word = await wordsService.GetRandomWordAsync(cancellationToken);
 
         logger.LogInformation("Creating round {RoundNumber} with word {Word}", roundNumber, word);
 
-        round = new Round(word, options.LetterHintDelay, playerService.PlayerIds)
+        return new Round(word, options.LetterHintDelay, playerService.PlayerIds)
         {
             Number = roundNumber, GuessLimit = options.GuessLimit, SessionId = sessionId,
         };
     }
 
-    public async Task ExecuteRoundAsync(CancellationToken cancellationToken)
+    public async Task ExecuteRoundAsync(Round round, CancellationToken cancellationToken)
     {
         logger.LogInformation("Starting round {RoundNumber} for session {SessionId}", round.Number, round.SessionId);
-        await SendRoundStartedNotificationAsync(cancellationToken);
+        await SendRoundStartedNotificationAsync(round, cancellationToken);
 
         try
         {
-            await SendLetterHintsAsync(round.CancellationToken);
+            await SendLetterHintsAsync(round, round.CancellationToken);
         }
         catch (TaskCanceledException)
         {
@@ -69,15 +63,15 @@ public class RoundManager : IRoundManager
                 round.Number, round.EndReason);
         }
 
-        await SendRoundEndedNotificationAsync(cancellationToken);
+        await SendRoundEndedNotificationAsync(round, cancellationToken);
     }
 
-    public async Task SaveRoundAsync(CancellationToken cancellationToken)
+    public async Task SaveRoundAsync(Round round, CancellationToken cancellationToken)
     {
         await roundsRepository.CreateRoundAsync(round.ToEntity(), cancellationToken);
     }
 
-    private async Task SendLetterHintsAsync(CancellationToken cancellationToken)
+    private async Task SendLetterHintsAsync(Round round, CancellationToken cancellationToken)
     {
         var previousIndices = new List<int>();
 
@@ -97,7 +91,7 @@ public class RoundManager : IRoundManager
         }
     }
 
-    private Task SendRoundStartedNotificationAsync(CancellationToken cancellationToken)
+    private Task SendRoundStartedNotificationAsync(Round round, CancellationToken cancellationToken)
     {
         var notification = new RoundStartedNotification
         {
@@ -117,7 +111,7 @@ public class RoundManager : IRoundManager
         return publisher.Publish(notification, cancellationToken);
     }
 
-    private Task SendRoundEndedNotificationAsync(CancellationToken cancellationToken)
+    private Task SendRoundEndedNotificationAsync(Round round, CancellationToken cancellationToken)
     {
         var notification = new RoundEndedNotification
         {
