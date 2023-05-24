@@ -49,7 +49,7 @@ public class GameHub : Hub<IGameHub>
     }
 
     [HubMethodName("registerPlayer")]
-    public async Task<RegisterPlayerResult> RegisterPlayerAsync(string visitorId)
+    public async Task<PlayerRegisteredResult> RegisterPlayerAsync(string visitorId)
     {
         logger.LogInformation("Attempting to register player with visitor ID: {VisitorId}", visitorId);
 
@@ -62,7 +62,7 @@ public class GameHub : Hub<IGameHub>
     }
 
     [HubMethodName("submitGuess")]
-    public async Task<ProcessGuessResult> ProcessGuessAsync(Guid roundId, string value)
+    public async Task<GuessProcessedResult> ProcessGuessAsync(Guid roundId, string value)
     {
         var result = await gameService.ProcessGuessAsync(Context.ConnectionId, roundId, value);
         return result;

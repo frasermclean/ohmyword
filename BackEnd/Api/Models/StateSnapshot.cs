@@ -1,6 +1,8 @@
-﻿namespace OhMyWord.Domain.Models;
+﻿using OhMyWord.Domain.Models;
 
-public struct GameState
+namespace OhMyWord.Api.Models;
+
+public struct StateSnapshot
 {
     public required bool RoundActive { get; init; }
     public required int RoundNumber { get; init; }

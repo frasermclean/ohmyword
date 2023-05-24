@@ -2,9 +2,9 @@
 
 namespace OhMyWord.Api.Models;
 
-public class RegisterPlayerResult
+public class PlayerRegisteredResult
 {
     public required int PlayerCount { get; init; }
     public required long Score { get; init; }
-    public required GameState GameState { get; init; }
+    public required StateSnapshot StateSnapshot { get; init; }
 }

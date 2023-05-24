@@ -8,75 +8,57 @@ namespace OhMyWord.Api.Services;
 
 public interface IGameService
 {
-    Task ExecuteGameLoopAsync(CancellationToken cancellationToken);
-    void RemovePlayer(string playerId);
-
-    Task<RegisterPlayerResult> RegisterPlayerAsync(string connectionId, string visitorId, IPAddress ipAddress,
+    Task<PlayerRegisteredResult> RegisterPlayerAsync(string connectionId, string visitorId, IPAddress ipAddress,
         Guid? userId, CancellationToken cancellationToken = default);
 
-    Task<ProcessGuessResult> ProcessGuessAsync(string connectionId, Guid roundId, string value);
+    void RemovePlayer(string playerId);
+
+    Task<GuessProcessedResult> ProcessGuessAsync(string connectionId, Guid roundId, string value);
 }
 
 public class GameService : IGameService
 {
     private readonly ILogger<GameService> logger;
-    private readonly IServiceProvider serviceProvider;
+    private readonly ISessionManager sessionManager;
     private readonly IPlayerService playerService;
 
     private Round Round { get; set; } = Round.Default;
     private bool IsRoundActive => Round != Round.Default;
 
-    public GameService(ILogger<GameService> logger, IServiceProvider serviceProvider, IPlayerService playerService)
+    public GameService(ILogger<GameService> logger, ISessionManager sessionManager, IPlayerService playerService)
     {
         this.logger = logger;
-        this.serviceProvider = serviceProvider;
+        this.sessionManager = sessionManager;
         this.playerService = playerService;
     }
 
-    public async Task ExecuteGameLoopAsync(CancellationToken cancellationToken)
-    {
-        while (!cancellationToken.IsCancellationRequested)
-        {
-            // sleep while there are no players
-            if (playerService.PlayerCount == 0)
-            {
-                await Task.Delay(1000, cancellationToken);
-                continue;
-            }
-
-            using var scope = serviceProvider.CreateScope();
-            var sessionManager = scope.ServiceProvider.GetRequiredService<ISessionManager>();
-            await sessionManager.ExecuteAsync(cancellationToken);
-        }
-    }
-
-    public async Task<RegisterPlayerResult> RegisterPlayerAsync(string connectionId, string visitorId,
+    public async Task<PlayerRegisteredResult> RegisterPlayerAsync(string connectionId, string visitorId,
         IPAddress ipAddress, Guid? userId, CancellationToken cancellationToken)
     {
         var player = await playerService.AddPlayerAsync(visitorId, connectionId, ipAddress, userId);
 
         AddPlayer(player.Id); // TODO: Move to SessionManager
 
-        return new RegisterPlayerResult
+        return new PlayerRegisteredResult
         {
-            PlayerCount = playerService.PlayerCount, Score = player.Score, GameState = GetGameState()
+            PlayerCount = playerService.PlayerCount, Score = player.Score, StateSnapshot = GetGameState()
         };
     }
 
-    public async Task<ProcessGuessResult> ProcessGuessAsync(string connectionId, Guid roundId, string value)
+    public async Task<GuessProcessedResult> ProcessGuessAsync(string connectionId, Guid roundId, string value)
     {
         // validate round state
-        if (!IsRoundActive || roundId != Round.Id) return ProcessGuessResult.Default;
+        if (!IsRoundActive || roundId != Round.Id) return GuessProcessedResult.Default;
 
         // compare value to current word value
         var isCorrect = string.Equals(value, Round.Word.Id, StringComparison.InvariantCultureIgnoreCase);
-        if (!isCorrect) return ProcessGuessResult.Default;
+        if (!isCorrect) return GuessProcessedResult.Default;
 
         var player = playerService.GetPlayerByConnectionId(connectionId);
         if (player is null)
         {
             logger.LogError("Player not found. ConnectionId: {ConnectionId}", connectionId);
-            return ProcessGuessResult.Default;
+            return GuessProcessedResult.Default;
         }
 
         Round.IncrementGuessCount(player.Id);
@@ -93,7 +75,7 @@ public class GameService : IGameService
         if (Round.AllPlayersGuessed)
             Round.EndRound(RoundEndReason.AllPlayersGuessed);
 
-        return new ProcessGuessResult { IsCorrect = isCorrect, PointsAwarded = pointsToAward };
+        return new GuessProcessedResult { IsCorrect = isCorrect, PointsAwarded = pointsToAward };
     }
 
     public void AddPlayer(string playerId)
@@ -113,7 +95,7 @@ public class GameService : IGameService
             Round.EndRound(RoundEndReason.NoPlayersLeft);
     }
 
-    private GameState GetGameState() => new()
+    private StateSnapshot GetGameState() => new()
     {
         RoundActive = Round != Round.Default,
         RoundNumber = Round.Number,

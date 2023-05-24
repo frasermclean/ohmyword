@@ -18,12 +18,9 @@ public static class DomainServicesRegistration
         services.AddSingleton<IUsersService, UsersService>();
         services.AddSingleton<IGeoLocationService, GeoLocationService>();
         services.AddSingleton<IPlayerService, PlayerService>();
-        services.AddSingleton<IRoundService, RoundService>();        
+        services.AddSingleton<IRoundManager, RoundManager>();
+        services.AddSingleton<ISessionManager, SessionManager>();
         services.AddSingleton<IWordsService, WordsService>();
-        
-        // scoped services
-        services.AddScoped<ISessionManager, SessionManager>();
-        services.AddScoped<IRoundManager, RoundManager>();
 
         return services;
     }

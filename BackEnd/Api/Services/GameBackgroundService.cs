@@ -1,14 +1,16 @@
-﻿namespace OhMyWord.Api.Services;
+﻿using OhMyWord.Domain.Services;
+
+namespace OhMyWord.Api.Services;
 
 public class GameBackgroundService : BackgroundService
 {
-    private readonly IGameService gameService;
+    private readonly ISessionManager sessionManager;
 
-    public GameBackgroundService(IGameService gameService)
+    public GameBackgroundService(ISessionManager sessionManager)
     {
-        this.gameService = gameService;
+        this.sessionManager = sessionManager;
     }
 
     protected override Task ExecuteAsync(CancellationToken cancellationToken) =>
-        gameService.ExecuteGameLoopAsync(cancellationToken);
+        sessionManager.ExecuteAsync(cancellationToken);
 }
