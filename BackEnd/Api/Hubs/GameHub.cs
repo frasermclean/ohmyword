@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.SignalR;
-using OhMyWord.Api.Commands.RegisterPlayer;
-using OhMyWord.Api.Commands.SubmitGuess;
 using OhMyWord.Api.Events.PlayerConnected;
 using OhMyWord.Api.Events.PlayerDisconnected;
 using OhMyWord.Api.Events.RoundEnded;
 using OhMyWord.Api.Events.RoundStarted;
 using OhMyWord.Api.Extensions;
+using OhMyWord.Api.Models;
+using OhMyWord.Api.Services;
 using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Services;
 
@@ -22,11 +22,13 @@ public interface IGameHub
 public class GameHub : Hub<IGameHub>
 {
     private readonly ILogger<GameHub> logger;
+    private readonly IGameService gameService;
     private readonly IPlayerService playerService;
 
-    public GameHub(ILogger<GameHub> logger, IPlayerService playerService)
+    public GameHub(ILogger<GameHub> logger, IGameService gameService, IPlayerService playerService)
     {
         this.logger = logger;
+        this.gameService = gameService;
         this.playerService = playerService;
     }
 
@@ -47,25 +49,23 @@ public class GameHub : Hub<IGameHub>
         await Clients.Others.SendPlayerCount(playerService.PlayerCount);
     }
 
-    public async Task<RegisterPlayerResponse> RegisterPlayer(string visitorId)
+    [HubMethodName("registerPlayer")]
+    public async Task<RegisterPlayerResult> RegisterPlayerAsync(string visitorId)
     {
         logger.LogInformation("Attempting to register player with visitor ID: {VisitorId}", visitorId);
 
-        var response = await new RegisterPlayerCommand
-            {
-                VisitorId = visitorId,
-                ConnectionId = Context.ConnectionId,
-                UserId = Context.GetUserId(),
-                IpAddress = Context.GetIpAddress()
-            }
-            .ExecuteAsync();
+        var result = await gameService.RegisterPlayerAsync(Context.ConnectionId, visitorId, Context.GetIpAddress(),
+            Context.GetUserId());
 
-        await Clients.Others.SendPlayerCount(response.PlayerCount);
+        await Clients.Others.SendPlayerCount(result.PlayerCount);
 
-        return response;
+        return result;
     }
 
-    public Task<SubmitGuessResponse> SubmitGuess(Guid roundId, string value)
-        => new SubmitGuessCommand { RoundId = roundId, Value = value, ConnectionId = Context.ConnectionId, }
-            .ExecuteAsync();
+    [HubMethodName("submitGuess")]
+    public async Task<ProcessGuessResult> ProcessGuessAsync(Guid roundId, string value)
+    {
+        var result = await gameService.ProcessGuessAsync(Context.ConnectionId, roundId, value);
+        return result;
+    }
 }

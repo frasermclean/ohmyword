@@ -7,20 +7,21 @@ using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Options;
 using OhMyWord.Domain.Services;
 using OhMyWord.Infrastructure.Models.Entities;
+using System.Net;
 
 namespace OhMyWord.Api.Services;
 
 public interface IGameService
 {
-    /// <summary>
-    /// Snapshot of the current game state
-    /// </summary>    
-    GameState GameState { get; }
-
     Task ExecuteGameLoopAsync(CancellationToken cancellationToken);
-    Task<int> ProcessGuessAsync(string connectionId, Guid roundId, string value);
-    void AddPlayer(string playerId);
+
+
     void RemovePlayer(string playerId);
+
+    Task<RegisterPlayerResult> RegisterPlayerAsync(string connectionId, string visitorId, IPAddress ipAddress,
+        Guid? userId, CancellationToken cancellationToken = default);
+
+    Task<ProcessGuessResult> ProcessGuessAsync(string connectionId, Guid roundId, string value);
 }
 
 public class GameService : IGameService
@@ -36,16 +37,6 @@ public class GameService : IGameService
     private int roundNumber;
     private IReadOnlyList<string> allWordIds = new List<string>();
     private Stack<string> shuffledWordIds = new();
-
-    public GameState GameState => new()
-    {
-        RoundActive = Round != Round.Default,
-        RoundNumber = Round.Number,
-        RoundId = Round.Id,
-        IntervalStart = IsRoundActive ? Round.StartDate : default,
-        IntervalEnd = IsRoundActive ? Round.EndDate : default,
-        WordHint = IsRoundActive ? Round.WordHint : default,
-    };
 
     private Guid SessionId { get; } = Guid.NewGuid(); // TODO: Refactor to use a session service
     private Round Round { get; set; } = Round.Default;
@@ -187,20 +178,34 @@ public class GameService : IGameService
             })
     };
 
-    public async Task<int> ProcessGuessAsync(string connectionId, Guid roundId, string value)
+    public async Task<RegisterPlayerResult> RegisterPlayerAsync(string connectionId, string visitorId,
+        IPAddress ipAddress,
+        Guid? userId, CancellationToken cancellationToken)
+    {
+        var player = await playerService.AddPlayerAsync(visitorId, connectionId, ipAddress, userId);
+
+        AddPlayer(player.Id); // TODO: Move to SessionManager
+
+        return new RegisterPlayerResult
+        {
+            PlayerCount = playerService.PlayerCount, Score = player.Score, GameState = GetGameState()
+        };
+    }
+
+    public async Task<ProcessGuessResult> ProcessGuessAsync(string connectionId, Guid roundId, string value)
     {
         // validate round state
-        if (!IsRoundActive || roundId != Round.Id) return 0;
+        if (!IsRoundActive || roundId != Round.Id) return ProcessGuessResult.Default;
 
         // compare value to current word value
         var isCorrect = string.Equals(value, Round.Word.Id, StringComparison.InvariantCultureIgnoreCase);
-        if (!isCorrect) return 0;
+        if (!isCorrect) return ProcessGuessResult.Default;
 
         var player = playerService.GetPlayerByConnectionId(connectionId);
         if (player is null)
         {
             logger.LogError("Player not found. ConnectionId: {ConnectionId}", connectionId);
-            return 0;
+            return ProcessGuessResult.Default;
         }
 
         Round.IncrementGuessCount(player.Id);
@@ -217,7 +222,7 @@ public class GameService : IGameService
         if (Round.AllPlayersGuessed)
             Round.EndRound(RoundEndReason.AllPlayersGuessed);
 
-        return pointsToAward;
+        return new ProcessGuessResult { IsCorrect = isCorrect, PointsAwarded = pointsToAward };
     }
 
     public void AddPlayer(string playerId)
@@ -236,4 +241,14 @@ public class GameService : IGameService
         if (playerService.PlayerCount == 0)
             Round.EndRound(RoundEndReason.NoPlayersLeft);
     }
+
+    private GameState GetGameState() => new()
+    {
+        RoundActive = Round != Round.Default,
+        RoundNumber = Round.Number,
+        RoundId = Round.Id,
+        IntervalStart = IsRoundActive ? Round.StartDate : default,
+        IntervalEnd = IsRoundActive ? Round.EndDate : default,
+        WordHint = IsRoundActive ? Round.WordHint : default,
+    };
 }

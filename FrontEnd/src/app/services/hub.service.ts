@@ -9,7 +9,7 @@ import { Game } from '@state/game/game.actions';
 import { Guess } from '@state/guess/guess.actions';
 import { Hub } from '@state/hub/hub.actions';
 import { RegisterPlayerResponse } from '@models/responses/register-player.response';
-import { GuessResponse } from '@models/responses/guess.response';
+import { SubmitGuessResult } from '@models/submit-guess-result.model';
 import { LetterHintResponse } from '@models/responses/letter-hint.response';
 import { RoundEndedModel } from "@models/round-ended.model";
 import { RoundStartedModel } from "@models/round-started.model";
@@ -63,7 +63,7 @@ export class HubService {
    */
   public async registerPlayer() {
     const visitorId = await this.fingerprintService.getVisitorId();
-    const response = await this.hubConnection.invoke<RegisterPlayerResponse>('RegisterPlayer', visitorId);
+    const response = await this.hubConnection.invoke<RegisterPlayerResponse>(this.registerPlayer.name, visitorId);
     this.store.dispatch(new Game.PlayerRegistered(response));
   }
 
@@ -73,8 +73,8 @@ export class HubService {
    * @param value The value of the guess to submit.
    */
   public async submitGuess(roundId: string, value: string) {
-    const response = await this.hubConnection.invoke<GuessResponse>('SubmitGuess', roundId, value);
-    this.store.dispatch(response.correct ? new Guess.Succeeded(response.points) : new Guess.Failed());
+    const result = await this.hubConnection.invoke<SubmitGuessResult>(this.submitGuess.name, roundId, value);
+    this.store.dispatch(result.isCorrect ? new Guess.Succeeded(result.pointsAwarded) : new Guess.Failed());
   }
 
   /**

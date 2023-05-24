@@ -1,8 +1,8 @@
 ﻿using OhMyWord.Domain.Models;
 
-namespace OhMyWord.Api.Commands.RegisterPlayer;
+namespace OhMyWord.Api.Models;
 
-public class RegisterPlayerResponse
+public class RegisterPlayerResult
 {
     public required int PlayerCount { get; init; }
     public required long Score { get; init; }
