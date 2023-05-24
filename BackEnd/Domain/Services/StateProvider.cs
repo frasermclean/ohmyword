@@ -7,7 +7,7 @@ public interface IStateProvider
     Session Session { get; }
     Round Round { get; set; }
     bool IsDefault { get; }
-    
+
     Session StartSession();
     int IncrementRoundCount();
     void Reset();
@@ -22,7 +22,6 @@ public class StateProvider : IStateProvider
 
     public Session StartSession() => Session = new Session();
     public int IncrementRoundCount() => Session.RoundCount++;
-    
 
     public void Reset()
     {

@@ -19,17 +19,18 @@ public interface IGameService
 public class GameService : IGameService
 {
     private readonly ILogger<GameService> logger;
-    private readonly ISessionManager sessionManager;
     private readonly IPlayerService playerService;
+    private readonly IStateProvider state;
 
-    private Round Round { get; set; } = Round.Default;
-    private bool IsRoundActive => Round != Round.Default;
+    private Round Round => state.Round;
+    private bool IsRoundActive => !state.IsDefault;
 
-    public GameService(ILogger<GameService> logger, ISessionManager sessionManager, IPlayerService playerService)
+    public GameService(ILogger<GameService> logger, ISessionManager sessionManager, IPlayerService playerService,
+        IStateProvider state)
     {
         this.logger = logger;
-        this.sessionManager = sessionManager;
         this.playerService = playerService;
+        this.state = state;
     }
 
     public async Task<PlayerRegisteredResult> RegisterPlayerAsync(string connectionId, string visitorId,
