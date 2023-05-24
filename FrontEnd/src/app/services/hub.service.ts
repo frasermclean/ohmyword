@@ -8,11 +8,11 @@ import { AuthService } from '@services/auth.service';
 import { Game } from '@state/game/game.actions';
 import { Guess } from '@state/guess/guess.actions';
 import { Hub } from '@state/hub/hub.actions';
-import { RegisterPlayerResponse } from '@models/responses/register-player.response';
-import { SubmitGuessResult } from '@models/submit-guess-result.model';
+
 import { LetterHintResponse } from '@models/responses/letter-hint.response';
 import { RoundEndedModel } from "@models/round-ended.model";
 import { RoundStartedModel } from "@models/round-started.model";
+import { PlayerRegisteredResult, SubmitGuessResult } from '@models/results';
 
 @Injectable({
   providedIn: 'root',
@@ -63,7 +63,7 @@ export class HubService {
    */
   public async registerPlayer() {
     const visitorId = await this.fingerprintService.getVisitorId();
-    const response = await this.hubConnection.invoke<RegisterPlayerResponse>(this.registerPlayer.name, visitorId);
+    const response = await this.hubConnection.invoke<PlayerRegisteredResult>(this.registerPlayer.name, visitorId);
     this.store.dispatch(new Game.PlayerRegistered(response));
   }
 

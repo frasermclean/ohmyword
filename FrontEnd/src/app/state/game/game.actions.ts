@@ -1,5 +1,5 @@
 import { LetterHintResponse } from '@models/responses/letter-hint.response';
-import { RegisterPlayerResponse } from '@models/responses/register-player.response';
+import { PlayerRegisteredResult } from '@models/results';
 import { RoundEndedModel } from "@models/round-ended.model";
 import { RoundStartedModel } from "@models/round-started.model";
 
@@ -18,12 +18,7 @@ export namespace Game {
 
   export class PlayerRegistered {
     static readonly type = '[Game Service] Game.PlayerRegistered';
-
-    playerCount = this.response.playerCount;
-    score = this.response.score;
-    gameState = this.response.gameState;
-
-    constructor(private response: RegisterPlayerResponse) {}
+    constructor(public data: PlayerRegisteredResult) {}
   }
 
   export class RoundStarted {

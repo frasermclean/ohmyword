@@ -62,15 +62,15 @@ export class GameState {
   registered(context: StateContext<GameStateModel>, action: Game.PlayerRegistered) {
     context.patchState({
       connection: 'registered',
-      playerCount: action.playerCount,
-      score: action.score,
-      roundActive: action.gameState.roundActive,
-      roundNumber: action.gameState.roundNumber,
-      roundId: action.gameState.roundId,
-      wordHint: action.gameState.wordHint ? new WordHint(action.gameState.wordHint) : null,
+      playerCount: action.data.playerCount,
+      score: action.data.score,
+      roundActive: action.data.stateSnapshot.roundActive,
+      roundNumber: action.data.stateSnapshot.roundNumber,
+      roundId: action.data.stateSnapshot.roundId,
+      wordHint: action.data.stateSnapshot.wordHint ? new WordHint(action.data.stateSnapshot.wordHint) : null,
       interval: {
-        startDate: new Date(action.gameState.intervalStart),
-        endDate: new Date(action.gameState.intervalEnd),
+        startDate: new Date(action.data.stateSnapshot.intervalStart),
+        endDate: new Date(action.data.stateSnapshot.intervalEnd),
       },
     });
   }
