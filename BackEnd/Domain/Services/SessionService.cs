@@ -1,15 +1,18 @@
 ﻿using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using OhMyWord.Domain.Extensions;
 using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Notifications;
 using OhMyWord.Domain.Options;
+using OhMyWord.Infrastructure.Services;
 
 namespace OhMyWord.Domain.Services;
 
 public interface ISessionService
 {
     Task ExecuteSessionAsync(Session session, CancellationToken cancellationToken = default);
+    Task SaveSessionAsync(Session session, CancellationToken cancellationToken = default);
 }
 
 public sealed class SessionService : ISessionService
@@ -18,16 +21,18 @@ public sealed class SessionService : ISessionService
     private readonly IStateManager stateManager;
     private readonly IPublisher publisher;
     private readonly IRoundService roundService;
+    private readonly ISessionsRepository sessionsRepository;
 
     private readonly TimeSpan postRoundDelay;
 
     public SessionService(ILogger<SessionService> logger, IOptions<RoundOptions> options, IStateManager stateManager,
-        IPublisher publisher, IRoundService roundService)
+        IPublisher publisher, IRoundService roundService, ISessionsRepository sessionsRepository)
     {
         this.logger = logger;
         this.stateManager = stateManager;
         this.publisher = publisher;
         this.roundService = roundService;
+        this.sessionsRepository = sessionsRepository;
 
         postRoundDelay = TimeSpan.FromSeconds(options.Value.PostRoundDelay);
     }
@@ -53,6 +58,9 @@ public sealed class SessionService : ISessionService
                 Task.Delay(postRoundDelay, cancellationToken));
         }
     }
+
+    public Task SaveSessionAsync(Session session, CancellationToken cancellationToken)
+        => sessionsRepository.CreateSessionAsync(session.ToEntity(), cancellationToken);
 
     private Task SendRoundStartedNotificationAsync(Round round, CancellationToken cancellationToken)
     {

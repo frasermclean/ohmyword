@@ -1,4 +1,5 @@
-﻿using OhMyWord.Domain.Services;
+﻿using OhMyWord.Domain.Models;
+using OhMyWord.Domain.Services;
 
 namespace OhMyWord.Api.Services;
 
@@ -24,8 +25,14 @@ public class GameBackgroundService : BackgroundService
             }
 
             // start a new session
-            using var session = stateManager.NextSession();
-            await sessionService.ExecuteSessionAsync(session, cancellationToken);
+            Session session;
+            using (session = stateManager.NextSession())
+            {
+                await sessionService.ExecuteSessionAsync(session, cancellationToken);    
+            }
+
+            // save the session to the database
+            await sessionService.SaveSessionAsync(session, cancellationToken);
 
             // reset the state manager
             stateManager.Reset();

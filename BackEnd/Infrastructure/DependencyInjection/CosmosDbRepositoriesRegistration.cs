@@ -44,6 +44,7 @@ public static class CosmosDbRepositoriesRegistration
         services.AddSingleton<IDefinitionsRepository, DefinitionsRepository>();
         services.AddSingleton<IPlayerRepository, PlayerRepository>();
         services.AddSingleton<IRoundsRepository, RoundsRepository>();
+        services.AddSingleton<ISessionsRepository, SessionsRepository>();
         services.AddSingleton<IWordsRepository, WordsRepository>();
 
         return services;
