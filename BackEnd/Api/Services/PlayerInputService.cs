@@ -37,8 +37,10 @@ public class PlayerInputService : IPlayerInputService
         return new PlayerRegisteredResult
         {
             IsSuccessful = isSuccessful,
+            PlayerId = player.Id,
             PlayerCount = stateManager.PlayerState.PlayerCount,
             Score = player.Score,
+            RegistrationCount = player.RegistrationCount,
             StateSnapshot = GetGameState()
         };
     }

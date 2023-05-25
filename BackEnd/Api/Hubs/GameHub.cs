@@ -49,13 +49,12 @@ public class GameHub : Hub<IGameHub>
     }
 
     [HubMethodName("registerPlayer")]
-    public async Task<PlayerRegisteredResult> RegisterPlayerAsync(string visitorId)
+    public async Task<PlayerRegisteredResult> RegisterPlayerAsync(Guid playerId, string visitorId)
     {
         logger.LogInformation("Attempting to register player with visitor ID: {VisitorId}", visitorId);
 
         var result = await playerInputService.RegisterPlayerAsync(Context.ConnectionId, visitorId,
-            Context.GetIpAddress(),
-            Context.GetUserId());
+            Context.GetIpAddress(), Context.GetUserId());
 
         await Clients.Others.SendPlayerCount(result.PlayerCount);
 
