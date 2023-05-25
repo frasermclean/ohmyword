@@ -11,7 +11,7 @@ namespace OhMyWord.Domain.Services;
 public interface IPlayerService
 {
     int PlayerCount { get; }
-    
+
     /// <summary>
     /// Currently connected player IDs.
     /// </summary>
@@ -78,12 +78,13 @@ public class PlayerService : IPlayerService
 
     public void RemovePlayer(string connectionId)
     {
-        if (players.TryRemove(connectionId, out var player))
+        if (!players.TryRemove(connectionId, out var player))
         {
-            logger.LogInformation("Player with ID: {PlayerID} left the game", player.Id);
+            logger.LogError("Couldn't remove player with connection ID: {ConnectionId} from cache", connectionId);
+            return;
         }
 
-        logger.LogError("Couldn't remove player with connection ID: {ConnectionId} from cache", connectionId);
+        logger.LogInformation("Player with connection ID: {PlayerID} left the game", player.Id);
     }
 
     public Player? GetPlayerById(string playerId)
