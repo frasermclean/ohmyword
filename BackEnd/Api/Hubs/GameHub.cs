@@ -5,7 +5,7 @@ using OhMyWord.Api.Extensions;
 using OhMyWord.Api.Models;
 using OhMyWord.Api.Services;
 using OhMyWord.Domain.Models;
-using OhMyWord.Domain.Models.Notifications;
+using OhMyWord.Domain.Notifications;
 using OhMyWord.Domain.Services;
 
 namespace OhMyWord.Api.Hubs;

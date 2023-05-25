@@ -1,7 +1,8 @@
 ﻿using MediatR;
+using OhMyWord.Domain.Models;
 using OhMyWord.Infrastructure.Models.Entities;
 
-namespace OhMyWord.Domain.Models.Notifications;
+namespace OhMyWord.Domain.Notifications;
 
 public class RoundEndedNotification : INotification
 {

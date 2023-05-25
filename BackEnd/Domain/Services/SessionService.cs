@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OhMyWord.Domain.Models;
-using OhMyWord.Domain.Models.Notifications;
+using OhMyWord.Domain.Notifications;
 using OhMyWord.Domain.Options;
 
 namespace OhMyWord.Domain.Services;
