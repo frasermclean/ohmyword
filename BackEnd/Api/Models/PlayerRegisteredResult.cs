@@ -1,6 +1,4 @@
-﻿using OhMyWord.Domain.Models;
-
-namespace OhMyWord.Api.Models;
+﻿namespace OhMyWord.Api.Models;
 
 public class PlayerRegisteredResult
 {

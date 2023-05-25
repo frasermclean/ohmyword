@@ -21,13 +21,13 @@ public interface IGameHub
 public class GameHub : Hub<IGameHub>
 {
     private readonly ILogger<GameHub> logger;
-    private readonly IGameService gameService;
+    private readonly IPlayerInputService playerInputService;
     private readonly IPlayerService playerService;
 
-    public GameHub(ILogger<GameHub> logger, IGameService gameService, IPlayerService playerService)
+    public GameHub(ILogger<GameHub> logger, IPlayerInputService playerInputService, IPlayerService playerService)
     {
         this.logger = logger;
-        this.gameService = gameService;
+        this.playerInputService = playerInputService;
         this.playerService = playerService;
     }
 
@@ -53,7 +53,7 @@ public class GameHub : Hub<IGameHub>
     {
         logger.LogInformation("Attempting to register player with visitor ID: {VisitorId}", visitorId);
 
-        var result = await gameService.RegisterPlayerAsync(Context.ConnectionId, visitorId, Context.GetIpAddress(),
+        var result = await playerInputService.RegisterPlayerAsync(Context.ConnectionId, visitorId, Context.GetIpAddress(),
             Context.GetUserId());
 
         await Clients.Others.SendPlayerCount(result.PlayerCount);
@@ -64,7 +64,7 @@ public class GameHub : Hub<IGameHub>
     [HubMethodName("submitGuess")]
     public async Task<GuessProcessedResult> ProcessGuessAsync(Guid roundId, string value)
     {
-        var result = await gameService.ProcessGuessAsync(Context.ConnectionId, roundId, value);
+        var result = await playerInputService.ProcessGuessAsync(Context.ConnectionId, roundId, value);
         return result;
     }
 }

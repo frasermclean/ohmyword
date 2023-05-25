@@ -28,11 +28,15 @@ public sealed class Round : IDisposable
     public required int GuessLimit { get; init; }
     public DateTime StartDate { get; } = DateTime.UtcNow;
     public DateTime EndDate { get; }
-    public RoundEndReason EndReason { get; private set; }
+    public RoundEndReason? EndReason { get; private set; }
     public required Guid SessionId { get; init; }
     public CancellationToken CancellationToken => cancellationTokenSource.Token;
     public int PlayerCount => playerData.Count;
     public bool AllPlayersGuessed => !playerData.IsEmpty && playerData.Values.All(player => player.PointsAwarded > 0);
+
+    public bool IsActive => !cancellationTokenSource.IsCancellationRequested &&
+                            DateTime.UtcNow > StartDate &&
+                            DateTime.UtcNow < EndDate;
 
     public bool AddPlayer(string playerId)
         => playerData.TryAdd(playerId, new RoundPlayerData(playerId));
@@ -77,7 +81,7 @@ public sealed class Round : IDisposable
     {
         Id = Guid.Empty,
         Number = default,
-        SessionId = Session.Default.Id,
+        SessionId = Guid.Empty,
         GuessLimit = RoundOptions.GuessLimitDefault
     };
 }

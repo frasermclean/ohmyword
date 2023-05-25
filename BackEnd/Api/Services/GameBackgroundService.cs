@@ -4,13 +4,34 @@ namespace OhMyWord.Api.Services;
 
 public class GameBackgroundService : BackgroundService
 {
-    private readonly ISessionManager sessionManager;
+    private readonly IStateManager stateManager;
+    private readonly ISessionService sessionService;
+    private readonly IPlayerService playerService;
 
-    public GameBackgroundService(ISessionManager sessionManager)
+    public GameBackgroundService(IStateManager stateManager, ISessionService sessionService,
+        IPlayerService playerService)
     {
-        this.sessionManager = sessionManager;
+        this.stateManager = stateManager;
+        this.sessionService = sessionService;
+        this.playerService = playerService;
     }
 
-    protected override Task ExecuteAsync(CancellationToken cancellationToken) =>
-        sessionManager.ExecuteAsync(cancellationToken);
+    protected override async Task ExecuteAsync(CancellationToken cancellationToken)
+    {
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            // wait for players to join
+            while (playerService.PlayerCount == 0)
+            {
+                await Task.Delay(1000, cancellationToken);
+            }
+
+            // start a new session
+            using var session = stateManager.NextSession();
+            await sessionService.ExecuteSessionAsync(session, cancellationToken);
+
+            // reset the state manager
+            stateManager.Reset();
+        }
+    }
 }

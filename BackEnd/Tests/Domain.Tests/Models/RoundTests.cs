@@ -19,11 +19,12 @@ public class RoundTests
         round.Word.Should().Be(word);
         round.StartDate.Should().BeBefore(DateTime.UtcNow);
         round.EndDate.Should().BeAfter(DateTime.UtcNow);
-        round.EndReason.Should().Be(RoundEndReason.Timeout);
+        round.EndReason.Should().BeNull();
         round.AllPlayersGuessed.Should().BeFalse();
         round.CancellationToken.IsCancellationRequested.Should().BeFalse();
         round.PlayerCount.Should().Be(0);
         round.SessionId.Should().BeEmpty();
+        round.IsActive.Should().BeTrue();
     }
 
     [Theory, AutoData]
@@ -39,11 +40,12 @@ public class RoundTests
         round.Word.Should().Be(word);
         round.StartDate.Should().BeBefore(DateTime.UtcNow);
         round.EndDate.Should().BeAfter(DateTime.UtcNow);
-        round.EndReason.Should().Be(RoundEndReason.Timeout);
+        round.EndReason.Should().BeNull();
         round.AllPlayersGuessed.Should().BeFalse();
         round.CancellationToken.IsCancellationRequested.Should().BeFalse();
         round.PlayerCount.Should().Be(playerIds.Length);
         round.SessionId.Should().Be(sessionId);
+        round.IsActive.Should().BeTrue();
     }
 
     [Theory, AutoData]
@@ -72,6 +74,7 @@ public class RoundTests
         // assert
         round.EndReason.Should().Be(endReason);
         round.CancellationToken.IsCancellationRequested.Should().BeTrue();
+        round.IsActive.Should().BeFalse();
     }
 
     [Theory, AutoData]

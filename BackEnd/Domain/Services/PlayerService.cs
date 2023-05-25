@@ -11,14 +11,14 @@ namespace OhMyWord.Domain.Services;
 public interface IPlayerService
 {
     int PlayerCount { get; }
-
+    
     /// <summary>
     /// Currently connected player IDs.
     /// </summary>
     IEnumerable<string> PlayerIds { get; }
 
     Task<Player> AddPlayerAsync(string visitorId, string connectionId, IPAddress ipAddress, Guid? userId = default);
-    Player? RemovePlayer(string connectionId);
+    void RemovePlayer(string connectionId);
     Player? GetPlayerByConnectionId(string connectionId);
 
     /// <summary>
@@ -76,16 +76,14 @@ public class PlayerService : IPlayerService
         return player;
     }
 
-    public Player? RemovePlayer(string connectionId)
+    public void RemovePlayer(string connectionId)
     {
         if (players.TryRemove(connectionId, out var player))
         {
             logger.LogInformation("Player with ID: {PlayerID} left the game", player.Id);
-            return player;
         }
 
         logger.LogError("Couldn't remove player with connection ID: {ConnectionId} from cache", connectionId);
-        return default;
     }
 
     public Player? GetPlayerById(string playerId)
