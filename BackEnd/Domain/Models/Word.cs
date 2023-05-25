@@ -15,7 +15,7 @@ public class Word
     public int Length => Id.Length;
 
     public required IEnumerable<Definition> Definitions { get; init; }
-    public DateTime LastModifiedTime { get; init; }
+    public DateTime LastModifiedTime { get; init; } = DateTime.UtcNow;
 
     public LetterHint GetLetterHint(int position) => new(position, Id[position - 1]);
 

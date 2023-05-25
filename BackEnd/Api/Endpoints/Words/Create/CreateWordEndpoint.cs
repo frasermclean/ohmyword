@@ -26,11 +26,6 @@ public class CreateWordEndpoint : Endpoint<CreateWordRequest, Word>
         await result.Match(
             word => SendCreatedAtAsync<GetWordEndpoint>(new { WordId = word.Id }, word,
                 cancellation: cancellationToken),
-            _ =>
-            {
-                AddError($"Could not find the word: '{request.Id}' in the dictionary.");
-                return SendErrorsAsync(cancellation: cancellationToken);
-            },
             conflict =>
             {
                 AddError(conflict.Message);
