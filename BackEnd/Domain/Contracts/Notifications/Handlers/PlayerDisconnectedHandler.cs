@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using OhMyWord.Domain.Services;
 
-namespace OhMyWord.Domain.Notifications.Handlers;
+namespace OhMyWord.Domain.Contracts.Notifications.Handlers;
 
 public class PlayerDisconnectedHandler : INotificationHandler<PlayerDisconnectedNotification>
 {
