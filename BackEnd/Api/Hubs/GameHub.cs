@@ -1,6 +1,5 @@
-﻿using Microsoft.AspNetCore.SignalR;
-using OhMyWord.Api.Events.PlayerConnected;
-using OhMyWord.Api.Events.PlayerDisconnected;
+﻿using MediatR;
+using Microsoft.AspNetCore.SignalR;
 using OhMyWord.Api.Extensions;
 using OhMyWord.Api.Models;
 using OhMyWord.Api.Services;
@@ -21,31 +20,32 @@ public interface IGameHub
 public class GameHub : Hub<IGameHub>
 {
     private readonly ILogger<GameHub> logger;
+    private readonly IStateManager stateManager;
     private readonly IPlayerInputService playerInputService;
-    private readonly IPlayerService playerService;
+    private readonly IPublisher publisher;
 
-    public GameHub(ILogger<GameHub> logger, IPlayerInputService playerInputService, IPlayerService playerService)
+    public GameHub(ILogger<GameHub> logger, IStateManager stateManager, IPlayerInputService playerInputService,
+        IPublisher publisher)
     {
         this.logger = logger;
+        this.stateManager = stateManager;
         this.playerInputService = playerInputService;
-        this.playerService = playerService;
+        this.publisher = publisher;
     }
 
-    public override async Task OnConnectedAsync()
-    {
-        await new PlayerConnectedEvent(Context.ConnectionId, Context.GetIpAddress())
-            .PublishAsync(Mode.WaitForNone);
-    }
+    public override Task OnConnectedAsync()
+        => publisher.Publish(new PlayerConnectedNotification(Context.ConnectionId, Context.GetIpAddress()));
 
-    public override async Task OnDisconnectedAsync(Exception? exception)
+    public override Task OnDisconnectedAsync(Exception? exception)
     {
         if (exception is null)
             logger.LogDebug("Client disconnected. Connection ID: {ConnectionId}", Context.ConnectionId);
         else
             logger.LogError(exception, "Client disconnected. Connection ID: {ConnectionId}", Context.ConnectionId);
 
-        await new PlayerDisconnectedEvent(Context.ConnectionId).PublishAsync(Mode.WaitForNone);
-        await Clients.Others.SendPlayerCount(playerService.PlayerCount);
+        return Task.WhenAll(
+            publisher.Publish(new PlayerDisconnectedNotification(Context.ConnectionId)),
+            Clients.Others.SendPlayerCount(stateManager.PlayerState.PlayerCount));
     }
 
     [HubMethodName("registerPlayer")]
@@ -53,7 +53,8 @@ public class GameHub : Hub<IGameHub>
     {
         logger.LogInformation("Attempting to register player with visitor ID: {VisitorId}", visitorId);
 
-        var result = await playerInputService.RegisterPlayerAsync(Context.ConnectionId, visitorId, Context.GetIpAddress(),
+        var result = await playerInputService.RegisterPlayerAsync(Context.ConnectionId, visitorId,
+            Context.GetIpAddress(),
             Context.GetUserId());
 
         await Clients.Others.SendPlayerCount(result.PlayerCount);

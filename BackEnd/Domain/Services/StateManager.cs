@@ -11,6 +11,7 @@ public interface IStateManager
     bool IsDefault { get; }
     DateTime IntervalStart { get; }
     DateTime IntervalEnd { get; }
+    IPlayerState PlayerState { get; }
 
     Session NextSession();
     Task<Round> NextRoundAsync(CancellationToken cancellationToken = default);
@@ -22,10 +23,11 @@ public class StateManager : IStateManager
     private readonly ILogger<StateManager> logger;
     private readonly IRoundService roundService;
 
-    public StateManager(ILogger<StateManager> logger, IRoundService roundService)
+    public StateManager(ILogger<StateManager> logger, IRoundService roundService, IPlayerState playerState)
     {
         this.logger = logger;
         this.roundService = roundService;
+        PlayerState = playerState;
     }
 
     public SessionState SessionState => this switch
@@ -40,6 +42,7 @@ public class StateManager : IStateManager
     public bool IsDefault => Session is null && Round is null;
     public DateTime IntervalStart => Round?.StartDate ?? default;
     public DateTime IntervalEnd => Round?.EndDate ?? default;
+    public IPlayerState PlayerState { get; }
     private bool IsRoundActive => Round?.IsActive ?? false;
 
     public Session NextSession()
@@ -58,7 +61,7 @@ public class StateManager : IStateManager
             Session = NextSession();
         }
 
-        var roundNumber = Session.RoundCount++;
+        var roundNumber = ++Session.RoundCount;
         Round = await roundService.CreateRoundAsync(roundNumber, Session.Id, cancellationToken);
         logger.LogInformation("Created round with ID: {RoundId}", Round.Id);
 
@@ -69,5 +72,6 @@ public class StateManager : IStateManager
     {
         Session = null;
         Round = null;
+        PlayerState.Reset();
     }
 }

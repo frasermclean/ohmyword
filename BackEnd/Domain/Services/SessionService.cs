@@ -37,7 +37,7 @@ public sealed class SessionService : ISessionService
         logger.LogInformation("Starting session: {SessionId}", session.Id);
 
         // create and execute rounds while there are players
-        do
+        while (stateManager.PlayerState.PlayerCount > 0)
         {
             // load the next round
             using var round = await stateManager.NextRoundAsync(cancellationToken);
@@ -51,7 +51,7 @@ public sealed class SessionService : ISessionService
             await Task.WhenAll(
                 SendRoundEndedNotificationAsync(round, cancellationToken),
                 Task.Delay(postRoundDelay, cancellationToken));
-        } while (stateManager.SessionState != SessionState.Waiting);
+        }
     }
 
     private Task SendRoundStartedNotificationAsync(Round round, CancellationToken cancellationToken)

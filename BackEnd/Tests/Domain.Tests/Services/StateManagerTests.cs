@@ -28,7 +28,8 @@ public class StateManagerTests
                 factory.CreateRoundAsync(It.IsAny<int>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(round);
 
-        stateManager = new StateManager(loggerMock.Object, roundServiceMock.Object);
+        stateManager = new StateManager(loggerMock.Object, roundServiceMock.Object,
+            new PlayerState(Mock.Of<ILogger<PlayerState>>()));
     }
 
     [Fact]
@@ -39,6 +40,7 @@ public class StateManagerTests
         stateManager.Session.Should().BeNull();
         stateManager.Round.Should().BeNull();
         stateManager.IsDefault.Should().BeTrue();
+        stateManager.PlayerState.Should().NotBeNull();
     }
 
     [Fact]

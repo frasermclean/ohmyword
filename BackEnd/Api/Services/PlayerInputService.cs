@@ -31,11 +31,15 @@ public class PlayerInputService : IPlayerInputService
     public async Task<PlayerRegisteredResult> RegisterPlayerAsync(string connectionId, string visitorId,
         IPAddress ipAddress, Guid? userId)
     {
-        var player = await playerService.AddPlayerAsync(visitorId, connectionId, ipAddress, userId);
+        var player = await playerService.GetOrCreatePlayerAsync(visitorId, connectionId, ipAddress, userId);
+        var isSuccessful = stateManager.PlayerState.AddPlayer(player);
 
         return new PlayerRegisteredResult
         {
-            PlayerCount = playerService.PlayerCount, Score = player.Score, StateSnapshot = GetGameState()
+            IsSuccessful = isSuccessful,
+            PlayerCount = stateManager.PlayerState.PlayerCount,
+            Score = player.Score,
+            StateSnapshot = GetGameState()
         };
     }
 
@@ -51,7 +55,7 @@ public class PlayerInputService : IPlayerInputService
         var isCorrect = string.Equals(value, round.Word.Id, StringComparison.InvariantCultureIgnoreCase);
         if (!isCorrect) return GuessProcessedResult.Default;
 
-        var player = playerService.GetPlayerByConnectionId(connectionId);
+        var player = stateManager.PlayerState.GetPlayerByConnectionId(connectionId);
         if (player is null)
         {
             logger.LogError("Player not found. ConnectionId: {ConnectionId}", connectionId);

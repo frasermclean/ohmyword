@@ -21,22 +21,22 @@ public class RoundService : IRoundService
 {
     private readonly ILogger<RoundService> logger;
     private readonly IPublisher publisher;
-    private readonly IPlayerService playerService;
+    private readonly IPlayerState playerState;
     private readonly IWordsService wordsService;
     private readonly IRoundsRepository roundsRepository;
-    
+
     private readonly double letterHintDelay;
     private readonly int guessLimit;
 
     public RoundService(ILogger<RoundService> logger, IOptions<RoundOptions> options, IPublisher publisher,
-        IPlayerService playerService, IWordsService wordsService, IRoundsRepository roundsRepository)
+        IPlayerState playerState, IWordsService wordsService, IRoundsRepository roundsRepository)
     {
         this.logger = logger;
         this.publisher = publisher;
-        this.playerService = playerService;
+        this.playerState = playerState;
         this.wordsService = wordsService;
         this.roundsRepository = roundsRepository;
-        
+
         letterHintDelay = options.Value.LetterHintDelay;
         guessLimit = options.Value.GuessLimit;
     }
@@ -46,7 +46,7 @@ public class RoundService : IRoundService
     {
         var word = await wordsService.GetRandomWordAsync(cancellationToken);
 
-        return new Round(word, letterHintDelay, playerService.PlayerIds)
+        return new Round(word, letterHintDelay, playerState.PlayerIds)
         {
             Number = roundNumber, GuessLimit = guessLimit, SessionId = sessionId,
         };

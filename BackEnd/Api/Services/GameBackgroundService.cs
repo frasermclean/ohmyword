@@ -6,14 +6,11 @@ public class GameBackgroundService : BackgroundService
 {
     private readonly IStateManager stateManager;
     private readonly ISessionService sessionService;
-    private readonly IPlayerService playerService;
 
-    public GameBackgroundService(IStateManager stateManager, ISessionService sessionService,
-        IPlayerService playerService)
+    public GameBackgroundService(IStateManager stateManager, ISessionService sessionService)
     {
         this.stateManager = stateManager;
         this.sessionService = sessionService;
-        this.playerService = playerService;
     }
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
@@ -21,7 +18,7 @@ public class GameBackgroundService : BackgroundService
         while (!cancellationToken.IsCancellationRequested)
         {
             // wait for players to join
-            while (playerService.PlayerCount == 0)
+            while (stateManager.PlayerState.PlayerCount == 0)
             {
                 await Task.Delay(1000, cancellationToken);
             }
