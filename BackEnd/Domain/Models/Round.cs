@@ -9,16 +9,10 @@ public sealed class Round : IDisposable
     private readonly ConcurrentDictionary<string, RoundPlayerData> playerData;
     private readonly CancellationTokenSource cancellationTokenSource = new();
 
-    internal Round(Word word, Guid id = default, int number = default,
-        IEnumerable<string>? playerIds = default, double letterHintDelay = RoundOptions.LetterHintDelayDefault,
-        int guessLimit = RoundOptions.GuessLimitDefault)
+    internal Round(Word word, double letterHintDelay, IEnumerable<string>? playerIds = default)
     {
-        Number = number;
-        Id = id;
         Word = word;
         WordHint = new WordHint(word);
-        GuessLimit = guessLimit;
-        StartDate = DateTime.UtcNow;
         EndDate = StartDate + word.Length * TimeSpan.FromSeconds(letterHintDelay);
 
         playerData = playerIds is null
@@ -27,17 +21,22 @@ public sealed class Round : IDisposable
                 new KeyValuePair<string, RoundPlayerData>(playerId, new RoundPlayerData(playerId))));
     }
 
-    public Guid Id { get; }
-    public int Number { get; }
+    public Guid Id { get; private init; } = Guid.NewGuid();
+    public required int Number { get; init; }
     public Word Word { get; }
     public WordHint WordHint { get; }
-    public int GuessLimit { get; }
-    public DateTime StartDate { get; }
+    public required int GuessLimit { get; init; }
+    public DateTime StartDate { get; } = DateTime.UtcNow;
     public DateTime EndDate { get; }
-    public RoundEndReason EndReason { get; private set; }
+    public RoundEndReason? EndReason { get; private set; }
+    public required Guid SessionId { get; init; }
     public CancellationToken CancellationToken => cancellationTokenSource.Token;
     public int PlayerCount => playerData.Count;
     public bool AllPlayersGuessed => !playerData.IsEmpty && playerData.Values.All(player => player.PointsAwarded > 0);
+
+    public bool IsActive => !cancellationTokenSource.IsCancellationRequested &&
+                            DateTime.UtcNow > StartDate &&
+                            DateTime.UtcNow < EndDate;
 
     public bool AddPlayer(string playerId)
         => playerData.TryAdd(playerId, new RoundPlayerData(playerId));
@@ -78,5 +77,11 @@ public sealed class Round : IDisposable
         cancellationTokenSource.Dispose();
     }
 
-    public static Round Default => new(Word.Default);
+    public static Round Default => new(Word.Default, RoundOptions.LetterHintDelayDefault)
+    {
+        Id = Guid.Empty,
+        Number = default,
+        SessionId = Guid.Empty,
+        GuessLimit = RoundOptions.GuessLimitDefault
+    };
 }

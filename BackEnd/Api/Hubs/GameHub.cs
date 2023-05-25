@@ -1,20 +1,18 @@
-﻿using Microsoft.AspNetCore.SignalR;
-using OhMyWord.Api.Commands.RegisterPlayer;
-using OhMyWord.Api.Commands.SubmitGuess;
-using OhMyWord.Api.Events.PlayerConnected;
-using OhMyWord.Api.Events.PlayerDisconnected;
-using OhMyWord.Api.Events.RoundEnded;
-using OhMyWord.Api.Events.RoundStarted;
+﻿using MediatR;
+using Microsoft.AspNetCore.SignalR;
 using OhMyWord.Api.Extensions;
+using OhMyWord.Api.Models;
+using OhMyWord.Api.Services;
 using OhMyWord.Domain.Models;
+using OhMyWord.Domain.Notifications;
 using OhMyWord.Domain.Services;
 
 namespace OhMyWord.Api.Hubs;
 
 public interface IGameHub
 {
-    Task SendRoundStarted(RoundStartedEvent roundStarted, CancellationToken cancellationToken = default);
-    Task SendRoundEnded(RoundEndedEvent roundEnded, CancellationToken cancellationToken = default);
+    Task SendRoundStarted(RoundStartedNotification notification, CancellationToken cancellationToken = default);
+    Task SendRoundEnded(RoundEndedNotification notification, CancellationToken cancellationToken = default);
     Task SendPlayerCount(int count);
     Task SendLetterHint(LetterHint letterHint);
 }
@@ -22,50 +20,52 @@ public interface IGameHub
 public class GameHub : Hub<IGameHub>
 {
     private readonly ILogger<GameHub> logger;
-    private readonly IPlayerService playerService;
+    private readonly IStateManager stateManager;
+    private readonly IPlayerInputService playerInputService;
+    private readonly IPublisher publisher;
 
-    public GameHub(ILogger<GameHub> logger, IPlayerService playerService)
+    public GameHub(ILogger<GameHub> logger, IStateManager stateManager, IPlayerInputService playerInputService,
+        IPublisher publisher)
     {
         this.logger = logger;
-        this.playerService = playerService;
+        this.stateManager = stateManager;
+        this.playerInputService = playerInputService;
+        this.publisher = publisher;
     }
 
-    public override async Task OnConnectedAsync()
-    {
-        await new PlayerConnectedEvent(Context.ConnectionId, Context.GetIpAddress())
-            .PublishAsync(Mode.WaitForNone);
-    }
+    public override Task OnConnectedAsync()
+        => publisher.Publish(new PlayerConnectedNotification(Context.ConnectionId, Context.GetIpAddress()));
 
-    public override async Task OnDisconnectedAsync(Exception? exception)
+    public override Task OnDisconnectedAsync(Exception? exception)
     {
         if (exception is null)
             logger.LogDebug("Client disconnected. Connection ID: {ConnectionId}", Context.ConnectionId);
         else
             logger.LogError(exception, "Client disconnected. Connection ID: {ConnectionId}", Context.ConnectionId);
 
-        await new PlayerDisconnectedEvent(Context.ConnectionId).PublishAsync(Mode.WaitForNone);
-        await Clients.Others.SendPlayerCount(playerService.PlayerCount);
+        return Task.WhenAll(
+            publisher.Publish(new PlayerDisconnectedNotification(Context.ConnectionId)),
+            Clients.Others.SendPlayerCount(stateManager.PlayerState.PlayerCount));
     }
 
-    public async Task<RegisterPlayerResponse> RegisterPlayer(string visitorId)
+    [HubMethodName("registerPlayer")]
+    public async Task<PlayerRegisteredResult> RegisterPlayerAsync(string visitorId)
     {
         logger.LogInformation("Attempting to register player with visitor ID: {VisitorId}", visitorId);
 
-        var response = await new RegisterPlayerCommand
-            {
-                VisitorId = visitorId,
-                ConnectionId = Context.ConnectionId,
-                UserId = Context.GetUserId(),
-                IpAddress = Context.GetIpAddress()
-            }
-            .ExecuteAsync();
+        var result = await playerInputService.RegisterPlayerAsync(Context.ConnectionId, visitorId,
+            Context.GetIpAddress(),
+            Context.GetUserId());
 
-        await Clients.Others.SendPlayerCount(response.PlayerCount);
+        await Clients.Others.SendPlayerCount(result.PlayerCount);
 
-        return response;
+        return result;
     }
 
-    public Task<SubmitGuessResponse> SubmitGuess(Guid roundId, string value)
-        => new SubmitGuessCommand { RoundId = roundId, Value = value, ConnectionId = Context.ConnectionId, }
-            .ExecuteAsync();
+    [HubMethodName("submitGuess")]
+    public async Task<GuessProcessedResult> ProcessGuessAsync(Guid roundId, string value)
+    {
+        var result = await playerInputService.ProcessGuessAsync(Context.ConnectionId, roundId, value);
+        return result;
+    }
 }

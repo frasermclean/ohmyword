@@ -12,6 +12,7 @@ export enum Role {
  * Part of speech of a word
  */
 export enum PartOfSpeech {
+  Unknown = 'unknown',
   Noun = 'noun',
   Verb = 'verb',
   Adjective = 'adjective',

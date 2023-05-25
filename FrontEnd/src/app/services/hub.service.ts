@@ -8,11 +8,11 @@ import { AuthService } from '@services/auth.service';
 import { Game } from '@state/game/game.actions';
 import { Guess } from '@state/guess/guess.actions';
 import { Hub } from '@state/hub/hub.actions';
-import { RegisterPlayerResponse } from '@models/responses/register-player.response';
-import { GuessResponse } from '@models/responses/guess.response';
+
 import { LetterHintResponse } from '@models/responses/letter-hint.response';
-import { RoundEndedResponse } from "@models/responses/round-ended.response";
-import { RoundStartedResponse } from "@models/responses/round-started.response";
+import { RoundEndedModel } from "@models/round-ended.model";
+import { RoundStartedModel } from "@models/round-started.model";
+import { PlayerRegisteredResult, SubmitGuessResult } from '@models/results';
 
 @Injectable({
   providedIn: 'root',
@@ -40,7 +40,7 @@ export class HubService {
 
     try {
       await this.hubConnection.start();
-      this.store.dispatch(new Hub.Connected());
+      this.store.dispatch(new Hub.Connected(this.hubConnection.connectionId));
     } catch (error) {
       this.store.dispatch(new Hub.Disconnected(error));
     }
@@ -63,7 +63,7 @@ export class HubService {
    */
   public async registerPlayer() {
     const visitorId = await this.fingerprintService.getVisitorId();
-    const response = await this.hubConnection.invoke<RegisterPlayerResponse>('RegisterPlayer', visitorId);
+    const response = await this.hubConnection.invoke<PlayerRegisteredResult>(this.registerPlayer.name, visitorId);
     this.store.dispatch(new Game.PlayerRegistered(response));
   }
 
@@ -73,8 +73,8 @@ export class HubService {
    * @param value The value of the guess to submit.
    */
   public async submitGuess(roundId: string, value: string) {
-    const response = await this.hubConnection.invoke<GuessResponse>('SubmitGuess', roundId, value);
-    this.store.dispatch(response.correct ? new Guess.Succeeded(response.points) : new Guess.Failed());
+    const result = await this.hubConnection.invoke<SubmitGuessResult>(this.submitGuess.name, roundId, value);
+    this.store.dispatch(result.isCorrect ? new Guess.Succeeded(result.pointsAwarded) : new Guess.Failed());
   }
 
   /**
@@ -85,13 +85,13 @@ export class HubService {
     this.hubConnection.onclose((error) => this.store.dispatch(new Hub.Disconnected(error)));
 
     // server sent game state
-    this.hubConnection.on('SendRoundStarted', (response: RoundStartedResponse) =>
+    this.hubConnection.on('SendRoundStarted', (response: RoundStartedModel) =>
       this.store.dispatch(new Game.RoundStarted(response))
     );
 
     // round ended
-    this.hubConnection.on('SendRoundEnded', (response: RoundEndedResponse) =>
-      this.store.dispatch(new Game.RoundEnded(response))
+    this.hubConnection.on('SendRoundEnded', (data: RoundEndedModel) =>
+      this.store.dispatch(new Game.RoundEnded(data))
     );
 
     // player count changed

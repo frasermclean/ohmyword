@@ -1,4 +1,5 @@
 ﻿using OhMyWord.Domain.Models;
+using OhMyWord.Domain.Options;
 using OhMyWord.Infrastructure.Models.Entities;
 
 namespace Domain.Tests.Models;
@@ -10,26 +11,28 @@ public class RoundTests
     public void NewRound_WithDefaultParameters_Should_HaveExpectedProperties(Word word)
     {
         // arrange
-        using var round = new Round(word);
+        using var round = CreateRound(word);
 
         // assert
-        round.Id.Should().BeEmpty();
+        round.Id.Should().NotBeEmpty();
         round.Number.Should().Be(0);
         round.Word.Should().Be(word);
         round.StartDate.Should().BeBefore(DateTime.UtcNow);
         round.EndDate.Should().BeAfter(DateTime.UtcNow);
-        round.EndReason.Should().Be(RoundEndReason.Timeout);
+        round.EndReason.Should().BeNull();
         round.AllPlayersGuessed.Should().BeFalse();
         round.CancellationToken.IsCancellationRequested.Should().BeFalse();
         round.PlayerCount.Should().Be(0);
+        round.SessionId.Should().BeEmpty();
+        round.IsActive.Should().BeTrue();
     }
 
     [Theory, AutoData]
-    public void NewRound_WithSpecifiedParameters_Should_HaveExpectedProperties(Word word, Guid id, int number,
-        string[] playerIds)
+    public void NewRound_WithSpecifiedParameters_Should_HaveExpectedProperties(Word word, int number,
+        string[] playerIds, Guid sessionId)
     {
         // arrange
-        using var round = new Round(word, id, number, playerIds);
+        using var round = CreateRound(word, number, playerIds, sessionId);
 
         // assert
         round.Id.Should().NotBeEmpty();
@@ -37,30 +40,33 @@ public class RoundTests
         round.Word.Should().Be(word);
         round.StartDate.Should().BeBefore(DateTime.UtcNow);
         round.EndDate.Should().BeAfter(DateTime.UtcNow);
-        round.EndReason.Should().Be(RoundEndReason.Timeout);
+        round.EndReason.Should().BeNull();
         round.AllPlayersGuessed.Should().BeFalse();
         round.CancellationToken.IsCancellationRequested.Should().BeFalse();
         round.PlayerCount.Should().Be(playerIds.Length);
+        round.SessionId.Should().Be(sessionId);
+        round.IsActive.Should().BeTrue();
     }
 
     [Theory, AutoData]
     public void AddPlayer_Should_IncreasePlayerCount(Word word, int roundNumber, string playerId)
     {
         // arrange
-        using var round = new Round(word, number: roundNumber);
+        using var round = CreateRound(word, roundNumber);
 
         // act
-        round.AddPlayer(playerId);
+        var result = round.AddPlayer(playerId);
 
         // assert
         round.PlayerCount.Should().Be(1);
+        result.Should().BeTrue();
     }
 
     [Theory, AutoData]
     public void EndRound_Should_SetEndReason(Word word, int roundNumber, RoundEndReason endReason)
     {
         // arrange
-        using var round = new Round(word, number: roundNumber);
+        using var round = CreateRound(word, roundNumber);
 
         // act
         round.EndRound(endReason);
@@ -68,13 +74,14 @@ public class RoundTests
         // assert
         round.EndReason.Should().Be(endReason);
         round.CancellationToken.IsCancellationRequested.Should().BeTrue();
+        round.IsActive.Should().BeFalse();
     }
 
     [Theory, AutoData]
     public void IncrementGuessCount_Should_ReturnCorrectResult(Word word, int roundNumber, string playerId)
     {
         // arrange
-        using var round = new Round(word, number: roundNumber, guessLimit: 1);
+        using var round = CreateRound(word, roundNumber, guessLimit: 1);
         round.AddPlayer(playerId);
 
         // act
@@ -92,7 +99,7 @@ public class RoundTests
     public void AwardPoints_Should_ReturnExpectedResult(Word word, int roundNumber, string playerId, int points)
     {
         // arrange
-        using var round = new Round(word, number: roundNumber);
+        using var round = CreateRound(word, roundNumber);
         round.AddPlayer(playerId);
 
         // act
@@ -108,8 +115,7 @@ public class RoundTests
     public void GetPlayerData_Should_ReturnExpectedResult(Word word, int roundNumber, string[] playerIds, int points)
     {
         // arrange
-        using var round = new Round(word, number: roundNumber);
-        
+        using var round = CreateRound(word, roundNumber);
 
         // act
         foreach (var playerId in playerIds)
@@ -118,6 +124,7 @@ public class RoundTests
             round.IncrementGuessCount(playerId);
             round.AwardPoints(playerId, points);
         }
+
         var playerData = round.GetPlayerData().ToArray();
 
         // assert
@@ -138,4 +145,9 @@ public class RoundTests
         round.Number.Should().Be(0);
         round.Word.Should().Be(Word.Default);
     }
+
+    private static Round CreateRound(Word word, int number = default, IEnumerable<string>? playerIds = default,
+        Guid sessionId = default, double letterHintDelay = RoundOptions.LetterHintDelayDefault,
+        int guessLimit = RoundOptions.GuessLimitDefault) =>
+        new(word, letterHintDelay, playerIds) { Number = number, GuessLimit = guessLimit, SessionId = sessionId };
 }

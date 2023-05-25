@@ -1,14 +1,41 @@
-﻿namespace OhMyWord.Api.Services;
+﻿using OhMyWord.Domain.Models;
+using OhMyWord.Domain.Services;
+
+namespace OhMyWord.Api.Services;
 
 public class GameBackgroundService : BackgroundService
 {
-    private readonly IGameService gameService;
+    private readonly IStateManager stateManager;
+    private readonly ISessionService sessionService;
 
-    public GameBackgroundService(IGameService gameService)
+    public GameBackgroundService(IStateManager stateManager, ISessionService sessionService)
     {
-        this.gameService = gameService;
+        this.stateManager = stateManager;
+        this.sessionService = sessionService;
     }
 
-    protected override Task ExecuteAsync(CancellationToken cancellationToken) =>
-        gameService.ExecuteGameLoopAsync(cancellationToken);
+    protected override async Task ExecuteAsync(CancellationToken cancellationToken)
+    {
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            // wait for players to join
+            while (stateManager.PlayerState.PlayerCount == 0)
+            {
+                await Task.Delay(1000, cancellationToken);
+            }
+
+            // start a new session
+            Session session;
+            using (session = stateManager.NextSession())
+            {
+                await sessionService.ExecuteSessionAsync(session, cancellationToken);    
+            }
+
+            // save the session to the database
+            await sessionService.SaveSessionAsync(session, cancellationToken);
+
+            // reset the state manager
+            stateManager.Reset();
+        }
+    }
 }

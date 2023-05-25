@@ -1,9 +1,11 @@
 using Azure.Identity;
 using Microsoft.Extensions.Configuration.AzureAppConfiguration;
 using OhMyWord.Api.Extensions;
+using OhMyWord.Api.Handlers;
 using OhMyWord.Api.Hubs;
 using OhMyWord.Api.Services;
-using OhMyWord.Domain.Extensions;
+using OhMyWord.Domain.DependencyInjection;
+using OhMyWord.Domain.Notifications;
 using OhMyWord.Infrastructure.DependencyInjection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -40,6 +42,13 @@ public static class Program
             // fast endpoints
             services.AddFastEndpoints();
 
+            // mediator services
+            services.AddMediatR(configuration =>
+            {                
+                configuration.RegisterServicesFromAssemblyContaining<RoundStartedNotification>();
+                configuration.RegisterServicesFromAssemblyContaining<RoundStartedHandler>();
+            });
+
             // signalR services
             services.AddSignalR()
                 .AddJsonProtocol(options =>
@@ -49,7 +58,7 @@ public static class Program
 
             // game services
             services.AddHostedService<GameBackgroundService>();
-            services.AddSingleton<IGameService, GameService>();
+            services.AddSingleton<IPlayerInputService, PlayerInputService>();
 
             // local project services
             services.AddDomainServices(context.Configuration);
