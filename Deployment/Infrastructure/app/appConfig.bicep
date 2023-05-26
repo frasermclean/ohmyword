@@ -23,6 +23,9 @@ param appEnv string
 @description('RapidAPI key')
 param rapidApiKey string
 
+@description('IP lookup feature enabled')
+param ipLookupFeatureEnabled bool = true
+
 resource keyVault 'Microsoft.KeyVault/vaults@2022-11-01' existing = {
   name: 'kv-ohmyword-shared'
 
@@ -63,7 +66,18 @@ var appConfigurationKeyValues = [
   }
 ]
 
-resource appConfiguration 'Microsoft.AppConfiguration/configurationStores@2022-05-01' existing = {
+var featureFlags = [
+  {
+    key: 'IpLookup'
+    value: {
+      id: 'IpLookup'
+      description: 'Send IP lookup requests to a queue for processing'
+      enabled: ipLookupFeatureEnabled
+    }
+  }
+]
+
+resource appConfiguration 'Microsoft.AppConfiguration/configurationStores@2023-03-01' existing = {
   name: appConfigName
 
   resource keyValue 'keyValues' = [for item in appConfigurationKeyValues: {
@@ -71,6 +85,14 @@ resource appConfiguration 'Microsoft.AppConfiguration/configurationStores@2022-0
     properties: {
       value: item.value
       contentType: item.contentType
+    }
+  }]
+
+  resource featureFlag 'keyValues' = [for flag in featureFlags: {
+    name: '.appconfig.featureflag~2F${flag.key}$${appEnv}'
+    properties: {
+      value: string(flag.value)
+      contentType: 'application/vnd.microsoft.appconfig.ff+json;charset=utf-8'
     }
   }]
 }
