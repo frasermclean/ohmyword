@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using OhMyWord.Domain.Contracts.Requests;
-using OhMyWord.Domain.Extensions;
+﻿using OhMyWord.Domain.Extensions;
 using OhMyWord.Domain.Models;
 using OhMyWord.Infrastructure.Models.Entities;
 using OhMyWord.Infrastructure.Services;
@@ -22,12 +20,10 @@ public interface IPlayerService
 
 public class PlayerService : IPlayerService
 {
-    private readonly ILogger<PlayerService> logger;
     private readonly IPlayerRepository playerRepository;
 
-    public PlayerService(ILogger<PlayerService> logger, IPlayerRepository playerRepository)
+    public PlayerService(IPlayerRepository playerRepository)
     {
-        this.logger = logger;
         this.playerRepository = playerRepository;
     }
 
