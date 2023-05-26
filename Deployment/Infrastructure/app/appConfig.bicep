@@ -56,6 +56,11 @@ var appConfigurationKeyValues = [
     value: '{"uri":"https://${keyVault.name}${environment().suffixes.keyvaultDns}/secrets/${keyVault::rapidApiKeySecret.name}"}'
     contentType: 'application/vnd.microsoft.appconfig.keyvaultref+json;charset=utf-8'
   }
+  {
+    name: 'ServiceBus:IpLookupQueueName$${appEnv}'
+    value: 'shared-ip-lookup'
+    contentType: 'text/plain'
+  }
 ]
 
 resource appConfiguration 'Microsoft.AppConfiguration/configurationStores@2022-05-01' existing = {
