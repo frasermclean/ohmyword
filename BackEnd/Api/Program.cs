@@ -57,8 +57,7 @@ public static class Program
                 );
 
             // game services
-            services.AddHostedService<GameBackgroundService>();
-            services.AddSingleton<IPlayerInputService, PlayerInputService>();
+            services.AddHostedService<GameBackgroundService>();            
 
             // local project services
             services.AddDomainServices(context.Configuration);

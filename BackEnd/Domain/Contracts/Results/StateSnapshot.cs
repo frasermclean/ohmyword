@@ -1,6 +1,6 @@
 ﻿using OhMyWord.Domain.Models;
 
-namespace OhMyWord.Api.Models;
+namespace OhMyWord.Domain.Contracts.Results;
 
 public struct StateSnapshot
 {

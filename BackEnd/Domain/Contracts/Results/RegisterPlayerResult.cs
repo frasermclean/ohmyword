@@ -1,6 +1,6 @@
-﻿namespace OhMyWord.Api.Models;
+﻿namespace OhMyWord.Domain.Contracts.Results;
 
-public class PlayerRegisteredResult
+public class RegisterPlayerResult
 {
     public required bool IsSuccessful { get; init; }
     public required string PlayerId { get; init; }

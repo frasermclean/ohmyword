@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using OhMyWord.Domain.Contracts.Requests;
 using OhMyWord.Domain.Extensions;
 using OhMyWord.Domain.Models;
 using OhMyWord.Infrastructure.Models.Entities;
@@ -9,8 +10,7 @@ namespace OhMyWord.Domain.Services;
 
 public interface IPlayerService
 {
-    Task<Player> GetOrCreatePlayerAsync(string visitorId, string connectionId, IPAddress ipAddress,
-        Guid? userId = default);
+    Task<Player> GetOrCreatePlayerAsync(RegisterPlayerRequest request);
 
     Task IncrementPlayerScoreAsync(string visitorId, int points);
 }
@@ -26,9 +26,10 @@ public class PlayerService : IPlayerService
         this.playerRepository = playerRepository;
     }
 
-    public async Task<Player> GetOrCreatePlayerAsync(string visitorId, string connectionId, IPAddress ipAddress,
-        Guid? userId)
+    public async Task<Player> GetOrCreatePlayerAsync(RegisterPlayerRequest request)
     {
+        var (connectionId, visitorId, ipAddress, userId) = request;
+
         var player = (await playerRepository.GetPlayerAsync(visitorId))?.ToPlayer(connectionId);
         if (player is not null)
         {
@@ -46,7 +47,6 @@ public class PlayerService : IPlayerService
                 Id = visitorId, UserId = userId, IpAddresses = new[] { ipAddress.ToString() }
             }))
             .ToPlayer(connectionId);
-
 
         logger.LogInformation("Player with ID: {PlayerId} joined the game", player.Id);
 
