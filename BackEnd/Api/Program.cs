@@ -7,7 +7,6 @@ using OhMyWord.Api.Hubs;
 using OhMyWord.Api.Services;
 using OhMyWord.Domain.Contracts.Notifications;
 using OhMyWord.Domain.DependencyInjection;
-using OhMyWord.Domain.Options;
 using OhMyWord.Infrastructure.DependencyInjection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -21,8 +20,8 @@ public static class Program
         var appBuilder = WebApplication.CreateBuilder(args);
 
         // azure app configuration
-        var appConfigEnabled = appBuilder.Configuration.GetValue("AppConfig:Enabled", true);
-        if (appConfigEnabled)
+        var isAzureAppConfigEnabled = appBuilder.Configuration.GetValue("AppConfig:Enabled", true);
+        if (isAzureAppConfigEnabled)
             appBuilder.Configuration.AddAzureAppConfiguration(options =>
             {
                 var endpoint = appBuilder.Configuration.GetValue<string>("AppConfig:Endpoint") ??
@@ -30,9 +29,14 @@ public static class Program
                 var appEnv = appBuilder.Configuration.GetValue<string>("AppConfig:Environment", "dev");
                 options.Connect(new Uri(endpoint), new DefaultAzureCredential())
                     .Select(KeyFilter.Any)
-                    .Select(KeyFilter.Any, "shared")
                     .Select(KeyFilter.Any, appEnv)
-                    .ConfigureKeyVault(vaultOptions => vaultOptions.SetCredential(new DefaultAzureCredential()));
+                    .ConfigureKeyVault(vaultOptions => vaultOptions.SetCredential(new DefaultAzureCredential()))
+                    .UseFeatureFlags(flagOptions =>
+                    {
+                        flagOptions.Select(KeyFilter.Any)
+                            .Select(KeyFilter.Any, appEnv);
+                        flagOptions.CacheExpirationInterval = TimeSpan.FromMinutes(5);
+                    });
             });
 
         // configure app host
@@ -42,7 +46,7 @@ public static class Program
             services.AddMicrosoftIdentityAuthentication(context);
 
             // feature management
-            services.AddFeatureManagement(context.Configuration.GetSection(FeatureFlags.SectionName));
+            services.AddFeatureManagement();
 
             // fast endpoints
             services.AddFastEndpoints();
