@@ -26,7 +26,7 @@ public sealed class IpAddressMessageSender : IIpAddressMessageSender, IAsyncDisp
     public Task SendIpLookupMessageAsync(IPAddress ipAddress)
     {
         var message = new ServiceBusMessage(ipAddress.ToString());
-        logger.LogInformation("Sending IP lookup message: {Message}", message);
+        logger.LogInformation("Sending IP lookup message for address: {IpAddress}", ipAddress);
         return sender.SendMessageAsync(message);
     }
 

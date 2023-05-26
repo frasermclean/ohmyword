@@ -1,9 +1,9 @@
-﻿using Microsoft.AspNetCore.SignalR;
-using OhMyWord.Api.Commands.RegisterPlayer;
-using OhMyWord.Api.Commands.SubmitGuess;
-using OhMyWord.Api.Events.PlayerConnected;
-using OhMyWord.Api.Events.PlayerDisconnected;
+﻿using MediatR;
+using Microsoft.AspNetCore.SignalR;
 using OhMyWord.Api.Extensions;
+using OhMyWord.Domain.Contracts.Notifications;
+using OhMyWord.Domain.Contracts.Requests;
+using OhMyWord.Domain.Contracts.Results;
 using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Services;
 
@@ -11,7 +11,8 @@ namespace OhMyWord.Api.Hubs;
 
 public interface IGameHub
 {
-    Task SendGameState(GameState gameState);
+    Task SendRoundStarted(RoundStartedNotification notification, CancellationToken cancellationToken = default);
+    Task SendRoundEnded(RoundEndedNotification notification, CancellationToken cancellationToken = default);
     Task SendPlayerCount(int count);
     Task SendLetterHint(LetterHint letterHint);
 }
@@ -19,50 +20,50 @@ public interface IGameHub
 public class GameHub : Hub<IGameHub>
 {
     private readonly ILogger<GameHub> logger;
-    private readonly IPlayerService playerService;
+    private readonly IStateManager stateManager;
+    private readonly IMediator mediator;
 
-    public GameHub(ILogger<GameHub> logger, IPlayerService playerService)
+    public GameHub(ILogger<GameHub> logger, IStateManager stateManager, IMediator mediator)
     {
         this.logger = logger;
-        this.playerService = playerService;
+        this.stateManager = stateManager;
+        this.mediator = mediator;
     }
 
-    public override async Task OnConnectedAsync()
-    {
-        await new PlayerConnectedEvent(Context.ConnectionId, Context.GetIpAddress())
-            .PublishAsync(Mode.WaitForNone);
-    }
+    public override Task OnConnectedAsync()
+        => mediator.Publish(new PlayerConnectedNotification(Context.ConnectionId, Context.GetIpAddress()));
 
-    public override async Task OnDisconnectedAsync(Exception? exception)
+    public override Task OnDisconnectedAsync(Exception? exception)
     {
         if (exception is null)
             logger.LogDebug("Client disconnected. Connection ID: {ConnectionId}", Context.ConnectionId);
         else
             logger.LogError(exception, "Client disconnected. Connection ID: {ConnectionId}", Context.ConnectionId);
 
-        await new PlayerDisconnectedEvent(Context.ConnectionId).PublishAsync(Mode.WaitForNone);
-        await Clients.Others.SendPlayerCount(playerService.PlayerCount);
+        return Task.WhenAll(
+            mediator.Publish(new PlayerDisconnectedNotification(Context.ConnectionId)),
+            Clients.Others.SendPlayerCount(stateManager.PlayerState.PlayerCount));
     }
 
-    public async Task<RegisterPlayerResponse> RegisterPlayer(string visitorId)
+    [HubMethodName("registerPlayer")]
+    public async Task<RegisterPlayerResult> RegisterPlayerAsync(Guid playerId, string visitorId)
     {
         logger.LogInformation("Attempting to register player with visitor ID: {VisitorId}", visitorId);
 
-        var response = await new RegisterPlayerCommand
-            {
-                VisitorId = visitorId,
-                ConnectionId = Context.ConnectionId,
-                UserId = Context.GetUserId(),
-                IpAddress = Context.GetIpAddress()
-            }
-            .ExecuteAsync();
+        var request = new RegisterPlayerRequest(Context.ConnectionId, playerId, visitorId, Context.GetIpAddress(),
+            Context.GetUserId());
 
-        await Clients.Others.SendPlayerCount(response.PlayerCount);
+        var result = await mediator.Send(request);
 
-        return response;
+        await Clients.Others.SendPlayerCount(result.PlayerCount);
+
+        return result;
     }
 
-    public Task<SubmitGuessResponse> SubmitGuess(Guid roundId, string value)
-        => new SubmitGuessCommand { RoundId = roundId, Value = value, ConnectionId = Context.ConnectionId, }
-            .ExecuteAsync();
+    [HubMethodName("submitGuess")]
+    public async Task<ProcessGuessResult> ProcessGuessAsync(Guid roundId, string value)
+    {
+        var request = new ProcessGuessRequest(Context.ConnectionId, roundId, value);
+        return await mediator.Send(request);
+    }
 }

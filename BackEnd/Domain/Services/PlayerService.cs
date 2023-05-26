@@ -1,93 +1,65 @@
-﻿using Microsoft.Extensions.Logging;
-using OhMyWord.Domain.Extensions;
+﻿using OhMyWord.Domain.Extensions;
 using OhMyWord.Domain.Models;
 using OhMyWord.Infrastructure.Models.Entities;
 using OhMyWord.Infrastructure.Services;
-using System.Collections.Concurrent;
 using System.Net;
 
 namespace OhMyWord.Domain.Services;
 
 public interface IPlayerService
 {
-    int PlayerCount { get; }
+    Task<Player?> GetPlayerByIdAsync(Guid playerId, string? connectionId = default, string? visitorId = default);
 
-    /// <summary>
-    /// Currently connected player IDs.
-    /// </summary>
-    IEnumerable<string> PlayerIds { get; }
+    Task<Player> CreatePlayerAsync(Guid playerId, string connectionId, string visitorId, IPAddress ipAddress,
+        Guid? userId);
 
-    Task<Player> AddPlayerAsync(string visitorId, string connectionId, IPAddress ipAddress, Guid? userId = default);
-    void RemovePlayer(string connectionId);
-    Player GetPlayer(string connectionId);
-    Task IncrementPlayerScoreAsync(string visitorId, int points);
+    Task PatchPlayerRegistrationAsync(Player player, string visitorId, IPAddress ipAddress);
+
+    Task IncrementPlayerScoreAsync(Guid playerId, int points);
 }
 
 public class PlayerService : IPlayerService
 {
-    private readonly ILogger<PlayerService> logger;
     private readonly IPlayerRepository playerRepository;
 
-    /// <summary>
-    /// Local cache of players with connection ID as key.
-    /// </summary>
-    private readonly ConcurrentDictionary<string, Player> players = new();
-
-    public int PlayerCount => players.Count;
-    public IEnumerable<string> PlayerIds => players.Values.Select(player => player.Id);
-
-    public PlayerService(ILogger<PlayerService> logger, IPlayerRepository playerRepository)
+    public PlayerService(IPlayerRepository playerRepository)
     {
-        this.logger = logger;
         this.playerRepository = playerRepository;
     }
 
-    public async Task<Player> AddPlayerAsync(string visitorId, string connectionId, IPAddress ipAddress, Guid? userId)
+    public async Task<Player?> GetPlayerByIdAsync(Guid playerId, string? connectionId, string? visitorId)
     {
-        var player = (await playerRepository.GetPlayerAsync(visitorId))?.ToPlayer(connectionId);
-        if (player is not null)
-        {
-            logger.LogDebug("Found existing visitor with ID: {VisitorId}", visitorId);
-
-            // TODO: Handle multiple connections with same visitor ID
-            await playerRepository.IncrementRegistrationCountAsync(player.Id);
-            if (!player.IpAddresses.Contains(ipAddress))
-                await playerRepository.AddIpAddressAsync(player.Id, ipAddress.ToString());
-        }
-
-        // create player if existing player was not found
-        player ??= (await playerRepository.CreatePlayerAsync(new PlayerEntity
-            {
-                Id = visitorId, UserId = userId, IpAddresses = new[] { ipAddress.ToString() }
-            }))
-            .ToPlayer(connectionId);
-
-        var wasAdded = players.TryAdd(connectionId, player);
-        if (!wasAdded)
-            logger.LogWarning("Player with connection ID: {ConnectionId} already exists in the local cache",
-                connectionId);
-
-        logger.LogInformation("Player with ID: {VisitorId} joined the game. Player count: {PlayerCount}", player.Id,
-            PlayerCount);
-
-        return player;
+        var entity = await playerRepository.GetPlayerByIdAsync(playerId);
+        return entity?.ToPlayer(connectionId, visitorId);
     }
 
-    public void RemovePlayer(string connectionId)
+    public async Task<Player> CreatePlayerAsync(Guid playerId, string connectionId, string visitorId,
+        IPAddress ipAddress, Guid? userId)
     {
-        if (players.TryRemove(connectionId, out var visitor))
+        var entity = await playerRepository.CreatePlayerAsync(new PlayerEntity
         {
-            logger.LogInformation("Player with ID: {VisitorId} left the game. Player count: {PlayerCount}",
-                visitor.Id, PlayerCount);
-        }
-        else
-        {
-            logger.LogError("Couldn't remove visitor with connection ID: {ConnectionId} from cache", connectionId);
-        }
+            Id = playerId.ToString(),
+            UserId = userId,
+            VisitorIds = new[] { visitorId },
+            IpAddresses = new[] { ipAddress.ToString() }
+        });
+
+        return entity.ToPlayer(connectionId, visitorId);
     }
 
-    public Player GetPlayer(string connectionId) => players[connectionId];
+    public async Task PatchPlayerRegistrationAsync(Player player, string visitorId, IPAddress ipAddress)
+    {
+        await playerRepository.IncrementRegistrationCountAsync(player.Id);
 
-    public Task IncrementPlayerScoreAsync(string visitorId, int points) =>
-        playerRepository.IncrementScoreAsync(visitorId, points); // TODO: Update local cache to keep points in sync
+        // patch ip address
+        if (!player.IpAddresses.Contains(ipAddress))
+            await playerRepository.AddIpAddressAsync(player.Id, ipAddress.ToString());
+
+        // patch visitor id
+        if (!player.VisitorIds.Contains(visitorId))
+            await playerRepository.AddVisitorIdAsync(player.Id, visitorId);
+    }
+
+    public Task IncrementPlayerScoreAsync(Guid playerId, int points) =>
+        playerRepository.IncrementScoreAsync(playerId, points);
 }

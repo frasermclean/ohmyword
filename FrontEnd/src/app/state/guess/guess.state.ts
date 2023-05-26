@@ -68,12 +68,12 @@ export class GuessState {
     })
   }
 
-  @Action(Game.GameStateUpdated)
-  setNewWord(context: StateContext<GuessStateModel>, action: Game.GameStateUpdated) {
+  @Action(Game.RoundStarted)
+  setNewWord(context: StateContext<GuessStateModel>, action: Game.RoundStarted) {
     context.setState({
       value: GUESS_VALUE_DEFAULT,
       count: 0,
-      maxLength: action.wordHint?.length || 0,
+      maxLength: action.data.wordHint?.length || 0,
       guessedCorrectly: false,
     });
   }

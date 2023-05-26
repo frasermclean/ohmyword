@@ -3,6 +3,6 @@
 public enum RoundEndReason
 {
     Timeout,
-    AllPlayersAwarded,
+    AllPlayersGuessed,
     NoPlayersLeft,
 }

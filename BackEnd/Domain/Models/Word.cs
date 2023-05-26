@@ -6,7 +6,7 @@ public class Word
 {
     public const int MinLength = 4;
     public const int MaxLength = 16;
-    
+
     public required string Id { get; init; } = string.Empty;
 
     /// <summary>
@@ -15,9 +15,11 @@ public class Word
     public int Length => Id.Length;
 
     public required IEnumerable<Definition> Definitions { get; init; }
-    public DateTime LastModifiedTime { get; init; }
+    public DateTime LastModifiedTime { get; init; } = DateTime.UtcNow;
 
     public LetterHint GetLetterHint(int position) => new(position, Id[position - 1]);
+
+    public override string ToString() => Id;
 
     public static readonly Word Default = new()
     {

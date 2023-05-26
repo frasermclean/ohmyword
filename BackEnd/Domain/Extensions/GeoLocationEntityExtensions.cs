@@ -1,4 +1,4 @@
-﻿using OhMyWord.Domain.Models;
+using OhMyWord.Domain.Models;
 using OhMyWord.Infrastructure.Models.Entities;
 using OhMyWord.Infrastructure.Models.IpGeoLocation;
 
@@ -10,8 +10,8 @@ public static class GeoLocationEntityExtensions
     {
         IpVersion = entity.PartitionKey == "IPv6" ? IpVersion.IPv6 : IpVersion.IPv4, 
         IpAddress = entity.RowKey,
-        Country = entity.Country,
+        CountryCode = entity.CountryCode,
+        CountryName = entity.CountryName,
         City = entity.City,
-        FlagUrl = entity.FlagUrl
     };
 }

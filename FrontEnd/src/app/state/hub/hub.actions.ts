@@ -14,6 +14,7 @@ export namespace Hub {
 
   export class Connected {
     static readonly type = '[Game Service] Hub.Connected';
+    constructor(public connectionId: string | null) {}
   }
 
   export class Disconnected {

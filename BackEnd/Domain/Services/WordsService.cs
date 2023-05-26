@@ -1,11 +1,10 @@
-﻿using Microsoft.Azure.Cosmos;
+using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using OhMyWord.Domain.Extensions;
 using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Results;
 using OhMyWord.Infrastructure.Models.Entities;
 using OhMyWord.Infrastructure.Services;
-using OneOf;
 using OneOf.Types;
 using System.Net;
 
@@ -32,8 +31,16 @@ public interface IWordsService
     /// <returns>The total word count.</returns>
     Task<int> GetTotalWordCountAsync(CancellationToken cancellationToken = default);
 
-    Task<OneOf<Word, NotFound>> GetWordAsync(string wordId, CancellationToken cancellationToken = default);
-    Task<OneOf<Word, NotFound, Conflict>> CreateWordAsync(Word word, CancellationToken cancellationToken = default);
+    Task<ReadResult<Word>> GetWordAsync(string wordId, CancellationToken cancellationToken = default);
+    Task<CreateResult<Word>> CreateWordAsync(Word word, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Get a random word from the database.
+    /// </summary>
+    /// <param name="cancellationToken">Task cancellation token</param>
+    /// <returns>A random word from the database</returns>
+    Task<Word> GetRandomWordAsync(CancellationToken cancellationToken = default);
+
     Task UpdateWordAsync(Word word, CancellationToken cancellationToken = default);
     Task DeleteWordAsync(string wordId, CancellationToken cancellationToken = default);
 }
@@ -43,7 +50,6 @@ public class WordsService : IWordsService
     private readonly ILogger<WordsService> logger;
     private readonly IWordsRepository wordsRepository;
     private readonly IDefinitionsRepository definitionsRepository;
-
 
     public WordsService(ILogger<WordsService> logger, IWordsRepository wordsRepository,
         IDefinitionsRepository definitionsRepository)
@@ -64,7 +70,7 @@ public class WordsService : IWordsService
     public Task<int> GetTotalWordCountAsync(CancellationToken cancellationToken = default) =>
         wordsRepository.GetTotalWordCountAsync(cancellationToken);
 
-    public async Task<OneOf<Word, NotFound>> GetWordAsync(string wordId, CancellationToken cancellationToken = default)
+    public async Task<ReadResult<Word>> GetWordAsync(string wordId, CancellationToken cancellationToken = default)
     {
         var wordEntity = await wordsRepository.GetWordAsync(wordId, cancellationToken);
         return wordEntity is not null
@@ -72,7 +78,18 @@ public class WordsService : IWordsService
             : new NotFound();
     }
 
-    public async Task<OneOf<Word, NotFound, Conflict>> CreateWordAsync(Word word,
+    public async Task<Word> GetRandomWordAsync(CancellationToken cancellationToken = default)
+    {
+        var wordIds = await GetAllWordIds(cancellationToken).ToListAsync(cancellationToken);
+        var wordId = wordIds[Random.Shared.Next(wordIds.Count)];
+        var wordEntity = await wordsRepository.GetWordAsync(wordId, cancellationToken);
+
+        return wordEntity is not null
+            ? await MapToWordAsync(wordEntity, cancellationToken)
+            : throw new InvalidOperationException($"Could not find a random word with ID: {wordId}");
+    }
+
+    public async Task<CreateResult<Word>> CreateWordAsync(Word word,
         CancellationToken cancellationToken = default)
     {
         try

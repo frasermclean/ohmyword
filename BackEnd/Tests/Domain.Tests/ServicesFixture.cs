@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using OhMyWord.Domain.Extensions;
+using OhMyWord.Domain.DependencyInjection;
 using OhMyWord.Domain.Services;
 using OhMyWord.Infrastructure.DependencyInjection;
 
@@ -22,9 +22,9 @@ public class ServicesFixture
             })
             .ConfigureServices((context, collection) =>
             {
-                collection.AddDomainServices();
+                collection.AddDomainServices(context.Configuration);
                 collection.AddRapidApiServices();
-                collection.AddTableRepositories(context);
+                collection.AddTableRepositories(context.Configuration);
             })
             .Build();
 

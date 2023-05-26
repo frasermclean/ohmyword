@@ -1,5 +1,5 @@
-import { PartOfSpeech } from './enums/part-of-speech.enum';
 import { WordHintResponse } from './responses/word-hint.response';
+import { PartOfSpeech } from "@models/enums";
 
 export class WordHint {
   readonly length: number;

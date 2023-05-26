@@ -1,4 +1,4 @@
-import { PartOfSpeech } from '../enums/part-of-speech.enum';
+import { PartOfSpeech } from "@models/enums";
 
 export interface DefinitionResponse {
   id: string;

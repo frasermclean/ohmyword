@@ -1,77 +1,87 @@
-﻿using OhMyWord.Infrastructure.Models.Entities;
+﻿using OhMyWord.Domain.Options;
+using OhMyWord.Infrastructure.Models.Entities;
 using System.Collections.Concurrent;
-using System.Text.Json.Serialization;
 
 namespace OhMyWord.Domain.Models;
 
-public class Round : IDisposable
+public sealed class Round : IDisposable
 {
+    private readonly ConcurrentDictionary<Guid, RoundPlayerData> playerData;
     private readonly CancellationTokenSource cancellationTokenSource = new();
-    private readonly ConcurrentBag<RoundPlayerData> playerData = new();
 
-    public Guid Id { get; } = Guid.NewGuid();
-    public int Number { get; }
-    public Word Word { get; }
-    public WordHint WordHint { get; }
-    public DateTime StartTime { get; }
-    public TimeSpan Duration { get; }
-    public DateTime EndTime => StartTime + Duration;
-    public RoundEndReason EndReason { get; private set; } = RoundEndReason.Timeout;
-    public int PlayerCount => playerData.Count;
-    public bool AllPlayersAwarded => playerData.All(data => data.GuessedCorrectly);
-
-    [JsonIgnore] public CancellationToken CancellationToken => cancellationTokenSource.Token;
-
-    public Round(int number, Word word, TimeSpan duration, IEnumerable<string>? visitorIds = default)
+    internal Round(Word word, double letterHintDelay, IEnumerable<Guid>? playerIds = default)
     {
-        Number = number;
         Word = word;
         WordHint = new WordHint(word);
-        StartTime = DateTime.UtcNow;
-        Duration = duration;
+        EndDate = StartDate + word.Length * TimeSpan.FromSeconds(letterHintDelay);
 
-        if (visitorIds is null) return;
-
-        foreach (var visitorId in visitorIds)
-            AddPlayer(visitorId);
+        playerData = playerIds is null
+            ? new ConcurrentDictionary<Guid, RoundPlayerData>()
+            : new ConcurrentDictionary<Guid, RoundPlayerData>(playerIds.Select(playerId =>
+                new KeyValuePair<Guid, RoundPlayerData>(playerId, new RoundPlayerData(playerId))));
     }
 
-    public void AddPlayer(string playerId) => playerData.Add(new RoundPlayerData { PlayerId = playerId });
+    public Guid Id { get; private init; } = Guid.NewGuid();
+    public required int Number { get; init; }
+    public Word Word { get; }
+    public WordHint WordHint { get; }
+    public required int GuessLimit { get; init; }
+    public DateTime StartDate { get; } = DateTime.UtcNow;
+    public DateTime EndDate { get; }
+    public RoundEndReason? EndReason { get; private set; }
+    public required Guid SessionId { get; init; }
+    public CancellationToken CancellationToken => cancellationTokenSource.Token;
+    public int PlayerCount => playerData.Count;
+    public bool AllPlayersGuessed => !playerData.IsEmpty && playerData.Values.All(player => player.PointsAwarded > 0);
 
-    public bool IncrementGuessCount(string playerId)
+    public bool IsActive => !cancellationTokenSource.IsCancellationRequested &&
+                            DateTime.UtcNow > StartDate &&
+                            DateTime.UtcNow < EndDate;
+
+    public bool AddPlayer(Guid playerId)
+        => playerData.TryAdd(playerId, new RoundPlayerData(playerId));
+
+    public void EndRound(RoundEndReason endReason)
     {
-        var data = playerData.FirstOrDefault(d => d.PlayerId == playerId);
-        if (data is null) return false;
+        EndReason = endReason;
+        cancellationTokenSource.Cancel();
+    }
+
+    public bool IncrementGuessCount(Guid playerId)
+    {
+        if (!playerData.TryGetValue(playerId, out var data))
+            return false;
+
+        if (data.GuessCount >= GuessLimit)
+            return false;
 
         data.GuessCount++;
         return true;
     }
 
-    public bool AwardVisitor(string playerId, int points)
+    public bool AwardPoints(Guid playerId, int points)
     {
-        var data = playerData.FirstOrDefault(d => d.PlayerId == playerId);
-        if (data is null) return false;
+        if (!playerData.TryGetValue(playerId, out var data))
+            return false;
 
         data.PointsAwarded = points;
-        data.GuessedCorrectly = true;
+        data.GuessTime = DateTime.UtcNow - StartDate;
 
         return true;
     }
 
-    /// <summary>
-    /// End the round early.
-    /// </summary>
-    public void EndRound(RoundEndReason reason)
-    {
-        EndReason = reason;
-        cancellationTokenSource.Cancel();
-    }
+    public IEnumerable<RoundPlayerData> GetPlayerData() => playerData.Values;
 
     public void Dispose()
     {
         cancellationTokenSource.Dispose();
-        GC.SuppressFinalize(this);
     }
 
-    public static readonly Round Default = new(0, Word.Default, TimeSpan.FromSeconds(10));
+    public static Round Default => new(Word.Default, RoundOptions.LetterHintDelayDefault)
+    {
+        Id = Guid.Empty,
+        Number = default,
+        SessionId = Guid.Empty,
+        GuessLimit = RoundOptions.GuessLimitDefault
+    };
 }

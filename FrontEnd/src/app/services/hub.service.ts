@@ -4,15 +4,16 @@ import { Store } from '@ngxs/store';
 import { environment } from '@environment';
 import { FingerprintService } from '@services/fingerprint.service';
 import { AuthService } from '@services/auth.service';
-
-import { RegisterPlayerResponse } from '@models/responses/register-player.response';
-import { GuessResponse } from '@models/responses/guess.response';
-import { LetterHintResponse } from '@models/responses/letter-hint.response';
+import { StorageService } from '@services/storage.service';
 
 import { Game } from '@state/game/game.actions';
-import { GameStateResponse } from '@models/responses/game-state-response';
 import { Guess } from '@state/guess/guess.actions';
 import { Hub } from '@state/hub/hub.actions';
+
+import { LetterHintResponse } from '@models/responses/letter-hint.response';
+import { RoundEndedModel } from '@models/round-ended.model';
+import { RoundStartedModel } from '@models/round-started.model';
+import { RegisterPlayerResult, SubmitGuessResult } from '@models/results';
 
 @Injectable({
   providedIn: 'root',
@@ -25,7 +26,12 @@ export class HubService {
     .configureLogging(environment.name !== 'development' ? LogLevel.Error : LogLevel.Information)
     .build();
 
-  constructor(private fingerprintService: FingerprintService, private store: Store, private authService: AuthService) {
+  constructor(
+    private storageService: StorageService,
+    private fingerprintService: FingerprintService,
+    private store: Store,
+    private authService: AuthService
+  ) {
     this.registerHubCallbacks();
   }
 
@@ -40,7 +46,7 @@ export class HubService {
 
     try {
       await this.hubConnection.start();
-      this.store.dispatch(new Hub.Connected());
+      this.store.dispatch(new Hub.Connected(this.hubConnection.connectionId));
     } catch (error) {
       this.store.dispatch(new Hub.Disconnected(error));
     }
@@ -62,9 +68,26 @@ export class HubService {
    * Attempt to register with game service.
    */
   public async registerPlayer() {
+    const playerId = (this.storageService.getPlayerData() || this.storageService.createPlayerData()).playerId;
     const visitorId = await this.fingerprintService.getVisitorId();
-    const response = await this.hubConnection.invoke<RegisterPlayerResponse>('RegisterPlayer', visitorId);
-    this.store.dispatch(new Game.PlayerRegistered(response));
+
+    try {
+      const result = await this.hubConnection.invoke<RegisterPlayerResult>('registerPlayer', playerId, visitorId);
+
+      if (result.isSuccessful) {
+        this.storageService.setPlayerData({
+          playerId: result.playerId,
+          score: result.score,
+          registrationCount: result.registrationCount,
+        });
+
+        this.store.dispatch(new Game.RegisterPlayerSucceeded(result));
+      } else {
+        this.store.dispatch(new Game.RegisterPlayerFailed());
+      }
+    } catch (error) {
+      this.store.dispatch(new Game.RegisterPlayerFailed(error));
+    }
   }
 
   /**
@@ -73,8 +96,8 @@ export class HubService {
    * @param value The value of the guess to submit.
    */
   public async submitGuess(roundId: string, value: string) {
-    const response = await this.hubConnection.invoke<GuessResponse>('SubmitGuess', roundId, value);
-    this.store.dispatch(response.correct ? new Guess.Succeeded(response.points) : new Guess.Failed());
+    const result = await this.hubConnection.invoke<SubmitGuessResult>('submitGuess', roundId, value);
+    this.store.dispatch(result.isCorrect ? new Guess.Succeeded(result.pointsAwarded) : new Guess.Failed());
   }
 
   /**
@@ -85,9 +108,12 @@ export class HubService {
     this.hubConnection.onclose((error) => this.store.dispatch(new Hub.Disconnected(error)));
 
     // server sent game state
-    this.hubConnection.on('SendGameState', (response: GameStateResponse) =>
-      this.store.dispatch(new Game.GameStateUpdated(response))
+    this.hubConnection.on('SendRoundStarted', (response: RoundStartedModel) =>
+      this.store.dispatch(new Game.RoundStarted(response))
     );
+
+    // round ended
+    this.hubConnection.on('SendRoundEnded', (data: RoundEndedModel) => this.store.dispatch(new Game.RoundEnded(data)));
 
     // player count changed
     this.hubConnection.on('SendPlayerCount', (count: number) =>

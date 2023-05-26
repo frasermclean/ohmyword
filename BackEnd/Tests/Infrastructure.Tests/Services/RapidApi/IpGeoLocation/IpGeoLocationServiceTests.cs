@@ -27,10 +27,9 @@ public class IpGeoLocationServiceTests : IClassFixture<RapidApiFixture>
         // assert
         entity.PartitionKey.Should().Be(expectedVersion.ToString());
         entity.RowKey.Should().Be(ipAddress);
-        entity.City.Should().NotBeEmpty();
-        entity.Country.Should().NotBeEmpty();
-        entity.Country.Should().NotBeEmpty();
-        entity.FlagUrl.Should().NotBeEmpty();
+        entity.CountryCode.Should().NotBeEmpty();
+        entity.CountryName.Should().NotBeEmpty();
+        entity.City.Should().NotBeEmpty(); 
     }
 
     [Theory]
@@ -45,9 +44,9 @@ public class IpGeoLocationServiceTests : IClassFixture<RapidApiFixture>
         // assert
         entity.PartitionKey.Should().Be(expectedVersion.ToString());
         entity.RowKey.Should().Be(ipAddress);
+        entity.CountryCode.Should().NotBeEmpty();
+        entity.CountryName.Should().NotBeEmpty();
         entity.City.Should().NotBeEmpty();
-        entity.Country.Should().NotBeEmpty();
-        entity.Country.Should().NotBeEmpty();
-        entity.FlagUrl.Should().NotBeEmpty();
+        
     }
 }

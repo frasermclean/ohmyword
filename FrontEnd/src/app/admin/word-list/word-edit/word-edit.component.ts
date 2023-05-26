@@ -3,9 +3,9 @@ import { NonNullableFormBuilder, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { take, tap } from 'rxjs/operators';
 import { Definition } from '@models/definition.model';
-import { PartOfSpeech } from '@models/enums/part-of-speech.enum';
 import { DefinitionsService } from '@services/definitions.service';
 import { Word } from '@models/word.model';
+import { PartOfSpeech } from "@models/enums";
 
 const partOfSpeechOptions = [
   { value: PartOfSpeech.Noun, label: 'Noun' },

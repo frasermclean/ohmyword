@@ -9,8 +9,8 @@ internal static class IpGeoLocationApiResponseExtensions
     {
         PartitionKey = response.IpVersion.ToString(),
         RowKey = response.IpAddress,
-        Country = response.Country.Name ?? string.Empty,
+        CountryName = response.Country.Name ?? string.Empty,
         City = response.City.Name ?? string.Empty,
-        FlagUrl = response.Country.Flag.Url ?? string.Empty
+        CountryCode = response.Country.Code ?? string.Empty
     };
 }

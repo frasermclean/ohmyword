@@ -30,17 +30,6 @@ var azurePortalIpAddresses = [
 
 var appServiceSubnetName = 'snet-apps'
 
-var serviceBusQueues = [
-  {
-    environment: 'dev'
-    name: 'dev-ip-lookup'
-  }
-  {
-    environment: 'shared'
-    name: 'shared-ip-lookup'
-  }
-]
-
 // b2c tenant (existing)
 resource b2cTenant 'Microsoft.AzureActiveDirectory/b2cDirectories@2021-04-01' existing = {
   name: 'ohmywordauth.onmicrosoft.com'
@@ -283,13 +272,13 @@ resource appConfiguration 'Microsoft.AppConfiguration/configurationStores@2022-0
     }
   }
 
-  resource serviceBusIpLookupQueuesKeyValues 'keyValues' = [for queue in serviceBusQueues: {
-    name: 'ServiceBus:IpLookupQueueName$${queue.environment}'
+  resource serviceBusIpLookupDevQueuesKeyValues 'keyValues' = {
+    name: 'ServiceBus:IpLookupQueueName$dev'
     properties: {
-      value: queue.name
+      value: 'dev-ip-lookup'
       contentType: 'text/plain'
     }
-  }]
+  }  
 }
 
 // key vault
@@ -349,9 +338,13 @@ resource serviceBusNamespace 'Microsoft.ServiceBus/namespaces@2022-10-01-preview
     minimumTlsVersion: '1.2'
   }
 
-  resource ipLookupQueues 'queues' = [for queue in serviceBusQueues: {
-    name: queue.name
-  }]
+  resource devIpLookupQueue 'queues' = {
+    name: 'dev-ip-lookup'
+  }
+
+  resource sharedIpLookupQueue 'queues' = {
+    name: 'shared-ip-lookup'
+  }
 }
 
 module functions 'functions.bicep' = {
@@ -367,7 +360,7 @@ module functions 'functions.bicep' = {
     storageAccountName: storageAccount.name
     virtualNetworkSubnetId: virtualNetwork::appServiceSubnet.id
     serviceBusNamespaceName: serviceBusNamespace.name
-    ipLookupQueueName: serviceBusQueues[1].name
+    ipLookupQueueName: serviceBusNamespace::sharedIpLookupQueue.name
     keyVaultName: keyVault.name
   }
 }

@@ -3,7 +3,8 @@ import { FormBuilder, NonNullableFormBuilder, Validators } from '@angular/forms'
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { Definition } from '@models/definition.model';
-import { PartOfSpeech } from '@models/enums/part-of-speech.enum';
+
+import { PartOfSpeech } from "@models/enums";
 
 const partOfSpeechOptions = [
   { value: PartOfSpeech.Noun, label: 'Noun' },

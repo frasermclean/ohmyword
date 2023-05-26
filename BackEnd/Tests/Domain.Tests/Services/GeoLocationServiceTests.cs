@@ -24,8 +24,8 @@ public class GeoLocationServiceTests : IClassFixture<ServicesFixture>
         // assert
         location.IpVersion.Should().Be(expectedVersion);
         location.IpAddress.Should().Be(ipAddress);
-        location.Country.Should().NotBeEmpty();
+        location.CountryCode.Should().NotBeEmpty();
+        location.CountryName.Should().NotBeEmpty();
         location.City.Should().NotBeEmpty();
-        location.FlagUrl.Should().NotBeEmpty();
     }
 }

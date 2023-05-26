@@ -16,6 +16,11 @@ public record PlayerEntity : Entity
     /// Number of times this player has registered with the game server.
     /// </summary>
     public int RegistrationCount { get; init; } = 1;
+    
+    /// <summary>
+    /// Collection of visitor IDs this player has used.
+    /// </summary>
+    public IEnumerable<string> VisitorIds { get; init; } = Enumerable.Empty<string>();
 
     /// <summary>
     /// IP addresses this player has connected from.

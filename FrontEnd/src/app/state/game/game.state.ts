@@ -1,24 +1,30 @@
 import { Injectable } from '@angular/core';
 import { Action, Selector, State, StateContext, StateToken } from '@ngxs/store';
-import { RoundSummary } from '@models/round-summary.model';
 import { WordHint } from '@models/word-hint.model';
 import { HubService } from '@services/hub.service';
 import { Game } from './game.actions';
 import { Hub } from '@state/hub/hub.actions';
+import { PartOfSpeech, RoundEndReason } from '@models/enums';
+import { ScoreLineModel } from '@models/score-line.model';
 
 interface GameStateModel {
-  registered: boolean;
+  connection: 'disconnected' | 'connecting' | 'connected' | 'registering' | 'registered' | 'disconnecting';
   playerCount: number;
   roundActive: boolean;
   roundNumber: number;
   roundId: string;
+  score: number;
   interval: {
     startDate: Date;
     endDate: Date;
   };
   wordHint: WordHint | null;
-  score: number;
-  roundSummary: RoundSummary | null;
+  roundSummary: {
+    word: string;
+    partOfSpeech: PartOfSpeech;
+    endReason: RoundEndReason;
+    scores: ScoreLineModel[];
+  } | null;
 }
 
 export const GAME_STATE_TOKEN = new StateToken<GameStateModel>('game');
@@ -26,17 +32,17 @@ export const GAME_STATE_TOKEN = new StateToken<GameStateModel>('game');
 @State<GameStateModel>({
   name: GAME_STATE_TOKEN,
   defaults: {
-    registered: false,
+    connection: 'disconnected',
     playerCount: 0,
     roundActive: false,
     roundNumber: 0,
     roundId: '',
+    score: 0,
     interval: {
       startDate: new Date(),
       endDate: new Date(),
     },
     wordHint: null,
-    score: 0,
     roundSummary: null,
   },
 })
@@ -46,37 +52,66 @@ export class GameState {
 
   @Action(Game.RegisterPlayer)
   registerPlayer(context: StateContext<GameStateModel>) {
+    context.patchState({
+      connection: 'registering',
+    });
     this.hubService.registerPlayer();
   }
 
-  @Action(Game.PlayerRegistered)
-  registered(context: StateContext<GameStateModel>, action: Game.PlayerRegistered) {
+  @Action(Game.RegisterPlayerSucceeded)
+  registerPlayerSucceeded(context: StateContext<GameStateModel>, action: Game.RegisterPlayerSucceeded) {
     context.patchState({
-      registered: true,
-      playerCount: action.playerCount,
-      score: action.score,
-      roundActive: action.gameState.roundActive,
-      roundNumber: action.gameState.roundNumber,
-      roundId: action.gameState.roundId,
-      wordHint: action.gameState.wordHint ? new WordHint(action.gameState.wordHint) : null,
+      connection: 'registered',
+      playerCount: action.data.playerCount,
+      score: action.data.score,
+      roundActive: action.data.stateSnapshot.roundActive,
+      roundNumber: action.data.stateSnapshot.roundNumber,
+      roundId: action.data.stateSnapshot.roundId,
+      wordHint: action.data.stateSnapshot.wordHint ? new WordHint(action.data.stateSnapshot.wordHint) : null,
       interval: {
-        startDate: new Date(action.gameState.intervalStart),
-        endDate: new Date(action.gameState.intervalEnd),
+        startDate: new Date(action.data.stateSnapshot.intervalStart),
+        endDate: new Date(action.data.stateSnapshot.intervalEnd),
       },
     });
   }
 
-  @Action(Game.GameStateUpdated)
-  gameStateUpdated(context: StateContext<GameStateModel>, action: Game.GameStateUpdated) {
+  @Action(Game.RegisterPlayerFailed)
+  registerPlayerFailed(context: StateContext<GameStateModel>, action: Game.RegisterPlayerFailed) {
+    if (action.error) {
+      console.error('Failed to register player.', action.error);
+    }
+    context.dispatch(new Hub.Disconnect());
+  }
+
+  @Action(Game.RoundStarted)
+  gameStateUpdated(context: StateContext<GameStateModel>, action: Game.RoundStarted) {
     context.patchState({
-      roundActive: action.roundActive,
-      roundNumber: action.roundNumber,
-      roundId: action.roundId,
-      wordHint: action.wordHint,
-      roundSummary: action.roundSummary,
+      roundActive: true,
+      roundNumber: action.data.roundNumber,
+      roundId: action.data.roundId,
+      wordHint: new WordHint(action.data.wordHint),
+      roundSummary: null,
       interval: {
-        startDate: new Date(action.intervalStart),
-        endDate: new Date(action.intervalEnd),
+        startDate: new Date(action.data.startDate),
+        endDate: new Date(action.data.endDate),
+      },
+    });
+  }
+
+  @Action(Game.RoundEnded)
+  roundEnded(context: StateContext<GameStateModel>, action: Game.RoundEnded) {
+    const state = context.getState();
+    context.patchState({
+      roundActive: false,
+      roundSummary: {
+        word: action.data.word,
+        partOfSpeech: state.wordHint?.partOfSpeech ?? PartOfSpeech.Unknown,
+        endReason: action.data.endReason,
+        scores: action.data.scores,
+      },
+      interval: {
+        startDate: new Date(),
+        endDate: new Date(action.data.nextRoundStart),
       },
     });
   }
@@ -109,16 +144,30 @@ export class GameState {
     context.patchState({ score: currentScore + action.points });
   }
 
+  @Action(Hub.Connect)
+  hubConnecting(context: StateContext<GameStateModel>) {
+    context.patchState({
+      connection: 'connecting',
+    });
+  }
+
+  @Action(Hub.Connected)
+  hubConnected(context: StateContext<GameStateModel>) {
+    context.patchState({
+      connection: 'connected',
+    });
+  }
+
   @Action(Hub.Disconnected)
   hubDisconnected(context: StateContext<GameStateModel>) {
     context.patchState({
-      registered: false,
+      connection: 'disconnected',
     });
   }
 
   @Selector([GAME_STATE_TOKEN])
-  static registered(state: GameStateModel) {
-    return state.registered;
+  static connection(state: GameStateModel) {
+    return state.connection;
   }
 
   @Selector([GAME_STATE_TOKEN])

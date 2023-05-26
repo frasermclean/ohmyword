@@ -1,10 +1,12 @@
 using Azure.Identity;
 using Microsoft.Extensions.Configuration.AzureAppConfiguration;
+using Microsoft.FeatureManagement;
 using OhMyWord.Api.Extensions;
+using OhMyWord.Api.Handlers;
 using OhMyWord.Api.Hubs;
 using OhMyWord.Api.Services;
-using OhMyWord.Domain.Extensions;
-using OhMyWord.Domain.Options;
+using OhMyWord.Domain.Contracts.Notifications;
+using OhMyWord.Domain.DependencyInjection;
 using OhMyWord.Infrastructure.DependencyInjection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -18,8 +20,8 @@ public static class Program
         var appBuilder = WebApplication.CreateBuilder(args);
 
         // azure app configuration
-        var appConfigEnabled = appBuilder.Configuration.GetValue("AppConfig:Enabled", true);
-        if (appConfigEnabled)
+        var isAzureAppConfigEnabled = appBuilder.Configuration.GetValue("AppConfig:Enabled", true);
+        if (isAzureAppConfigEnabled)
             appBuilder.Configuration.AddAzureAppConfiguration(options =>
             {
                 var endpoint = appBuilder.Configuration.GetValue<string>("AppConfig:Endpoint") ??
@@ -27,9 +29,14 @@ public static class Program
                 var appEnv = appBuilder.Configuration.GetValue<string>("AppConfig:Environment", "dev");
                 options.Connect(new Uri(endpoint), new DefaultAzureCredential())
                     .Select(KeyFilter.Any)
-                    .Select(KeyFilter.Any, "shared")
                     .Select(KeyFilter.Any, appEnv)
-                    .ConfigureKeyVault(vaultOptions => vaultOptions.SetCredential(new DefaultAzureCredential()));
+                    .ConfigureKeyVault(vaultOptions => vaultOptions.SetCredential(new DefaultAzureCredential()))
+                    .UseFeatureFlags(flagOptions =>
+                    {
+                        flagOptions.Select(KeyFilter.Any)
+                            .Select(KeyFilter.Any, appEnv);
+                        flagOptions.CacheExpirationInterval = TimeSpan.FromMinutes(5);
+                    });
             });
 
         // configure app host
@@ -38,8 +45,18 @@ public static class Program
             // microsoft identity authentication services
             services.AddMicrosoftIdentityAuthentication(context);
 
+            // feature management
+            services.AddFeatureManagement();
+
             // fast endpoints
             services.AddFastEndpoints();
+
+            // mediator services
+            services.AddMediatR(configuration =>
+            {
+                configuration.RegisterServicesFromAssemblyContaining<RoundStartedNotification>();
+                configuration.RegisterServicesFromAssemblyContaining<RoundStartedHandler>();
+            });
 
             // signalR services
             services.AddSignalR()
@@ -49,17 +66,12 @@ public static class Program
                 );
 
             // game services
-            services.AddHostedService<GameCoordinator>();
-            services.AddSingleton<IGameService, GameService>();
-            services.AddOptions<GameServiceOptions>()
-                .Bind(context.Configuration.GetSection(GameServiceOptions.SectionName))
-                .ValidateDataAnnotations()
-                .ValidateOnStart();
+            services.AddHostedService<GameBackgroundService>();
 
             // local project services
-            services.AddDomainServices();
+            services.AddDomainServices(context.Configuration);
             services.AddCosmosDbRepositories(context);
-            services.AddTableRepositories(context);
+            services.AddTableRepositories(context.Configuration);
             services.AddMessagingServices(context);
             services.AddRapidApiServices();
 

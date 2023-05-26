@@ -1,7 +1,7 @@
-import { GameStateResponse } from '@models/responses/game-state-response';
 import { LetterHintResponse } from '@models/responses/letter-hint.response';
-import { RegisterPlayerResponse } from '@models/responses/register-player.response';
-import { WordHint } from '@models/word-hint.model';
+import { RegisterPlayerResult } from '@models/results';
+import { RoundEndedModel } from "@models/round-ended.model";
+import { RoundStartedModel } from "@models/round-started.model";
 
 /**
  * Game actions and events
@@ -16,28 +16,24 @@ export namespace Game {
     constructor(public points: number) {}
   }
 
-  export class PlayerRegistered {
-    static readonly type = '[Game Service] Game.PlayerRegistered';
-
-    playerCount = this.response.playerCount;
-    score = this.response.score;
-    gameState = this.response.gameState;
-
-    constructor(private response: RegisterPlayerResponse) {}
+  export class RegisterPlayerSucceeded {
+    static readonly type = '[Game Service] Game.RegisterPlayerSuccess';
+    constructor(public data: RegisterPlayerResult) {}
   }
 
-  export class GameStateUpdated {
-    static readonly type = '[Game Service] Game.GameStateUpdated';
+  export class RegisterPlayerFailed {
+    static readonly type = '[Game Service] Game.RegisterPlayerFailed';
+    constructor(public error?: any) {}
+  }
 
-    roundActive = this.response.roundActive;
-    roundNumber = this.response.roundNumber;
-    roundId = this.response.roundId;
-    intervalStart = new Date(this.response.intervalStart);
-    intervalEnd = new Date(this.response.intervalEnd);
-    wordHint = this.response.wordHint ? new WordHint(this.response.wordHint) : null;
-    roundSummary = this.response.roundSummary;
+  export class RoundStarted {
+    static readonly type = '[Game Service] Game.RoundStarted';
+    constructor(public data: RoundStartedModel) {}
+  }
 
-    constructor(private response: GameStateResponse) {}
+  export class RoundEnded {
+    static readonly type = '[Game Service] Game.RoundEnded';
+    constructor(public data: RoundEndedModel) {}
   }
 
   export class LetterHintReceived {

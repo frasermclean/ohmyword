@@ -23,6 +23,7 @@ import { LetterComponent } from './hint/letter/letter.component';
 import { CountdownComponent } from './countdown/countdown.component';
 import { RoundSummaryComponent } from './round-summary/round-summary.component';
 import { StatsComponent } from './stats/stats.component';
+import { SpinnerComponent } from './spinner/spinner.component';
 
 const routes: Routes = [{ path: '', component: GameRootComponent }];
 
@@ -35,6 +36,7 @@ const routes: Routes = [{ path: '', component: GameRootComponent }];
     CountdownComponent,
     RoundSummaryComponent,
     StatsComponent,
+    SpinnerComponent,
   ],
   imports: [
     CommonModule,

@@ -2,7 +2,7 @@
 using Azure.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using OhMyWord.Domain.Extensions;
+using OhMyWord.Domain.DependencyInjection;
 using OhMyWord.Infrastructure.DependencyInjection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -26,9 +26,9 @@ public static class Program
             })
             .ConfigureServices((context, services) =>
             {
-                services.AddDomainServices();
+                services.AddDomainServices(context.Configuration);
                 services.AddRapidApiServices();
-                services.AddTableRepositories(context);
+                services.AddTableRepositories(context.Configuration);
 
                 // health checks
                 if (context.HostingEnvironment.IsDevelopment())
@@ -41,7 +41,7 @@ public static class Program
                     var endpointUri = new Uri(context.Configuration["TableService:Endpoint"] ?? string.Empty);
                     var credential = new DefaultAzureCredential();
                     services.AddHealthChecks()
-                        .AddAzureTable(endpointUri, credential, "users");
+                        .AddAzureTable(endpointUri, credential, "users"); // TODO: Refactor functions health checks
                 }
             })
             .Build();
