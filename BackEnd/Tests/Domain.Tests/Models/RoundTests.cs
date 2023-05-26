@@ -29,7 +29,7 @@ public class RoundTests
 
     [Theory, AutoData]
     public void NewRound_WithSpecifiedParameters_Should_HaveExpectedProperties(Word word, int number,
-        string[] playerIds, Guid sessionId)
+        Guid[] playerIds, Guid sessionId)
     {
         // arrange
         using var round = CreateRound(word, number, playerIds, sessionId);
@@ -49,7 +49,7 @@ public class RoundTests
     }
 
     [Theory, AutoData]
-    public void AddPlayer_Should_IncreasePlayerCount(Word word, int roundNumber, string playerId)
+    public void AddPlayer_Should_IncreasePlayerCount(Word word, int roundNumber, Guid playerId)
     {
         // arrange
         using var round = CreateRound(word, roundNumber);
@@ -78,7 +78,7 @@ public class RoundTests
     }
 
     [Theory, AutoData]
-    public void IncrementGuessCount_Should_ReturnCorrectResult(Word word, int roundNumber, string playerId)
+    public void IncrementGuessCount_Should_ReturnCorrectResult(Word word, int roundNumber, Guid playerId)
     {
         // arrange
         using var round = CreateRound(word, roundNumber, guessLimit: 1);
@@ -87,7 +87,7 @@ public class RoundTests
         // act
         var result1 = round.IncrementGuessCount(playerId);
         var result2 = round.IncrementGuessCount(playerId);
-        var result3 = round.IncrementGuessCount("unknownPlayerId");
+        var result3 = round.IncrementGuessCount(Guid.NewGuid());
 
         // assert
         result1.Should().BeTrue();
@@ -96,7 +96,7 @@ public class RoundTests
     }
 
     [Theory, AutoData]
-    public void AwardPoints_Should_ReturnExpectedResult(Word word, int roundNumber, string playerId, int points)
+    public void AwardPoints_Should_ReturnExpectedResult(Word word, int roundNumber, Guid playerId, int points)
     {
         // arrange
         using var round = CreateRound(word, roundNumber);
@@ -104,7 +104,7 @@ public class RoundTests
 
         // act
         var result1 = round.AwardPoints(playerId, points);
-        var result2 = round.AwardPoints("unknownPlayerId", points);
+        var result2 = round.AwardPoints(Guid.NewGuid(), points);
 
         // assert
         result1.Should().BeTrue();
@@ -112,7 +112,7 @@ public class RoundTests
     }
 
     [Theory, AutoData]
-    public void GetPlayerData_Should_ReturnExpectedResult(Word word, int roundNumber, string[] playerIds, int points)
+    public void GetPlayerData_Should_ReturnExpectedResult(Word word, int roundNumber, Guid[] playerIds, int points)
     {
         // arrange
         using var round = CreateRound(word, roundNumber);
@@ -146,7 +146,7 @@ public class RoundTests
         round.Word.Should().Be(Word.Default);
     }
 
-    private static Round CreateRound(Word word, int number = default, IEnumerable<string>? playerIds = default,
+    private static Round CreateRound(Word word, int number = default, IEnumerable<Guid>? playerIds = default,
         Guid sessionId = default, double letterHintDelay = RoundOptions.LetterHintDelayDefault,
         int guessLimit = RoundOptions.GuessLimitDefault) =>
         new(word, letterHintDelay, playerIds) { Number = number, GuessLimit = guessLimit, SessionId = sessionId };

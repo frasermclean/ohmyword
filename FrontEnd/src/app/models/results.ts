@@ -3,7 +3,7 @@ import { WordHintResponse } from './responses/word-hint.response';
 /**
  * Result of a player registering for a game.
  */
-export interface PlayerRegisteredResult {
+export interface RegisterPlayerResult {
   isSuccessful: boolean;
   playerId: string;
   playerCount: number;

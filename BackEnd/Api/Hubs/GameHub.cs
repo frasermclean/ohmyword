@@ -1,7 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.SignalR;
 using OhMyWord.Api.Extensions;
-using OhMyWord.Api.Services;
 using OhMyWord.Domain.Contracts.Notifications;
 using OhMyWord.Domain.Contracts.Requests;
 using OhMyWord.Domain.Contracts.Results;
@@ -23,7 +22,6 @@ public class GameHub : Hub<IGameHub>
     private readonly ILogger<GameHub> logger;
     private readonly IStateManager stateManager;
     private readonly IMediator mediator;
-
 
     public GameHub(ILogger<GameHub> logger, IStateManager stateManager, IMediator mediator)
     {
@@ -52,7 +50,9 @@ public class GameHub : Hub<IGameHub>
     {
         logger.LogInformation("Attempting to register player with visitor ID: {VisitorId}", visitorId);
 
-        var request = new RegisterPlayerRequest(Context.ConnectionId, visitorId, Context.GetIpAddress(), playerId);
+        var request = new RegisterPlayerRequest(Context.ConnectionId, playerId, visitorId, Context.GetIpAddress(),
+            Context.GetUserId());
+
         var result = await mediator.Send(request);
 
         await Clients.Others.SendPlayerCount(result.PlayerCount);
@@ -64,7 +64,6 @@ public class GameHub : Hub<IGameHub>
     public async Task<ProcessGuessResult> ProcessGuessAsync(Guid roundId, string value)
     {
         var request = new ProcessGuessRequest(Context.ConnectionId, roundId, value);
-        var result = await mediator.Send(request);
-        return result;
+        return await mediator.Send(request);
     }
 }

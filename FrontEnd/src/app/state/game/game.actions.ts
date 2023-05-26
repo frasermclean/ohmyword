@@ -1,5 +1,5 @@
 import { LetterHintResponse } from '@models/responses/letter-hint.response';
-import { PlayerRegisteredResult } from '@models/results';
+import { RegisterPlayerResult } from '@models/results';
 import { RoundEndedModel } from "@models/round-ended.model";
 import { RoundStartedModel } from "@models/round-started.model";
 
@@ -16,9 +16,14 @@ export namespace Game {
     constructor(public points: number) {}
   }
 
-  export class PlayerRegistered {
-    static readonly type = '[Game Service] Game.PlayerRegistered';
-    constructor(public data: PlayerRegisteredResult) {}
+  export class RegisterPlayerSucceeded {
+    static readonly type = '[Game Service] Game.RegisterPlayerSuccess';
+    constructor(public data: RegisterPlayerResult) {}
+  }
+
+  export class RegisterPlayerFailed {
+    static readonly type = '[Game Service] Game.RegisterPlayerFailed';
+    constructor(public error?: any) {}
   }
 
   export class RoundStarted {

@@ -13,7 +13,7 @@ import { Hub } from '@state/hub/hub.actions';
 import { LetterHintResponse } from '@models/responses/letter-hint.response';
 import { RoundEndedModel } from '@models/round-ended.model';
 import { RoundStartedModel } from '@models/round-started.model';
-import { PlayerRegisteredResult, SubmitGuessResult } from '@models/results';
+import { RegisterPlayerResult, SubmitGuessResult } from '@models/results';
 
 @Injectable({
   providedIn: 'root',
@@ -68,23 +68,25 @@ export class HubService {
    * Attempt to register with game service.
    */
   public async registerPlayer() {
-    const playerData = this.storageService.getPlayerData() || this.storageService.createPlayerData();
+    const playerId = (this.storageService.getPlayerData() || this.storageService.createPlayerData()).playerId;
     const visitorId = await this.fingerprintService.getVisitorId();
 
-    const result = await this.hubConnection.invoke<PlayerRegisteredResult>(
-      'registerPlayer',
-      playerData.playerId,
-      visitorId
-    );
+    try {
+      const result = await this.hubConnection.invoke<RegisterPlayerResult>('registerPlayer', playerId, visitorId);
 
-    if (result.isSuccessful) {
-      this.storageService.setPlayerData({
-        playerId: result.playerId,
-        score: result.score,
-        registrationCount: result.registrationCount,
-      });
+      if (result.isSuccessful) {
+        this.storageService.setPlayerData({
+          playerId: result.playerId,
+          score: result.score,
+          registrationCount: result.registrationCount,
+        });
 
-      this.store.dispatch(new Game.PlayerRegistered(result));
+        this.store.dispatch(new Game.RegisterPlayerSucceeded(result));
+      } else {
+        this.store.dispatch(new Game.RegisterPlayerFailed());
+      }
+    } catch (error) {
+      this.store.dispatch(new Game.RegisterPlayerFailed(error));
     }
   }
 

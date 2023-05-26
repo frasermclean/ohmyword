@@ -14,7 +14,7 @@ public interface IPlayerState
     /// <summary>
     /// Currently connected player IDs.
     /// </summary>
-    IEnumerable<string> PlayerIds { get; }
+    IEnumerable<Guid> PlayerIds { get; }
 
     /// <summary>
     /// Add a player to the state.
@@ -42,7 +42,7 @@ public interface IPlayerState
     /// </summary>
     /// <param name="playerId">The ID of the player to look up.</param>
     /// <returns>A <see cref="Player"/> reference if found, null if not.</returns>
-    Player? GetPlayerById(string playerId);
+    Player? GetPlayerById(Guid playerId);
 
     /// <summary>
     /// Reset the state to it's default values.
@@ -65,18 +65,24 @@ public class PlayerState : IPlayerState
     }
 
     public int PlayerCount => players.Count;
-    public IEnumerable<string> PlayerIds => players.Values.Select(player => player.Id);
+    public IEnumerable<Guid> PlayerIds => players.Values.Select(player => player.Id);
 
     public bool AddPlayer(Player player)
     {
-        if (players.TryAdd(player.ConnectionId, player))
+        if (player.ConnectionId is null)
         {
-            logger.LogInformation("Added player with connection ID: {ConnectionId}", player.ConnectionId);
-            return true;
+            logger.LogError("Player connection ID is null");
+            return false;
+        }
+        
+        if (!players.TryAdd(player.ConnectionId, player))
+        {
+            logger.LogError("Couldn't add player with connection ID: {ConnectionId}", player.ConnectionId);
+            return false;            
         }
 
-        logger.LogError("Couldn't add player with connection ID: {ConnectionId}", player.ConnectionId);
-        return false;
+        logger.LogInformation("Added player with connection ID: {ConnectionId}", player.ConnectionId);
+        return true;
     }
 
     public bool RemovePlayer(string connectionId)
@@ -91,7 +97,7 @@ public class PlayerState : IPlayerState
         return false;
     }
 
-    public Player? GetPlayerById(string playerId)
+    public Player? GetPlayerById(Guid playerId)
         => players.FirstOrDefault(pair => pair.Value.Id == playerId).Value;
 
     public Player? GetPlayerByConnectionId(string connectionId)

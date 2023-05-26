@@ -16,10 +16,21 @@ public class RegisterPlayerHandler : IRequestHandler<RegisterPlayerRequest, Regi
         this.playerService = playerService;
         this.stateManager = stateManager;
     }
-    
+
     public async Task<RegisterPlayerResult> Handle(RegisterPlayerRequest request, CancellationToken cancellationToken)
     {
-        var player = await playerService.GetOrCreatePlayerAsync(request);
+        var player = await playerService.GetPlayerByIdAsync(request.PlayerId, request.ConnectionId, request.VisitorId);
+        
+        if (player is not null)
+        {
+            await playerService.PatchPlayerRegistrationAsync(player, request.VisitorId, request.IpAddress);
+        }
+        else
+        {
+            player = await playerService.CreatePlayerAsync(request.PlayerId, request.ConnectionId, request.VisitorId,
+                request.IpAddress, request.UserId);
+        }
+
         var isSuccessful = stateManager.PlayerState.AddPlayer(player);
 
         return new RegisterPlayerResult
@@ -32,7 +43,7 @@ public class RegisterPlayerHandler : IRequestHandler<RegisterPlayerRequest, Regi
             StateSnapshot = GetGameState()
         };
     }
-    
+
     private StateSnapshot GetGameState() => new()
     {
         RoundActive = stateManager.SessionState == SessionState.RoundActive,

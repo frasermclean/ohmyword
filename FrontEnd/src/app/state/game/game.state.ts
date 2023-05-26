@@ -58,8 +58,8 @@ export class GameState {
     this.hubService.registerPlayer();
   }
 
-  @Action(Game.PlayerRegistered)
-  registered(context: StateContext<GameStateModel>, action: Game.PlayerRegistered) {
+  @Action(Game.RegisterPlayerSucceeded)
+  registerPlayerSucceeded(context: StateContext<GameStateModel>, action: Game.RegisterPlayerSucceeded) {
     context.patchState({
       connection: 'registered',
       playerCount: action.data.playerCount,
@@ -73,6 +73,14 @@ export class GameState {
         endDate: new Date(action.data.stateSnapshot.intervalEnd),
       },
     });
+  }
+
+  @Action(Game.RegisterPlayerFailed)
+  registerPlayerFailed(context: StateContext<GameStateModel>, action: Game.RegisterPlayerFailed) {
+    if (action.error) {
+      console.error('Failed to register player.', action.error);
+    }
+    context.dispatch(new Hub.Disconnect());
   }
 
   @Action(Game.RoundStarted)

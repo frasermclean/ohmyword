@@ -10,9 +10,14 @@ namespace OhMyWord.Domain.Services;
 
 public interface IPlayerService
 {
-    Task<Player> GetOrCreatePlayerAsync(RegisterPlayerRequest request);
+    Task<Player?> GetPlayerByIdAsync(Guid playerId, string? connectionId = default, string? visitorId = default);
 
-    Task IncrementPlayerScoreAsync(string visitorId, int points);
+    Task<Player> CreatePlayerAsync(Guid playerId, string connectionId, string visitorId, IPAddress ipAddress,
+        Guid? userId);
+
+    Task PatchPlayerRegistrationAsync(Player player, string visitorId, IPAddress ipAddress);
+
+    Task IncrementPlayerScoreAsync(Guid playerId, int points);
 }
 
 public class PlayerService : IPlayerService
@@ -26,34 +31,39 @@ public class PlayerService : IPlayerService
         this.playerRepository = playerRepository;
     }
 
-    public async Task<Player> GetOrCreatePlayerAsync(RegisterPlayerRequest request)
+    public async Task<Player?> GetPlayerByIdAsync(Guid playerId, string? connectionId, string? visitorId)
     {
-        var (connectionId, visitorId, ipAddress, userId) = request;
-
-        var player = (await playerRepository.GetPlayerAsync(visitorId))?.ToPlayer(connectionId);
-        if (player is not null)
-        {
-            logger.LogDebug("Found existing visitor with ID: {VisitorId}", visitorId);
-
-            // TODO: Handle multiple connections with same visitor ID
-            await playerRepository.IncrementRegistrationCountAsync(player.Id);
-            if (!player.IpAddresses.Contains(ipAddress))
-                await playerRepository.AddIpAddressAsync(player.Id, ipAddress.ToString());
-        }
-
-        // create player if existing player was not found
-        player ??= (await playerRepository.CreatePlayerAsync(new PlayerEntity
-            {
-                Id = visitorId, UserId = userId, IpAddresses = new[] { ipAddress.ToString() }
-            }))
-            .ToPlayer(connectionId);
-
-        logger.LogInformation("Player with ID: {PlayerId} joined the game", player.Id);
-
-        return player;
+        var entity = await playerRepository.GetPlayerByIdAsync(playerId);
+        return entity?.ToPlayer(connectionId, visitorId);
     }
 
+    public async Task<Player> CreatePlayerAsync(Guid playerId, string connectionId, string visitorId,
+        IPAddress ipAddress, Guid? userId)
+    {
+        var entity = await playerRepository.CreatePlayerAsync(new PlayerEntity
+        {
+            Id = playerId.ToString(),
+            UserId = userId,
+            VisitorIds = new[] { visitorId },
+            IpAddresses = new[] { ipAddress.ToString() }
+        });
 
-    public Task IncrementPlayerScoreAsync(string visitorId, int points) =>
-        playerRepository.IncrementScoreAsync(visitorId, points); // TODO: Update local cache to keep points in sync
+        return entity.ToPlayer(connectionId, visitorId);
+    }
+
+    public async Task PatchPlayerRegistrationAsync(Player player, string visitorId, IPAddress ipAddress)
+    {
+        await playerRepository.IncrementRegistrationCountAsync(player.Id);
+
+        // patch ip address
+        if (!player.IpAddresses.Contains(ipAddress))
+            await playerRepository.AddIpAddressAsync(player.Id, ipAddress.ToString());
+
+        // patch visitor id
+        if (!player.VisitorIds.Contains(visitorId))
+            await playerRepository.AddVisitorIdAsync(player.Id, visitorId);
+    }
+
+    public Task IncrementPlayerScoreAsync(Guid playerId, int points) =>
+        playerRepository.IncrementScoreAsync(playerId, points);
 }
