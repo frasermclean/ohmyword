@@ -6,19 +6,19 @@ namespace OhMyWord.Domain.Models;
 
 public sealed class Round : IDisposable
 {
-    private readonly ConcurrentDictionary<string, RoundPlayerData> playerData;
+    private readonly ConcurrentDictionary<Guid, RoundPlayerData> playerData;
     private readonly CancellationTokenSource cancellationTokenSource = new();
 
-    internal Round(Word word, double letterHintDelay, IEnumerable<string>? playerIds = default)
+    internal Round(Word word, double letterHintDelay, IEnumerable<Guid>? playerIds = default)
     {
         Word = word;
         WordHint = new WordHint(word);
         EndDate = StartDate + word.Length * TimeSpan.FromSeconds(letterHintDelay);
 
         playerData = playerIds is null
-            ? new ConcurrentDictionary<string, RoundPlayerData>()
-            : new ConcurrentDictionary<string, RoundPlayerData>(playerIds.Select(playerId =>
-                new KeyValuePair<string, RoundPlayerData>(playerId, new RoundPlayerData(playerId))));
+            ? new ConcurrentDictionary<Guid, RoundPlayerData>()
+            : new ConcurrentDictionary<Guid, RoundPlayerData>(playerIds.Select(playerId =>
+                new KeyValuePair<Guid, RoundPlayerData>(playerId, new RoundPlayerData(playerId))));
     }
 
     public Guid Id { get; private init; } = Guid.NewGuid();
@@ -38,7 +38,7 @@ public sealed class Round : IDisposable
                             DateTime.UtcNow > StartDate &&
                             DateTime.UtcNow < EndDate;
 
-    public bool AddPlayer(string playerId)
+    public bool AddPlayer(Guid playerId)
         => playerData.TryAdd(playerId, new RoundPlayerData(playerId));
 
     public void EndRound(RoundEndReason endReason)
@@ -47,7 +47,7 @@ public sealed class Round : IDisposable
         cancellationTokenSource.Cancel();
     }
 
-    public bool IncrementGuessCount(string playerId)
+    public bool IncrementGuessCount(Guid playerId)
     {
         if (!playerData.TryGetValue(playerId, out var data))
             return false;
@@ -59,7 +59,7 @@ public sealed class Round : IDisposable
         return true;
     }
 
-    public bool AwardPoints(string playerId, int points)
+    public bool AwardPoints(Guid playerId, int points)
     {
         if (!playerData.TryGetValue(playerId, out var data))
             return false;

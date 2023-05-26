@@ -1,5 +1,5 @@
 ﻿using MediatR;
 
-namespace OhMyWord.Domain.Notifications;
+namespace OhMyWord.Domain.Contracts.Notifications;
 
 public record PlayerDisconnectedNotification(string ConnectionId) : INotification;

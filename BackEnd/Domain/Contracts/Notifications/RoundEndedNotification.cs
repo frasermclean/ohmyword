@@ -2,7 +2,7 @@
 using OhMyWord.Domain.Models;
 using OhMyWord.Infrastructure.Models.Entities;
 
-namespace OhMyWord.Domain.Notifications;
+namespace OhMyWord.Domain.Contracts.Notifications;
 
 public class RoundEndedNotification : INotification
 {

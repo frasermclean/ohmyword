@@ -22,7 +22,10 @@ public class StateManagerTests
             Definitions = new[] { new Definition { PartOfSpeech = PartOfSpeech.Verb, Value = "Test verb" } },
         };
 
-        var round = new Round(word, 3, new[] { "abc", "def" }) { Number = 1, GuessLimit = 3, SessionId = session.Id };
+        var round = new Round(word, 3, new[] { Guid.NewGuid(), Guid.NewGuid() })
+        {
+            Number = 1, GuessLimit = 3, SessionId = session.Id
+        };
 
         roundServiceMock.Setup(factory =>
                 factory.CreateRoundAsync(It.IsAny<int>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))

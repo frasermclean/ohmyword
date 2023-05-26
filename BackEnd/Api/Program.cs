@@ -4,8 +4,8 @@ using OhMyWord.Api.Extensions;
 using OhMyWord.Api.Handlers;
 using OhMyWord.Api.Hubs;
 using OhMyWord.Api.Services;
+using OhMyWord.Domain.Contracts.Notifications;
 using OhMyWord.Domain.DependencyInjection;
-using OhMyWord.Domain.Notifications;
 using OhMyWord.Infrastructure.DependencyInjection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -57,8 +57,7 @@ public static class Program
                 );
 
             // game services
-            services.AddHostedService<GameBackgroundService>();
-            services.AddSingleton<IPlayerInputService, PlayerInputService>();
+            services.AddHostedService<GameBackgroundService>();            
 
             // local project services
             services.AddDomainServices(context.Configuration);

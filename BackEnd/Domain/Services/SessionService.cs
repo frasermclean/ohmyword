@@ -1,9 +1,9 @@
 ﻿using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using OhMyWord.Domain.Contracts.Notifications;
 using OhMyWord.Domain.Extensions;
 using OhMyWord.Domain.Models;
-using OhMyWord.Domain.Notifications;
 using OhMyWord.Domain.Options;
 using OhMyWord.Infrastructure.Services;
 

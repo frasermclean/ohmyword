@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.SignalR;
 using OhMyWord.Api.Hubs;
-using OhMyWord.Domain.Notifications;
+using OhMyWord.Domain.Contracts.Notifications;
 
 namespace OhMyWord.Api.Handlers;
 

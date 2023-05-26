@@ -1,10 +1,10 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.SignalR;
 using OhMyWord.Api.Extensions;
-using OhMyWord.Api.Models;
-using OhMyWord.Api.Services;
+using OhMyWord.Domain.Contracts.Notifications;
+using OhMyWord.Domain.Contracts.Requests;
+using OhMyWord.Domain.Contracts.Results;
 using OhMyWord.Domain.Models;
-using OhMyWord.Domain.Notifications;
 using OhMyWord.Domain.Services;
 
 namespace OhMyWord.Api.Hubs;
@@ -21,20 +21,17 @@ public class GameHub : Hub<IGameHub>
 {
     private readonly ILogger<GameHub> logger;
     private readonly IStateManager stateManager;
-    private readonly IPlayerInputService playerInputService;
-    private readonly IPublisher publisher;
+    private readonly IMediator mediator;
 
-    public GameHub(ILogger<GameHub> logger, IStateManager stateManager, IPlayerInputService playerInputService,
-        IPublisher publisher)
+    public GameHub(ILogger<GameHub> logger, IStateManager stateManager, IMediator mediator)
     {
         this.logger = logger;
         this.stateManager = stateManager;
-        this.playerInputService = playerInputService;
-        this.publisher = publisher;
+        this.mediator = mediator;
     }
 
     public override Task OnConnectedAsync()
-        => publisher.Publish(new PlayerConnectedNotification(Context.ConnectionId, Context.GetIpAddress()));
+        => mediator.Publish(new PlayerConnectedNotification(Context.ConnectionId, Context.GetIpAddress()));
 
     public override Task OnDisconnectedAsync(Exception? exception)
     {
@@ -44,18 +41,19 @@ public class GameHub : Hub<IGameHub>
             logger.LogError(exception, "Client disconnected. Connection ID: {ConnectionId}", Context.ConnectionId);
 
         return Task.WhenAll(
-            publisher.Publish(new PlayerDisconnectedNotification(Context.ConnectionId)),
+            mediator.Publish(new PlayerDisconnectedNotification(Context.ConnectionId)),
             Clients.Others.SendPlayerCount(stateManager.PlayerState.PlayerCount));
     }
 
     [HubMethodName("registerPlayer")]
-    public async Task<PlayerRegisteredResult> RegisterPlayerAsync(string visitorId)
+    public async Task<RegisterPlayerResult> RegisterPlayerAsync(Guid playerId, string visitorId)
     {
         logger.LogInformation("Attempting to register player with visitor ID: {VisitorId}", visitorId);
 
-        var result = await playerInputService.RegisterPlayerAsync(Context.ConnectionId, visitorId,
-            Context.GetIpAddress(),
+        var request = new RegisterPlayerRequest(Context.ConnectionId, playerId, visitorId, Context.GetIpAddress(),
             Context.GetUserId());
+
+        var result = await mediator.Send(request);
 
         await Clients.Others.SendPlayerCount(result.PlayerCount);
 
@@ -63,9 +61,9 @@ public class GameHub : Hub<IGameHub>
     }
 
     [HubMethodName("submitGuess")]
-    public async Task<GuessProcessedResult> ProcessGuessAsync(Guid roundId, string value)
+    public async Task<ProcessGuessResult> ProcessGuessAsync(Guid roundId, string value)
     {
-        var result = await playerInputService.ProcessGuessAsync(Context.ConnectionId, roundId, value);
-        return result;
+        var request = new ProcessGuessRequest(Context.ConnectionId, roundId, value);
+        return await mediator.Send(request);
     }
 }
