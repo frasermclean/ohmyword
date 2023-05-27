@@ -103,4 +103,20 @@ public class StateManagerTests
         stateManager.Round.Should().BeNull();
         stateManager.IsDefault.Should().BeTrue();
     }
+
+    [Fact]
+    public async Task GetStateSnapshot_Should_ReturnExpectedValues()
+    {
+        // act
+        await stateManager.NextRoundAsync();
+        var snapshot = stateManager.GetStateSnapshot();
+
+        // assert
+        snapshot.RoundActive.Should().BeTrue();
+        snapshot.RoundNumber.Should().Be(1);
+        snapshot.RoundId.Should().NotBeEmpty();
+        snapshot.IntervalStart.Should().BeBefore(DateTime.UtcNow);
+        snapshot.IntervalEnd.Should().BeAfter(DateTime.UtcNow);
+        snapshot.WordHint.Should().NotBeNull();
+    }
 }

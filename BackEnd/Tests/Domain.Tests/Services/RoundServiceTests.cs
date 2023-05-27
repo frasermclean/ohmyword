@@ -27,6 +27,24 @@ public class RoundServiceTests : IClassFixture<TestDataFixture>
     }
 
     [Fact]
+    public async Task CreateRoundAsync_Should_Return_ExpectedValues()
+    {
+        // arrange
+        var word = fixture.CreateWord();
+        wordsServiceMock.Setup(service => service.GetRandomWordAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(word);
+        
+        // act
+        var round = await roundService.CreateRoundAsync(1, Guid.NewGuid());
+        
+        // assert
+        round.Id.Should().NotBeEmpty();
+        round.Number.Should().Be(1);
+        round.Word.Should().Be(word);
+        round.WordHint.Should().NotBeNull();
+    }
+
+    [Fact]
     public async Task GetRoundEndDataAsync_Should_Return_ExpectedValues()
     {
         // arrange
