@@ -1,7 +1,6 @@
 ﻿using MediatR;
 using OhMyWord.Domain.Contracts.Requests;
 using OhMyWord.Domain.Contracts.Results;
-using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Services;
 
 namespace OhMyWord.Domain.Contracts.Handlers;
@@ -19,18 +18,8 @@ public class RegisterPlayerHandler : IRequestHandler<RegisterPlayerRequest, Regi
 
     public async Task<RegisterPlayerResult> Handle(RegisterPlayerRequest request, CancellationToken cancellationToken)
     {
-        var player = await playerService.GetPlayerByIdAsync(request.PlayerId, request.ConnectionId, request.VisitorId);
-        
-        if (player is not null)
-        {
-            await playerService.PatchPlayerRegistrationAsync(player, request.VisitorId, request.IpAddress);
-        }
-        else
-        {
-            player = await playerService.CreatePlayerAsync(request.PlayerId, request.ConnectionId, request.VisitorId,
-                request.IpAddress, request.UserId);
-        }
-
+        var player = await playerService.GetOrCreatePlayerEntityAsync(request.PlayerId, request.VisitorId,
+            request.ConnectionId, request.IpAddress, request.UserId);
         var isSuccessful = stateManager.PlayerState.AddPlayer(player);
 
         return new RegisterPlayerResult
@@ -40,17 +29,7 @@ public class RegisterPlayerHandler : IRequestHandler<RegisterPlayerRequest, Regi
             PlayerCount = stateManager.PlayerState.PlayerCount,
             Score = player.Score,
             RegistrationCount = player.RegistrationCount,
-            StateSnapshot = GetGameState()
+            StateSnapshot = stateManager.GetStateSnapshot()
         };
     }
-
-    private StateSnapshot GetGameState() => new()
-    {
-        RoundActive = stateManager.SessionState == SessionState.RoundActive,
-        RoundNumber = stateManager.Round?.Number ?? default,
-        RoundId = stateManager.Round?.Id ?? default,
-        IntervalStart = stateManager.IntervalStart,
-        IntervalEnd = stateManager.IntervalEnd,
-        WordHint = stateManager.Round?.WordHint,
-    };
 }

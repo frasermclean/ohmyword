@@ -7,7 +7,7 @@ internal static class IpGeoLocationApiResponseExtensions
 {
     internal static GeoLocationEntity ToEntity(this IpGeoLocationApiResponse response) => new()
     {
-        PartitionKey = response.IpVersion.ToString(),
+        PartitionKey = response.IpVersion,
         RowKey = response.IpAddress,
         CountryName = response.Country.Name ?? string.Empty,
         City = response.City.Name ?? string.Empty,

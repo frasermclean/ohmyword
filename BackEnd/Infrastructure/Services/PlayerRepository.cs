@@ -15,6 +15,7 @@ public interface IPlayerRepository
     Task<PlayerEntity> IncrementScoreAsync(Guid playerId, long value);
     Task AddIpAddressAsync(Guid playerId, string ipAddress);
     Task AddVisitorIdAsync(Guid playerId, string visitorId);
+    Task PatchPlayerAsync(Guid playerId, PatchOperation[] patchOperations);
 }
 
 public class PlayerRepository : Repository<PlayerEntity>, IPlayerRepository
@@ -61,5 +62,11 @@ public class PlayerRepository : Repository<PlayerEntity>, IPlayerRepository
     {
         var id = playerId.ToString();
         return PatchItemAsync(id, id, new[] { PatchOperation.Add("/visitorIds/-", visitorId) });
+    }
+
+    public Task PatchPlayerAsync(Guid playerId, PatchOperation[] patchOperations)
+    {
+        var id = playerId.ToString();
+        return PatchItemAsync(id, id, patchOperations);
     }
 }

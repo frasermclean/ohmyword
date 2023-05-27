@@ -82,7 +82,7 @@ public sealed class SessionService : ISessionService
             .Where(data => data.PointsAwarded > 0)
             .Select(data =>
             {
-                var player = null as Player; //playerService.GetPlayerById(data.PlayerId);
+                var player = stateManager.PlayerState.GetPlayerById(data.PlayerId);
                 return new ScoreLine
                 {
                     PlayerName = string.Empty, // TODO: Calculate player name

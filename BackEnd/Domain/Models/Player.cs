@@ -8,13 +8,11 @@ public record Player
     /// Unique identifier for this player.
     /// </summary>
     public required Guid Id { get; init; }
-    
-    
 
     /// <summary>
     /// SignalR connection ID.
     /// </summary>
-    public required string? ConnectionId { get; init; }
+    public required string ConnectionId { get; init; }
 
     /// <summary>
     /// User ID if this player has signed in.
@@ -30,14 +28,14 @@ public record Player
     /// Number of times this player has registered with the game server.
     /// </summary>
     public required int RegistrationCount { get; init; }
-    
+
     /// <summary>
     /// Fingerprint of this player's browser.
     /// </summary>
-    public required IEnumerable<string> VisitorIds { get; init; }
-
+    public required string VisitorId { get; init; }    
+    
     /// <summary>
-    /// IP addresses this player has connected from.
+    /// The player's current IP address.
     /// </summary>
-    public required IEnumerable<IPAddress> IpAddresses { get; init; }
+    public required IPAddress IpAddress { get; init; }
 }

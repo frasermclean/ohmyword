@@ -69,16 +69,10 @@ public class PlayerState : IPlayerState
 
     public bool AddPlayer(Player player)
     {
-        if (player.ConnectionId is null)
-        {
-            logger.LogError("Player connection ID is null");
-            return false;
-        }
-        
         if (!players.TryAdd(player.ConnectionId, player))
         {
             logger.LogError("Couldn't add player with connection ID: {ConnectionId}", player.ConnectionId);
-            return false;            
+            return false;
         }
 
         logger.LogInformation("Added player with connection ID: {ConnectionId}", player.ConnectionId);

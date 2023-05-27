@@ -1,4 +1,6 @@
-﻿namespace OhMyWord.Domain.Contracts.Results;
+﻿using OhMyWord.Domain.Models;
+
+namespace OhMyWord.Domain.Contracts.Results;
 
 public class RegisterPlayerResult
 {

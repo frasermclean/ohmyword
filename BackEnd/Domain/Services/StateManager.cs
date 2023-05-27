@@ -16,6 +16,7 @@ public interface IStateManager
     Session NextSession();
     Task<Round> NextRoundAsync(CancellationToken cancellationToken = default);
     void Reset();
+    StateSnapshot GetStateSnapshot();
 }
 
 public class StateManager : IStateManager
@@ -74,4 +75,14 @@ public class StateManager : IStateManager
         Round = null;
         PlayerState.Reset();
     }
+
+    public StateSnapshot GetStateSnapshot() => new()
+    {
+        RoundActive = SessionState == SessionState.RoundActive,
+        RoundNumber = Round?.Number ?? default,
+        RoundId = Round?.Id ?? default,
+        IntervalStart = IntervalStart,
+        IntervalEnd = IntervalEnd,
+        WordHint = Round?.WordHint,
+    };
 }

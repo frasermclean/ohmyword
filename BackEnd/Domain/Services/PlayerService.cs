@@ -8,10 +8,8 @@ namespace OhMyWord.Domain.Services;
 
 public interface IPlayerService
 {
-    Task<Player?> GetPlayerByIdAsync(Guid playerId, string? connectionId = default, string? visitorId = default);
-
-    Task<Player> CreatePlayerAsync(Guid playerId, string connectionId, string visitorId, IPAddress ipAddress,
-        Guid? userId);
+    Task<Player> GetOrCreatePlayerEntityAsync(Guid playerId, string visitorId, string connectionId,
+        IPAddress ipAddress, Guid? userId = default);
 
     Task PatchPlayerRegistrationAsync(Player player, string visitorId, IPAddress ipAddress);
 
@@ -27,37 +25,32 @@ public class PlayerService : IPlayerService
         this.playerRepository = playerRepository;
     }
 
-    public async Task<Player?> GetPlayerByIdAsync(Guid playerId, string? connectionId, string? visitorId)
+    public async Task<Player> GetOrCreatePlayerEntityAsync(Guid playerId, string visitorId, string connectionId,
+        IPAddress ipAddress, Guid? userId = default)
     {
-        var entity = await playerRepository.GetPlayerByIdAsync(playerId);
-        return entity?.ToPlayer(connectionId, visitorId);
-    }
+        var entity = await playerRepository.GetPlayerByIdAsync(playerId) ??
+                     await playerRepository.CreatePlayerAsync(new PlayerEntity
+                     {
+                         Id = playerId.ToString(),
+                         UserId = userId,
+                         VisitorIds = new[] { visitorId },
+                         IpAddresses = new[] { ipAddress.ToString() }
+                     });
 
-    public async Task<Player> CreatePlayerAsync(Guid playerId, string connectionId, string visitorId,
-        IPAddress ipAddress, Guid? userId)
-    {
-        var entity = await playerRepository.CreatePlayerAsync(new PlayerEntity
-        {
-            Id = playerId.ToString(),
-            UserId = userId,
-            VisitorIds = new[] { visitorId },
-            IpAddresses = new[] { ipAddress.ToString() }
-        });
-
-        return entity.ToPlayer(connectionId, visitorId);
+        return entity.ToPlayer(connectionId, visitorId, ipAddress);
     }
 
     public async Task PatchPlayerRegistrationAsync(Player player, string visitorId, IPAddress ipAddress)
     {
         await playerRepository.IncrementRegistrationCountAsync(player.Id);
 
-        // patch ip address
-        if (!player.IpAddresses.Contains(ipAddress))
-            await playerRepository.AddIpAddressAsync(player.Id, ipAddress.ToString());
-
-        // patch visitor id
-        if (!player.VisitorIds.Contains(visitorId))
-            await playerRepository.AddVisitorIdAsync(player.Id, visitorId);
+        // // patch ip address
+        // if (!player.IpAddresses.Contains(ipAddress))
+        //     await playerRepository.AddIpAddressAsync(player.Id, ipAddress.ToString());
+        //
+        // // patch visitor id
+        // if (!player.VisitorIds.Contains(visitorId))
+        //     await playerRepository.AddVisitorIdAsync(player.Id, visitorId);
     }
 
     public Task IncrementPlayerScoreAsync(Guid playerId, int points) =>
