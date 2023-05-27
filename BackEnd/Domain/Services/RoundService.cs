@@ -62,8 +62,12 @@ public class RoundService : IRoundService
     {
         logger.LogInformation("Starting round {RoundNumber} for session {SessionId}", round.Number, round.SessionId);
 
+        // create linked cancellation token source
+        using var linkedTokenSource =
+            CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, round.CancellationToken);
+
         // send letter hints
-        await SendLetterHintsAsync(round, cancellationToken);
+        await SendLetterHintsAsync(round, linkedTokenSource.Token);
 
         // round ended due to timeout
         if (round.EndReason is null)
@@ -97,27 +101,15 @@ public class RoundService : IRoundService
 
     private async Task SendLetterHintsAsync(Round round, CancellationToken cancellationToken)
     {
-        var previousIndices = new List<int>();
-
-        // create linked cancellation token source
-        using var linkedTokenSource =
-            CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, round.CancellationToken);
-
         try
         {
-            while (previousIndices.Count < round.Word.Length && !linkedTokenSource.Token.IsCancellationRequested)
+            foreach (var index in GetShuffledIndices(round.Word))
             {
-                var delay = (round.EndDate - round.StartDate) / round.Word.Length;
-                await Task.Delay(delay, round.CancellationToken);
-
-                int index;
-                do index = Random.Shared.Next(round.Word.Length);
-                while (previousIndices.Contains(index));
-                previousIndices.Add(index);
+                await Task.Delay(letterHintDelay, cancellationToken);
 
                 var letterHint = round.Word.GetLetterHint(index + 1);
                 round.WordHint.AddLetterHint(letterHint);
-                await SendLetterHintAddedNotificationAsync(letterHint, linkedTokenSource.Token);
+                await SendLetterHintAddedNotificationAsync(letterHint, cancellationToken);
             }
         }
         catch (TaskCanceledException)
@@ -150,4 +142,7 @@ public class RoundService : IRoundService
             GuessTimeMilliseconds = data.GuessTime.TotalMilliseconds
         };
     }
+
+    private static IEnumerable<int> GetShuffledIndices(Word word) =>
+        Enumerable.Range(0, word.Length).OrderBy(_ => Random.Shared.Next());
 }
