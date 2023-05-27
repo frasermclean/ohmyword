@@ -1,10 +1,8 @@
 ﻿using MediatR;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using OhMyWord.Domain.Contracts.Notifications;
 using OhMyWord.Domain.Extensions;
 using OhMyWord.Domain.Models;
-using OhMyWord.Domain.Options;
 using OhMyWord.Infrastructure.Services;
 
 namespace OhMyWord.Domain.Services;
@@ -23,18 +21,14 @@ public sealed class SessionService : ISessionService
     private readonly IRoundService roundService;
     private readonly ISessionsRepository sessionsRepository;
 
-    private readonly TimeSpan postRoundDelay;
-
-    public SessionService(ILogger<SessionService> logger, IOptions<RoundOptions> options, IStateManager stateManager,
-        IPublisher publisher, IRoundService roundService, ISessionsRepository sessionsRepository)
+    public SessionService(ILogger<SessionService> logger, IStateManager stateManager, IPublisher publisher,
+        IRoundService roundService, ISessionsRepository sessionsRepository)
     {
         this.logger = logger;
         this.stateManager = stateManager;
         this.publisher = publisher;
         this.roundService = roundService;
         this.sessionsRepository = sessionsRepository;
-
-        postRoundDelay = TimeSpan.FromSeconds(options.Value.PostRoundDelay);
     }
 
     public async Task ExecuteSessionAsync(Session session, CancellationToken cancellationToken)
@@ -53,8 +47,9 @@ public sealed class SessionService : ISessionService
             await roundService.SaveRoundAsync(round, cancellationToken);
 
             // post round delay
+            var (postRoundDelay, summary) = await roundService.GetRoundEndDataAsync(round, cancellationToken);
             await Task.WhenAll(
-                SendRoundEndedNotificationAsync(round, cancellationToken),
+                SendRoundEndedNotificationAsync(summary, cancellationToken),
                 Task.Delay(postRoundDelay, cancellationToken));
         }
     }
@@ -76,34 +71,9 @@ public sealed class SessionService : ISessionService
         return publisher.Publish(notification, cancellationToken);
     }
 
-    private Task SendRoundEndedNotificationAsync(Round round, CancellationToken cancellationToken)
+    private Task SendRoundEndedNotificationAsync(RoundSummary summary, CancellationToken cancellationToken)
     {
-        var scores = round.GetPlayerData()
-            .Where(data => data.PointsAwarded > 0)
-            .Select(data =>
-            {
-                var player = stateManager.PlayerState.GetPlayerById(data.PlayerId);
-                return new ScoreLine
-                {
-                    PlayerName = string.Empty, // TODO: Calculate player name
-                    ConnectionId = player?.ConnectionId ?? string.Empty,
-                    CountryCode = string.Empty, // TODO: Calculate country code
-                    PointsAwarded = data.PointsAwarded,
-                    GuessCount = data.GuessCount,
-                    GuessTimeMilliseconds = data.GuessTime.TotalMilliseconds
-                };
-            });
-
-        var notification = new RoundEndedNotification
-        {
-            Word = round.Word.Id,
-            EndReason = round.EndReason ?? throw new InvalidOperationException("Round has not ended yet"),
-            RoundId = round.Id,
-            DefinitionId = round.WordHint.DefinitionId,
-            NextRoundStart = DateTime.UtcNow + postRoundDelay,
-            Scores = scores
-        };
-
+        var notification = new RoundEndedNotification(summary);
         return publisher.Publish(notification, cancellationToken);
     }
 }

@@ -1,5 +1,4 @@
-﻿using OhMyWord.Domain.Options;
-using OhMyWord.Infrastructure.Models.Entities;
+﻿using OhMyWord.Infrastructure.Models.Entities;
 using System.Collections.Concurrent;
 
 namespace OhMyWord.Domain.Models;
@@ -9,11 +8,11 @@ public sealed class Round : IDisposable
     private readonly ConcurrentDictionary<Guid, RoundPlayerData> playerData;
     private readonly CancellationTokenSource cancellationTokenSource = new();
 
-    internal Round(Word word, double letterHintDelay, IEnumerable<Guid>? playerIds = default)
+    internal Round(Word word, TimeSpan letterHintDelay, IEnumerable<Guid>? playerIds = default)
     {
         Word = word;
         WordHint = new WordHint(word);
-        EndDate = StartDate + word.Length * TimeSpan.FromSeconds(letterHintDelay);
+        EndDate = StartDate + word.Length * letterHintDelay;
 
         playerData = playerIds is null
             ? new ConcurrentDictionary<Guid, RoundPlayerData>()
@@ -21,7 +20,7 @@ public sealed class Round : IDisposable
                 new KeyValuePair<Guid, RoundPlayerData>(playerId, new RoundPlayerData(playerId))));
     }
 
-    public Guid Id { get; private init; } = Guid.NewGuid();
+    public Guid Id { get; } = Guid.NewGuid();
     public required int Number { get; init; }
     public Word Word { get; }
     public WordHint WordHint { get; }
@@ -75,13 +74,5 @@ public sealed class Round : IDisposable
     public void Dispose()
     {
         cancellationTokenSource.Dispose();
-    }
-
-    public static Round Default => new(Word.Default, RoundOptions.LetterHintDelayDefault)
-    {
-        Id = Guid.Empty,
-        Number = default,
-        SessionId = Guid.Empty,
-        GuessLimit = RoundOptions.GuessLimitDefault
-    };
+    }   
 }

@@ -15,6 +15,7 @@ public interface IRoundService
     Task<Round> CreateRoundAsync(int roundNumber, Guid sessionId, CancellationToken cancellationToken = default);
     Task ExecuteRoundAsync(Round round, CancellationToken cancellationToken = default);
     Task SaveRoundAsync(Round round, CancellationToken cancellationToken = default);
+    Task<(TimeSpan, RoundSummary)> GetRoundEndDataAsync(Round round, CancellationToken cancellationToken = default);
 }
 
 public class RoundService : IRoundService
@@ -24,20 +25,25 @@ public class RoundService : IRoundService
     private readonly IPlayerState playerState;
     private readonly IWordsService wordsService;
     private readonly IRoundsRepository roundsRepository;
+    private readonly IGeoLocationService geoLocationService;
 
-    private readonly double letterHintDelay;
+    private readonly TimeSpan letterHintDelay;
+    private readonly TimeSpan postRoundDelay;
     private readonly int guessLimit;
 
     public RoundService(ILogger<RoundService> logger, IOptions<RoundOptions> options, IPublisher publisher,
-        IPlayerState playerState, IWordsService wordsService, IRoundsRepository roundsRepository)
+        IPlayerState playerState, IWordsService wordsService, IRoundsRepository roundsRepository,
+        IGeoLocationService geoLocationService)
     {
         this.logger = logger;
         this.publisher = publisher;
         this.playerState = playerState;
         this.wordsService = wordsService;
         this.roundsRepository = roundsRepository;
+        this.geoLocationService = geoLocationService;
 
-        letterHintDelay = options.Value.LetterHintDelay;
+        letterHintDelay = TimeSpan.FromSeconds(options.Value.LetterHintDelay);
+        postRoundDelay = TimeSpan.FromSeconds(options.Value.PostRoundDelay);
         guessLimit = options.Value.GuessLimit;
     }
 
@@ -67,6 +73,26 @@ public class RoundService : IRoundService
     public async Task SaveRoundAsync(Round round, CancellationToken cancellationToken)
     {
         await roundsRepository.CreateRoundAsync(round.ToEntity(), cancellationToken);
+    }
+
+    public async Task<(TimeSpan, RoundSummary)> GetRoundEndDataAsync(Round round,
+        CancellationToken cancellationToken = default)
+    {
+        var summary = new RoundSummary
+        {
+            Word = round.Word.Id,
+            EndReason = round.EndReason.GetValueOrDefault(),
+            RoundId = round.Id,
+            DefinitionId = round.WordHint.DefinitionId,
+            NextRoundStart = DateTime.UtcNow + postRoundDelay,
+            Scores = await round.GetPlayerData()
+                .ToAsyncEnumerable()
+                .Where(data => data.PointsAwarded > 0)
+                .SelectAwait(async data => await CreateScoreLineAsync(data, cancellationToken))
+                .ToListAsync(cancellationToken)
+        };
+
+        return (postRoundDelay, summary);
     }
 
     private async Task SendLetterHintsAsync(Round round, CancellationToken cancellationToken)
@@ -105,5 +131,23 @@ public class RoundService : IRoundService
     {
         var notification = new LetterHintAddedNotification(letterHint);
         return publisher.Publish(notification, cancellationToken);
+    }
+
+    private async Task<ScoreLine> CreateScoreLineAsync(RoundPlayerData data, CancellationToken cancellationToken)
+    {
+        var player = playerState.GetPlayerById(data.PlayerId);
+        var countryCode = player is not null
+            ? await geoLocationService.GetCountryCodeAsync(player.IpAddress, cancellationToken)
+            : string.Empty;
+
+        return new ScoreLine
+        {
+            PlayerName = player?.Name ?? string.Empty,
+            ConnectionId = player?.ConnectionId ?? string.Empty,
+            CountryCode = countryCode,
+            PointsAwarded = data.PointsAwarded,
+            GuessCount = data.GuessCount,
+            GuessTimeMilliseconds = data.GuessTime.TotalMilliseconds
+        };
     }
 }

@@ -8,6 +8,8 @@ public record Player
     /// Unique identifier for this player.
     /// </summary>
     public required Guid Id { get; init; }
+    
+    public string Name { get; init; } = string.Empty;
 
     /// <summary>
     /// SignalR connection ID.

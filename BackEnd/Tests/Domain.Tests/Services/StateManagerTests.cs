@@ -22,7 +22,7 @@ public class StateManagerTests
             Definitions = new[] { new Definition { PartOfSpeech = PartOfSpeech.Verb, Value = "Test verb" } },
         };
 
-        var round = new Round(word, 3, new[] { Guid.NewGuid(), Guid.NewGuid() })
+        var round = new Round(word, TimeSpan.FromSeconds(3), new[] { Guid.NewGuid(), Guid.NewGuid() })
         {
             Number = 1, GuessLimit = 3, SessionId = session.Id
         };

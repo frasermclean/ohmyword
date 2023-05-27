@@ -135,19 +135,11 @@ public class RoundTests
         playerData.Should().AllSatisfy(data => data.GuessTime.Should().BePositive());
     }
 
-    [Fact]
-    public void DefaultRound_Should_HaveExpectedProperties()
-    {
-        var round = Round.Default;
-
-        // assert
-        round.Id.Should().BeEmpty();
-        round.Number.Should().Be(0);
-        round.Word.Should().Be(Word.Default);
-    }
-
     private static Round CreateRound(Word word, int number = default, IEnumerable<Guid>? playerIds = default,
         Guid sessionId = default, double letterHintDelay = RoundOptions.LetterHintDelayDefault,
         int guessLimit = RoundOptions.GuessLimitDefault) =>
-        new(word, letterHintDelay, playerIds) { Number = number, GuessLimit = guessLimit, SessionId = sessionId };
+        new(word, TimeSpan.FromSeconds(letterHintDelay), playerIds)
+        {
+            Number = number, GuessLimit = guessLimit, SessionId = sessionId
+        };
 }
