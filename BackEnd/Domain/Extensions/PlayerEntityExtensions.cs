@@ -10,6 +10,7 @@ public static class PlayerEntityExtensions
         IPAddress ipAddress) => new()
     {
         Id = Guid.TryParse(entity.Id, out var id) ? id : Guid.Empty,
+        Name = entity.UserId.HasValue ? string.Empty : "Guest", // TODO: Get name from user service
         ConnectionId = connectionId,
         UserId = entity.UserId,
         Score = entity.Score,
