@@ -64,8 +64,8 @@ export class GameState {
       roundId: action.data.stateSnapshot.roundId,
       wordHint: action.data.stateSnapshot.wordHint ? new WordHint(action.data.stateSnapshot.wordHint) : null,
       interval: {
-        startDate: new Date(action.data.stateSnapshot.intervalStart),
-        endDate: new Date(action.data.stateSnapshot.intervalEnd),
+        startDate: new Date(action.data.stateSnapshot.interval.startDate),
+        endDate: new Date(action.data.stateSnapshot.interval.endDate),
       },
     });
   }

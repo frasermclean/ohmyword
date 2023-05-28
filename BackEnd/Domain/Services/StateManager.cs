@@ -81,8 +81,7 @@ public class StateManager : IStateManager
         RoundActive = SessionState == SessionState.RoundActive,
         RoundNumber = Round?.Number ?? default,
         RoundId = Round?.Id ?? default,
-        IntervalStart = IntervalStart,
-        IntervalEnd = IntervalEnd,
+        Interval = new Interval(IntervalStart, IntervalEnd),        
         WordHint = Round?.WordHint,
     };
 }
