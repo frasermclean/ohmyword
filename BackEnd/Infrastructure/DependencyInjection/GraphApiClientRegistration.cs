@@ -1,6 +1,10 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Azure.Identity;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Microsoft.Graph;
 using OhMyWord.Infrastructure.Options;
+using OhMyWord.Infrastructure.Services.GraphApi;
 
 namespace OhMyWord.Infrastructure.DependencyInjection;
 
@@ -13,6 +17,16 @@ public static class GraphApiClientRegistration
             .Bind(configuration.GetSection(GraphApiClientOptions.SectionName))
             .ValidateDataAnnotations()
             .ValidateOnStart();
+
+        services.AddSingleton<GraphServiceClient>(provider =>
+        {
+            var options = provider.GetRequiredService<IOptions<GraphApiClientOptions>>().Value;
+            var credential = new ClientSecretCredential(options.TenantId, options.ClientId, options.ClientSecret);
+
+            return new GraphServiceClient(credential);
+        });
+
+        services.AddSingleton<IGraphApiClient, GraphApiClient>();
 
         return services;
     }

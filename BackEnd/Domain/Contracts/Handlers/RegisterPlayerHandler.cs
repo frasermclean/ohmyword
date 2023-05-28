@@ -18,7 +18,7 @@ public class RegisterPlayerHandler : IRequestHandler<RegisterPlayerRequest, Regi
 
     public async Task<RegisterPlayerResult> Handle(RegisterPlayerRequest request, CancellationToken cancellationToken)
     {
-        var player = await playerService.GetOrCreatePlayerEntityAsync(request.PlayerId, request.VisitorId,
+        var player = await playerService.GetPlayerAsync(request.PlayerId, request.VisitorId,
             request.ConnectionId, request.IpAddress, request.UserId);
         var isSuccessful = stateManager.PlayerState.AddPlayer(player);
 
