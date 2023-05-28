@@ -16,6 +16,6 @@ public class RoundEndedHandler : INotificationHandler<RoundEndedNotification>
     
     public Task Handle(RoundEndedNotification notification, CancellationToken cancellationToken)
     {
-        return gameHubContext.Clients.All.SendRoundEnded(notification, cancellationToken);
+        return gameHubContext.Clients.All.SendRoundEnded(notification.Summary, cancellationToken);
     }
 }

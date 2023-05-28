@@ -4,8 +4,8 @@ import { WordHint } from '@models/word-hint.model';
 import { HubService } from '@services/hub.service';
 import { Game } from './game.actions';
 import { Hub } from '@state/hub/hub.actions';
-import { PartOfSpeech, RoundEndReason } from '@models/enums';
-import { ScoreLineModel } from '@models/score-line.model';
+import { PartOfSpeech } from '@models/enums';
+import { RoundSummary } from '@models/round-summary.model';
 
 interface GameStateModel {
   connection: 'disconnected' | 'connecting' | 'connected' | 'registering' | 'registered' | 'disconnecting';
@@ -19,12 +19,7 @@ interface GameStateModel {
     endDate: Date;
   };
   wordHint: WordHint | null;
-  roundSummary: {
-    word: string;
-    partOfSpeech: PartOfSpeech;
-    endReason: RoundEndReason;
-    scores: ScoreLineModel[];
-  } | null;
+  roundSummary: RoundSummary | null;
 }
 
 export const GAME_STATE_TOKEN = new StateToken<GameStateModel>('game');
@@ -100,18 +95,12 @@ export class GameState {
 
   @Action(Game.RoundEnded)
   roundEnded(context: StateContext<GameStateModel>, action: Game.RoundEnded) {
-    const state = context.getState();
     context.patchState({
       roundActive: false,
-      roundSummary: {
-        word: action.data.word,
-        partOfSpeech: state.wordHint?.partOfSpeech ?? PartOfSpeech.Unknown,
-        endReason: action.data.endReason,
-        scores: action.data.scores,
-      },
+      roundSummary: action.summary,
       interval: {
         startDate: new Date(),
-        endDate: new Date(action.data.nextRoundStart),
+        endDate: new Date(action.summary.nextRoundStart),
       },
     });
   }

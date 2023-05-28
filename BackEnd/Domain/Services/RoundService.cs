@@ -85,6 +85,7 @@ public class RoundService : IRoundService
         var summary = new RoundSummary
         {
             Word = round.Word.Id,
+            PartOfSpeech = round.WordHint.PartOfSpeech,
             EndReason = round.EndReason.GetValueOrDefault(),
             RoundId = round.Id,
             DefinitionId = round.WordHint.DefinitionId,

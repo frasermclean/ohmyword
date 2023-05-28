@@ -11,8 +11,8 @@ import { Guess } from '@state/guess/guess.actions';
 import { Hub } from '@state/hub/hub.actions';
 
 import { LetterHintResponse } from '@models/responses/letter-hint.response';
-import { RoundEndedModel } from '@models/round-ended.model';
 import { RoundStartedModel } from '@models/round-started.model';
+import { RoundSummary } from '@models/round-summary.model';
 import { RegisterPlayerResult, SubmitGuessResult } from '@models/results';
 
 @Injectable({
@@ -113,7 +113,9 @@ export class HubService {
     );
 
     // round ended
-    this.hubConnection.on('SendRoundEnded', (data: RoundEndedModel) => this.store.dispatch(new Game.RoundEnded(data)));
+    this.hubConnection.on('SendRoundEnded', (summary: RoundSummary) =>
+      this.store.dispatch(new Game.RoundEnded(summary))
+    );
 
     // player count changed
     this.hubConnection.on('SendPlayerCount', (count: number) =>

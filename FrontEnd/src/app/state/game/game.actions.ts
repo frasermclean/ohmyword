@@ -1,7 +1,7 @@
 import { LetterHintResponse } from '@models/responses/letter-hint.response';
 import { RegisterPlayerResult } from '@models/results';
-import { RoundEndedModel } from "@models/round-ended.model";
 import { RoundStartedModel } from "@models/round-started.model";
+import { RoundSummary } from '@models/round-summary.model';
 
 /**
  * Game actions and events
@@ -33,7 +33,7 @@ export namespace Game {
 
   export class RoundEnded {
     static readonly type = '[Game Service] Game.RoundEnded';
-    constructor(public data: RoundEndedModel) {}
+    constructor(public summary: RoundSummary) {}
   }
 
   export class LetterHintReceived {

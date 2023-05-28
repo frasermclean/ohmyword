@@ -61,6 +61,7 @@ public class RoundServiceTests : IClassFixture<TestDataFixture>
         // assert
         postRoundDelay.Should().Be(TimeSpan.FromSeconds(5));
         summary.Word.Should().Be(round.Word.Id);
+        summary.PartOfSpeech.Should().Be(round.WordHint.PartOfSpeech);
         summary.RoundId.Should().Be(round.Id);
         summary.DefinitionId.Should().NotBeEmpty();
         summary.EndReason.Should().Be(RoundEndReason.AllPlayersGuessed);
