@@ -5,14 +5,23 @@ namespace OhMyWord.Domain.Services;
 
 public interface IWordQueueService
 {
+    /// <summary>
+    /// Total number of words in the database.
+    /// </summary>
+    int TotalWordCount { get; }
+
+    /// <summary>
+    /// Remaining number of words in the queue.
+    /// </summary>
     int RemainingWordCount { get; }
 
     /// <summary>
     /// Get a the next <see cref="Word"/> from a shuffled list of words.
     /// </summary>
+    /// <param name="reloadWords">Set to true to reload all words from the database.</param>
     /// <param name="cancellationToken">Task cancellation token</param>
     /// <returns>A random word from the database</returns>
-    Task<Word> GetNextWordAsync(CancellationToken cancellationToken = default);
+    Task<Word> GetNextWordAsync(bool reloadWords = false, CancellationToken cancellationToken = default);
 }
 
 public class WordQueueService : IWordQueueService
@@ -20,7 +29,8 @@ public class WordQueueService : IWordQueueService
     private readonly ILogger<WordQueueService> logger;
     private readonly IWordsService wordsService;
 
-    private Stack<string> shuffledWordIds = new();
+    private IReadOnlyList<string>? allWordIds;
+    private Queue<string>? shuffledWordIds;
 
     public WordQueueService(ILogger<WordQueueService> logger, IWordsService wordsService)
     {
@@ -28,40 +38,36 @@ public class WordQueueService : IWordQueueService
         this.wordsService = wordsService;
     }
 
-    public int RemainingWordCount => shuffledWordIds.Count;
+    public int TotalWordCount => allWordIds?.Count ?? 0;
+    public int RemainingWordCount => shuffledWordIds?.Count ?? 0;
 
-    public async Task<Word> GetNextWordAsync(CancellationToken cancellationToken = default)
+    public async Task<Word> GetNextWordAsync(bool reloadWords, CancellationToken cancellationToken)
     {
-        if (shuffledWordIds.Count == 0)
+        // load all distinct word ids
+        if (reloadWords || allWordIds is null)
+            allWordIds = await GetAllWordIdsAsync(cancellationToken);
+
+        // shuffle the word ids
+        if (reloadWords || shuffledWordIds is null || shuffledWordIds.Count == 0)
         {
-            shuffledWordIds = await GetShuffledWordIdsAsync(cancellationToken);
+            shuffledWordIds = new Queue<string>(ShuffleWordIds(allWordIds));
             logger.LogInformation("Loaded {WordCount} words into the queue", shuffledWordIds.Count);
         }
 
-        string wordId;
-        try
+        // get the next word id from the queue
+        if (!shuffledWordIds.TryDequeue(out var wordId))
         {
-            wordId = shuffledWordIds.Pop();
-        }
-        catch (InvalidOperationException exception)
-        {
-            logger.LogError(exception, "No word ID to pop from queue");
+            logger.LogError("Queue is empty");
             return Word.Default;
         }
 
         var result = await wordsService.GetWordAsync(wordId, cancellationToken);
-
-        return result.Match(
-            word => word,
-            _ => Word.Default);
+        return result.Match(word => word, _ => Word.Default);
     }
 
-    private async Task<Stack<string>> GetShuffledWordIdsAsync(CancellationToken cancellationToken)
-    {
-        var wordIds = await wordsService.GetAllWordIds(cancellationToken)
-            .OrderBy(_ => Random.Shared.Next())
-            .ToListAsync(cancellationToken);
+    private async Task<IReadOnlyList<string>> GetAllWordIdsAsync(CancellationToken cancellationToken)
+        => await wordsService.GetAllWordIds(cancellationToken).ToListAsync(cancellationToken);
 
-        return new Stack<string>(wordIds);
-    }
+    private static IEnumerable<string> ShuffleWordIds(IEnumerable<string> wordIds)
+        => wordIds.OrderBy(_ => Random.Shared.Next());
 }

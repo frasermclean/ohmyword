@@ -24,7 +24,6 @@ public class RoundService : IRoundService
     private readonly IPublisher publisher;
     private readonly IPlayerState playerState;
     private readonly IWordQueueService wordQueueService;
-
     private readonly IRoundsRepository roundsRepository;
 
     private readonly TimeSpan letterHintDelay;
@@ -48,7 +47,7 @@ public class RoundService : IRoundService
     public async Task<Round> CreateRoundAsync(int roundNumber, Guid sessionId,
         CancellationToken cancellationToken = default)
     {
-        var word = await wordQueueService.GetNextWordAsync(cancellationToken);
+        var word = await wordQueueService.GetNextWordAsync(cancellationToken: cancellationToken);
 
         return new Round(word, letterHintDelay, playerState.PlayerIds)
         {

@@ -28,7 +28,7 @@ public class RoundServiceTests : IClassFixture<TestDataFixture>
     {
         // arrange
         var word = fixture.CreateWord();
-        wordQueueServiceMock.Setup(service => service.GetNextWordAsync(It.IsAny<CancellationToken>()))
+        wordQueueServiceMock.Setup(service => service.GetNextWordAsync(false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(word);
 
         // act

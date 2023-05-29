@@ -30,6 +30,7 @@ public class WordQueueServiceTests
 
         // assert
         nextWord.Should().Be(expectedWord);
+        wordQueueService.TotalWordCount.Should().Be(wordIds.Length);
         wordQueueService.RemainingWordCount.Should().Be(wordIds.Length - 1);
         wordsServiceMock.Verify(service => service.GetAllWordIds(It.IsAny<CancellationToken>()), Times.Once);
         wordsServiceMock.Verify(service => service.GetWordAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
