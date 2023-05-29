@@ -12,7 +12,7 @@ public class RoundServiceTests : IClassFixture<TestDataFixture>
     private readonly IRoundService roundService;
     private readonly Mock<IPublisher> publisherMock = new();
     private readonly Mock<IPlayerState> playerStateMock = new();
-    private readonly Mock<IWordsService> wordsServiceMock = new();
+    private readonly Mock<IWordQueueService> wordQueueServiceMock = new();
     private readonly Mock<IRoundsRepository> roundsRepositoryMock = new();
 
     public RoundServiceTests(TestDataFixture fixture)
@@ -20,7 +20,7 @@ public class RoundServiceTests : IClassFixture<TestDataFixture>
         this.fixture = fixture;
 
         roundService = new RoundService(Mock.Of<ILogger<RoundService>>(), fixture.CreateOptions(), publisherMock.Object,
-            playerStateMock.Object, wordsServiceMock.Object, roundsRepositoryMock.Object);
+            playerStateMock.Object, wordQueueServiceMock.Object, roundsRepositoryMock.Object);
     }
 
     [Fact]
@@ -28,7 +28,7 @@ public class RoundServiceTests : IClassFixture<TestDataFixture>
     {
         // arrange
         var word = fixture.CreateWord();
-        wordsServiceMock.Setup(service => service.GetRandomWordAsync(It.IsAny<CancellationToken>()))
+        wordQueueServiceMock.Setup(service => service.GetNextWordAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(word);
 
         // act

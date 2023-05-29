@@ -23,6 +23,7 @@ public static class DomainServicesRegistration
         services.AddSingleton<ISessionService, SessionService>();
         services.AddSingleton<IStateManager, StateManager>();
         services.AddSingleton<IWordsService, WordsService>();
+        services.AddSingleton<IWordQueueService, WordQueueService>();
 
         return services;
     }
