@@ -3,7 +3,6 @@ using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Options;
 using OhMyWord.Infrastructure.Models.Entities;
 using System.Net;
-using Range = System.Range;
 
 namespace Domain.Tests;
 

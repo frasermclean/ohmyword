@@ -22,6 +22,7 @@ public class GraphApiClient : IGraphApiClient
 
     public async Task<User?> GetUserByIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
+        logger.LogInformation("Attempting to get user with ID: {UserId} from Graph API", userId);
         return await client.Users[userId.ToString()].GetAsync(cancellationToken: cancellationToken);
     }
 }

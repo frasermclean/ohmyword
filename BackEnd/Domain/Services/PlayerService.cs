@@ -1,4 +1,5 @@
-﻿using OhMyWord.Domain.Models;
+﻿using Microsoft.Extensions.Caching.Memory;
+using OhMyWord.Domain.Models;
 using OhMyWord.Infrastructure.Models.Entities;
 using OhMyWord.Infrastructure.Services;
 using OhMyWord.Infrastructure.Services.GraphApi;
@@ -16,44 +17,55 @@ public interface IPlayerService
 
 public class PlayerService : IPlayerService
 {
+    private readonly IMemoryCache memoryCache;
     private readonly IPlayerRepository playerRepository;
     private readonly IGraphApiClient graphApiClient;
 
-    public PlayerService(IPlayerRepository playerRepository, IGraphApiClient graphApiClient)
+    public PlayerService(IMemoryCache memoryCache, IPlayerRepository playerRepository, IGraphApiClient graphApiClient)
     {
+        this.memoryCache = memoryCache;
         this.playerRepository = playerRepository;
         this.graphApiClient = graphApiClient;
     }
 
-    public async Task<Player> GetPlayerAsync(Guid playerId, string visitorId, string connectionId,
-        IPAddress ipAddress, Guid? userId = default, CancellationToken cancellationToken = default)
+    public async Task<Player> GetPlayerAsync(Guid playerId, string visitorId, string connectionId, IPAddress ipAddress,
+        Guid? userId = default, CancellationToken cancellationToken = default)
     {
-        var entityTask = GetOrCreatePlayerEntityAsync(playerId, visitorId, connectionId, ipAddress,
-            userId, cancellationToken);
-        var nameTask = GetPlayerNameAsync(userId, cancellationToken);
+        var player = await memoryCache.GetOrCreateAsync<Player>($"Player-{playerId}", async entry =>
+        {
+            var entityTask = GetOrCreatePlayerEntityAsync(playerId, visitorId, ipAddress, userId, cancellationToken);
+            var nameTask = GetPlayerNameAsync(userId, cancellationToken);
 
-        await Task.WhenAll(entityTask, nameTask);
+            await Task.WhenAll(entityTask, nameTask);
 
-        return MapToPlayer(entityTask.Result, nameTask.Result, visitorId, connectionId, ipAddress);
+            var player = MapToPlayer(entityTask.Result, nameTask.Result, visitorId, connectionId, ipAddress);
+
+            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5);
+
+            return player;
+        });
+
+        return player ?? throw new InvalidOperationException("Memory cache failed to return a player.");
     }
 
     public Task IncrementPlayerScoreAsync(Guid playerId, int points) =>
         playerRepository.IncrementScoreAsync(playerId, points);
 
-    private async Task<PlayerEntity> GetOrCreatePlayerEntityAsync(Guid playerId, string visitorId, string connectionId,
-        IPAddress ipAddress, Guid? userId = default, CancellationToken cancellationToken = default)
+    private async Task<PlayerEntity> GetOrCreatePlayerEntityAsync(Guid playerId, string visitorId, IPAddress ipAddress,
+        Guid? userId = default, CancellationToken cancellationToken = default)
     {
-        var entity = await playerRepository.GetPlayerByIdAsync(playerId);
+        var entity = await playerRepository.GetPlayerByIdAsync(playerId, cancellationToken);
         if (entity is null)
         {
             // create a new player entity
-            return await playerRepository.CreatePlayerAsync(new PlayerEntity
-            {
-                Id = playerId.ToString(),
-                UserId = userId,
-                VisitorIds = new[] { visitorId },
-                IpAddresses = new[] { ipAddress.ToString() }
-            });
+            return await playerRepository.CreatePlayerAsync(
+                new PlayerEntity
+                {
+                    Id = playerId.ToString(),
+                    UserId = userId,
+                    VisitorIds = new[] { visitorId },
+                    IpAddresses = new[] { ipAddress.ToString() }
+                }, cancellationToken);
         }
 
         // update existing player entity

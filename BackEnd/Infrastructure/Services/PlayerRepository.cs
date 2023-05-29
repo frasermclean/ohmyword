@@ -8,8 +8,8 @@ namespace OhMyWord.Infrastructure.Services;
 
 public interface IPlayerRepository
 {
-    Task<PlayerEntity?> GetPlayerByIdAsync(Guid playerId);
-    Task<PlayerEntity> CreatePlayerAsync(PlayerEntity playerEntity);
+    Task<PlayerEntity?> GetPlayerByIdAsync(Guid playerId, CancellationToken cancellationToken = default);
+    Task<PlayerEntity> CreatePlayerAsync(PlayerEntity playerEntity, CancellationToken cancellationToken = default);
     Task DeletePlayerAsync(PlayerEntity playerEntity);
     Task<PlayerEntity> IncrementRegistrationCountAsync(Guid playerId);
     Task<PlayerEntity> IncrementScoreAsync(Guid playerId, long value);
@@ -26,15 +26,15 @@ public class PlayerRepository : Repository<PlayerEntity>, IPlayerRepository
     {
     }
 
-    public Task<PlayerEntity?> GetPlayerByIdAsync(Guid playerId)
+    public Task<PlayerEntity?> GetPlayerByIdAsync(Guid playerId, CancellationToken cancellationToken)
     {
         var id = playerId.ToString();
-        return ReadItemAsync(id, id);
+        return ReadItemAsync(id, id, cancellationToken);
     }
 
-    public async Task<PlayerEntity> CreatePlayerAsync(PlayerEntity playerEntity)
+    public async Task<PlayerEntity> CreatePlayerAsync(PlayerEntity playerEntity, CancellationToken cancellationToken)
     {
-        await CreateItemAsync(playerEntity);
+        await CreateItemAsync(playerEntity, cancellationToken);
         return playerEntity;
     }
 

@@ -1,4 +1,6 @@
-﻿using Microsoft.Graph.Models;
+﻿using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Graph.Models;
 using OhMyWord.Domain.Services;
 using OhMyWord.Infrastructure.Models.Entities;
 using OhMyWord.Infrastructure.Services;
@@ -16,7 +18,14 @@ public class PlayerServiceTests
 
     public PlayerServiceTests()
     {
-        playerService = new PlayerService(playerRepositoryMock.Object, graphApiClientMock.Object);
+        var serviceProvider = new ServiceCollection()
+            .AddMemoryCache()
+            .BuildServiceProvider();
+
+        var memoryCache = serviceProvider.GetRequiredService<IMemoryCache>();
+
+        playerService =
+            new PlayerService(memoryCache, playerRepositoryMock.Object, graphApiClientMock.Object);
     }
 
     [Theory, AutoData]
@@ -24,10 +33,13 @@ public class PlayerServiceTests
         string connectionId, IPAddress ipAddress, Guid? userId, string name)
     {
         // arrange
-        playerRepositoryMock.Setup(repository => repository.GetPlayerByIdAsync(It.IsAny<Guid>()))
+        playerRepositoryMock.Setup(repository =>
+                repository.GetPlayerByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(null as PlayerEntity);
-        playerRepositoryMock.Setup(repository => repository.CreatePlayerAsync(It.IsAny<PlayerEntity>()))
-            .ReturnsAsync((PlayerEntity entity) => entity);
+        
+        playerRepositoryMock.Setup(repository =>
+                repository.CreatePlayerAsync(It.IsAny<PlayerEntity>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((PlayerEntity entity, CancellationToken _) => entity);
 
         graphApiClientMock.Setup(client => client.GetUserByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Guid id, CancellationToken _) => new User { Id = id.ToString(), GivenName = name });
@@ -50,8 +62,9 @@ public class PlayerServiceTests
         string connectionId, IPAddress ipAddress, Guid? userId, string name)
     {
         // arrange
-        playerRepositoryMock.Setup(repository => repository.GetPlayerByIdAsync(It.IsAny<Guid>()))
-            .ReturnsAsync((Guid id) => new PlayerEntity
+        playerRepositoryMock.Setup(repository =>
+                repository.GetPlayerByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Guid id, CancellationToken _) => new PlayerEntity
             {
                 Id = id.ToString(),
                 UserId = userId,
@@ -71,6 +84,6 @@ public class PlayerServiceTests
         player.Name.Should().Be(name);
         player.ConnectionId.Should().Be(connectionId);
         player.UserId.Should().Be(userId);
-        player.VisitorId.Should().Be(visitorId);        
+        player.VisitorId.Should().Be(visitorId);
     }
 }
