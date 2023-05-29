@@ -83,14 +83,15 @@ public abstract class Repository<TEntity> where TEntity : Entity
         logger.LogInformation("Deleted item: {Id} on partition: /{Partition}", id, partition);
     }
 
-    protected async Task<TEntity> PatchItemAsync(string id, string partition, PatchOperation[] operations,
+    protected async Task<TEntity> PatchItemAsync(string id, string partition, IReadOnlyList<PatchOperation> operations,
         CancellationToken cancellationToken = default)
     {
         var response = await container.PatchItemAsync<TEntity>(id, new PartitionKey(partition), operations,
             cancellationToken: cancellationToken);
 
-        logger.LogInformation("Patched {TypeName} on partition: /{Partition}, request charge: {Charge} RU",
-            entityTypeName, partition, response.RequestCharge);
+        logger.LogInformation(
+            "Patched {TypeName} on partition: /{Partition} with {Count} operations, request charge: {Charge} RU",
+            entityTypeName, partition, operations.Count, response.RequestCharge);
 
         return response.Resource;
     }

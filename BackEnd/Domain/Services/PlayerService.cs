@@ -67,20 +67,10 @@ public class PlayerService : IPlayerService
                     IpAddresses = new[] { ipAddress.ToString() }
                 }, cancellationToken);
         }
-
-        // update existing player entity
-        await playerRepository.IncrementRegistrationCountAsync(playerId);
-
-        // patch ip address
-        if (!entity.IpAddresses.Contains(ipAddress.ToString()))
-            await playerRepository.AddIpAddressAsync(playerId, ipAddress.ToString());
-
-        // patch visitor id
-        if (!entity.VisitorIds.Contains(visitorId))
-            await playerRepository.AddVisitorIdAsync(playerId, visitorId);
-
-        return entity;
-    }
+        
+        // update the player entity
+        return await playerRepository.UpdatePlayerAsync(entity, visitorId, ipAddress.ToString());        
+    }    
 
     private async Task<string> GetPlayerNameAsync(Guid? userId, CancellationToken cancellationToken = default)
     {
