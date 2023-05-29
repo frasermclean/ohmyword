@@ -9,6 +9,9 @@ public record Player
     /// </summary>
     public required Guid Id { get; init; }
     
+    /// <summary>
+    /// Public name for this player.
+    /// </summary>
     public string Name { get; init; } = string.Empty;
 
     /// <summary>
