@@ -14,8 +14,6 @@ public static class DomainServicesRegistration
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        services.AddMemoryCache();
-
         services.AddSingleton<IDefinitionsService, DefinitionsService>();
         services.AddSingleton<IUsersService, UsersService>();
         services.AddSingleton<IGeoLocationService, GeoLocationService>();

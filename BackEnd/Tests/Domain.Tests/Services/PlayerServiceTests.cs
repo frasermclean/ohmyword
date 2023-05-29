@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.DependencyInjection;
-using OhMyWord.Domain.Models;
+﻿using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Services;
 using OhMyWord.Infrastructure.Models.Entities;
 using OhMyWord.Infrastructure.Services;
@@ -20,13 +18,7 @@ public class PlayerServiceTests
 
     public PlayerServiceTests()
     {
-        var serviceProvider = new ServiceCollection()
-            .AddMemoryCache()
-            .BuildServiceProvider();
-
-        var memoryCache = serviceProvider.GetRequiredService<IMemoryCache>();
-
-        playerService = new PlayerService(memoryCache, playerRepositoryMock.Object, graphApiClientMock.Object,
+        playerService = new PlayerService(playerRepositoryMock.Object, graphApiClientMock.Object,
             geoLocationServiceMock.Object);
     }
 

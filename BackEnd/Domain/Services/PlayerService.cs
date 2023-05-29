@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Caching.Memory;
-using OhMyWord.Domain.Models;
+﻿using OhMyWord.Domain.Models;
 using OhMyWord.Infrastructure.Models.Entities;
 using OhMyWord.Infrastructure.Services;
 using OhMyWord.Infrastructure.Services.GraphApi;
@@ -17,15 +16,13 @@ public interface IPlayerService
 
 public class PlayerService : IPlayerService
 {
-    private readonly IMemoryCache memoryCache;
     private readonly IPlayerRepository playerRepository;
     private readonly IGraphApiClient graphApiClient;
     private readonly IGeoLocationService geoLocationService;
 
-    public PlayerService(IMemoryCache memoryCache, IPlayerRepository playerRepository, IGraphApiClient graphApiClient,
+    public PlayerService(IPlayerRepository playerRepository, IGraphApiClient graphApiClient,
         IGeoLocationService geoLocationService)
     {
-        this.memoryCache = memoryCache;
         this.playerRepository = playerRepository;
         this.graphApiClient = graphApiClient;
         this.geoLocationService = geoLocationService;
@@ -34,23 +31,13 @@ public class PlayerService : IPlayerService
     public async Task<Player> GetPlayerAsync(Guid playerId, string visitorId, string connectionId, IPAddress ipAddress,
         Guid? userId = default, CancellationToken cancellationToken = default)
     {
-        var player = await memoryCache.GetOrCreateAsync<Player>($"Player-{playerId}", async entry =>
-        {
-            var entityTask = GetOrCreatePlayerEntityAsync(playerId, visitorId, ipAddress, userId, cancellationToken);
-            var nameTask = GetPlayerNameAsync(userId, cancellationToken);
-            var geoLocationTask = geoLocationService.GetGeoLocationAsync(ipAddress, cancellationToken);
+        var entityTask = GetOrCreatePlayerEntityAsync(playerId, visitorId, ipAddress, userId, cancellationToken);
+        var nameTask = GetPlayerNameAsync(userId, cancellationToken);
+        var geoLocationTask = geoLocationService.GetGeoLocationAsync(ipAddress, cancellationToken);
 
-            await Task.WhenAll(entityTask, nameTask, geoLocationTask);
+        await Task.WhenAll(entityTask, nameTask, geoLocationTask);
 
-            var player = MapToPlayer(entityTask.Result, nameTask.Result, visitorId, connectionId,
-                geoLocationTask.Result);
-
-            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5);
-
-            return player;
-        });
-
-        return player ?? throw new InvalidOperationException("Memory cache failed to return a player.");
+        return MapToPlayer(entityTask.Result, nameTask.Result, visitorId, connectionId, geoLocationTask.Result);
     }
 
     public Task IncrementPlayerScoreAsync(Guid playerId, int points) =>
