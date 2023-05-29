@@ -20,12 +20,15 @@ public class PlayerService : IPlayerService
     private readonly IMemoryCache memoryCache;
     private readonly IPlayerRepository playerRepository;
     private readonly IGraphApiClient graphApiClient;
+    private readonly IGeoLocationService geoLocationService;
 
-    public PlayerService(IMemoryCache memoryCache, IPlayerRepository playerRepository, IGraphApiClient graphApiClient)
+    public PlayerService(IMemoryCache memoryCache, IPlayerRepository playerRepository, IGraphApiClient graphApiClient,
+        IGeoLocationService geoLocationService)
     {
         this.memoryCache = memoryCache;
         this.playerRepository = playerRepository;
         this.graphApiClient = graphApiClient;
+        this.geoLocationService = geoLocationService;
     }
 
     public async Task<Player> GetPlayerAsync(Guid playerId, string visitorId, string connectionId, IPAddress ipAddress,
@@ -35,10 +38,12 @@ public class PlayerService : IPlayerService
         {
             var entityTask = GetOrCreatePlayerEntityAsync(playerId, visitorId, ipAddress, userId, cancellationToken);
             var nameTask = GetPlayerNameAsync(userId, cancellationToken);
+            var geoLocationTask = geoLocationService.GetGeoLocationAsync(ipAddress, cancellationToken);
 
-            await Task.WhenAll(entityTask, nameTask);
+            await Task.WhenAll(entityTask, nameTask, geoLocationTask);
 
-            var player = MapToPlayer(entityTask.Result, nameTask.Result, visitorId, connectionId, ipAddress);
+            var player = MapToPlayer(entityTask.Result, nameTask.Result, visitorId, connectionId,
+                geoLocationTask.Result);
 
             entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5);
 
@@ -67,10 +72,10 @@ public class PlayerService : IPlayerService
                     IpAddresses = new[] { ipAddress.ToString() }
                 }, cancellationToken);
         }
-        
+
         // update the player entity
-        return await playerRepository.UpdatePlayerAsync(entity, visitorId, ipAddress.ToString());        
-    }    
+        return await playerRepository.UpdatePlayerAsync(entity, visitorId, ipAddress.ToString());
+    }
 
     private async Task<string> GetPlayerNameAsync(Guid? userId, CancellationToken cancellationToken = default)
     {
@@ -81,7 +86,7 @@ public class PlayerService : IPlayerService
     }
 
     private static Player MapToPlayer(PlayerEntity entity, string name, string visitorId, string connectionId,
-        IPAddress ipAddress) => new()
+        GeoLocation geoLocation) => new()
     {
         Id = Guid.TryParse(entity.Id, out var id) ? id : Guid.Empty,
         Name = name,
@@ -90,6 +95,6 @@ public class PlayerService : IPlayerService
         Score = entity.Score,
         RegistrationCount = entity.RegistrationCount,
         VisitorId = visitorId,
-        IpAddress = ipAddress
+        GeoLocation = geoLocation
     };
 }

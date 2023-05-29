@@ -47,7 +47,7 @@ public sealed class SessionService : ISessionService
             await roundService.SaveRoundAsync(round, cancellationToken);
 
             // post round delay
-            var (postRoundDelay, summary) = await roundService.GetRoundEndDataAsync(round, cancellationToken);
+            var (postRoundDelay, summary) = roundService.GetRoundEndData(round);
             await Task.WhenAll(
                 SendRoundEndedNotificationAsync(summary, cancellationToken),
                 Task.Delay(postRoundDelay, cancellationToken));

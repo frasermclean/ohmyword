@@ -8,12 +8,8 @@ namespace OhMyWord.Domain.Services;
 
 public interface IGeoLocationService
 {
-    Task<GeoLocation> GetGeoLocationAsync(string ipAddress, CancellationToken cancellationToken = default)
-        => GetGeoLocationAsync(IPAddress.Parse(ipAddress), cancellationToken);
-
+    Task<GeoLocation> GetGeoLocationAsync(string ipAddress, CancellationToken cancellationToken = default);
     Task<GeoLocation> GetGeoLocationAsync(IPAddress ipAddress, CancellationToken cancellationToken = default);
-
-    Task<string> GetCountryCodeAsync(IPAddress ipAddress, CancellationToken cancellationToken = default);
 }
 
 public class GeoLocationService : IGeoLocationService
@@ -27,6 +23,9 @@ public class GeoLocationService : IGeoLocationService
         this.apiClient = apiClient;
     }
 
+    public Task<GeoLocation> GetGeoLocationAsync(string ipAddress, CancellationToken cancellationToken = default)
+        => GetGeoLocationAsync(IPAddress.Parse(ipAddress), cancellationToken);
+
     public async Task<GeoLocation> GetGeoLocationAsync(IPAddress ipAddress,
         CancellationToken cancellationToken = default)
     {
@@ -38,11 +37,5 @@ public class GeoLocationService : IGeoLocationService
         entity = await apiClient.GetGetLocationAsync(ipAddress, cancellationToken);
         await repository.AddGeoLocationAsync(entity);
         return entity.ToGeoLocation();
-    }
-
-    public async Task<string> GetCountryCodeAsync(IPAddress ipAddress, CancellationToken cancellationToken = default)
-    {
-        var geoLocation = await GetGeoLocationAsync(ipAddress, cancellationToken);
-        return geoLocation.CountryCode;
     }
 }

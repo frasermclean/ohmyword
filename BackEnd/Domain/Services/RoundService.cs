@@ -15,7 +15,7 @@ public interface IRoundService
     Task<Round> CreateRoundAsync(int roundNumber, Guid sessionId, CancellationToken cancellationToken = default);
     Task ExecuteRoundAsync(Round round, CancellationToken cancellationToken = default);
     Task SaveRoundAsync(Round round, CancellationToken cancellationToken = default);
-    Task<(TimeSpan, RoundSummary)> GetRoundEndDataAsync(Round round, CancellationToken cancellationToken = default);
+    (TimeSpan, RoundSummary) GetRoundEndData(Round round);
 }
 
 public class RoundService : IRoundService
@@ -25,22 +25,19 @@ public class RoundService : IRoundService
     private readonly IPlayerState playerState;
     private readonly IWordsService wordsService;
     private readonly IRoundsRepository roundsRepository;
-    private readonly IGeoLocationService geoLocationService;
 
     private readonly TimeSpan letterHintDelay;
     private readonly TimeSpan postRoundDelay;
     private readonly int guessLimit;
 
     public RoundService(ILogger<RoundService> logger, IOptions<RoundOptions> options, IPublisher publisher,
-        IPlayerState playerState, IWordsService wordsService, IRoundsRepository roundsRepository,
-        IGeoLocationService geoLocationService)
+        IPlayerState playerState, IWordsService wordsService, IRoundsRepository roundsRepository)
     {
         this.logger = logger;
         this.publisher = publisher;
         this.playerState = playerState;
         this.wordsService = wordsService;
         this.roundsRepository = roundsRepository;
-        this.geoLocationService = geoLocationService;
 
         letterHintDelay = TimeSpan.FromSeconds(options.Value.LetterHintDelay);
         postRoundDelay = TimeSpan.FromSeconds(options.Value.PostRoundDelay);
@@ -79,8 +76,7 @@ public class RoundService : IRoundService
         await roundsRepository.CreateRoundAsync(round.ToEntity(), cancellationToken);
     }
 
-    public async Task<(TimeSpan, RoundSummary)> GetRoundEndDataAsync(Round round,
-        CancellationToken cancellationToken = default)
+    public (TimeSpan, RoundSummary) GetRoundEndData(Round round)
     {
         var summary = new RoundSummary
         {
@@ -90,11 +86,9 @@ public class RoundService : IRoundService
             RoundId = round.Id,
             DefinitionId = round.WordHint.DefinitionId,
             NextRoundStart = DateTime.UtcNow + postRoundDelay,
-            Scores = await round.GetPlayerData()
-                .ToAsyncEnumerable()
+            Scores = round.GetPlayerData()
                 .Where(data => data.PointsAwarded > 0)
-                .SelectAwait(async data => await CreateScoreLineAsync(data, cancellationToken))
-                .ToListAsync(cancellationToken)
+                .Select(CreateScoreLine)
         };
 
         return (postRoundDelay, summary);
@@ -126,18 +120,15 @@ public class RoundService : IRoundService
         return publisher.Publish(notification, cancellationToken);
     }
 
-    private async Task<ScoreLine> CreateScoreLineAsync(RoundPlayerData data, CancellationToken cancellationToken)
+    private ScoreLine CreateScoreLine(RoundPlayerData data)
     {
         var player = playerState.GetPlayerById(data.PlayerId);
-        var countryCode = player is not null
-            ? await geoLocationService.GetCountryCodeAsync(player.IpAddress, cancellationToken)
-            : string.Empty;
 
         return new ScoreLine
         {
             PlayerName = player?.Name ?? string.Empty,
             ConnectionId = player?.ConnectionId ?? string.Empty,
-            CountryCode = countryCode,
+            CountryCode = player?.GeoLocation.CountryCode ?? string.Empty,
             PointsAwarded = data.PointsAwarded,
             GuessCount = data.GuessCount,
             GuessTimeMilliseconds = data.GuessTime.TotalMilliseconds

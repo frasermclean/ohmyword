@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 using OhMyWord.Domain.Services;
 using OhMyWord.Infrastructure.Models.Entities;
 using OhMyWord.Infrastructure.Services;
-using System.Net;
 
 namespace Domain.Tests.Services;
 
@@ -15,15 +14,13 @@ public class RoundServiceTests : IClassFixture<TestDataFixture>
     private readonly Mock<IPlayerState> playerStateMock = new();
     private readonly Mock<IWordsService> wordsServiceMock = new();
     private readonly Mock<IRoundsRepository> roundsRepositoryMock = new();
-    private readonly Mock<IGeoLocationService> geoLocationServiceMock = new();
 
     public RoundServiceTests(TestDataFixture fixture)
     {
         this.fixture = fixture;
 
         roundService = new RoundService(Mock.Of<ILogger<RoundService>>(), fixture.CreateOptions(), publisherMock.Object,
-            playerStateMock.Object, wordsServiceMock.Object, roundsRepositoryMock.Object,
-            geoLocationServiceMock.Object);
+            playerStateMock.Object, wordsServiceMock.Object, roundsRepositoryMock.Object);
     }
 
     [Fact]
@@ -33,10 +30,10 @@ public class RoundServiceTests : IClassFixture<TestDataFixture>
         var word = fixture.CreateWord();
         wordsServiceMock.Setup(service => service.GetRandomWordAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(word);
-        
+
         // act
         var round = await roundService.CreateRoundAsync(1, Guid.NewGuid());
-        
+
         // assert
         round.Id.Should().NotBeEmpty();
         round.Number.Should().Be(1);
@@ -45,18 +42,15 @@ public class RoundServiceTests : IClassFixture<TestDataFixture>
     }
 
     [Fact]
-    public async Task GetRoundEndDataAsync_Should_Return_ExpectedValues()
+    public void GetRoundEndDataAsync_Should_Return_ExpectedValues()
     {
         // arrange
         playerStateMock.Setup(state => state.GetPlayerById(It.IsAny<Guid>()))
-            .Returns<Guid>((playerId) => fixture.CreatePlayer(playerId));
-        geoLocationServiceMock.Setup(service =>
-                service.GetCountryCodeAsync(It.IsAny<IPAddress>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync("AU");
+            .Returns<Guid>(TestDataFixture.CreatePlayer);
         var round = fixture.CreateRound();
 
         // act
-        var (postRoundDelay, summary) = await roundService.GetRoundEndDataAsync(round);
+        var (postRoundDelay, summary) = roundService.GetRoundEndData(round);
 
         // assert
         postRoundDelay.Should().Be(TimeSpan.FromSeconds(5));

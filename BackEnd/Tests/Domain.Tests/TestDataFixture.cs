@@ -34,7 +34,7 @@ public class TestDataFixture
         return round;
     }
 
-    public Player CreatePlayer(Guid playerId = default) => new()
+    public static Player CreatePlayer(Guid playerId = default) => new()
     {
         Id = playerId == default ? Guid.NewGuid() : playerId,
         Name = Guid.NewGuid().ToString()[..4],
@@ -43,6 +43,13 @@ public class TestDataFixture
         Score = Random.Shared.Next(500),
         RegistrationCount = Random.Shared.Next(5),
         VisitorId = Guid.NewGuid().ToString()[..8],
-        IpAddress = IPAddress.Loopback
+        GeoLocation = new GeoLocation
+        {
+            IpAddress = IPAddress.Loopback,
+            CountryCode = "AU",
+            CountryName = "Australia",
+            City = "Melbourne",
+            LastUpdated = DateTime.Now
+        }
     };
 }

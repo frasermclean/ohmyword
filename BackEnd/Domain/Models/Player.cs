@@ -1,6 +1,4 @@
-﻿using System.Net;
-
-namespace OhMyWord.Domain.Models;
+﻿namespace OhMyWord.Domain.Models;
 
 public record Player
 {
@@ -8,7 +6,7 @@ public record Player
     /// Unique identifier for this player.
     /// </summary>
     public required Guid Id { get; init; }
-    
+
     /// <summary>
     /// Public name for this player.
     /// </summary>
@@ -37,10 +35,10 @@ public record Player
     /// <summary>
     /// Fingerprint of this player's browser.
     /// </summary>
-    public required string VisitorId { get; init; }    
-    
+    public required string VisitorId { get; init; }
+
     /// <summary>
-    /// The player's current IP address.
+    /// The player's current geo location.
     /// </summary>
-    public required IPAddress IpAddress { get; init; }
+    public required GeoLocation GeoLocation { get; init; }
 }
