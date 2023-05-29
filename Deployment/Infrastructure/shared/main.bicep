@@ -278,7 +278,31 @@ resource appConfiguration 'Microsoft.AppConfiguration/configurationStores@2022-0
       value: 'dev-ip-lookup'
       contentType: 'text/plain'
     }
-  }  
+  }
+
+  resource graphApiClientTenantIdKeyValue 'keyValues' = {
+    name: 'GraphApiClient:TenantId'
+    properties: {
+      value: b2cTenant.properties.tenantId
+      contentType: 'text/plain'
+    }
+  }
+
+  resource graphApiClientClientIdKeyValue 'keyValues' = {
+    name: 'GraphApiClient:ClientId'
+    properties: {
+      value: '5d698def-c925-41f4-897d-cfa10f0dd0c2'
+      contentType: 'text/plain'
+    }
+  }
+
+  resource graphApiClientClientSecretKeyValue 'keyValues' = {
+    name: 'GraphApiClient:ClientSecret'
+    properties: {
+      value: '{"uri":"https://${keyVault.name}${environment().suffixes.keyvaultDns}/secrets/${keyVault::userReaderClientSecret.name}"}'
+      contentType: 'application/vnd.microsoft.appconfig.keyvaultref+json;charset=utf-8'
+    }
+  }
 }
 
 // key vault
@@ -309,6 +333,10 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-02-01' = {
         value: ipAddress
       }]
     }
+  }
+
+  resource userReaderClientSecret 'secrets' existing = {
+    name: 'user-reader-client-secret'
   }
 }
 

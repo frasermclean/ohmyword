@@ -115,8 +115,8 @@ public class StateManagerTests
         snapshot.RoundActive.Should().BeTrue();
         snapshot.RoundNumber.Should().Be(1);
         snapshot.RoundId.Should().NotBeEmpty();
-        snapshot.IntervalStart.Should().BeBefore(DateTime.UtcNow);
-        snapshot.IntervalEnd.Should().BeAfter(DateTime.UtcNow);
+        snapshot.Interval.StartDate.Should().BeBefore(DateTime.UtcNow);
+        snapshot.Interval.EndDate.Should().BeAfter(DateTime.UtcNow);
         snapshot.WordHint.Should().NotBeNull();
     }
 }

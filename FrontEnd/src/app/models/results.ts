@@ -1,3 +1,4 @@
+import { Interval } from './interval.model';
 import { WordHintResponse } from './responses/word-hint.response';
 
 /**
@@ -27,7 +28,6 @@ interface StateSnapshot {
   roundActive: boolean;
   roundNumber: number;
   roundId: string;
-  intervalStart: string;
-  intervalEnd: string;
+  interval: Interval;
   wordHint: WordHintResponse | null;
 }

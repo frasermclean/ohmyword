@@ -69,11 +69,12 @@ public static class Program
             services.AddHostedService<GameBackgroundService>();
 
             // local project services
-            services.AddDomainServices(context.Configuration);
-            services.AddCosmosDbRepositories(context);
-            services.AddTableRepositories(context.Configuration);
-            services.AddMessagingServices(context);
-            services.AddRapidApiServices();
+            services.AddDomainServices(context.Configuration)
+                .AddCosmosDbRepositories(context)
+                .AddTableRepositories(context.Configuration)
+                .AddMessagingServices(context)
+                .AddRapidApiServices()
+                .AddGraphApiClient(context.Configuration);
 
             // development services
             if (context.HostingEnvironment.IsDevelopment())

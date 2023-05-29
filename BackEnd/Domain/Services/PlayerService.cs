@@ -1,17 +1,15 @@
-﻿using OhMyWord.Domain.Extensions;
-using OhMyWord.Domain.Models;
+﻿using OhMyWord.Domain.Models;
 using OhMyWord.Infrastructure.Models.Entities;
 using OhMyWord.Infrastructure.Services;
+using OhMyWord.Infrastructure.Services.GraphApi;
 using System.Net;
 
 namespace OhMyWord.Domain.Services;
 
 public interface IPlayerService
 {
-    Task<Player> GetOrCreatePlayerEntityAsync(Guid playerId, string visitorId, string connectionId,
-        IPAddress ipAddress, Guid? userId = default);
-
-    Task PatchPlayerRegistrationAsync(Player player, string visitorId, IPAddress ipAddress);
+    Task<Player> GetPlayerAsync(Guid playerId, string visitorId, string connectionId, IPAddress ipAddress,
+        Guid? userId = default, CancellationToken cancellationToken = default);
 
     Task IncrementPlayerScoreAsync(Guid playerId, int points);
 }
@@ -19,40 +17,71 @@ public interface IPlayerService
 public class PlayerService : IPlayerService
 {
     private readonly IPlayerRepository playerRepository;
+    private readonly IGraphApiClient graphApiClient;
+    private readonly IGeoLocationService geoLocationService;
 
-    public PlayerService(IPlayerRepository playerRepository)
+    public PlayerService(IPlayerRepository playerRepository, IGraphApiClient graphApiClient,
+        IGeoLocationService geoLocationService)
     {
         this.playerRepository = playerRepository;
+        this.graphApiClient = graphApiClient;
+        this.geoLocationService = geoLocationService;
     }
 
-    public async Task<Player> GetOrCreatePlayerEntityAsync(Guid playerId, string visitorId, string connectionId,
-        IPAddress ipAddress, Guid? userId = default)
+    public async Task<Player> GetPlayerAsync(Guid playerId, string visitorId, string connectionId, IPAddress ipAddress,
+        Guid? userId = default, CancellationToken cancellationToken = default)
     {
-        var entity = await playerRepository.GetPlayerByIdAsync(playerId) ??
-                     await playerRepository.CreatePlayerAsync(new PlayerEntity
-                     {
-                         Id = playerId.ToString(),
-                         UserId = userId,
-                         VisitorIds = new[] { visitorId },
-                         IpAddresses = new[] { ipAddress.ToString() }
-                     });
+        var entityTask = GetOrCreatePlayerEntityAsync(playerId, visitorId, ipAddress, userId, cancellationToken);
+        var nameTask = GetPlayerNameAsync(userId, cancellationToken);
+        var geoLocationTask = geoLocationService.GetGeoLocationAsync(ipAddress, cancellationToken);
 
-        return entity.ToPlayer(connectionId, visitorId, ipAddress);
-    }
+        await Task.WhenAll(entityTask, nameTask, geoLocationTask);
 
-    public async Task PatchPlayerRegistrationAsync(Player player, string visitorId, IPAddress ipAddress)
-    {
-        await playerRepository.IncrementRegistrationCountAsync(player.Id);
-
-        // // patch ip address
-        // if (!player.IpAddresses.Contains(ipAddress))
-        //     await playerRepository.AddIpAddressAsync(player.Id, ipAddress.ToString());
-        //
-        // // patch visitor id
-        // if (!player.VisitorIds.Contains(visitorId))
-        //     await playerRepository.AddVisitorIdAsync(player.Id, visitorId);
+        return MapToPlayer(entityTask.Result, nameTask.Result, visitorId, connectionId, geoLocationTask.Result);
     }
 
     public Task IncrementPlayerScoreAsync(Guid playerId, int points) =>
         playerRepository.IncrementScoreAsync(playerId, points);
+
+    private async Task<PlayerEntity> GetOrCreatePlayerEntityAsync(Guid playerId, string visitorId, IPAddress ipAddress,
+        Guid? userId = default, CancellationToken cancellationToken = default)
+    {
+        var entity = await playerRepository.GetPlayerByIdAsync(playerId, cancellationToken);
+        if (entity is null)
+        {
+            // create a new player entity
+            return await playerRepository.CreatePlayerAsync(
+                new PlayerEntity
+                {
+                    Id = playerId.ToString(),
+                    UserId = userId,
+                    VisitorIds = new[] { visitorId },
+                    IpAddresses = new[] { ipAddress.ToString() }
+                }, cancellationToken);
+        }
+
+        // update the player entity
+        return await playerRepository.UpdatePlayerAsync(entity, visitorId, ipAddress.ToString());
+    }
+
+    private async Task<string> GetPlayerNameAsync(Guid? userId, CancellationToken cancellationToken = default)
+    {
+        if (!userId.HasValue) return "Guest";
+
+        var user = await graphApiClient.GetUserByIdAsync(userId.Value, cancellationToken);
+        return user?.GivenName ?? "Guest";
+    }
+
+    private static Player MapToPlayer(PlayerEntity entity, string name, string visitorId, string connectionId,
+        GeoLocation geoLocation) => new()
+    {
+        Id = Guid.TryParse(entity.Id, out var id) ? id : Guid.Empty,
+        Name = name,
+        ConnectionId = connectionId,
+        UserId = entity.UserId,
+        Score = entity.Score,
+        RegistrationCount = entity.RegistrationCount,
+        VisitorId = visitorId,
+        GeoLocation = geoLocation
+    };
 }

@@ -12,7 +12,7 @@ namespace OhMyWord.Api.Hubs;
 public interface IGameHub
 {
     Task SendRoundStarted(RoundStartedNotification notification, CancellationToken cancellationToken = default);
-    Task SendRoundEnded(RoundEndedNotification notification, CancellationToken cancellationToken = default);
+    Task SendRoundEnded(RoundSummary summary, CancellationToken cancellationToken = default);
     Task SendPlayerCount(int count);
     Task SendLetterHint(LetterHint letterHint);
 }
