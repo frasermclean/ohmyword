@@ -1,11 +1,11 @@
-﻿using MediatR;
-using OhMyWord.Domain.Contracts.Requests;
+﻿using FastEndpoints;
+using OhMyWord.Domain.Contracts.Commands;
 using OhMyWord.Domain.Contracts.Results;
 using OhMyWord.Domain.Services;
 
 namespace OhMyWord.Domain.Contracts.Handlers;
 
-public class RegisterPlayerHandler : IRequestHandler<RegisterPlayerRequest, RegisterPlayerResult>
+public class RegisterPlayerHandler : ICommandHandler<RegisterPlayerCommand, RegisterPlayerResult>
 {
     private readonly IPlayerService playerService;
     private readonly IStateManager stateManager;
@@ -16,10 +16,11 @@ public class RegisterPlayerHandler : IRequestHandler<RegisterPlayerRequest, Regi
         this.stateManager = stateManager;
     }
 
-    public async Task<RegisterPlayerResult> Handle(RegisterPlayerRequest request, CancellationToken cancellationToken)
+    public async Task<RegisterPlayerResult> ExecuteAsync(RegisterPlayerCommand command,
+        CancellationToken cancellationToken = new())
     {
-        var player = await playerService.GetPlayerAsync(request.PlayerId, request.VisitorId,
-            request.ConnectionId, request.IpAddress, request.UserId, cancellationToken);
+        var player = await playerService.GetPlayerAsync(command.PlayerId, command.VisitorId,
+            command.ConnectionId, command.IpAddress, command.UserId, cancellationToken);
         var isSuccessful = stateManager.PlayerState.AddPlayer(player);
 
         return new RegisterPlayerResult

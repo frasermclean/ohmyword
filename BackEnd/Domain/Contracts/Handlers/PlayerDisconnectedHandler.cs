@@ -1,10 +1,10 @@
-﻿using MediatR;
-using OhMyWord.Domain.Contracts.Notifications;
+﻿using FastEndpoints;
+using OhMyWord.Domain.Contracts.Events;
 using OhMyWord.Domain.Services;
 
 namespace OhMyWord.Domain.Contracts.Handlers;
 
-public class PlayerDisconnectedHandler : INotificationHandler<PlayerDisconnectedNotification>
+public class PlayerDisconnectedHandler : IEventHandler<PlayerDisconnectedEvent>
 {
     private readonly IPlayerState playerState;
 
@@ -13,10 +13,9 @@ public class PlayerDisconnectedHandler : INotificationHandler<PlayerDisconnected
         this.playerState = playerState;
     }
 
-    public Task Handle(PlayerDisconnectedNotification notification, CancellationToken cancellationToken)
+    public Task HandleAsync(PlayerDisconnectedEvent eventModel, CancellationToken cancellationToken = new())
     {
-        playerState.RemovePlayer(notification.ConnectionId);
-
+        playerState.RemovePlayer(eventModel.ConnectionId);
         return Task.CompletedTask;
     }
 }

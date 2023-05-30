@@ -1,7 +1,7 @@
-﻿using MediatR;
+﻿using FastEndpoints;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using OhMyWord.Domain.Contracts.Notifications;
+using OhMyWord.Domain.Contracts.Events;
 using OhMyWord.Domain.Extensions;
 using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Options;
@@ -21,7 +21,6 @@ public interface IRoundService
 public class RoundService : IRoundService
 {
     private readonly ILogger<RoundService> logger;
-    private readonly IPublisher publisher;
     private readonly IPlayerState playerState;
     private readonly IWordQueueService wordQueueService;
     private readonly IRoundsRepository roundsRepository;
@@ -30,11 +29,10 @@ public class RoundService : IRoundService
     private readonly TimeSpan postRoundDelay;
     private readonly int guessLimit;
 
-    public RoundService(ILogger<RoundService> logger, IOptions<RoundOptions> options, IPublisher publisher,
-        IPlayerState playerState, IWordQueueService wordQueueService, IRoundsRepository roundsRepository)
+    public RoundService(ILogger<RoundService> logger, IOptions<RoundOptions> options, IPlayerState playerState,
+        IWordQueueService wordQueueService, IRoundsRepository roundsRepository)
     {
         this.logger = logger;
-        this.publisher = publisher;
         this.playerState = playerState;
         this.wordQueueService = wordQueueService;
         this.roundsRepository = roundsRepository;
@@ -104,7 +102,7 @@ public class RoundService : IRoundService
 
                 var letterHint = round.Word.GetLetterHint(index + 1);
                 round.WordHint.AddLetterHint(letterHint);
-                await SendLetterHintAddedNotificationAsync(letterHint, cancellationToken);
+                await new LetterHintAddedEvent(letterHint).PublishAsync(cancellation: cancellationToken);
             }
         }
         catch (TaskCanceledException)
@@ -112,12 +110,6 @@ public class RoundService : IRoundService
             logger.LogInformation("Round {RoundNumber} has been terminated early. Reason: {EndReason}",
                 round.Number, round.EndReason);
         }
-    }
-
-    private Task SendLetterHintAddedNotificationAsync(LetterHint letterHint, CancellationToken cancellationToken)
-    {
-        var notification = new LetterHintAddedNotification(letterHint);
-        return publisher.Publish(notification, cancellationToken);
     }
 
     private ScoreLine CreateScoreLine(RoundPlayerData data)

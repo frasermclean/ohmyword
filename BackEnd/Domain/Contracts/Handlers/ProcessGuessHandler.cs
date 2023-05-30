@@ -1,6 +1,6 @@
-﻿using MediatR;
+﻿using FastEndpoints;
 using Microsoft.Extensions.Logging;
-using OhMyWord.Domain.Contracts.Requests;
+using OhMyWord.Domain.Contracts.Commands;
 using OhMyWord.Domain.Contracts.Results;
 using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Services;
@@ -8,7 +8,7 @@ using OhMyWord.Infrastructure.Models.Entities;
 
 namespace OhMyWord.Domain.Contracts.Handlers;
 
-public class ProcessGuessHandler : IRequestHandler<ProcessGuessRequest, ProcessGuessResult>
+public class ProcessGuessHandler : ICommandHandler<ProcessGuessCommand, ProcessGuessResult>
 {
     private readonly ILogger<ProcessGuessHandler> logger;
     private readonly IStateManager stateManager;
@@ -22,22 +22,23 @@ public class ProcessGuessHandler : IRequestHandler<ProcessGuessRequest, ProcessG
         this.playerService = playerService;
     }
 
-    public async Task<ProcessGuessResult> Handle(ProcessGuessRequest request, CancellationToken cancellationToken)
+    public async Task<ProcessGuessResult> ExecuteAsync(ProcessGuessCommand command,
+        CancellationToken cancellationToken = new())
     {
         // validate round state
         var round = stateManager.Round;
         if (round is null) return ProcessGuessResult.Default;
-        if (stateManager.SessionState != SessionState.RoundActive || request.RoundId != round.Id)
+        if (stateManager.SessionState != SessionState.RoundActive || command.RoundId != round.Id)
             return ProcessGuessResult.Default;
 
         // compare value to current word value
-        var isMatch = IsMatch(round.Word.Id, request.Value);
+        var isMatch = IsMatch(round.Word.Id, command.Value);
         if (!isMatch) return ProcessGuessResult.Default;
 
-        var player = stateManager.PlayerState.GetPlayerByConnectionId(request.ConnectionId);
+        var player = stateManager.PlayerState.GetPlayerByConnectionId(command.ConnectionId);
         if (player is null)
         {
-            logger.LogError("Player not found. ConnectionId: {ConnectionId}", request.ConnectionId);
+            logger.LogError("Player not found. ConnectionId: {ConnectionId}", command.ConnectionId);
             return ProcessGuessResult.Default;
         }
 

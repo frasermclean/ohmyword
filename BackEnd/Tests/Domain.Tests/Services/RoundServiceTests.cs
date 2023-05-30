@@ -1,5 +1,4 @@
-﻿using MediatR;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using OhMyWord.Domain.Services;
 using OhMyWord.Infrastructure.Models.Entities;
 using OhMyWord.Infrastructure.Services;
@@ -10,7 +9,6 @@ public class RoundServiceTests : IClassFixture<TestDataFixture>
 {
     private readonly TestDataFixture fixture;
     private readonly IRoundService roundService;
-    private readonly Mock<IPublisher> publisherMock = new();
     private readonly Mock<IPlayerState> playerStateMock = new();
     private readonly Mock<IWordQueueService> wordQueueServiceMock = new();
     private readonly Mock<IRoundsRepository> roundsRepositoryMock = new();
@@ -19,7 +17,7 @@ public class RoundServiceTests : IClassFixture<TestDataFixture>
     {
         this.fixture = fixture;
 
-        roundService = new RoundService(Mock.Of<ILogger<RoundService>>(), fixture.CreateOptions(), publisherMock.Object,
+        roundService = new RoundService(Mock.Of<ILogger<RoundService>>(), fixture.CreateOptions(),
             playerStateMock.Object, wordQueueServiceMock.Object, roundsRepositoryMock.Object);
     }
 

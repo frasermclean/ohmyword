@@ -1,11 +1,10 @@
-﻿using MediatR;
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 using OhMyWord.Api.Hubs;
-using OhMyWord.Domain.Contracts.Notifications;
+using OhMyWord.Domain.Contracts.Events;
 
 namespace OhMyWord.Api.Handlers;
 
-public class LetterHintAddedHandler : INotificationHandler<LetterHintAddedNotification>
+public class LetterHintAddedHandler : IEventHandler<LetterHintAddedEvent>
 {
     private readonly IHubContext<GameHub, IGameHub> gameHubContext;
 
@@ -14,6 +13,6 @@ public class LetterHintAddedHandler : INotificationHandler<LetterHintAddedNotifi
         this.gameHubContext = gameHubContext;
     }
 
-    public Task Handle(LetterHintAddedNotification notification, CancellationToken cancellationToken)
-        => gameHubContext.Clients.All.SendLetterHint(notification.LetterHint);
+    public Task HandleAsync(LetterHintAddedEvent eventModel, CancellationToken cancellationToken = new())
+        => gameHubContext.Clients.All.SendLetterHint(eventModel.LetterHint, cancellationToken);
 }

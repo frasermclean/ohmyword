@@ -2,10 +2,8 @@ using Azure.Identity;
 using Microsoft.Extensions.Configuration.AzureAppConfiguration;
 using Microsoft.FeatureManagement;
 using OhMyWord.Api.Extensions;
-using OhMyWord.Api.Handlers;
 using OhMyWord.Api.Hubs;
 using OhMyWord.Api.Services;
-using OhMyWord.Domain.Contracts.Notifications;
 using OhMyWord.Domain.DependencyInjection;
 using OhMyWord.Infrastructure.DependencyInjection;
 using System.Text.Json;
@@ -50,13 +48,6 @@ public static class Program
 
             // fast endpoints
             services.AddFastEndpoints();
-
-            // mediator services
-            services.AddMediatR(configuration =>
-            {
-                configuration.RegisterServicesFromAssemblyContaining<RoundStartedNotification>();
-                configuration.RegisterServicesFromAssemblyContaining<RoundStartedHandler>();
-            });
 
             // signalR services
             services.AddSignalR()

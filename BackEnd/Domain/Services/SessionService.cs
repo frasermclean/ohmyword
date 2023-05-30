@@ -1,6 +1,6 @@
-﻿using MediatR;
+﻿using FastEndpoints;
 using Microsoft.Extensions.Logging;
-using OhMyWord.Domain.Contracts.Notifications;
+using OhMyWord.Domain.Contracts.Events;
 using OhMyWord.Domain.Extensions;
 using OhMyWord.Domain.Models;
 using OhMyWord.Infrastructure.Services;
@@ -17,16 +17,14 @@ public sealed class SessionService : ISessionService
 {
     private readonly ILogger<SessionService> logger;
     private readonly IStateManager stateManager;
-    private readonly IPublisher publisher;
     private readonly IRoundService roundService;
     private readonly ISessionsRepository sessionsRepository;
 
-    public SessionService(ILogger<SessionService> logger, IStateManager stateManager, IPublisher publisher,
-        IRoundService roundService, ISessionsRepository sessionsRepository)
+    public SessionService(ILogger<SessionService> logger, IStateManager stateManager, IRoundService roundService,
+        ISessionsRepository sessionsRepository)
     {
         this.logger = logger;
         this.stateManager = stateManager;
-        this.publisher = publisher;
         this.roundService = roundService;
         this.sessionsRepository = sessionsRepository;
     }
@@ -57,23 +55,16 @@ public sealed class SessionService : ISessionService
     public Task SaveSessionAsync(Session session, CancellationToken cancellationToken)
         => sessionsRepository.CreateSessionAsync(session.ToEntity(), cancellationToken);
 
-    private Task SendRoundStartedNotificationAsync(Round round, CancellationToken cancellationToken)
-    {
-        var notification = new RoundStartedNotification
+    private static Task SendRoundStartedNotificationAsync(Round round, CancellationToken cancellationToken)
+        => new RoundStartedEvent
         {
             RoundNumber = round.Number,
             RoundId = round.Id,
             WordHint = round.WordHint,
             StartDate = round.StartDate,
             EndDate = round.EndDate
-        };
+        }.PublishAsync(cancellation: cancellationToken);
 
-        return publisher.Publish(notification, cancellationToken);
-    }
-
-    private Task SendRoundEndedNotificationAsync(RoundSummary summary, CancellationToken cancellationToken)
-    {
-        var notification = new RoundEndedNotification(summary);
-        return publisher.Publish(notification, cancellationToken);
-    }
+    private static Task SendRoundEndedNotificationAsync(RoundSummary summary, CancellationToken cancellationToken)
+        => new RoundEndedEvent(summary).PublishAsync(cancellation: cancellationToken);
 }

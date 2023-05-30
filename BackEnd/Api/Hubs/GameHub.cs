@@ -1,8 +1,7 @@
-﻿using MediatR;
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 using OhMyWord.Api.Extensions;
-using OhMyWord.Domain.Contracts.Notifications;
-using OhMyWord.Domain.Contracts.Requests;
+using OhMyWord.Domain.Contracts.Commands;
+using OhMyWord.Domain.Contracts.Events;
 using OhMyWord.Domain.Contracts.Results;
 using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Services;
@@ -11,27 +10,28 @@ namespace OhMyWord.Api.Hubs;
 
 public interface IGameHub
 {
-    Task SendRoundStarted(RoundStartedNotification notification, CancellationToken cancellationToken = default);
+    Task SendRoundStarted(RoundStartedEvent eventModel, CancellationToken cancellationToken = default);
     Task SendRoundEnded(RoundSummary summary, CancellationToken cancellationToken = default);
-    Task SendPlayerCount(int count);
-    Task SendLetterHint(LetterHint letterHint);
+    Task SendPlayerCount(int count, CancellationToken cancellationToken = default);
+    Task SendLetterHint(LetterHint letterHint, CancellationToken cancellationToken = default);
 }
 
 public class GameHub : Hub<IGameHub>
 {
     private readonly ILogger<GameHub> logger;
     private readonly IStateManager stateManager;
-    private readonly IMediator mediator;
 
-    public GameHub(ILogger<GameHub> logger, IStateManager stateManager, IMediator mediator)
+    public GameHub(ILogger<GameHub> logger, IStateManager stateManager)
     {
         this.logger = logger;
         this.stateManager = stateManager;
-        this.mediator = mediator;
     }
 
-    public override Task OnConnectedAsync()
-        => mediator.Publish(new PlayerConnectedNotification(Context.ConnectionId, Context.GetIpAddress()));
+    public override async Task OnConnectedAsync()
+    {
+        logger.LogInformation("Client connected. Connection ID: {ConnectionId}", Context.ConnectionId);
+        await new PlayerConnectedEvent(Context.ConnectionId, Context.GetIpAddress()).PublishAsync(Mode.WaitForNone);
+    }
 
     public override Task OnDisconnectedAsync(Exception? exception)
     {
@@ -41,7 +41,7 @@ public class GameHub : Hub<IGameHub>
             logger.LogError(exception, "Client disconnected. Connection ID: {ConnectionId}", Context.ConnectionId);
 
         return Task.WhenAll(
-            mediator.Publish(new PlayerDisconnectedNotification(Context.ConnectionId)),
+            new PlayerDisconnectedEvent(Context.ConnectionId).PublishAsync(),
             Clients.Others.SendPlayerCount(stateManager.PlayerState.PlayerCount));
     }
 
@@ -50,10 +50,8 @@ public class GameHub : Hub<IGameHub>
     {
         logger.LogInformation("Attempting to register player with visitor ID: {VisitorId}", visitorId);
 
-        var request = new RegisterPlayerRequest(Context.ConnectionId, playerId, visitorId, Context.GetIpAddress(),
-            Context.GetUserId());
-
-        var result = await mediator.Send(request);
+        var result = await new RegisterPlayerCommand(Context.ConnectionId, playerId, visitorId, Context.GetIpAddress(),
+            Context.GetUserId()).ExecuteAsync();
 
         await Clients.Others.SendPlayerCount(result.PlayerCount);
 
@@ -63,7 +61,7 @@ public class GameHub : Hub<IGameHub>
     [HubMethodName("submitGuess")]
     public async Task<ProcessGuessResult> ProcessGuessAsync(Guid roundId, string value)
     {
-        var request = new ProcessGuessRequest(Context.ConnectionId, roundId, value);
-        return await mediator.Send(request);
+        var result = await new ProcessGuessCommand(Context.ConnectionId, roundId, value).ExecuteAsync();
+        return result;
     }
 }
