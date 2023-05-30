@@ -181,7 +181,7 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-09-01' = {
   tags: tags
   kind: 'linux'
   sku: {
-    name: 'B1'
+    name: 'B2'
   }
   properties: {
     reserved: true
