@@ -1,18 +1,19 @@
 ﻿using Microsoft.Extensions.Logging;
 using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Services;
+using OhMyWord.Domain.Services.State;
 using OhMyWord.Infrastructure.Models.Entities;
 
 namespace Domain.Tests.Services;
 
 [Trait("Category", "Unit")]
-public class StateManagerTests
+public class RootStateTests
 {
-    private readonly IStateManager stateManager;
+    private readonly IRootState rootState;
     private readonly Mock<IRoundService> roundServiceMock = new();
-    private readonly Mock<ILogger<StateManager>> loggerMock = new();
+    private readonly Mock<ILogger<RootState>> loggerMock = new();
 
-    public StateManagerTests()
+    public RootStateTests()
     {
         var session = new Session();
 
@@ -31,7 +32,7 @@ public class StateManagerTests
                 factory.CreateRoundAsync(It.IsAny<int>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(round);
 
-        stateManager = new StateManager(loggerMock.Object, roundServiceMock.Object,
+        rootState = new RootState(loggerMock.Object, roundServiceMock.Object,
             new PlayerState(Mock.Of<ILogger<PlayerState>>()));
     }
 
@@ -39,77 +40,77 @@ public class StateManagerTests
     public void DefaultObject_Should_Have_ExpectedValues()
     {
         // assert
-        stateManager.SessionState.Should().Be(SessionState.Waiting);
-        stateManager.Session.Should().BeNull();
-        stateManager.Round.Should().BeNull();
-        stateManager.IsDefault.Should().BeTrue();
-        stateManager.PlayerState.Should().NotBeNull();
+        rootState.SessionState.Should().Be(SessionState.Waiting);
+        rootState.Session.Should().BeNull();
+        rootState.Round.Should().BeNull();
+        rootState.IsDefault.Should().BeTrue();
+        rootState.PlayerState.Should().NotBeNull();
     }
 
     [Fact]
     public void NextSession_Should_Set_ExpectedValues()
     {
         // act
-        var session = stateManager.NextSession();
+        var session = rootState.NextSession();
 
         // assert
         session.Should().NotBeNull();
-        stateManager.Session.Should().Be(session);
-        stateManager.IsDefault.Should().BeFalse();
-        stateManager.SessionState.Should().Be(SessionState.RoundEnded);
+        rootState.Session.Should().Be(session);
+        rootState.IsDefault.Should().BeFalse();
+        rootState.SessionState.Should().Be(SessionState.RoundEnded);
     }
 
     [Fact]
     public async Task NextRoundAsync_Should_Set_ExpectedValues()
     {
         // act        
-        var round = await stateManager.NextRoundAsync();
+        var round = await rootState.NextRoundAsync();
 
         // assert
         round.Should().NotBeNull();
-        stateManager.Round.Should().Be(round);
-        stateManager.IsDefault.Should().BeFalse();
-        stateManager.SessionState.Should().Be(SessionState.RoundActive);
-        stateManager.IntervalStart.Should().Be(round.StartDate);
-        stateManager.IntervalEnd.Should().Be(round.EndDate);
+        rootState.Round.Should().Be(round);
+        rootState.IsDefault.Should().BeFalse();
+        rootState.SessionState.Should().Be(SessionState.RoundActive);
+        rootState.IntervalStart.Should().Be(round.StartDate);
+        rootState.IntervalEnd.Should().Be(round.EndDate);
     }
 
     [Fact]
     public async Task NextRoundAsync_WithEndingRound_Should_Set_ExpectedValues()
     {
         // act        
-        var round = await stateManager.NextRoundAsync();
+        var round = await rootState.NextRoundAsync();
         round.EndRound(RoundEndReason.AllPlayersGuessed);
 
         // assert
         round.Should().NotBeNull();
-        stateManager.Round.Should().Be(round);
-        stateManager.IsDefault.Should().BeFalse();
-        stateManager.SessionState.Should().Be(SessionState.RoundEnded);
-        stateManager.IntervalStart.Should().Be(round.StartDate);
-        stateManager.IntervalEnd.Should().Be(round.EndDate);
+        rootState.Round.Should().Be(round);
+        rootState.IsDefault.Should().BeFalse();
+        rootState.SessionState.Should().Be(SessionState.RoundEnded);
+        rootState.IntervalStart.Should().Be(round.StartDate);
+        rootState.IntervalEnd.Should().Be(round.EndDate);
     }
 
     [Fact]
     public void Reset_Should_ResetStateToDefaults()
     {
         // act
-        stateManager.NextSession();
-        stateManager.Reset();
+        rootState.NextSession();
+        rootState.Reset();
 
         // assert
-        stateManager.SessionState.Should().Be(SessionState.Waiting);
-        stateManager.Session.Should().BeNull();
-        stateManager.Round.Should().BeNull();
-        stateManager.IsDefault.Should().BeTrue();
+        rootState.SessionState.Should().Be(SessionState.Waiting);
+        rootState.Session.Should().BeNull();
+        rootState.Round.Should().BeNull();
+        rootState.IsDefault.Should().BeTrue();
     }
 
     [Fact]
     public async Task GetStateSnapshot_Should_ReturnExpectedValues()
     {
         // act
-        await stateManager.NextRoundAsync();
-        var snapshot = stateManager.GetStateSnapshot();
+        await rootState.NextRoundAsync();
+        var snapshot = rootState.GetStateSnapshot();
 
         // assert
         snapshot.RoundActive.Should().BeTrue();

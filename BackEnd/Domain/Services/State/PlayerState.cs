@@ -2,7 +2,7 @@
 using OhMyWord.Domain.Models;
 using System.Collections.Concurrent;
 
-namespace OhMyWord.Domain.Services;
+namespace OhMyWord.Domain.Services.State;
 
 public interface IPlayerState
 {

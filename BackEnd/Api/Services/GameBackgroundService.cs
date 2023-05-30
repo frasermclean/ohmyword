@@ -1,16 +1,17 @@
 ﻿using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Services;
+using OhMyWord.Domain.Services.State;
 
 namespace OhMyWord.Api.Services;
 
 public class GameBackgroundService : BackgroundService
 {
-    private readonly IStateManager stateManager;
+    private readonly IRootState rootState;
     private readonly ISessionService sessionService;
 
-    public GameBackgroundService(IStateManager stateManager, ISessionService sessionService)
+    public GameBackgroundService(IRootState rootState, ISessionService sessionService)
     {
-        this.stateManager = stateManager;
+        this.rootState = rootState;
         this.sessionService = sessionService;
     }
 
@@ -19,14 +20,14 @@ public class GameBackgroundService : BackgroundService
         while (!cancellationToken.IsCancellationRequested)
         {
             // wait for players to join
-            while (stateManager.PlayerState.PlayerCount == 0)
+            while (rootState.PlayerState.PlayerCount == 0)
             {
                 await Task.Delay(1000, cancellationToken);
             }
 
             // start a new session
             Session session;
-            using (session = stateManager.NextSession())
+            using (session = rootState.NextSession())
             {
                 await sessionService.ExecuteSessionAsync(session, cancellationToken);    
             }
@@ -35,7 +36,7 @@ public class GameBackgroundService : BackgroundService
             await sessionService.SaveSessionAsync(session, cancellationToken);
 
             // reset the state manager
-            stateManager.Reset();
+            rootState.Reset();
         }
     }
 }

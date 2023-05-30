@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
 using OhMyWord.Domain.Models;
 
-namespace OhMyWord.Domain.Services;
+namespace OhMyWord.Domain.Services.State;
 
-public interface IStateManager
+public interface IRootState
 {
     SessionState SessionState { get; }
     Session? Session { get; }
@@ -19,12 +19,12 @@ public interface IStateManager
     StateSnapshot GetStateSnapshot();
 }
 
-public class StateManager : IStateManager
+public class RootState : IRootState
 {
-    private readonly ILogger<StateManager> logger;
+    private readonly ILogger<RootState> logger;
     private readonly IRoundService roundService;
 
-    public StateManager(ILogger<StateManager> logger, IRoundService roundService, IPlayerState playerState)
+    public RootState(ILogger<RootState> logger, IRoundService roundService, IPlayerState playerState)
     {
         this.logger = logger;
         this.roundService = roundService;
