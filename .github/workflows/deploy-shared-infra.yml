@@ -3,6 +3,10 @@ name: Deploy shared infrastructure
 on:
   workflow_call:
     inputs:
+      environment:
+        description: The name of the environment to deploy to
+        required: true
+        type: string
       resourceGroupName:
         description: The name of the resource group to deploy to
         required: true
@@ -12,7 +16,7 @@ jobs:
   deploy:
     name: Deploy template
     runs-on: ubuntu-latest
-    environment: shared
+    environment: ${{ inputs.environment }}
     env:
       TEMPLATE_ROOT: ./Deployment/Infrastructure
     permissions:
@@ -36,6 +40,7 @@ jobs:
         with:
           resourceGroupName: ${{ inputs.resourceGroupName }}
           template: ${{ env.TEMPLATE_ROOT }}/shared/main.bicep
+          scope: resourcegroup
           parameters: >-
             ${{ env.TEMPLATE_ROOT }}/shared/main.parameters.json
 
