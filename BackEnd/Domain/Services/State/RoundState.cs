@@ -1,6 +1,7 @@
 ﻿using FluentResults;
 using Microsoft.Extensions.Logging;
 using OhMyWord.Domain.Models;
+using OhMyWord.Infrastructure.Models.Entities;
 
 namespace OhMyWord.Domain.Services.State;
 
@@ -49,7 +50,15 @@ public class RoundState : IRoundState
     }
 
     public Result<int> ProcessGuess(Guid playerId, Guid roundId, string value)
-        => round.ProcessGuess(playerId, roundId, value);
+    {
+        var result = round.ProcessGuess(playerId, roundId, value);
+
+        // end the round if all players have guessed
+        if (round.AllPlayersGuessed)
+            round.EndRound(RoundEndReason.AllPlayersGuessed);
+
+        return result;
+    }
 
     public StateSnapshot GetSnapshot() => new()
     {
