@@ -2,9 +2,9 @@
 using OhMyWord.Domain.Models;
 using System.Collections.Concurrent;
 
-namespace OhMyWord.Domain.Services;
+namespace OhMyWord.Domain.Services.State;
 
-public interface IPlayerState
+public interface IPlayerState : IState
 {
     /// <summary>
     /// Number of currently connected players.
@@ -42,12 +42,7 @@ public interface IPlayerState
     /// </summary>
     /// <param name="playerId">The ID of the player to look up.</param>
     /// <returns>A <see cref="Player"/> reference if found, null if not.</returns>
-    Player? GetPlayerById(Guid playerId);
-
-    /// <summary>
-    /// Reset the state to it's default values.
-    /// </summary>
-    void Reset();
+    Player? GetPlayerById(Guid playerId);    
 }
 
 public class PlayerState : IPlayerState
@@ -66,6 +61,7 @@ public class PlayerState : IPlayerState
 
     public int PlayerCount => players.Count;
     public IEnumerable<Guid> PlayerIds => players.Values.Select(player => player.Id);
+    public bool IsDefault => players.IsEmpty;
 
     public bool AddPlayer(Player player)
     {
@@ -97,5 +93,6 @@ public class PlayerState : IPlayerState
     public Player? GetPlayerByConnectionId(string connectionId)
         => players.TryGetValue(connectionId, out var player) ? player : default;
 
+    
     public void Reset() => players.Clear();
 }

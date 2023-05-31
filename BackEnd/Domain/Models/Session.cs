@@ -7,10 +7,10 @@ public sealed class Session : IDisposable
     public DateTime StartDate { get; } = DateTime.UtcNow;
     public DateTime EndDate { get; private set; }
 
-    public bool IsActive => StartDate > DateTime.UtcNow && EndDate == default;
-
     public void Dispose()
     {
         EndDate = DateTime.UtcNow;
-    }    
+    }
+
+    public static readonly Session Default = new() { Id = Guid.Empty };
 }

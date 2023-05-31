@@ -23,10 +23,9 @@ public class TestDataFixture
         var round = new Round(CreateWord(), TimeSpan.FromSeconds(CreateOptions().Value.LetterHintDelay),
             players.Select(player => player.Id)) { Number = 1, GuessLimit = 3, SessionId = Guid.NewGuid() };
 
-        foreach (var guid in players.Select(p => p.Id))
-        {            
-            round.IncrementGuessCount(guid);
-            round.AwardPoints(guid, 100);
+        foreach (var playerId in players.Select(p => p.Id))
+        {
+            round.ProcessGuess(playerId, round.Id, "test");
         }
 
         round.EndRound(RoundEndReason.AllPlayersGuessed);

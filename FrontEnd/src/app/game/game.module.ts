@@ -24,6 +24,8 @@ import { CountdownComponent } from './countdown/countdown.component';
 import { RoundSummaryComponent } from './round-summary/round-summary.component';
 import { StatsComponent } from './stats/stats.component';
 import { SpinnerComponent } from './spinner/spinner.component';
+import { RoundEndReasonComponent } from './round-summary/round-end-reason/round-end-reason.component';
+import { WordRevealComponent } from './round-summary/word-reveal/word-reveal.component';
 
 const routes: Routes = [{ path: '', component: GameRootComponent }];
 
@@ -37,6 +39,8 @@ const routes: Routes = [{ path: '', component: GameRootComponent }];
     RoundSummaryComponent,
     StatsComponent,
     SpinnerComponent,
+    RoundEndReasonComponent,
+    WordRevealComponent,
   ],
   imports: [
     CommonModule,

@@ -1,4 +1,5 @@
-﻿using OhMyWord.Infrastructure.Models.Entities;
+﻿using FluentResults;
+using OhMyWord.Infrastructure.Models.Entities;
 using System.Collections.Concurrent;
 
 namespace OhMyWord.Domain.Models;
@@ -46,10 +47,39 @@ public sealed class Round : IDisposable
         cancellationTokenSource.Cancel();
     }
 
-    public bool IncrementGuessCount(Guid playerId)
+    public Result<int> ProcessGuess(Guid playerId, Guid roundId, string value)
     {
-        if (!playerData.TryGetValue(playerId, out var data))
-            return false;
+        // check that round is active and ID matches
+        if (!IsActive || roundId != Id)
+            return Result.Fail("Round is inactive or ID does not match");
+        
+        // ensure player is in round
+        if (!playerData.ContainsKey(playerId))
+            return Result.Fail($"Player with ID: {playerId} is not in round");
+
+        // check that player has not exceeded guess limit
+        if (!IncrementGuessCount(playerId))
+            return Result.Fail($"Guess limit: {GuessLimit} exceeded for player with ID: {playerId}");
+
+        // compare guess value to word
+        if (!string.Equals(value, Word.Id, StringComparison.InvariantCultureIgnoreCase))
+            return Result.Fail($"Guess value of '{value}' is incorrect");
+
+        // successful guess - award points
+        var pointsAwarded = AwardPoints(playerId);
+        return pointsAwarded;
+    }
+
+    public IEnumerable<RoundPlayerData> GetPlayerData() => playerData.Values;
+
+    public void Dispose()
+    {
+        cancellationTokenSource.Dispose();
+    }
+
+    private bool IncrementGuessCount(Guid playerId)
+    {
+        var data = playerData[playerId];
 
         if (data.GuessCount >= GuessLimit)
             return false;
@@ -58,21 +88,20 @@ public sealed class Round : IDisposable
         return true;
     }
 
-    public bool AwardPoints(Guid playerId, int points)
+    private int AwardPoints(Guid playerId)
     {
-        if (!playerData.TryGetValue(playerId, out var data))
-            return false;
+        var data = playerData[playerId];
 
-        data.PointsAwarded = points;
+        const int pointsToAward = 100; // TODO: Calculate points dynamically
+
+        data.PointsAwarded = pointsToAward;
         data.GuessTime = DateTime.UtcNow - StartDate;
 
-        return true;
+        return pointsToAward;
     }
 
-    public IEnumerable<RoundPlayerData> GetPlayerData() => playerData.Values;
-
-    public void Dispose()
+    public static readonly Round Default = new(Word.Default, TimeSpan.Zero)
     {
-        cancellationTokenSource.Dispose();
-    }   
+        Number = 0, GuessLimit = 0, SessionId = Guid.Empty
+    };
 }

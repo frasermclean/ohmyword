@@ -78,41 +78,35 @@ public class RoundTests
     }
 
     [Theory, AutoData]
-    public void IncrementGuessCount_Should_ReturnCorrectResult(Word word, int roundNumber, Guid playerId)
+    public void ProcessGuess_Should_ReturnCorrectResult(Word word, int roundNumber, Guid playerId, string incorrectGuess,
+        Guid invalidPlayerId, Guid invalidRoundId)
     {
         // arrange
-        using var round = CreateRound(word, roundNumber, guessLimit: 1);
-        round.AddPlayer(playerId);
+        using var round = CreateRound(word, roundNumber, guessLimit: 2);
+        round.AddPlayer(playerId);        
 
         // act
-        var result1 = round.IncrementGuessCount(playerId);
-        var result2 = round.IncrementGuessCount(playerId);
-        var result3 = round.IncrementGuessCount(Guid.NewGuid());
+        var result1 = round.ProcessGuess(playerId, round.Id, word.Id);
+        var result2 = round.ProcessGuess(invalidPlayerId, round.Id, word.Id);
+        var result3 = round.ProcessGuess(playerId, invalidRoundId, word.Id);
+        var result4 = round.ProcessGuess(playerId, round.Id, incorrectGuess);
+        var result5 = round.ProcessGuess(playerId, round.Id, word.Id);
 
         // assert
-        result1.Should().BeTrue();
-        result2.Should().BeFalse();
-        result3.Should().BeFalse();
+        result1.Should().BeSuccess();
+        result2.Should().BeFailure()
+            .Which.Should().HaveError($"Player with ID: {invalidPlayerId} is not in round");
+        result3.Should().BeFailure()
+            .Which.Should().HaveError("Round is inactive or ID does not match");
+        result4.Should().BeFailure()
+            .Which.Should().HaveError($"Guess value of '{incorrectGuess}' is incorrect");
+        result5.Should().BeFailure()
+            .Which.Should().HaveError($"Guess limit: 2 exceeded for player with ID: {playerId}");
     }
 
-    [Theory, AutoData]
-    public void AwardPoints_Should_ReturnExpectedResult(Word word, int roundNumber, Guid playerId, int points)
-    {
-        // arrange
-        using var round = CreateRound(word, roundNumber);
-        round.AddPlayer(playerId);
-
-        // act
-        var result1 = round.AwardPoints(playerId, points);
-        var result2 = round.AwardPoints(Guid.NewGuid(), points);
-
-        // assert
-        result1.Should().BeTrue();
-        result2.Should().BeFalse();
-    }
 
     [Theory, AutoData]
-    public void GetPlayerData_Should_ReturnExpectedResult(Word word, int roundNumber, Guid[] playerIds, int points)
+    public void GetPlayerData_Should_ReturnExpectedResult(Word word, int roundNumber, Guid[] playerIds)
     {
         // arrange
         using var round = CreateRound(word, roundNumber);
@@ -121,8 +115,7 @@ public class RoundTests
         foreach (var playerId in playerIds)
         {
             round.AddPlayer(playerId);
-            round.IncrementGuessCount(playerId);
-            round.AwardPoints(playerId, points);
+            round.ProcessGuess(playerId, round.Id, word.Id);
         }
 
         var playerData = round.GetPlayerData().ToArray();

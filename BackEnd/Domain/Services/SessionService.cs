@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using OhMyWord.Domain.Contracts.Events;
 using OhMyWord.Domain.Extensions;
 using OhMyWord.Domain.Models;
+using OhMyWord.Domain.Services.State;
 using OhMyWord.Infrastructure.Services;
 
 namespace OhMyWord.Domain.Services;
@@ -16,15 +17,15 @@ public interface ISessionService
 public sealed class SessionService : ISessionService
 {
     private readonly ILogger<SessionService> logger;
-    private readonly IStateManager stateManager;
+    private readonly IRootState rootState;
     private readonly IRoundService roundService;
     private readonly ISessionsRepository sessionsRepository;
 
-    public SessionService(ILogger<SessionService> logger, IStateManager stateManager, IRoundService roundService,
+    public SessionService(ILogger<SessionService> logger, IRootState rootState, IRoundService roundService,
         ISessionsRepository sessionsRepository)
     {
         this.logger = logger;
-        this.stateManager = stateManager;
+        this.rootState = rootState;
         this.roundService = roundService;
         this.sessionsRepository = sessionsRepository;
     }
@@ -34,10 +35,10 @@ public sealed class SessionService : ISessionService
         logger.LogInformation("Starting session: {SessionId}", session.Id);
 
         // create and execute rounds while there are players
-        while (stateManager.PlayerState.PlayerCount > 0)
+        while (rootState.PlayerState.PlayerCount > 0)
         {
             // load the next round
-            using var round = await stateManager.NextRoundAsync(cancellationToken);
+            using var round = await rootState.RoundState.NextRoundAsync(cancellationToken);
             await SendRoundStartedNotificationAsync(round, cancellationToken);
 
             // execute round            

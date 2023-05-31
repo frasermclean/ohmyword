@@ -1,0 +1,4 @@
+<div class="end-reason" [ngSwitch]="reason">
+  <p *ngSwitchCase="'allPlayersGuessed'">All players have guessed the word!</p>
+  <p *ngSwitchDefault>Time ran out before all players guess the word!</p>
+</div>

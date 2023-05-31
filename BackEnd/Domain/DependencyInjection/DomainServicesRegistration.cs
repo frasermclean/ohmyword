@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using OhMyWord.Domain.Options;
 using OhMyWord.Domain.Services;
+using OhMyWord.Domain.Services.State;
 
 namespace OhMyWord.Domain.DependencyInjection;
 
@@ -18,12 +19,16 @@ public static class DomainServicesRegistration
         services.AddSingleton<IUsersService, UsersService>();
         services.AddSingleton<IGeoLocationService, GeoLocationService>();
         services.AddSingleton<IPlayerService, PlayerService>();
-        services.AddSingleton<IPlayerState, PlayerState>();
         services.AddSingleton<IRoundService, RoundService>();
         services.AddSingleton<ISessionService, SessionService>();
-        services.AddSingleton<IStateManager, StateManager>();
         services.AddSingleton<IWordsService, WordsService>();
         services.AddSingleton<IWordQueueService, WordQueueService>();
+
+        // state management
+        services.AddSingleton<IRootState, RootState>();
+        services.AddSingleton<IPlayerState, PlayerState>();
+        services.AddSingleton<IRoundState, RoundState>();
+        services.AddSingleton<ISessionState, SessionState>();
 
         return services;
     }

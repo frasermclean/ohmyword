@@ -4,7 +4,7 @@ using OhMyWord.Domain.Contracts.Commands;
 using OhMyWord.Domain.Contracts.Events;
 using OhMyWord.Domain.Contracts.Results;
 using OhMyWord.Domain.Models;
-using OhMyWord.Domain.Services;
+using OhMyWord.Domain.Services.State;
 
 namespace OhMyWord.Api.Hubs;
 
@@ -19,12 +19,12 @@ public interface IGameHub
 public class GameHub : Hub<IGameHub>
 {
     private readonly ILogger<GameHub> logger;
-    private readonly IStateManager stateManager;
+    private readonly IRootState rootState;
 
-    public GameHub(ILogger<GameHub> logger, IStateManager stateManager)
+    public GameHub(ILogger<GameHub> logger, IRootState rootState)
     {
         this.logger = logger;
-        this.stateManager = stateManager;
+        this.rootState = rootState;
     }
 
     public override async Task OnConnectedAsync()
@@ -42,7 +42,7 @@ public class GameHub : Hub<IGameHub>
 
         return Task.WhenAll(
             new PlayerDisconnectedEvent(Context.ConnectionId).PublishAsync(),
-            Clients.Others.SendPlayerCount(stateManager.PlayerState.PlayerCount));
+            Clients.Others.SendPlayerCount(rootState.PlayerState.PlayerCount));
     }
 
     [HubMethodName("registerPlayer")]
