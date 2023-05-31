@@ -121,6 +121,7 @@ public class RoundService : IRoundService
         {
             PlayerName = player?.Name ?? string.Empty,
             ConnectionId = player?.ConnectionId ?? string.Empty,
+            CountryName = player?.GeoLocation.CountryName ?? string.Empty,
             CountryCode = player?.GeoLocation.CountryCode ?? string.Empty,
             PointsAwarded = data.PointsAwarded,
             GuessCount = data.GuessCount,

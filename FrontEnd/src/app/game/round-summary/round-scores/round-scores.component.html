@@ -6,6 +6,14 @@
     <td mat-cell *matCellDef="let element"> {{element.playerName}} </td>
   </ng-container>
 
+  <!-- country column -->
+  <ng-container matColumnDef="country">
+    <th mat-header-cell *matHeaderCellDef>Country</th>
+    <td mat-cell *matCellDef="let element">
+      <span class="flag fi fi-{{element.countryCode | lowercase}}" matTooltip="{{element.countryName}}"></span>
+    </td>
+  </ng-container>
+
   <!-- guess count column -->
   <ng-container matColumnDef="guessCount">
     <th mat-header-cell *matHeaderCellDef>Guesses</th>
