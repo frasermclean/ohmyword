@@ -1,4 +1,4 @@
-﻿using OhMyWord.Domain.Options;
+﻿using FluentResults;
 using OhMyWord.Infrastructure.Models.Entities;
 using System.Collections.Concurrent;
 
@@ -9,11 +9,11 @@ public sealed class Round : IDisposable
     private readonly ConcurrentDictionary<Guid, RoundPlayerData> playerData;
     private readonly CancellationTokenSource cancellationTokenSource = new();
 
-    internal Round(Word word, double letterHintDelay, IEnumerable<Guid>? playerIds = default)
+    internal Round(Word word, TimeSpan letterHintDelay, IEnumerable<Guid>? playerIds = default)
     {
         Word = word;
         WordHint = new WordHint(word);
-        EndDate = StartDate + word.Length * TimeSpan.FromSeconds(letterHintDelay);
+        EndDate = StartDate + word.Length * letterHintDelay;
 
         playerData = playerIds is null
             ? new ConcurrentDictionary<Guid, RoundPlayerData>()
@@ -21,7 +21,7 @@ public sealed class Round : IDisposable
                 new KeyValuePair<Guid, RoundPlayerData>(playerId, new RoundPlayerData(playerId))));
     }
 
-    public Guid Id { get; private init; } = Guid.NewGuid();
+    public Guid Id { get; } = Guid.NewGuid();
     public required int Number { get; init; }
     public Word Word { get; }
     public WordHint WordHint { get; }
@@ -47,27 +47,27 @@ public sealed class Round : IDisposable
         cancellationTokenSource.Cancel();
     }
 
-    public bool IncrementGuessCount(Guid playerId)
+    public Result<int> ProcessGuess(Guid playerId, Guid roundId, string value)
     {
-        if (!playerData.TryGetValue(playerId, out var data))
-            return false;
+        // check that round is active and ID matches
+        if (!IsActive || roundId != Id)
+            return Result.Fail("Round is inactive or ID does not match");
+        
+        // ensure player is in round
+        if (!playerData.ContainsKey(playerId))
+            return Result.Fail($"Player with ID: {playerId} is not in round");
 
-        if (data.GuessCount >= GuessLimit)
-            return false;
+        // check that player has not exceeded guess limit
+        if (!IncrementGuessCount(playerId))
+            return Result.Fail($"Guess limit: {GuessLimit} exceeded for player with ID: {playerId}");
 
-        data.GuessCount++;
-        return true;
-    }
+        // compare guess value to word
+        if (!string.Equals(value, Word.Id, StringComparison.InvariantCultureIgnoreCase))
+            return Result.Fail($"Guess value of '{value}' is incorrect");
 
-    public bool AwardPoints(Guid playerId, int points)
-    {
-        if (!playerData.TryGetValue(playerId, out var data))
-            return false;
-
-        data.PointsAwarded = points;
-        data.GuessTime = DateTime.UtcNow - StartDate;
-
-        return true;
+        // successful guess - award points
+        var pointsAwarded = AwardPoints(playerId);
+        return pointsAwarded;
     }
 
     public IEnumerable<RoundPlayerData> GetPlayerData() => playerData.Values;
@@ -77,11 +77,31 @@ public sealed class Round : IDisposable
         cancellationTokenSource.Dispose();
     }
 
-    public static Round Default => new(Word.Default, RoundOptions.LetterHintDelayDefault)
+    private bool IncrementGuessCount(Guid playerId)
     {
-        Id = Guid.Empty,
-        Number = default,
-        SessionId = Guid.Empty,
-        GuessLimit = RoundOptions.GuessLimitDefault
+        var data = playerData[playerId];
+
+        if (data.GuessCount >= GuessLimit)
+            return false;
+
+        data.GuessCount++;
+        return true;
+    }
+
+    private int AwardPoints(Guid playerId)
+    {
+        var data = playerData[playerId];
+
+        const int pointsToAward = 100; // TODO: Calculate points dynamically
+
+        data.PointsAwarded = pointsToAward;
+        data.GuessTime = DateTime.UtcNow - StartDate;
+
+        return pointsToAward;
+    }
+
+    public static readonly Round Default = new(Word.Default, TimeSpan.Zero)
+    {
+        Number = 0, GuessLimit = 0, SessionId = Guid.Empty
     };
 }

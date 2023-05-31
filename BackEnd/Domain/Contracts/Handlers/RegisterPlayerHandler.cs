@@ -1,56 +1,37 @@
-﻿using MediatR;
-using OhMyWord.Domain.Contracts.Requests;
+﻿using FastEndpoints;
+using OhMyWord.Domain.Contracts.Commands;
 using OhMyWord.Domain.Contracts.Results;
-using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Services;
+using OhMyWord.Domain.Services.State;
 
 namespace OhMyWord.Domain.Contracts.Handlers;
 
-public class RegisterPlayerHandler : IRequestHandler<RegisterPlayerRequest, RegisterPlayerResult>
+public class RegisterPlayerHandler : ICommandHandler<RegisterPlayerCommand, RegisterPlayerResult>
 {
     private readonly IPlayerService playerService;
-    private readonly IStateManager stateManager;
+    private readonly IRootState rootState;
 
-    public RegisterPlayerHandler(IPlayerService playerService, IStateManager stateManager)
+    public RegisterPlayerHandler(IPlayerService playerService, IRootState rootState)
     {
         this.playerService = playerService;
-        this.stateManager = stateManager;
+        this.rootState = rootState;
     }
 
-    public async Task<RegisterPlayerResult> Handle(RegisterPlayerRequest request, CancellationToken cancellationToken)
+    public async Task<RegisterPlayerResult> ExecuteAsync(RegisterPlayerCommand command,
+        CancellationToken cancellationToken = new())
     {
-        var player = await playerService.GetPlayerByIdAsync(request.PlayerId, request.ConnectionId, request.VisitorId);
-        
-        if (player is not null)
-        {
-            await playerService.PatchPlayerRegistrationAsync(player, request.VisitorId, request.IpAddress);
-        }
-        else
-        {
-            player = await playerService.CreatePlayerAsync(request.PlayerId, request.ConnectionId, request.VisitorId,
-                request.IpAddress, request.UserId);
-        }
-
-        var isSuccessful = stateManager.PlayerState.AddPlayer(player);
+        var player = await playerService.GetPlayerAsync(command.PlayerId, command.VisitorId,
+            command.ConnectionId, command.IpAddress, command.UserId, cancellationToken);
+        var isSuccessful = rootState.PlayerState.AddPlayer(player);
 
         return new RegisterPlayerResult
         {
             IsSuccessful = isSuccessful,
             PlayerId = player.Id,
-            PlayerCount = stateManager.PlayerState.PlayerCount,
+            PlayerCount = rootState.PlayerState.PlayerCount,
             Score = player.Score,
             RegistrationCount = player.RegistrationCount,
-            StateSnapshot = GetGameState()
+            StateSnapshot = rootState.RoundState.GetSnapshot()
         };
     }
-
-    private StateSnapshot GetGameState() => new()
-    {
-        RoundActive = stateManager.SessionState == SessionState.RoundActive,
-        RoundNumber = stateManager.Round?.Number ?? default,
-        RoundId = stateManager.Round?.Id ?? default,
-        IntervalStart = stateManager.IntervalStart,
-        IntervalEnd = stateManager.IntervalEnd,
-        WordHint = stateManager.Round?.WordHint,
-    };
 }

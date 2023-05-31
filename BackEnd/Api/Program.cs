@@ -2,10 +2,8 @@ using Azure.Identity;
 using Microsoft.Extensions.Configuration.AzureAppConfiguration;
 using Microsoft.FeatureManagement;
 using OhMyWord.Api.Extensions;
-using OhMyWord.Api.Handlers;
 using OhMyWord.Api.Hubs;
 using OhMyWord.Api.Services;
-using OhMyWord.Domain.Contracts.Notifications;
 using OhMyWord.Domain.DependencyInjection;
 using OhMyWord.Infrastructure.DependencyInjection;
 using System.Text.Json;
@@ -51,13 +49,6 @@ public static class Program
             // fast endpoints
             services.AddFastEndpoints();
 
-            // mediator services
-            services.AddMediatR(configuration =>
-            {
-                configuration.RegisterServicesFromAssemblyContaining<RoundStartedNotification>();
-                configuration.RegisterServicesFromAssemblyContaining<RoundStartedHandler>();
-            });
-
             // signalR services
             services.AddSignalR()
                 .AddJsonProtocol(options =>
@@ -69,11 +60,12 @@ public static class Program
             services.AddHostedService<GameBackgroundService>();
 
             // local project services
-            services.AddDomainServices(context.Configuration);
-            services.AddCosmosDbRepositories(context);
-            services.AddTableRepositories(context.Configuration);
-            services.AddMessagingServices(context);
-            services.AddRapidApiServices();
+            services.AddDomainServices(context.Configuration)
+                .AddCosmosDbRepositories(context)
+                .AddTableRepositories(context.Configuration)
+                .AddMessagingServices(context)
+                .AddRapidApiServices()
+                .AddGraphApiClient(context.Configuration);
 
             // development services
             if (context.HostingEnvironment.IsDevelopment())

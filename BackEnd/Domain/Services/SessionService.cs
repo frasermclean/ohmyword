@@ -1,10 +1,9 @@
-﻿using MediatR;
+﻿using FastEndpoints;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using OhMyWord.Domain.Contracts.Notifications;
+using OhMyWord.Domain.Contracts.Events;
 using OhMyWord.Domain.Extensions;
 using OhMyWord.Domain.Models;
-using OhMyWord.Domain.Options;
+using OhMyWord.Domain.Services.State;
 using OhMyWord.Infrastructure.Services;
 
 namespace OhMyWord.Domain.Services;
@@ -18,23 +17,17 @@ public interface ISessionService
 public sealed class SessionService : ISessionService
 {
     private readonly ILogger<SessionService> logger;
-    private readonly IStateManager stateManager;
-    private readonly IPublisher publisher;
+    private readonly IRootState rootState;
     private readonly IRoundService roundService;
     private readonly ISessionsRepository sessionsRepository;
 
-    private readonly TimeSpan postRoundDelay;
-
-    public SessionService(ILogger<SessionService> logger, IOptions<RoundOptions> options, IStateManager stateManager,
-        IPublisher publisher, IRoundService roundService, ISessionsRepository sessionsRepository)
+    public SessionService(ILogger<SessionService> logger, IRootState rootState, IRoundService roundService,
+        ISessionsRepository sessionsRepository)
     {
         this.logger = logger;
-        this.stateManager = stateManager;
-        this.publisher = publisher;
+        this.rootState = rootState;
         this.roundService = roundService;
         this.sessionsRepository = sessionsRepository;
-
-        postRoundDelay = TimeSpan.FromSeconds(options.Value.PostRoundDelay);
     }
 
     public async Task ExecuteSessionAsync(Session session, CancellationToken cancellationToken)
@@ -42,10 +35,10 @@ public sealed class SessionService : ISessionService
         logger.LogInformation("Starting session: {SessionId}", session.Id);
 
         // create and execute rounds while there are players
-        while (stateManager.PlayerState.PlayerCount > 0)
+        while (rootState.PlayerState.PlayerCount > 0)
         {
             // load the next round
-            using var round = await stateManager.NextRoundAsync(cancellationToken);
+            using var round = await rootState.RoundState.NextRoundAsync(cancellationToken);
             await SendRoundStartedNotificationAsync(round, cancellationToken);
 
             // execute round            
@@ -53,8 +46,9 @@ public sealed class SessionService : ISessionService
             await roundService.SaveRoundAsync(round, cancellationToken);
 
             // post round delay
+            var (postRoundDelay, summary) = roundService.GetRoundEndData(round);
             await Task.WhenAll(
-                SendRoundEndedNotificationAsync(round, cancellationToken),
+                SendRoundEndedNotificationAsync(summary, cancellationToken),
                 Task.Delay(postRoundDelay, cancellationToken));
         }
     }
@@ -62,48 +56,16 @@ public sealed class SessionService : ISessionService
     public Task SaveSessionAsync(Session session, CancellationToken cancellationToken)
         => sessionsRepository.CreateSessionAsync(session.ToEntity(), cancellationToken);
 
-    private Task SendRoundStartedNotificationAsync(Round round, CancellationToken cancellationToken)
-    {
-        var notification = new RoundStartedNotification
+    private static Task SendRoundStartedNotificationAsync(Round round, CancellationToken cancellationToken)
+        => new RoundStartedEvent
         {
             RoundNumber = round.Number,
             RoundId = round.Id,
             WordHint = round.WordHint,
             StartDate = round.StartDate,
             EndDate = round.EndDate
-        };
+        }.PublishAsync(cancellation: cancellationToken);
 
-        return publisher.Publish(notification, cancellationToken);
-    }
-
-    private Task SendRoundEndedNotificationAsync(Round round, CancellationToken cancellationToken)
-    {
-        var scores = round.GetPlayerData()
-            .Where(data => data.PointsAwarded > 0)
-            .Select(data =>
-            {
-                var player = null as Player; //playerService.GetPlayerById(data.PlayerId);
-                return new ScoreLine
-                {
-                    PlayerName = string.Empty, // TODO: Calculate player name
-                    ConnectionId = player?.ConnectionId ?? string.Empty,
-                    CountryCode = string.Empty, // TODO: Calculate country code
-                    PointsAwarded = data.PointsAwarded,
-                    GuessCount = data.GuessCount,
-                    GuessTimeMilliseconds = data.GuessTime.TotalMilliseconds
-                };
-            });
-
-        var notification = new RoundEndedNotification
-        {
-            Word = round.Word.Id,
-            EndReason = round.EndReason ?? throw new InvalidOperationException("Round has not ended yet"),
-            RoundId = round.Id,
-            DefinitionId = round.WordHint.DefinitionId,
-            NextRoundStart = DateTime.UtcNow + postRoundDelay,
-            Scores = scores
-        };
-
-        return publisher.Publish(notification, cancellationToken);
-    }
+    private static Task SendRoundEndedNotificationAsync(RoundSummary summary, CancellationToken cancellationToken)
+        => new RoundEndedEvent(summary).PublishAsync(cancellation: cancellationToken);
 }

@@ -3,16 +3,32 @@ name: Deploy shared infrastructure
 on:
   workflow_call:
     inputs:
+      environment:
+        description: The name of the environment to deploy to
+        required: true
+        type: string
       resourceGroupName:
         description: The name of the resource group to deploy to
         required: true
         type: string
+      tenant-id:
+        description: Azure tenant ID
+        required: true
+        type: string
+      subscription-id:
+        description: Azure subscription ID
+        required: true
+        type: string
+      client-id:
+        description: Azure client ID
+        required: true
+        type: string  
 
 jobs:
   deploy:
     name: Deploy template
     runs-on: ubuntu-latest
-    environment: shared
+    environment: ${{ inputs.environment }}
     env:
       TEMPLATE_ROOT: ./Deployment/Infrastructure
     permissions:
@@ -26,9 +42,9 @@ jobs:
       - uses: azure/login@v1
         name: Login to Azure
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          client-id: ${{ inputs.client-id }}
+          tenant-id: ${{ inputs.tenant-id }}
+          subscription-id: ${{ inputs.subscription-id }}
 
       # Deploy shared infrastructure
       - uses: azure/arm-deploy@v1
@@ -36,6 +52,7 @@ jobs:
         with:
           resourceGroupName: ${{ inputs.resourceGroupName }}
           template: ${{ env.TEMPLATE_ROOT }}/shared/main.bicep
+          scope: resourcegroup
           parameters: >-
             ${{ env.TEMPLATE_ROOT }}/shared/main.parameters.json
 

@@ -1,10 +1,6 @@
 <h2>The round has ended</h2>
-<ng-container *ngIf="roundSummary$ | async as roundSummary">
-  <div class="end-reason" [ngSwitch]="roundSummary.endReason">
-    <p *ngSwitchCase="'allPlayersAwarded'">All players have guessed the word!</p>
-    <p *ngSwitchDefault>Time ran out before all players guess the word!</p>
-  </div>
-  <p class="word-reveal">
-    The word was: <strong>{{ roundSummary.word | uppercase }}</strong> ({{ roundSummary.partOfSpeech }})
-  </p>
+<ng-container *ngIf="roundSummary$ | async as summary">
+  <app-round-end-reason [reason]="summary.endReason"></app-round-end-reason>
+  <app-word-reveal [word]="summary.word" [partOfSpeech]="summary.partOfSpeech"></app-word-reveal>
+  <app-round-scores [scores]="summary.scores"></app-round-scores>
 </ng-container>

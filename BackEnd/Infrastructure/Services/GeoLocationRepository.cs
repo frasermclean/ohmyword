@@ -2,12 +2,14 @@
 using Azure.Data.Tables;
 using Microsoft.Extensions.Logging;
 using OhMyWord.Infrastructure.Models.Entities;
+using System.Net;
+using System.Net.Sockets;
 
 namespace OhMyWord.Infrastructure.Services;
 
 public interface IGeoLocationRepository
 {
-    Task<GeoLocationEntity?> GetGeoLocationAsync(string ipAddress, CancellationToken cancellationToken = default);
+    Task<GeoLocationEntity?> GetGeoLocationAsync(IPAddress ipAddress, CancellationToken cancellationToken = default);
     Task AddGeoLocationAsync(GeoLocationEntity entity);
 }
 
@@ -22,13 +24,14 @@ public class GeoLocationRepository : IGeoLocationRepository
         tableClient = tableServiceClient.GetTableClient("geoLocations");
     }
 
-    public async Task<GeoLocationEntity?> GetGeoLocationAsync(string ipAddress, CancellationToken cancellationToken)
+    public async Task<GeoLocationEntity?> GetGeoLocationAsync(IPAddress ipAddress, CancellationToken cancellationToken)
     {
-        var partitionKey = ipAddress.Contains(':') ? "IPv6" : "IPv4";
+        var partitionKey = ipAddress.AddressFamily == AddressFamily.InterNetworkV6 ? "IPv6" : "IPv4";
+        var rowKey = ipAddress.ToString();
 
         try
         {
-            var result = await tableClient.GetEntityAsync<GeoLocationEntity>(partitionKey, ipAddress,
+            var result = await tableClient.GetEntityAsync<GeoLocationEntity>(partitionKey, rowKey,
                 cancellationToken: cancellationToken);
             logger.LogInformation("GeoLocation for IP address: {IpAddress} was found", ipAddress);
             return result;

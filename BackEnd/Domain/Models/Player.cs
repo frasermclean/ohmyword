@@ -1,6 +1,4 @@
-﻿using System.Net;
-
-namespace OhMyWord.Domain.Models;
+﻿namespace OhMyWord.Domain.Models;
 
 public record Player
 {
@@ -8,13 +6,16 @@ public record Player
     /// Unique identifier for this player.
     /// </summary>
     public required Guid Id { get; init; }
-    
-    
+
+    /// <summary>
+    /// Public name for this player.
+    /// </summary>
+    public string Name { get; init; } = string.Empty;
 
     /// <summary>
     /// SignalR connection ID.
     /// </summary>
-    public required string? ConnectionId { get; init; }
+    public required string ConnectionId { get; init; }
 
     /// <summary>
     /// User ID if this player has signed in.
@@ -30,14 +31,14 @@ public record Player
     /// Number of times this player has registered with the game server.
     /// </summary>
     public required int RegistrationCount { get; init; }
-    
+
     /// <summary>
     /// Fingerprint of this player's browser.
     /// </summary>
-    public required IEnumerable<string> VisitorIds { get; init; }
+    public required string VisitorId { get; init; }
 
     /// <summary>
-    /// IP addresses this player has connected from.
+    /// The player's current geo location.
     /// </summary>
-    public required IEnumerable<IPAddress> IpAddresses { get; init; }
+    public required GeoLocation GeoLocation { get; init; }
 }

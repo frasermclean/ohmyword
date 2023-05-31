@@ -8,13 +8,11 @@ namespace OhMyWord.Infrastructure.Services;
 
 public interface IPlayerRepository
 {
-    Task<PlayerEntity?> GetPlayerByIdAsync(Guid playerId);
-    Task<PlayerEntity> CreatePlayerAsync(PlayerEntity playerEntity);
+    Task<PlayerEntity?> GetPlayerByIdAsync(Guid playerId, CancellationToken cancellationToken = default);
+    Task<PlayerEntity> CreatePlayerAsync(PlayerEntity playerEntity, CancellationToken cancellationToken = default);
     Task DeletePlayerAsync(PlayerEntity playerEntity);
-    Task<PlayerEntity> IncrementRegistrationCountAsync(Guid playerId);
+    Task<PlayerEntity> UpdatePlayerAsync(PlayerEntity entity, string visitorId, string ipAddress);
     Task<PlayerEntity> IncrementScoreAsync(Guid playerId, long value);
-    Task AddIpAddressAsync(Guid playerId, string ipAddress);
-    Task AddVisitorIdAsync(Guid playerId, string visitorId);
 }
 
 public class PlayerRepository : Repository<PlayerEntity>, IPlayerRepository
@@ -25,41 +23,38 @@ public class PlayerRepository : Repository<PlayerEntity>, IPlayerRepository
     {
     }
 
-    public Task<PlayerEntity?> GetPlayerByIdAsync(Guid playerId)
+    public Task<PlayerEntity?> GetPlayerByIdAsync(Guid playerId, CancellationToken cancellationToken)
     {
         var id = playerId.ToString();
-        return ReadItemAsync(id, id);
+        return ReadItemAsync(id, id, cancellationToken);
     }
 
-    public async Task<PlayerEntity> CreatePlayerAsync(PlayerEntity playerEntity)
+    public async Task<PlayerEntity> CreatePlayerAsync(PlayerEntity playerEntity, CancellationToken cancellationToken)
     {
-        await CreateItemAsync(playerEntity);
+        await CreateItemAsync(playerEntity, cancellationToken);
         return playerEntity;
     }
 
     public Task DeletePlayerAsync(PlayerEntity playerEntity) => DeleteItemAsync(playerEntity);
 
-    public Task<PlayerEntity> IncrementRegistrationCountAsync(Guid playerId)
+    public Task<PlayerEntity> UpdatePlayerAsync(PlayerEntity entity, string visitorId, string ipAddress)
     {
-        var id = playerId.ToString();
-        return PatchItemAsync(id, id, new[] { PatchOperation.Increment("/registrationCount", 1) });
+        var operations = new List<PatchOperation> { PatchOperation.Increment("/registrationCount", 1) };
+
+        // visitor id
+        if (!entity.VisitorIds.Contains(visitorId))
+            operations.Add(PatchOperation.Add("/visitorIds/-", visitorId));
+
+        // ip address
+        if (!entity.IpAddresses.Contains(ipAddress))
+            operations.Add(PatchOperation.Add("/ipAddresses/-", ipAddress));
+
+        return ApplyPatchOperationsAsync(entity.Id, operations);
     }
 
     public Task<PlayerEntity> IncrementScoreAsync(Guid playerId, long value)
-    {
-        var id = playerId.ToString();
-        return PatchItemAsync(id, id, new[] { PatchOperation.Increment("/score", value) });
-    }
+        => ApplyPatchOperationsAsync(playerId.ToString(), new[] { PatchOperation.Increment("/score", value) });
 
-    public Task AddIpAddressAsync(Guid playerId, string ipAddress)
-    {
-        var id = playerId.ToString();
-        return PatchItemAsync(id, id, new[] { PatchOperation.Add("/ipAddresses/-", ipAddress) });
-    }
-
-    public Task AddVisitorIdAsync(Guid playerId, string visitorId)
-    {
-        var id = playerId.ToString();
-        return PatchItemAsync(id, id, new[] { PatchOperation.Add("/visitorIds/-", visitorId) });
-    }
+    private Task<PlayerEntity> ApplyPatchOperationsAsync(string playerId, IReadOnlyList<PatchOperation> operations)
+        => PatchItemAsync(playerId, playerId, operations);
 }

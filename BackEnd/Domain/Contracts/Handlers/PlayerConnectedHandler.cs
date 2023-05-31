@@ -1,36 +1,39 @@
-﻿using MediatR;
+﻿using FastEndpoints;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.FeatureManagement;
-using OhMyWord.Domain.Contracts.Notifications;
+using OhMyWord.Domain.Contracts.Events;
 using OhMyWord.Domain.Options;
 using OhMyWord.Infrastructure.Services.Messaging;
 
 namespace OhMyWord.Domain.Contracts.Handlers;
 
-public class PlayerConnectedHandler : INotificationHandler<PlayerConnectedNotification>
+public class PlayerConnectedHandler : IEventHandler<PlayerConnectedEvent>
 {
     private readonly ILogger<PlayerConnectedHandler> logger;
     private readonly IFeatureManager featureManager;
-    private readonly IIpAddressMessageSender ipAddressMessageSender;
+    private readonly IServiceScopeFactory serviceScopeFactory;
 
     public PlayerConnectedHandler(ILogger<PlayerConnectedHandler> logger, IFeatureManager featureManager,
-        IIpAddressMessageSender ipAddressMessageSender)
+        IServiceScopeFactory serviceScopeFactory)
     {
         this.logger = logger;
         this.featureManager = featureManager;
-        this.ipAddressMessageSender = ipAddressMessageSender;
+        this.serviceScopeFactory = serviceScopeFactory;
     }
 
-    public async Task Handle(PlayerConnectedNotification notification, CancellationToken cancellationToken)
+    public async Task HandleAsync(PlayerConnectedEvent eventModel, CancellationToken cancellationToken = new())
     {
         logger.LogInformation("Player connected from {IpAddress}, with connection ID: {ConnectionId}",
-            notification.IpAddress, notification.ConnectionId);
+            eventModel.IpAddress, eventModel.ConnectionId);
 
         var isFeatureEnabled = await featureManager.IsEnabledAsync(FeatureFlags.IpLookup);
 
         if (isFeatureEnabled)
         {
-            await ipAddressMessageSender.SendIpLookupMessageAsync(notification.IpAddress);
+            await using var scope = serviceScopeFactory.CreateAsyncScope();
+            var ipAddressMessageSender = scope.ServiceProvider.GetRequiredService<IIpAddressMessageSender>();
+            await ipAddressMessageSender.SendIpLookupMessageAsync(eventModel.IpAddress);
         }
     }
 }

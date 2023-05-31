@@ -1,11 +1,10 @@
-﻿using MediatR;
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 using OhMyWord.Api.Hubs;
-using OhMyWord.Domain.Contracts.Notifications;
+using OhMyWord.Domain.Contracts.Events;
 
 namespace OhMyWord.Api.Handlers;
 
-public class RoundEndedHandler : INotificationHandler<RoundEndedNotification>
+public class RoundEndedHandler : IEventHandler<RoundEndedEvent>
 {
     private readonly IHubContext<GameHub, IGameHub> gameHubContext;
 
@@ -13,9 +12,7 @@ public class RoundEndedHandler : INotificationHandler<RoundEndedNotification>
     {
         this.gameHubContext = gameHubContext;
     }
-    
-    public Task Handle(RoundEndedNotification notification, CancellationToken cancellationToken)
-    {
-        return gameHubContext.Clients.All.SendRoundEnded(notification, cancellationToken);
-    }
+
+    public Task HandleAsync(RoundEndedEvent eventModel, CancellationToken cancellationToken = new())
+        => gameHubContext.Clients.All.SendRoundEnded(eventModel.Summary, cancellationToken);
 }

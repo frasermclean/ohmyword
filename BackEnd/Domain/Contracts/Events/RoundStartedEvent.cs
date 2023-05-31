@@ -1,9 +1,9 @@
-﻿using MediatR;
+﻿using FastEndpoints;
 using OhMyWord.Domain.Models;
 
-namespace OhMyWord.Domain.Contracts.Notifications;
+namespace OhMyWord.Domain.Contracts.Events;
 
-public class RoundStartedNotification : INotification
+public class RoundStartedEvent : IEvent
 {
     public required int RoundNumber { get; init; }
     public required Guid RoundId { get; init; }

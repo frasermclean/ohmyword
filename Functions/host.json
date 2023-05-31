@@ -4,7 +4,9 @@
     "logLevel": {
       "default": "Information",
       "Microsoft": "Warning",
-      "Azure.Core": "Warning"
+      "Azure": "Warning",
+      "System": "Warning",
+      "Function.GetHealth": "Warning"
     },
     "applicationInsights": {
       "samplingSettings": {

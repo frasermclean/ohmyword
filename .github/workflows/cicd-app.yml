@@ -114,8 +114,11 @@ jobs:
     uses: ./.github/workflows/deploy-shared-infra.yml
     if: github.event_name != 'pull_request'
     with:
+      environment: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
       resourceGroupName: rg-ohmyword-shared
-    secrets: inherit
+      tenant-id: ${{ vars.AZURE_TENANT_ID }}
+      subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      client-id: ${{ vars.AZURE_CLIENT_ID }}
 
   # Deploy Functions application
   deploy-functions-app:
@@ -154,14 +157,15 @@ jobs:
       - uses: azure/login@v1
         name: Login to Azure
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
       # Deploy infrastructure
       - uses: azure/arm-deploy@v1
         name: Deploy infrastructure
         with:
+          scope: resourcegroup
           resourceGroupName: ${{ env.RESOURCE_GROUP_NAME }}
           template: ${{ env.TEMPLATE_ROOT }}/app/main.bicep
           parameters: >-
@@ -187,9 +191,9 @@ jobs:
       - uses: azure/login@v1
         name: Login to Azure
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
       # Download application artifact
       - name: Download application artifact
@@ -224,9 +228,9 @@ jobs:
       - uses: azure/login@v1
         name: Login to Azure
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
       # Download application artifact
       - name: Download application artifact

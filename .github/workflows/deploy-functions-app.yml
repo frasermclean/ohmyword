@@ -4,6 +4,7 @@ on:
   workflow_call:
     secrets:
       PUBLISH_PROFILE:
+        description: Publish profile for the Functions App
         required: true
 
 jobs:
