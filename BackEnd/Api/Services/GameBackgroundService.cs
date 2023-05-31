@@ -27,7 +27,7 @@ public class GameBackgroundService : BackgroundService
 
             // start a new session
             Session session;
-            using (session = rootState.NextSession())
+            using (session = rootState.SessionState.NextSession())
             {
                 await sessionService.ExecuteSessionAsync(session, cancellationToken);    
             }

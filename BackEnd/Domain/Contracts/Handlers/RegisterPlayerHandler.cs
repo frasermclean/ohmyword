@@ -31,7 +31,7 @@ public class RegisterPlayerHandler : ICommandHandler<RegisterPlayerCommand, Regi
             PlayerCount = rootState.PlayerState.PlayerCount,
             Score = player.Score,
             RegistrationCount = player.RegistrationCount,
-            StateSnapshot = rootState.GetStateSnapshot()
+            StateSnapshot = rootState.RoundState.GetSnapshot()
         };
     }
 }

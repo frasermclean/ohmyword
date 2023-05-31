@@ -1,6 +1,5 @@
 ﻿using FastEndpoints;
 using OhMyWord.Domain.Contracts.Events;
-using OhMyWord.Domain.Services;
 using OhMyWord.Domain.Services.State;
 
 namespace OhMyWord.Domain.Contracts.Handlers;

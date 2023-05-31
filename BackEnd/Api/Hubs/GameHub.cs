@@ -4,7 +4,6 @@ using OhMyWord.Domain.Contracts.Commands;
 using OhMyWord.Domain.Contracts.Events;
 using OhMyWord.Domain.Contracts.Results;
 using OhMyWord.Domain.Models;
-using OhMyWord.Domain.Services;
 using OhMyWord.Domain.Services.State;
 
 namespace OhMyWord.Api.Hubs;

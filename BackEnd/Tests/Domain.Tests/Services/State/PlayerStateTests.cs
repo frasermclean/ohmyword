@@ -1,9 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using OhMyWord.Domain.Models;
-using OhMyWord.Domain.Services;
 using OhMyWord.Domain.Services.State;
 
-namespace Domain.Tests.Services;
+namespace Domain.Tests.Services.State;
 
 public class PlayerStateTests
 {

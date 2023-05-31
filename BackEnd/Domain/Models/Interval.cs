@@ -1,3 +1,6 @@
 ﻿namespace OhMyWord.Domain.Models;
 
-public record struct Interval(DateTime StartDate, DateTime EndDate);
+public record struct Interval(DateTime StartDate, DateTime EndDate)
+{
+    public static readonly Interval Default = new(DateTime.MinValue, DateTime.MinValue);
+}

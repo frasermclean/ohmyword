@@ -38,7 +38,7 @@ public sealed class SessionService : ISessionService
         while (rootState.PlayerState.PlayerCount > 0)
         {
             // load the next round
-            using var round = await rootState.NextRoundAsync(cancellationToken);
+            using var round = await rootState.RoundState.NextRoundAsync(cancellationToken);
             await SendRoundStartedNotificationAsync(round, cancellationToken);
 
             // execute round            

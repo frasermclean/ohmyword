@@ -27,6 +27,8 @@ public static class DomainServicesRegistration
         // state management
         services.AddSingleton<IRootState, RootState>();
         services.AddSingleton<IPlayerState, PlayerState>();
+        services.AddSingleton<IRoundState, RoundState>();
+        services.AddSingleton<ISessionState, SessionState>();
 
         return services;
     }
