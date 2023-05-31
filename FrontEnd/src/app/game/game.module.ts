@@ -9,6 +9,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTableModule } from "@angular/material/table";
 
 // states
 import { GameState } from '@state/game/game.state';
@@ -26,6 +27,7 @@ import { StatsComponent } from './stats/stats.component';
 import { SpinnerComponent } from './spinner/spinner.component';
 import { RoundEndReasonComponent } from './round-summary/round-end-reason/round-end-reason.component';
 import { WordRevealComponent } from './round-summary/word-reveal/word-reveal.component';
+import { RoundScoresComponent } from './round-summary/round-scores/round-scores.component';
 
 const routes: Routes = [{ path: '', component: GameRootComponent }];
 
@@ -41,6 +43,7 @@ const routes: Routes = [{ path: '', component: GameRootComponent }];
     SpinnerComponent,
     RoundEndReasonComponent,
     WordRevealComponent,
+    RoundScoresComponent,
   ],
   imports: [
     CommonModule,
@@ -51,6 +54,7 @@ const routes: Routes = [{ path: '', component: GameRootComponent }];
     MatInputModule,
     MatProgressBarModule,
     MatProgressSpinnerModule,
+    MatTableModule,
   ],
 })
 export class GameModule {}

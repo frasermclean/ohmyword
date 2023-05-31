@@ -10,7 +10,7 @@ export interface RoundSummary {
   scores: ScoreLine[];
 }
 
-interface ScoreLine {
+export interface ScoreLine {
   playerName: string;
   connectionId: string;
   countryCode: string;

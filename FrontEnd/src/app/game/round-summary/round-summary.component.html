@@ -2,4 +2,5 @@
 <ng-container *ngIf="roundSummary$ | async as summary">
   <app-round-end-reason [reason]="summary.endReason"></app-round-end-reason>
   <app-word-reveal [word]="summary.word" [partOfSpeech]="summary.partOfSpeech"></app-word-reveal>
+  <app-round-scores [scores]="summary.scores"></app-round-scores>
 </ng-container>
