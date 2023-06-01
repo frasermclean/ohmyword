@@ -31,6 +31,9 @@ public class ProcessGuessHandler : ICommandHandler<ProcessGuessCommand, ProcessG
         }
 
         var result = roundState.ProcessGuess(player.Id, command.RoundId, command.Value);
-        return Task.FromResult(new ProcessGuessResult { IsCorrect = result.IsSuccess, PointsAwarded = result.Value });
+        return Task.FromResult(new ProcessGuessResult
+        {
+            IsCorrect = result.IsSuccess, PointsAwarded = result.ValueOrDefault
+        });
     }
 }
