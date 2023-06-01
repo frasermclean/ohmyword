@@ -13,6 +13,7 @@ export interface RoundSummary {
 export interface ScoreLine {
   playerName: string;
   connectionId: string;
+  countryName: string;
   countryCode: string;
   pointsAwarded: number;
   guessCount: number;

@@ -9,5 +9,5 @@ import { ScoreLine } from "@models/round-summary.model";
 export class RoundScoresComponent {
   @Input() scores: ScoreLine[] = [];
 
-  readonly displayedColumns: string[] = ['playerName', 'guessCount', 'pointsAwarded'];
+  readonly displayedColumns: string[] = ['playerName', 'country', 'guessCount', 'pointsAwarded'];
 }
