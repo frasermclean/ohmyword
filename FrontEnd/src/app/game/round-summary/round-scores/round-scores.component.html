@@ -3,27 +3,27 @@
   <!-- player name column -->
   <ng-container matColumnDef="playerName">
     <th mat-header-cell *matHeaderCellDef>Name</th>
-    <td mat-cell *matCellDef="let element"> {{element.playerName}} </td>
+    <td mat-cell *matCellDef="let element">{{element.playerName}}</td>
   </ng-container>
 
   <!-- country column -->
   <ng-container matColumnDef="country">
     <th mat-header-cell *matHeaderCellDef>Country</th>
     <td mat-cell *matCellDef="let element">
-      <span class="flag fi fi-{{element.countryCode | lowercase}}" matTooltip="{{element.countryName}}"></span>
+      <span class="flag fi fi-{{element.countryCode}}" matTooltip="{{element.countryName}}"></span>
     </td>
   </ng-container>
 
   <!-- guess count column -->
   <ng-container matColumnDef="guessCount">
     <th mat-header-cell *matHeaderCellDef>Guesses</th>
-    <td mat-cell *matCellDef="let element"> {{element.guessCount}} </td>
+    <td mat-cell *matCellDef="let element">{{element.guessCount}}</td>
   </ng-container>
 
   <!-- points awarded column -->
   <ng-container matColumnDef="pointsAwarded">
     <th mat-header-cell *matHeaderCellDef>Points</th>
-    <td mat-cell *matCellDef="let element"> {{element.pointsAwarded}} </td>
+    <td mat-cell *matCellDef="let element">{{element.pointsAwarded}}</td>
   </ng-container>
 
   <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
