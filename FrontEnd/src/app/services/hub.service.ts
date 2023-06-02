@@ -97,7 +97,9 @@ export class HubService {
    */
   public async submitGuess(roundId: string, value: string) {
     const result = await this.hubConnection.invoke<SubmitGuessResult>('submitGuess', roundId, value);
-    this.store.dispatch(result.isCorrect ? new Guess.Succeeded(result.pointsAwarded) : new Guess.Failed());
+    this.store.dispatch(result.isCorrect
+      ? new Guess.Succeeded(result.pointsAwarded)
+      : new Guess.Failed(result.message));
   }
 
   /**
