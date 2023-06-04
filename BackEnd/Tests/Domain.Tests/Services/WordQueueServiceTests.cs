@@ -1,6 +1,6 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using FluentResults;
+using Microsoft.Extensions.Logging;
 using OhMyWord.Domain.Models;
-using OhMyWord.Domain.Results;
 using OhMyWord.Domain.Services;
 
 namespace Domain.Tests.Services;
@@ -22,8 +22,7 @@ public class WordQueueServiceTests
         wordsServiceMock.Setup(service => service.GetAllWordIds(It.IsAny<CancellationToken>()))
             .Returns(wordIds.ToAsyncEnumerable());
         wordsServiceMock.Setup(service => service.GetWordAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ReadResult<Word>(expectedWord));
-
+            .ReturnsAsync(Result.Ok(expectedWord));
 
         // act
         var nextWord = await wordQueueService.GetNextWordAsync();

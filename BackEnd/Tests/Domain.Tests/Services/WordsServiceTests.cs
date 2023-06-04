@@ -1,11 +1,9 @@
 ﻿using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using OhMyWord.Domain.Models;
-using OhMyWord.Domain.Results;
 using OhMyWord.Domain.Services;
 using OhMyWord.Infrastructure.Models.Entities;
 using OhMyWord.Infrastructure.Services;
-using OneOf.Types;
 using System.Net;
 
 namespace Domain.Tests.Services;
@@ -34,10 +32,11 @@ public class WordsServiceTests
 
         // act
         var result = await wordsService.CreateWordAsync(word);
-        var createdWord = result.AsT0;
+        var createdWord = result.Value;
 
         // assert
         result.Value.Should().BeOfType<Word>();
+        result.Should().BeSuccess();
         createdWord.Id.Should().Be(word.Id);
         createdWord.Definitions.Count().Should().Be(word.Definitions.Count());
     }
@@ -54,7 +53,7 @@ public class WordsServiceTests
         var result = await wordsService.CreateWordAsync(word);
 
         // assert
-        result.Value.Should().BeOfType<Conflict>();
+        result.Should().BeFailure().Which.Should().HaveError($"Word with ID: {word.Id} already exists");
     }
 
     [Theory, AutoData]
@@ -70,10 +69,11 @@ public class WordsServiceTests
 
         // act
         var result = await wordsService.GetWordAsync(wordEntity.Id);
-        var word = result.AsT0;
+        var word = result.Value;
 
         // assert
         result.Value.Should().BeOfType<Word>();
+        result.Should().BeSuccess();
         word.Id.Should().Be(wordEntity.Id);
         word.Definitions.Should().HaveCount(definitionEntities.Length);
     }
@@ -90,6 +90,6 @@ public class WordsServiceTests
         var result = await wordsService.GetWordAsync(wordId);
 
         // assert
-        result.Value.Should().BeOfType<NotFound>();
+        result.Should().BeFailure().Which.Should().HaveError($"Word with ID: {wordId} was not found");
     }
 }

@@ -20,9 +20,9 @@ public class GetWordEndpoint : Endpoint<GetWordRequest, Word>
     public override async Task HandleAsync(GetWordRequest request, CancellationToken cancellationToken)
     {
         var result = await wordsService.GetWordAsync(request.WordId, cancellationToken);
-
-        await result.Match(
-            word => SendOkAsync(word, cancellationToken),
-            _ => SendNotFoundAsync(cancellationToken));
+        
+        await (result.IsSuccess
+            ? SendOkAsync(result.Value, cancellationToken)
+            : SendNotFoundAsync(cancellationToken));
     }
 }

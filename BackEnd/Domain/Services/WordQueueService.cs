@@ -62,7 +62,7 @@ public class WordQueueService : IWordQueueService
         }
 
         var result = await wordsService.GetWordAsync(wordId, cancellationToken);
-        return result.Match(word => word, _ => Word.Default);
+        return result.IsSuccess ? result.Value : Word.Default;
     }
 
     private async Task<IReadOnlyList<string>> GetAllWordIdsAsync(CancellationToken cancellationToken)

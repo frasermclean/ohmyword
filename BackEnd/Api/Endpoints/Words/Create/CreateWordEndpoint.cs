@@ -23,13 +23,14 @@ public class CreateWordEndpoint : Endpoint<CreateWordRequest, Word>
         var result = await wordsService.CreateWordAsync(new Word { Id = request.Id, Definitions = request.Definitions },
             cancellationToken);
 
-        await result.Match(
-            word => SendCreatedAtAsync<GetWordEndpoint>(new { WordId = word.Id }, word,
-                cancellation: cancellationToken),
-            conflict =>
-            {
-                AddError(conflict.Message);
-                return SendErrorsAsync(StatusCodes.Status409Conflict, cancellationToken);
-            });
+        if (result.IsFailed)
+        {
+            AddError(result.Errors.First().Message);
+            await SendErrorsAsync(StatusCodes.Status409Conflict, cancellationToken);
+            return;
+        }
+
+        await SendCreatedAtAsync<GetWordEndpoint>(new { WordId = result.Value.Id }, result.Value,
+            cancellation: cancellationToken);
     }
 }
