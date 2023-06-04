@@ -1,4 +1,5 @@
-﻿using Microsoft.Azure.Cosmos;
+﻿using FluentResults;
+using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OhMyWord.Infrastructure.Models.Entities;
@@ -22,7 +23,7 @@ public interface IWordsRepository
 
     Task<int> GetTotalWordCountAsync(CancellationToken cancellationToken = default);
 
-    Task<WordEntity?> GetWordAsync(string id, CancellationToken cancellationToken = default);
+    Task<Result<WordEntity>> GetWordAsync(string id, CancellationToken cancellationToken = default);
     Task<WordEntity> CreateWordAsync(WordEntity entity, CancellationToken cancellationToken = default);
     Task<WordEntity> UpdateWordAsync(WordEntity entity, CancellationToken cancellationToken = default);
     Task DeleteWordAsync(string wordId, CancellationToken cancellationToken = default);
@@ -75,7 +76,7 @@ public class WordsRepository : Repository<WordEntity>, IWordsRepository
     public Task<int> GetTotalWordCountAsync(CancellationToken cancellationToken) =>
         GetItemCountAsync(cancellationToken: cancellationToken);
 
-    public Task<WordEntity?> GetWordAsync(string id, CancellationToken cancellationToken) =>
+    public Task<Result<WordEntity>> GetWordAsync(string id, CancellationToken cancellationToken) =>
         ReadItemAsync(id, id, cancellationToken: cancellationToken);
 
     public Task<WordEntity> CreateWordAsync(WordEntity entity, CancellationToken cancellationToken) =>

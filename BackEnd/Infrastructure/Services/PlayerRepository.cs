@@ -1,4 +1,5 @@
-﻿using Microsoft.Azure.Cosmos;
+﻿using FluentResults;
+using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OhMyWord.Infrastructure.Models.Entities;
@@ -8,7 +9,7 @@ namespace OhMyWord.Infrastructure.Services;
 
 public interface IPlayerRepository
 {
-    Task<PlayerEntity?> GetPlayerByIdAsync(Guid playerId, CancellationToken cancellationToken = default);
+    Task<Result<PlayerEntity>> GetPlayerByIdAsync(Guid playerId, CancellationToken cancellationToken = default);
     Task<PlayerEntity> CreatePlayerAsync(PlayerEntity playerEntity, CancellationToken cancellationToken = default);
     Task DeletePlayerAsync(PlayerEntity playerEntity);
     Task<PlayerEntity> UpdatePlayerAsync(PlayerEntity entity, string visitorId, string ipAddress);
@@ -23,7 +24,7 @@ public class PlayerRepository : Repository<PlayerEntity>, IPlayerRepository
     {
     }
 
-    public Task<PlayerEntity?> GetPlayerByIdAsync(Guid playerId, CancellationToken cancellationToken)
+    public Task<Result<PlayerEntity>> GetPlayerByIdAsync(Guid playerId, CancellationToken cancellationToken)
     {
         var id = playerId.ToString();
         return ReadItemAsync(id, id, cancellationToken);

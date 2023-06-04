@@ -1,8 +1,11 @@
-﻿using Microsoft.Azure.Cosmos;
+﻿using FluentResults;
+using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using OhMyWord.Infrastructure.Errors;
 using OhMyWord.Infrastructure.Models.Entities;
 using OhMyWord.Infrastructure.Options;
+using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -45,15 +48,24 @@ public abstract class Repository<TEntity> where TEntity : Entity
         return item;
     }
 
-    protected async Task<TEntity?> ReadItemAsync(string id, string partition,
+    protected async Task<Result<TEntity>> ReadItemAsync(string id, string partition,
         CancellationToken cancellationToken = default)
     {
-        using var response = await container.ReadItemStreamAsync(id, new PartitionKey(partition),
-            cancellationToken: cancellationToken);
+        try
+        {
+            var response = await container.ReadItemAsync<TEntity>(id, new PartitionKey(partition),
+                cancellationToken: cancellationToken);
 
-        return response.IsSuccessStatusCode
-            ? await JsonSerializer.DeserializeAsync<TEntity>(response.Content, serializerOptions, cancellationToken)
-            : default;
+            logger.LogInformation("Read {TypeName} on partition: /{Partition}, request charge: {RequestCharge}",
+                typeof(TEntity).Name, partition, response.RequestCharge);
+
+            return response.Resource;
+        }
+        catch (CosmosException exception) when (exception.StatusCode == HttpStatusCode.NotFound)
+        {
+            logger.LogWarning(exception, "Item not found: {Id} on partition: /{Partition}", id, partition);
+            return new ItemNotFoundError(id, partition).CausedBy(exception);
+        }
     }
 
     protected async Task<TEntity> UpdateItemAsync(TEntity item,

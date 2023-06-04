@@ -64,10 +64,11 @@ public class WordsService : IWordsService
 
     public async Task<Result<Word>> GetWordAsync(string wordId, CancellationToken cancellationToken = default)
     {
-        var wordEntity = await wordsRepository.GetWordAsync(wordId, cancellationToken);
-        return wordEntity is not null
-            ? await MapToWordAsync(wordEntity, cancellationToken)
-            : Result.Fail($"Word with ID: {wordId} was not found");
+        var result = await wordsRepository.GetWordAsync(wordId, cancellationToken);
+
+        return result.IsSuccess
+            ? await MapToWordAsync(result.Value, cancellationToken)
+            : result.ToResult();
     }
 
     public async Task<Result<Word>> CreateWordAsync(Word word,

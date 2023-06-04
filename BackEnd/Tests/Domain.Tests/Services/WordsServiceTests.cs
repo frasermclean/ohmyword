@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Services;
+using OhMyWord.Infrastructure.Errors;
 using OhMyWord.Infrastructure.Models.Entities;
 using OhMyWord.Infrastructure.Services;
 using System.Net;
@@ -84,12 +85,13 @@ public class WordsServiceTests
         // arrange
         wordsRepositoryMock
             .Setup(repository => repository.GetWordAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(null as WordEntity);
+            .ReturnsAsync(new ItemNotFoundError(wordId, wordId));
 
         // act
         var result = await wordsService.GetWordAsync(wordId);
 
         // assert
-        result.Should().BeFailure().Which.Should().HaveError($"Word with ID: {wordId} was not found");
+        result.Should().BeFailure().Which.Should()
+            .HaveError($"Item with ID: {wordId} was not found on partition: {wordId}");
     }
 }

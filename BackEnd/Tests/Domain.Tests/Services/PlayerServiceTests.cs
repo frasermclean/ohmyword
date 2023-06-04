@@ -1,5 +1,6 @@
 ﻿using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Services;
+using OhMyWord.Infrastructure.Errors;
 using OhMyWord.Infrastructure.Models.Entities;
 using OhMyWord.Infrastructure.Services;
 using OhMyWord.Infrastructure.Services.GraphApi;
@@ -29,7 +30,7 @@ public class PlayerServiceTests
         // arrange
         playerRepositoryMock.Setup(repository =>
                 repository.GetPlayerByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(null as PlayerEntity);
+            .ReturnsAsync((Guid id, CancellationToken _) => new ItemNotFoundError(id.ToString(), id.ToString()));
 
         playerRepositoryMock.Setup(repository =>
                 repository.CreatePlayerAsync(It.IsAny<PlayerEntity>(), It.IsAny<CancellationToken>()))
