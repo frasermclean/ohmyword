@@ -2,8 +2,8 @@
 using OhMyWord.Domain.Services;
 using OhMyWord.Infrastructure.Errors;
 using OhMyWord.Infrastructure.Models.Entities;
-using OhMyWord.Infrastructure.Services;
 using OhMyWord.Infrastructure.Services.GraphApi;
+using OhMyWord.Infrastructure.Services.Repositories;
 using System.Net;
 using User = Microsoft.Graph.Models.User;
 

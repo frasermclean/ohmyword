@@ -1,4 +1,4 @@
-﻿namespace OhMyWord.Infrastructure.Services;
+﻿namespace OhMyWord.Infrastructure.Services.Repositories;
 
 public enum SortDirection
 {

@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 using OhMyWord.Infrastructure.Models.Entities;
 using OhMyWord.Infrastructure.Options;
 
-namespace OhMyWord.Infrastructure.Services;
+namespace OhMyWord.Infrastructure.Services.Repositories;
 
 public interface IPlayerRepository
 {

@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using OhMyWord.Infrastructure.Errors;
 using OhMyWord.Infrastructure.Models.Entities;
 using OhMyWord.Infrastructure.Options;
-using OhMyWord.Infrastructure.Services;
+using OhMyWord.Infrastructure.Services.Repositories;
 
 namespace Infrastructure.Tests.Services.Repositories;
 

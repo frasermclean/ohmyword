@@ -1,5 +1,4 @@
-﻿using OhMyWord.Api.Endpoints.Definitions.Get;
-using OhMyWord.Domain.Models;
+﻿using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Services;
 
 namespace OhMyWord.Api.Endpoints.Definitions.Generate;

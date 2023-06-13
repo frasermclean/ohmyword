@@ -8,7 +8,7 @@ using OhMyWord.Infrastructure.Options;
 using System.Net;
 using System.Runtime.CompilerServices;
 
-namespace OhMyWord.Infrastructure.Services;
+namespace OhMyWord.Infrastructure.Services.Repositories;
 
 public abstract class Repository<TEntity> where TEntity : Entity
 {

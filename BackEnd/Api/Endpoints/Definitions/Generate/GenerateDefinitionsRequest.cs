@@ -1,6 +1,6 @@
 ﻿using OhMyWord.Infrastructure.Models.Entities;
 
-namespace OhMyWord.Api.Endpoints.Definitions.Get;
+namespace OhMyWord.Api.Endpoints.Definitions.Generate;
 
 public class GenerateDefinitionsRequest
 {

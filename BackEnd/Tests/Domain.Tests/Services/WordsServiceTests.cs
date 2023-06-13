@@ -1,10 +1,9 @@
-﻿using AutoFixture;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Services;
 using OhMyWord.Infrastructure.Errors;
 using OhMyWord.Infrastructure.Models.Entities;
-using OhMyWord.Infrastructure.Services;
+using OhMyWord.Infrastructure.Services.Repositories;
 
 namespace Domain.Tests.Services;
 

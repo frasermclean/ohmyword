@@ -2,8 +2,8 @@
 using OhMyWord.Domain.Models;
 using OhMyWord.Infrastructure.Models.Entities;
 using OhMyWord.Infrastructure.Models.WordsApi;
-using OhMyWord.Infrastructure.Services;
 using OhMyWord.Infrastructure.Services.RapidApi.WordsApi;
+using OhMyWord.Infrastructure.Services.Repositories;
 
 namespace OhMyWord.Domain.Services;
 

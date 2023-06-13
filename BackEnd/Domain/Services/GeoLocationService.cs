@@ -1,7 +1,7 @@
 ﻿using OhMyWord.Domain.Models;
 using OhMyWord.Infrastructure.Models.Entities;
-using OhMyWord.Infrastructure.Services;
 using OhMyWord.Infrastructure.Services.RapidApi.IpGeoLocation;
+using OhMyWord.Infrastructure.Services.Repositories;
 using System.Net;
 
 namespace OhMyWord.Domain.Services;
