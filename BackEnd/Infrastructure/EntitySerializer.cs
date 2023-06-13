@@ -15,8 +15,12 @@ internal class EntitySerializer : CosmosSerializer
         Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
     });
 
+    private EntitySerializer() { }
+
     public override T FromStream<T>(Stream stream) => ConvertFromStream<T>(stream);
     public override Stream ToStream<T>(T input) => ConvertToStream(input);
+    
+    public static EntitySerializer Instance { get; } = new();
 
     public static T ConvertFromStream<T>(Stream stream)
     {

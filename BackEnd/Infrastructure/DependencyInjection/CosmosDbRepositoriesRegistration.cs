@@ -35,7 +35,7 @@ public static class CosmosDbRepositoriesRegistration
             return builder
                 .WithApplicationName(options.Value.ApplicationName)
                 .WithHttpClientFactory(() => httpClientFactory.CreateClient("CosmosDb"))
-                .WithCustomSerializer(new EntitySerializer())
+                .WithCustomSerializer(EntitySerializer.Instance)
                 .WithContentResponseOnWrite(true)
                 .Build();
         });

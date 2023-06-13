@@ -7,8 +7,8 @@ namespace Infrastructure.Tests;
 [Trait("Category", "Unit")]
 public class EntitySerializerTests : IClassFixture<DataFixture>
 {
-    private readonly DataFixture fixture;    
-    private readonly EntitySerializer serializer = new();
+    private readonly DataFixture fixture;
+    private readonly EntitySerializer serializer = EntitySerializer.Instance;
 
     public EntitySerializerTests(DataFixture fixture)
     {
