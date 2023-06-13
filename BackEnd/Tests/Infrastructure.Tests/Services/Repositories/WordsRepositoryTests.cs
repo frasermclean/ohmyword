@@ -1,5 +1,6 @@
 ﻿using Infrastructure.Tests.Fixtures;
 using Microsoft.Extensions.Logging;
+using OhMyWord.Infrastructure.Errors;
 using OhMyWord.Infrastructure.Models.Entities;
 using OhMyWord.Infrastructure.Options;
 using OhMyWord.Infrastructure.Services;
@@ -20,15 +21,18 @@ public class WordsRepositoryTests
         wordsRepository = new WordsRepository(client, options, Mock.Of<ILogger<WordsRepository>>());
     }
 
-    [Fact]
-    public async Task Test()
+    [Theory, AutoData]
+    public async Task CreateWordAsync_Should_ReturnExpectedResult(WordEntity entity)
     {
-        // arrange
-        var entity = new WordEntity { Id = "test" };
-        
         // act
-        var result = await wordsRepository.CreateWordAsync(entity);
-        
+        var result1 = await wordsRepository.CreateWordAsync(entity);
+        var result2 = await wordsRepository.CreateWordAsync(entity);
+
         // assert
+        result1.Should().BeSuccess();
+        result1.Value.Id.Should().Be(entity.Id);
+        result1.Value.DefinitionCount.Should().Be(entity.DefinitionCount);
+        result2.Should().BeFailure().Which.Should().HaveReason<ItemConflictError>(
+            $"Item with ID: {entity.Id} already exists on partition: {entity.Id}");
     }
 }
