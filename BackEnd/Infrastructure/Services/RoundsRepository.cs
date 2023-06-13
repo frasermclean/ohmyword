@@ -1,4 +1,5 @@
-﻿using Microsoft.Azure.Cosmos;
+﻿using FluentResults;
+using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OhMyWord.Infrastructure.Models.Entities;
@@ -8,7 +9,7 @@ namespace OhMyWord.Infrastructure.Services;
 
 public interface IRoundsRepository
 {
-    Task<RoundEntity> CreateRoundAsync(RoundEntity round, CancellationToken cancellationToken = default);
+    Task<Result<RoundEntity>> CreateRoundAsync(RoundEntity round, CancellationToken cancellationToken = default);
 }
 
 public class RoundsRepository : Repository<RoundEntity>, IRoundsRepository
@@ -19,6 +20,6 @@ public class RoundsRepository : Repository<RoundEntity>, IRoundsRepository
     {
     }
 
-    public Task<RoundEntity> CreateRoundAsync(RoundEntity entity, CancellationToken cancellationToken = default)
+    public Task<Result<RoundEntity>> CreateRoundAsync(RoundEntity entity, CancellationToken cancellationToken = default)
         => CreateItemAsync(entity, cancellationToken);
 }

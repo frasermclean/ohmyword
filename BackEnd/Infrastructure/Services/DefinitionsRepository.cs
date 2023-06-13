@@ -1,4 +1,5 @@
-﻿using Microsoft.Azure.Cosmos;
+﻿using FluentResults;
+using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OhMyWord.Infrastructure.Models.Entities;
@@ -8,12 +9,21 @@ namespace OhMyWord.Infrastructure.Services;
 
 public interface IDefinitionsRepository
 {
-    IAsyncEnumerable<DefinitionEntity> GetDefinitionsAsync(string wordId,
+    IAsyncEnumerable<DefinitionEntity> GetDefinitions(string wordId,
         CancellationToken cancellationToken = default);
 
-    Task CreateDefinitionAsync(DefinitionEntity definitionEntity, CancellationToken cancellationToken = default);
-    Task UpdateDefinitionAsync(DefinitionEntity definitionEntity, CancellationToken cancellationToken = default);
-    Task DeleteDefinitionsAsync(string wordId, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<string> GetDefinitionIds(string wordId, CancellationToken cancellationToken = default);
+
+    Task<Result<DefinitionEntity>> GetDefinitionAsync(string wordId, string definitionId,
+        CancellationToken cancellationToken = default);
+
+    Task<Result<DefinitionEntity>> CreateDefinitionAsync(DefinitionEntity definitionEntity,
+        CancellationToken cancellationToken = default);
+
+    Task<Result<DefinitionEntity>> UpdateDefinitionAsync(DefinitionEntity definitionEntity, CancellationToken cancellationToken = default);
+
+    Task<Result> DeleteDefinitionAsync(string wordId, string definitionId,
+        CancellationToken cancellationToken = default);
 }
 
 public class DefinitionsRepository : Repository<DefinitionEntity>, IDefinitionsRepository
@@ -24,18 +34,24 @@ public class DefinitionsRepository : Repository<DefinitionEntity>, IDefinitionsR
     {
     }
 
-    public IAsyncEnumerable<DefinitionEntity> GetDefinitionsAsync(string wordId, CancellationToken cancellationToken) =>
-        ReadPartitionItems(wordId, cancellationToken);
+    public IAsyncEnumerable<DefinitionEntity> GetDefinitions(string wordId, CancellationToken cancellationToken)
+        => ReadPartitionItems(wordId, cancellationToken);
 
-    public Task CreateDefinitionAsync(DefinitionEntity definitionEntity, CancellationToken cancellationToken) =>
-        CreateItemAsync(definitionEntity, cancellationToken);
+    public IAsyncEnumerable<string> GetDefinitionIds(string wordId, CancellationToken cancellationToken = default)
+        => ReadItemIds(wordId, cancellationToken);
 
-    public Task UpdateDefinitionAsync(DefinitionEntity definitionEntity, CancellationToken cancellationToken)
-        => UpdateItemAsync(definitionEntity, cancellationToken);
+    public Task<Result<DefinitionEntity>> GetDefinitionAsync(string wordId, string definitionId,
+        CancellationToken cancellationToken = default)
+        => ReadItemAsync(definitionId, wordId, cancellationToken);
 
-    public async Task DeleteDefinitionsAsync(string wordId, CancellationToken cancellationToken)
-    {
-        var itemIds = await ReadItemIds(wordId, cancellationToken).ToListAsync(cancellationToken);
-        await Task.WhenAll(itemIds.Select(id => DeleteItemAsync(id, wordId, cancellationToken)));
-    }
+    public Task<Result<DefinitionEntity>> CreateDefinitionAsync(DefinitionEntity definitionEntity,
+        CancellationToken cancellationToken)
+        => CreateItemAsync(definitionEntity, cancellationToken);
+
+    public Task<Result<DefinitionEntity>> UpdateDefinitionAsync(DefinitionEntity definitionEntity, CancellationToken cancellationToken)
+        => ReplaceItemAsync(definitionEntity, cancellationToken);
+
+    public Task<Result> DeleteDefinitionAsync(string wordId, string definitionId,
+        CancellationToken cancellationToken = default)
+        => DeleteItemAsync(definitionId, wordId, cancellationToken);
 }

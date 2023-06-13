@@ -7,8 +7,6 @@ using OhMyWord.Infrastructure.Models.Entities;
 using OhMyWord.Infrastructure.Options;
 using System.Net;
 using System.Runtime.CompilerServices;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace OhMyWord.Infrastructure.Services;
 
@@ -18,14 +16,6 @@ public abstract class Repository<TEntity> where TEntity : Entity
     private readonly ILogger<Repository<TEntity>> logger;
     private readonly string entityTypeName;
 
-    private readonly JsonSerializerOptions serializerOptions = new()
-    {
-        IgnoreReadOnlyProperties = true,
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        DictionaryKeyPolicy = JsonNamingPolicy.CamelCase,
-        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
-    };
-
     protected Repository(CosmosClient cosmosClient, IOptions<CosmosDbOptions> options,
         ILogger<Repository<TEntity>> logger, string containerId)
     {
@@ -34,18 +24,27 @@ public abstract class Repository<TEntity> where TEntity : Entity
         entityTypeName = typeof(TEntity).Name;
     }
 
-    protected async Task<TEntity> CreateItemAsync(TEntity item, CancellationToken cancellationToken = default)
+    protected async Task<Result<TEntity>> CreateItemAsync(TEntity item, CancellationToken cancellationToken = default)
     {
-        using var stream = new MemoryStream();
-        await JsonSerializer.SerializeAsync(stream, item, serializerOptions, cancellationToken);
-        var response = await container.CreateItemStreamAsync(stream, new PartitionKey(item.GetPartition()),
-            cancellationToken: cancellationToken);
+        var partition = item.GetPartition();
 
-        response.EnsureSuccessStatusCode();
+        try
+        {
+            var response = await container.CreateItemAsync(item, new PartitionKey(partition),
+                cancellationToken: cancellationToken);
 
-        logger.LogInformation("Created {TypeName} on partition: /{Partition}", entityTypeName, item.GetPartition());
+            logger.LogInformation("Created {TypeName} on partition: /{Partition}, request charge: {RequestCharge}",
+                entityTypeName, partition, response.RequestCharge);
 
-        return item;
+            return item;
+        }
+        catch (CosmosException exception) when (exception.StatusCode == HttpStatusCode.Conflict)
+        {
+            logger.LogError(exception, "Conflict creating {TypeName} with ID: {Id} on partition: /{Partition}",
+                entityTypeName, item.Id, partition);
+
+            return new ItemConflictError(item.Id, partition).CausedBy(exception);
+        }
     }
 
     protected async Task<Result<TEntity>> ReadItemAsync(string id, string partition,
@@ -68,31 +67,68 @@ public abstract class Repository<TEntity> where TEntity : Entity
         }
     }
 
-    protected async Task<TEntity> UpdateItemAsync(TEntity item,
-        CancellationToken cancellationToken = default)
+    protected async Task<Result<TEntity>> ReplaceItemAsync(TEntity item, CancellationToken cancellationToken = default)
     {
-        using var stream = new MemoryStream();
-        await JsonSerializer.SerializeAsync(stream, item, serializerOptions, cancellationToken);
-        var response = await container.ReplaceItemStreamAsync(stream, item.Id, new PartitionKey(item.GetPartition()),
-            cancellationToken: cancellationToken);
+        var partition = item.GetPartition();
 
-        response.EnsureSuccessStatusCode();
+        try
+        {
+            var response = await container.ReplaceItemAsync(item, item.Id, new PartitionKey(partition),
+                cancellationToken: cancellationToken);
 
-        logger.LogInformation("Replaced {TypeName} on partition: /{Partition}", entityTypeName, item.GetPartition());
+            logger.LogInformation("Replaced {TypeName} on partition: /{Partition}, request charge: {RequestCharge}",
+                entityTypeName, partition, response.RequestCharge);
 
-        return item;
+            return response.Resource;
+        }
+        catch (CosmosException exception) when (exception.StatusCode == HttpStatusCode.NotFound)
+        {
+            logger.LogWarning(exception, "Item not found: {Id} on partition: /{Partition}", item.Id, partition);
+            return new ItemNotFoundError(item.Id, partition).CausedBy(exception);
+        }
     }
 
-    protected Task DeleteItemAsync(TEntity item) => DeleteItemAsync(item.Id, item.GetPartition());
-
-    protected async Task DeleteItemAsync(string id, string partition, CancellationToken cancellationToken = default)
+    protected async Task<Result<TEntity>> UpsertItemAsync(TEntity item, CancellationToken cancellationToken = default)
     {
-        var response = await container.DeleteItemStreamAsync(id, new PartitionKey(partition),
-            cancellationToken: cancellationToken);
+        var partition = item.GetPartition();
+        try
+        {
+            var response = await container.UpsertItemAsync(item, new PartitionKey(partition),
+                cancellationToken: cancellationToken);
 
-        response.EnsureSuccessStatusCode();
+            logger.LogInformation("Upserted item: {Id} on partition: /{Partition}, request charge: {Charge}",
+                item.Id, partition, response.RequestCharge);
 
-        logger.LogInformation("Deleted item: {Id} on partition: /{Partition}", id, partition);
+            return response.Resource;
+        }
+        catch (CosmosException exception)
+        {
+            logger.LogError(exception, "Error upserting {TypeName} with ID: {Id} on partition: /{Partition}",
+                entityTypeName, item.Id, partition);
+            return Result.Fail("Error upserting item");
+        }
+    }
+
+    protected Task<Result> DeleteItemAsync(TEntity item) => DeleteItemAsync(item.Id, item.GetPartition());
+
+    protected async Task<Result> DeleteItemAsync(string id, string partition,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var response = await container.DeleteItemAsync<TEntity>(id, new PartitionKey(partition),
+                cancellationToken: cancellationToken);
+
+            logger.LogInformation("Deleted item: {Id} on partition: /{Partition}, request charge: {Charge}",
+                id, partition, response.RequestCharge);
+
+            return Result.Ok();
+        }
+        catch (CosmosException exception) when (exception.StatusCode == HttpStatusCode.NotFound)
+        {
+            logger.LogWarning(exception, "Item not found: {Id} on partition: /{Partition}", id, partition);
+            return new ItemNotFoundError(id, partition).CausedBy(exception);
+        }
     }
 
     protected async Task<TEntity> PatchItemAsync(string id, string partition, IReadOnlyList<PatchOperation> operations,

@@ -1,5 +1,6 @@
 ﻿using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Services;
+using OhMyWord.Infrastructure.Errors;
 
 namespace OhMyWord.Api.Endpoints.Words.Update;
 
@@ -19,11 +20,16 @@ public class UpdateWordEndpoint : Endpoint<UpdateWordRequest, Word>
 
     public override async Task HandleAsync(UpdateWordRequest request, CancellationToken cancellationToken)
     {
-        var word = new Word
+        var result = await wordsService.UpdateWordAsync(
+            new Word { Id = request.WordId, Definitions = request.Definitions, LastModifiedTime = DateTime.UtcNow },
+            cancellationToken);
+
+        if (result.HasError<ItemNotFoundError>())
         {
-            Id = request.WordId, Definitions = request.Definitions, LastModifiedTime = DateTime.UtcNow
-        };
-        await wordsService.UpdateWordAsync(word, cancellationToken);
-        await SendOkAsync(word, cancellationToken);
+            await SendNotFoundAsync(cancellationToken);
+            return;
+        }
+
+        await SendOkAsync(result.Value, cancellationToken);
     }
 }

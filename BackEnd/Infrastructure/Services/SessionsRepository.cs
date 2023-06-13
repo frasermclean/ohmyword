@@ -1,4 +1,5 @@
-﻿using Microsoft.Azure.Cosmos;
+﻿using FluentResults;
+using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OhMyWord.Infrastructure.Models.Entities;
@@ -8,7 +9,7 @@ namespace OhMyWord.Infrastructure.Services;
 
 public interface ISessionsRepository
 {
-    Task<SessionEntity> CreateSessionAsync(SessionEntity entity, CancellationToken cancellationToken = default);
+    Task<Result<SessionEntity>> CreateSessionAsync(SessionEntity entity, CancellationToken cancellationToken = default);
 }
 
 public class SessionsRepository : Repository<SessionEntity>, ISessionsRepository
@@ -19,6 +20,6 @@ public class SessionsRepository : Repository<SessionEntity>, ISessionsRepository
     {
     }
 
-    public Task<SessionEntity> CreateSessionAsync(SessionEntity entity, CancellationToken cancellationToken = default)
+    public Task<Result<SessionEntity>> CreateSessionAsync(SessionEntity entity, CancellationToken cancellationToken = default)
         => CreateItemAsync(entity, cancellationToken);
 }

@@ -24,9 +24,9 @@ public interface IWordsRepository
     Task<int> GetTotalWordCountAsync(CancellationToken cancellationToken = default);
 
     Task<Result<WordEntity>> GetWordAsync(string id, CancellationToken cancellationToken = default);
-    Task<WordEntity> CreateWordAsync(WordEntity entity, CancellationToken cancellationToken = default);
-    Task<WordEntity> UpdateWordAsync(WordEntity entity, CancellationToken cancellationToken = default);
-    Task DeleteWordAsync(string wordId, CancellationToken cancellationToken = default);
+    Task<Result<WordEntity>> CreateWordAsync(WordEntity entity, CancellationToken cancellationToken = default);
+    Task<Result<WordEntity>> UpdateWordAsync(WordEntity entity, CancellationToken cancellationToken = default);
+    Task<Result> DeleteWordAsync(string wordId, CancellationToken cancellationToken = default);
 }
 
 public class WordsRepository : Repository<WordEntity>, IWordsRepository
@@ -79,13 +79,13 @@ public class WordsRepository : Repository<WordEntity>, IWordsRepository
     public Task<Result<WordEntity>> GetWordAsync(string id, CancellationToken cancellationToken) =>
         ReadItemAsync(id, id, cancellationToken: cancellationToken);
 
-    public Task<WordEntity> CreateWordAsync(WordEntity entity, CancellationToken cancellationToken) =>
+    public Task<Result<WordEntity>> CreateWordAsync(WordEntity entity, CancellationToken cancellationToken) =>
         CreateItemAsync(entity, cancellationToken);
 
-    public Task<WordEntity> UpdateWordAsync(WordEntity entity, CancellationToken cancellationToken) =>
-        UpdateItemAsync(entity, cancellationToken);
+    public Task<Result<WordEntity>> UpdateWordAsync(WordEntity entity, CancellationToken cancellationToken) =>
+        ReplaceItemAsync(entity, cancellationToken);
 
-    public Task DeleteWordAsync(string wordId, CancellationToken cancellationToken) =>
+    public Task<Result> DeleteWordAsync(string wordId, CancellationToken cancellationToken) =>
         DeleteItemAsync(wordId, wordId, cancellationToken);
 }
 
