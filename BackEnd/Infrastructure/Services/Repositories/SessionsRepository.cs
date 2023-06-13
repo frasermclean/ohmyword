@@ -16,10 +16,11 @@ public class SessionsRepository : Repository<SessionEntity>, ISessionsRepository
 {
     public SessionsRepository(CosmosClient cosmosClient, IOptions<CosmosDbOptions> options,
         ILogger<SessionsRepository> logger)
-        : base(cosmosClient, options, logger, "sessions")
+        : base(cosmosClient, logger, options.Value.DatabaseId, "sessions")
     {
     }
 
-    public Task<Result<SessionEntity>> CreateSessionAsync(SessionEntity entity, CancellationToken cancellationToken = default)
+    public Task<Result<SessionEntity>> CreateSessionAsync(SessionEntity entity,
+        CancellationToken cancellationToken = default)
         => CreateItemAsync(entity, cancellationToken);
 }

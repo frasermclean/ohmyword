@@ -1,10 +1,8 @@
 ﻿using FluentResults;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using OhMyWord.Infrastructure.Errors;
 using OhMyWord.Infrastructure.Models.Entities;
-using OhMyWord.Infrastructure.Options;
 using System.Net;
 using System.Runtime.CompilerServices;
 
@@ -14,14 +12,12 @@ public abstract class Repository<TEntity> where TEntity : Entity
 {
     private readonly Container container;
     private readonly ILogger<Repository<TEntity>> logger;
-    private readonly string entityTypeName;
 
-    protected Repository(CosmosClient cosmosClient, IOptions<CosmosDbOptions> options,
-        ILogger<Repository<TEntity>> logger, string containerId)
+    protected Repository(CosmosClient cosmosClient, ILogger<Repository<TEntity>> logger,
+        string databaseId, string containerId)
     {
-        container = cosmosClient.GetContainer(options.Value.DatabaseId, containerId);
+        container = cosmosClient.GetContainer(databaseId, containerId);
         this.logger = logger;
-        entityTypeName = typeof(TEntity).Name;
     }
 
     protected async Task<Result<TEntity>> CreateItemAsync(TEntity item, CancellationToken cancellationToken = default)
@@ -33,15 +29,15 @@ public abstract class Repository<TEntity> where TEntity : Entity
             var response = await container.CreateItemAsync(item, new PartitionKey(partition),
                 cancellationToken: cancellationToken);
 
-            logger.LogInformation("Created {TypeName} on partition: /{Partition}, request charge: {RequestCharge}",
-                entityTypeName, partition, response.RequestCharge);
+            logger.LogInformation("Created item on partition: /{Partition}, request charge: {RequestCharge}",
+                partition, response.RequestCharge);
 
             return item;
         }
         catch (CosmosException exception) when (exception.StatusCode == HttpStatusCode.Conflict)
         {
-            logger.LogError(exception, "Conflict creating {TypeName} with ID: {Id} on partition: /{Partition}",
-                entityTypeName, item.Id, partition);
+            logger.LogError(exception, "Conflict creating item with ID: {Id} on partition: /{Partition}",
+                item.Id, partition);
 
             return new ItemConflictError(item.Id, partition).CausedBy(exception);
         }
@@ -55,8 +51,8 @@ public abstract class Repository<TEntity> where TEntity : Entity
             var response = await container.ReadItemAsync<TEntity>(id, new PartitionKey(partition),
                 cancellationToken: cancellationToken);
 
-            logger.LogInformation("Read {TypeName} on partition: /{Partition}, request charge: {RequestCharge}",
-                typeof(TEntity).Name, partition, response.RequestCharge);
+            logger.LogInformation("Read item on partition: /{Partition}, request charge: {RequestCharge}",
+                partition, response.RequestCharge);
 
             return response.Resource;
         }
@@ -76,8 +72,8 @@ public abstract class Repository<TEntity> where TEntity : Entity
             var response = await container.ReplaceItemAsync(item, item.Id, new PartitionKey(partition),
                 cancellationToken: cancellationToken);
 
-            logger.LogInformation("Replaced {TypeName} on partition: /{Partition}, request charge: {RequestCharge}",
-                entityTypeName, partition, response.RequestCharge);
+            logger.LogInformation("Replaced item on partition: /{Partition}, request charge: {RequestCharge}",
+                partition, response.RequestCharge);
 
             return response.Resource;
         }
@@ -103,8 +99,8 @@ public abstract class Repository<TEntity> where TEntity : Entity
         }
         catch (CosmosException exception)
         {
-            logger.LogError(exception, "Error upserting {TypeName} with ID: {Id} on partition: /{Partition}",
-                entityTypeName, item.Id, partition);
+            logger.LogError(exception, "Error upserting item with ID: {Id} on partition: /{Partition}",
+                item.Id, partition);
             return Result.Fail("Error upserting item");
         }
     }
@@ -138,8 +134,8 @@ public abstract class Repository<TEntity> where TEntity : Entity
             cancellationToken: cancellationToken);
 
         logger.LogInformation(
-            "Patched {TypeName} on partition: /{Partition} with {Count} operations, request charge: {Charge} RU",
-            entityTypeName, partition, operations.Count, response.RequestCharge);
+            "Patched item on partition: /{Partition} with {Count} operations, request charge: {Charge} RU",
+            partition, operations.Count, response.RequestCharge);
 
         return response.Resource;
     }

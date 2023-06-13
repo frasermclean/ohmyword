@@ -16,7 +16,7 @@ public class RoundsRepository : Repository<RoundEntity>, IRoundsRepository
 {
     public RoundsRepository(CosmosClient cosmosClient, IOptions<CosmosDbOptions> options,
         ILogger<RoundsRepository> logger)
-        : base(cosmosClient, options, logger, "rounds")
+        : base(cosmosClient, logger, options.Value.DatabaseId, "rounds")
     {
     }
 

@@ -30,7 +30,7 @@ public class DefinitionsRepository : Repository<DefinitionEntity>, IDefinitionsR
 {
     public DefinitionsRepository(CosmosClient cosmosClient, IOptions<CosmosDbOptions> options,
         ILogger<DefinitionsRepository> logger)
-        : base(cosmosClient, options, logger, "definitions")
+        : base(cosmosClient, logger, options.Value.DatabaseId, "definitions")
     {
     }
 

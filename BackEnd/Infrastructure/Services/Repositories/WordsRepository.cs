@@ -38,7 +38,7 @@ public class WordsRepository : Repository<WordEntity>, IWordsRepository
 
     public WordsRepository(CosmosClient cosmosClient, IOptions<CosmosDbOptions> options,
         ILogger<WordsRepository> logger)
-        : base(cosmosClient, options, logger, "words")
+        : base(cosmosClient, logger, options.Value.DatabaseId, "words")
     {
     }
 

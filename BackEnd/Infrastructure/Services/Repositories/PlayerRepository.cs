@@ -20,7 +20,7 @@ public class PlayerRepository : Repository<PlayerEntity>, IPlayerRepository
 {
     public PlayerRepository(CosmosClient cosmosClient, IOptions<CosmosDbOptions> options,
         ILogger<PlayerRepository> logger)
-        : base(cosmosClient, options, logger, "players")
+        : base(cosmosClient, logger, options.Value.DatabaseId, "players")
     {
     }
 
