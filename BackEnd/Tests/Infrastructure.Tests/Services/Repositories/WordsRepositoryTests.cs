@@ -22,17 +22,32 @@ public class WordsRepositoryTests
     }
 
     [Theory, AutoData]
+    public async Task GetWordAsync_WithUnknownWordId_Should_Return_NotFound(string wordId)
+    {
+        // act
+        var result = await wordsRepository.GetWordAsync(wordId);
+        
+        // assert
+        result.Should().BeFailure().Which.Should().HaveReason<ItemNotFoundError>(
+            $"Item with ID: {wordId} was not found on partition: {wordId}");        
+    }
+
+    [Theory, AutoData]
     public async Task CreateWordAsync_Should_ReturnExpectedResult(WordEntity entity)
     {
         // act
-        var result1 = await wordsRepository.CreateWordAsync(entity);
-        var result2 = await wordsRepository.CreateWordAsync(entity);
+        var createResult1 = await wordsRepository.CreateWordAsync(entity);
+        var readResult = await wordsRepository.GetWordAsync(entity.Id);
+        var createResult2 = await wordsRepository.CreateWordAsync(entity);
 
         // assert
-        result1.Should().BeSuccess();
-        result1.Value.Id.Should().Be(entity.Id);
-        result1.Value.DefinitionCount.Should().Be(entity.DefinitionCount);
-        result2.Should().BeFailure().Which.Should().HaveReason<ItemConflictError>(
+        createResult1.Should().BeSuccess();
+        createResult1.Value.Id.Should().Be(entity.Id);
+        createResult1.Value.DefinitionCount.Should().Be(entity.DefinitionCount);
+        readResult.Should().BeSuccess();
+        readResult.Value.Id.Should().Be(entity.Id);
+        readResult.Value.DefinitionCount.Should().Be(entity.DefinitionCount);
+        createResult2.Should().BeFailure().Which.Should().HaveReason<ItemConflictError>(
             $"Item with ID: {entity.Id} already exists on partition: {entity.Id}");
     }
 }
