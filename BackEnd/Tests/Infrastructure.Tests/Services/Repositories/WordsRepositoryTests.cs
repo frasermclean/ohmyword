@@ -26,10 +26,10 @@ public class WordsRepositoryTests
     {
         // act
         var result = await wordsRepository.GetWordAsync(wordId);
-        
+
         // assert
         result.Should().BeFailure().Which.Should().HaveReason<ItemNotFoundError>(
-            $"Item with ID: {wordId} was not found on partition: {wordId}");        
+            $"Item with ID: {wordId} was not found on partition: {wordId}");
     }
 
     [Theory, AutoData]
@@ -49,5 +49,20 @@ public class WordsRepositoryTests
         readResult.Value.DefinitionCount.Should().Be(entity.DefinitionCount);
         createResult2.Should().BeFailure().Which.Should().HaveReason<ItemConflictError>(
             $"Item with ID: {entity.Id} already exists on partition: {entity.Id}");
+    }
+
+    [Theory, AutoData]
+    public async Task DeleteWordAsync_Should_Return_ExpectedResult(string unknownWordId, WordEntity entityToCreate)
+    {
+        // act
+        var deleteResult1 = await wordsRepository.DeleteWordAsync(unknownWordId);
+        var createResult = await wordsRepository.CreateWordAsync(entityToCreate);
+        var deleteResult2 = await wordsRepository.DeleteWordAsync(entityToCreate.Id);
+
+        // assert
+        deleteResult1.Should().BeFailure().Which.Should().HaveReason<ItemNotFoundError>(
+            $"Item with ID: {unknownWordId} was not found on partition: {unknownWordId}");
+        createResult.Should().BeSuccess();
+        deleteResult2.Should().BeSuccess();
     }
 }
