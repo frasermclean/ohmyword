@@ -5,11 +5,11 @@ using System.Net;
 namespace Infrastructure.Tests.Services.RapidApi.IpGeoLocation;
 
 [Trait("Category", "Integration")]
-public class IpGeoLocationServiceTests : IClassFixture<RapidApiFixture>
+public class GeoLocationApiClientTests : IClassFixture<RapidApiFixture>
 {
     private readonly IGeoLocationApiClient geoLocationApiClient;
 
-    public IpGeoLocationServiceTests(RapidApiFixture fixture)
+    public GeoLocationApiClientTests(RapidApiFixture fixture)
     {
         geoLocationApiClient = fixture.ServiceProvider.GetRequiredService<IGeoLocationApiClient>();
     }
@@ -20,7 +20,7 @@ public class IpGeoLocationServiceTests : IClassFixture<RapidApiFixture>
     public async Task GetIpAddressInfo_WithStringAddress_Should_ReturnExpectedResult(string ipAddress, string expectedVersion)
     {
         // act
-        var entity = await geoLocationApiClient.GetGetLocationAsync(ipAddress);
+        var entity = await geoLocationApiClient.GetGeoLocationAsync(ipAddress);
 
         // assert
         entity.PartitionKey.Should().Be(expectedVersion);
@@ -37,7 +37,7 @@ public class IpGeoLocationServiceTests : IClassFixture<RapidApiFixture>
         string expectedVersion)
     {
         // act
-        var entity = await geoLocationApiClient.GetGetLocationAsync(IPAddress.Parse(ipAddress));
+        var entity = await geoLocationApiClient.GetGeoLocationAsync(IPAddress.Parse(ipAddress));
 
         // assert
         entity.PartitionKey.Should().Be(expectedVersion);

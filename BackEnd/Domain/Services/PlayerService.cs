@@ -37,7 +37,7 @@ public class PlayerService : IPlayerService
 
         await Task.WhenAll(entityTask, nameTask, geoLocationTask);
 
-        return MapToPlayer(entityTask.Result, nameTask.Result, visitorId, connectionId, geoLocationTask.Result);
+        return MapToPlayer(entityTask.Result, nameTask.Result, visitorId, connectionId, geoLocationTask.Result.Value);
     }
 
     public Task IncrementPlayerScoreAsync(Guid playerId, int points) =>
