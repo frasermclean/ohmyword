@@ -2,6 +2,7 @@
 using DotNet.Testcontainers.Containers;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Fluent;
+using OhMyWord.Infrastructure;
 using ContainerBuilder = DotNet.Testcontainers.Builders.ContainerBuilder;
 
 namespace Infrastructure.Tests.Fixtures;
@@ -50,6 +51,7 @@ public sealed class CosmosDbEmulatorFixture : IDisposable, IAsyncLifetime
                     ServerCertificateCustomValidationCallback =
                         HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
                 }))
+                .WithCustomSerializer(new EntitySerializer())
                 .WithConnectionModeGateway()
                 .Build();
         });
