@@ -9,9 +9,8 @@ namespace OhMyWord.Domain.Services;
 public interface IWordsService
 {
     IAsyncEnumerable<Word> SearchWords(int offset = WordsRepository.OffsetMinimum,
-        int limit = WordsRepository.LimitDefault, string filter = "",
-        SearchWordsOrderBy orderBy = SearchWordsOrderBy.Id,
-        SortDirection direction = SortDirection.Ascending, CancellationToken cancellationToken = default);
+        int limit = WordsRepository.LimitDefault, string filter = "", string orderBy = "", bool isDescending = false,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Read all word IDs from the database.
@@ -48,9 +47,9 @@ public class WordsService : IWordsService
         this.definitionsService = definitionsService;
     }
 
-    public IAsyncEnumerable<Word> SearchWords(int offset, int limit, string filter, SearchWordsOrderBy orderBy,
-        SortDirection direction, CancellationToken cancellationToken = default) =>
-        wordsRepository.SearchWords(offset, limit, filter, orderBy, direction, cancellationToken)
+    public IAsyncEnumerable<Word> SearchWords(int offset, int limit, string filter, string orderBy, bool isDescending,
+        CancellationToken cancellationToken = default) =>
+        wordsRepository.SearchWords(offset, limit, filter, orderBy, isDescending, cancellationToken)
             .SelectAwait(async wordEntity => await MapToWordAsync(wordEntity, cancellationToken));
 
     public IAsyncEnumerable<string> GetAllWordIds(CancellationToken cancellationToken) =>
@@ -98,7 +97,6 @@ public class WordsService : IWordsService
         if (definitionResults.Any(result => result.IsFailed))
         {
         }
-
 
         return MapToWord(wordResult.Value, definitionResults.Select(result => result.Value));
     }

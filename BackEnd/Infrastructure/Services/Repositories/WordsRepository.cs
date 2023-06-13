@@ -15,8 +15,8 @@ public interface IWordsRepository
         int offset = WordsRepository.OffsetMinimum,
         int limit = WordsRepository.LimitDefault,
         string filter = "",
-        SearchWordsOrderBy orderBy = SearchWordsOrderBy.Id,
-        SortDirection direction = SortDirection.Ascending,
+        string orderBy = "",
+        bool isDescending = false,
         CancellationToken cancellationToken = default);
 
     IAsyncEnumerable<string> GetAllWordIds(CancellationToken cancellationToken = default);
@@ -45,17 +45,17 @@ public class WordsRepository : Repository<WordEntity>, IWordsRepository
     public IAsyncEnumerable<WordEntity> GetAllWordsAsync(CancellationToken cancellationToken = default)
         => ReadPartitionItems(null, cancellationToken);
 
-    public IAsyncEnumerable<WordEntity> SearchWords(int offset, int limit, string filter,
-        SearchWordsOrderBy orderBy, SortDirection direction, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<WordEntity> SearchWords(int offset, int limit, string filter, string orderBy,
+        bool isDescending, CancellationToken cancellationToken = default)
     {
         var orderByString = orderBy switch
         {
-            SearchWordsOrderBy.LastModifiedTime => "word._ts",
-            SearchWordsOrderBy.Length => "word.id.length",
+            "lastModifiedTime" => "word._ts",
+            "length" => "word.id.length",
             _ => "word.id"
         };
 
-        var directionString = direction == SortDirection.Ascending ? "ASC" : "DESC";
+        var directionString = isDescending ? "DESC" : "ASC";
 
         var queryDefinition = new QueryDefinition($"""
             SELECT * FROM word
@@ -87,11 +87,11 @@ public class WordsRepository : Repository<WordEntity>, IWordsRepository
 
     public Task<Result> DeleteWordAsync(string wordId, CancellationToken cancellationToken) =>
         DeleteItemAsync(wordId, wordId, cancellationToken);
-}
-
-public enum SearchWordsOrderBy
-{
-    Id,
-    Length,
-    LastModifiedTime,
+    
+    public static readonly IEnumerable<string> ValidOrderByValues = new[]
+    {
+        "id",
+        "lastModifiedTime",
+        "length"
+    }; 
 }
