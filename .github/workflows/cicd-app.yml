@@ -149,7 +149,6 @@ jobs:
       TEMPLATE_ROOT: ${{ github.workspace }}/templates
       RESOURCE_GROUP_NAME: rg-ohmyword-${{ github.ref_name == 'main' && 'prod' || 'test' }}
       APPLICATION_ENVIRONMENT: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
-      DATABASE_THROUGHPUT: ${{ github.ref_name == 'main' && 600 || 400 }}
     steps:
       # Download application artifact
       - name: Download application artifact
@@ -173,11 +172,7 @@ jobs:
           scope: resourcegroup
           resourceGroupName: ${{ env.RESOURCE_GROUP_NAME }}
           template: ${{ env.TEMPLATE_ROOT }}/app/main.bicep
-          parameters: >-
-            ${{ env.TEMPLATE_ROOT }}/app/main.parameters.json
-            appEnv=${{ env.APPLICATION_ENVIRONMENT }}
-            databaseThroughput=${{ env.DATABASE_THROUGHPUT }}
-            rapidApiKey=${{ secrets.RAPID_API_KEY }}
+          parameters: ${{ env.TEMPLATE_ROOT }}/app/${{ env.APPLICATION_ENVIRONMENT }}.bicepparam
 
   # Deploy frontend application
   deploy-frontend-app:
