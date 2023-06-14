@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Logging;
 using OhMyWord.Infrastructure.Models.Entities;
 
-namespace OhMyWord.Infrastructure.Services;
+namespace OhMyWord.Infrastructure.Services.Repositories;
 
 public interface IUsersRepository
 {

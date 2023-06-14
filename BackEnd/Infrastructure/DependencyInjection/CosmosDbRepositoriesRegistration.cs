@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using OhMyWord.Infrastructure.Options;
-using OhMyWord.Infrastructure.Services;
+using OhMyWord.Infrastructure.Services.Repositories;
 
 namespace OhMyWord.Infrastructure.DependencyInjection;
 
@@ -35,7 +35,7 @@ public static class CosmosDbRepositoriesRegistration
             return builder
                 .WithApplicationName(options.Value.ApplicationName)
                 .WithHttpClientFactory(() => httpClientFactory.CreateClient("CosmosDb"))
-                .WithCustomSerializer(new EntitySerializer())
+                .WithCustomSerializer(EntitySerializer.Instance)
                 .WithContentResponseOnWrite(true)
                 .Build();
         });

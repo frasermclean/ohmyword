@@ -1,7 +1,7 @@
 ﻿using OhMyWord.Domain.Models;
 using OhMyWord.Infrastructure.Models.Entities;
-using OhMyWord.Infrastructure.Services;
 using OhMyWord.Infrastructure.Services.GraphApi;
+using OhMyWord.Infrastructure.Services.Repositories;
 using System.Net;
 
 namespace OhMyWord.Domain.Services;
@@ -37,7 +37,7 @@ public class PlayerService : IPlayerService
 
         await Task.WhenAll(entityTask, nameTask, geoLocationTask);
 
-        return MapToPlayer(entityTask.Result, nameTask.Result, visitorId, connectionId, geoLocationTask.Result);
+        return MapToPlayer(entityTask.Result, nameTask.Result, visitorId, connectionId, geoLocationTask.Result.Value);
     }
 
     public Task IncrementPlayerScoreAsync(Guid playerId, int points) =>
@@ -46,8 +46,8 @@ public class PlayerService : IPlayerService
     private async Task<PlayerEntity> GetOrCreatePlayerEntityAsync(Guid playerId, string visitorId, IPAddress ipAddress,
         Guid? userId = default, CancellationToken cancellationToken = default)
     {
-        var entity = await playerRepository.GetPlayerByIdAsync(playerId, cancellationToken);
-        if (entity is null)
+        var result = await playerRepository.GetPlayerByIdAsync(playerId, cancellationToken);
+        if (result.IsFailed)
         {
             // create a new player entity
             return await playerRepository.CreatePlayerAsync(
@@ -61,7 +61,7 @@ public class PlayerService : IPlayerService
         }
 
         // update the player entity
-        return await playerRepository.UpdatePlayerAsync(entity, visitorId, ipAddress.ToString());
+        return await playerRepository.UpdatePlayerAsync(result.Value, visitorId, ipAddress.ToString());
     }
 
     private async Task<string> GetPlayerNameAsync(Guid? userId, CancellationToken cancellationToken = default)
