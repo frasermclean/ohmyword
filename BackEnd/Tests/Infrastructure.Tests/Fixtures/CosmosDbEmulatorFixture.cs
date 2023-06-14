@@ -2,7 +2,9 @@
 using DotNet.Testcontainers.Containers;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Fluent;
+using Microsoft.Extensions.Options;
 using OhMyWord.Infrastructure;
+using OhMyWord.Infrastructure.Options;
 using ContainerBuilder = DotNet.Testcontainers.Builders.ContainerBuilder;
 
 namespace Infrastructure.Tests.Fixtures;
@@ -14,34 +16,25 @@ public sealed class CosmosDbEmulatorFixture : IDisposable, IAsyncLifetime
 
     private const string DatabaseId = "test-db";
     private const string IpAddress = "127.0.0.1";
+    private const int ContainerPort = 8081;
     private const int PartitionCount = 5;
 
     public CosmosDbEmulatorFixture()
     {
         container = new ContainerBuilder()
             .WithImage("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator")
-            .WithName("azure-cosmos-emulator")
-            .WithExposedPort(8081)
-            .WithExposedPort(10251)
-            .WithExposedPort(10252)
-            .WithExposedPort(10253)
-            .WithExposedPort(10254)
-            .WithPortBinding(8081, 8081)
-            .WithPortBinding(10251, true)
-            .WithPortBinding(10252, true)
-            .WithPortBinding(10253, true)
-            .WithPortBinding(10254, true)
+            .WithPortBinding(ContainerPort)
             .WithEnvironment("AZURE_COSMOS_EMULATOR_PARTITION_COUNT", PartitionCount.ToString())
             .WithEnvironment("AZURE_COSMOS_EMULATOR_IP_ADDRESS_OVERRIDE", IpAddress)
             .WithOutputConsumer(Consume.RedirectStdoutAndStderrToStream(new MemoryStream(), new MemoryStream()))
             .WithWaitStrategy(Wait.ForUnixContainer()
-                .UntilMessageIsLogged("Started"))
+                .UntilPortIsAvailable(ContainerPort)
+                .UntilMessageIsLogged($"Started {PartitionCount + 1}/{PartitionCount + 1} partitions"))
             .Build();
 
         cosmosClient = new Lazy<CosmosClient>(() =>
         {
-            var port = container.GetMappedPublicPort(8081);
-            var endpoint = $"https://{IpAddress}:{port}";
+            var endpoint = $"https://{container.Hostname}:{container.GetMappedPublicPort(ContainerPort)}/";
             const string authKey =
                 "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==";
 
@@ -51,7 +44,7 @@ public sealed class CosmosDbEmulatorFixture : IDisposable, IAsyncLifetime
                     ServerCertificateCustomValidationCallback =
                         HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
                 }))
-                .WithCustomSerializer(new EntitySerializer())
+                .WithCustomSerializer(EntitySerializer.Instance)
                 .WithConnectionModeGateway()
                 .Build();
         });
@@ -59,16 +52,20 @@ public sealed class CosmosDbEmulatorFixture : IDisposable, IAsyncLifetime
 
     public CosmosClient CosmosClient => cosmosClient.Value;
 
+    public IOptions<CosmosDbOptions> Options =>
+        Microsoft.Extensions.Options.Options.Create(new CosmosDbOptions { DatabaseId = DatabaseId, });
+
     public async Task InitializeAsync()
     {
         // start the test container
         await container.StartAsync();
 
         // create database
-        var database = await CosmosClient.CreateDatabaseIfNotExistsAsync(DatabaseId);
+        var database = await cosmosClient.Value.CreateDatabaseAsync(DatabaseId);
 
         // create containers
-        await database.Database.CreateContainerIfNotExistsAsync("words", "/id");
+        await database.Database.CreateContainerAsync("words", "/id");
+        await database.Database.CreateContainerAsync("definitions", "/wordId");
     }
 
     public void Dispose()
@@ -79,5 +76,8 @@ public sealed class CosmosDbEmulatorFixture : IDisposable, IAsyncLifetime
         }
     }
 
-    public Task DisposeAsync() => container.DisposeAsync().AsTask();
+    public async Task DisposeAsync()
+    {
+        await container.DisposeAsync();
+    }
 }

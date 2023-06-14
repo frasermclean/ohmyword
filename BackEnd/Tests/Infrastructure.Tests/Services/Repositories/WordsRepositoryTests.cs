@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Logging;
 using OhMyWord.Infrastructure.Errors;
 using OhMyWord.Infrastructure.Models.Entities;
-using OhMyWord.Infrastructure.Options;
 using OhMyWord.Infrastructure.Services.Repositories;
 
 namespace Infrastructure.Tests.Services.Repositories;
@@ -15,10 +14,8 @@ public class WordsRepositoryTests
 
     public WordsRepositoryTests(CosmosDbEmulatorFixture fixture)
     {
-        var client = fixture.CosmosClient;
-        var options = Microsoft.Extensions.Options.Options.Create(new CosmosDbOptions { DatabaseId = "test-db" });
-
-        wordsRepository = new WordsRepository(client, options, Mock.Of<ILogger<WordsRepository>>());
+        wordsRepository =
+            new WordsRepository(fixture.CosmosClient, fixture.Options, Mock.Of<ILogger<WordsRepository>>());
     }
 
     [Theory, AutoData]
