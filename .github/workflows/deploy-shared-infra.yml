@@ -22,7 +22,7 @@ on:
       client-id:
         description: Azure client ID
         required: true
-        type: string  
+        type: string
 
 jobs:
   deploy:
@@ -53,8 +53,7 @@ jobs:
           resourceGroupName: ${{ inputs.resourceGroupName }}
           template: ${{ env.TEMPLATE_ROOT }}/shared/main.bicep
           scope: resourcegroup
-          parameters: >-
-            ${{ env.TEMPLATE_ROOT }}/shared/main.parameters.json
+          parameters: ${{ env.TEMPLATE_ROOT }}/shared/main.bicepparam
 
       # Upload published application artifact
       - name: Upload artifact
