@@ -19,22 +19,14 @@ param principalId string
 @allowed([ 'prod', 'test' ])
 param appEnv string
 
-@secure()
-@description('RapidAPI key')
-param rapidApiKey string
-
 @description('IP lookup feature enabled')
 param ipLookupFeatureEnabled bool = true
 
 resource keyVault 'Microsoft.KeyVault/vaults@2022-11-01' existing = {
   name: 'kv-ohmyword-shared'
 
-  resource rapidApiKeySecret 'secrets' = if (!empty(rapidApiKey)) {
-    name: 'RapidApiKey-${appEnv}'
-    properties: {
-      value: rapidApiKey
-      contentType: 'text/plain'
-    }
+  resource rapidApiKeySecret 'secrets' existing = {
+    name: 'rapidApi-key-${appEnv}'
   }
 }
 

@@ -1,31 +1,24 @@
 targetScope = 'resourceGroup'
 
 @description('Name of the application / workload')
-param appName string
+param appName string = 'ohmyword'
 
 @description('Application environment')
 @allowed([ 'prod', 'test' ])
-param appEnv string
+param appEnv string = 'test'
 
 @description('The default Azure location to deploy the resources to')
-param location string
+param location string = resourceGroup().location
 
 @description('Apex domain name for the application')
-param domainName string
+param domainName string = 'ohmyword.live'
 
 @description('Database request units per second.')
 @minValue(400)
-param databaseThroughput int
-
-@description('Database containers to create')
-param databaseContainers array
+param databaseThroughput int = 400
 
 @description('Location for the static web app')
 param staticWebAppLocation string = 'centralus'
-
-@secure()
-@description('RapidAPI key')
-param rapidApiKey string = ''
 
 var sharedResourceGroup = 'rg-${appName}-shared'
 
@@ -45,6 +38,29 @@ var authClientId = appEnv == 'prod' ? 'ee95c3c0-c6f7-4675-9097-0e4d9bca14e3' : '
 
 @description('Azure AD B2C audience for API to validate')
 var authAudience = appEnv == 'prod' ? '7a224ce3-b92f-4525-a563-a79856d04a78' : 'f1f90898-e7c9-40b0-8ebf-103c2b0b1e72'
+
+var databaseContainers = [
+  {
+    id: 'words'
+    partitionKeyPath: '/id'
+  }
+  {
+    id: 'definitions'
+    partitionKeyPath: '/wordId'
+  }
+  {
+    id: 'players'
+    partitionKeyPath: '/id'
+  }
+  {
+    id: 'rounds'
+    partitionKeyPath: '/sessionId'
+  }
+  {
+    id: 'sessions'
+    partitionKeyPath: '/id'
+  }
+]
 
 resource virtualNetwork 'Microsoft.Network/virtualNetworks@2022-09-01' existing = {
   name: 'vnet-${appName}'
@@ -247,7 +263,6 @@ module appConfig 'appConfig.bicep' = {
     azureAdClientId: authClientId
     cosmosDbDatabaseId: databaseId
     principalId: appService.identity.principalId
-    rapidApiKey: rapidApiKey
   }
 }
 
