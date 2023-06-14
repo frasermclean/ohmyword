@@ -90,11 +90,11 @@ jobs:
 
       # Run unit tests
       - name: Run unit tests
-        run: dotnet test --configuration $BUILD_CONFIGURATION --filter Category=Unit --no-build --verbosity normal
+        run: dotnet test --configuration $BUILD_CONFIGURATION --filter Category=Unit --no-build
 
       # Run integration tests
       - name: Run integration tests
-        run: dotnet test --configuration $BUILD_CONFIGURATION --filter FullyQualifiedName~Infrastructure.Tests.Services.Repositories --no-build --verbosity normal
+        run: dotnet test --configuration $BUILD_CONFIGURATION --filter FullyQualifiedName~Infrastructure.Tests.Services.Repositories --no-build
 
       # Publish application
       - name: Publish application
