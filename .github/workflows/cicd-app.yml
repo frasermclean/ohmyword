@@ -94,6 +94,7 @@ jobs:
 
       # Run integration tests
       - name: Run integration tests
+        if: github.ref_name == 'main'
         run: dotnet test --configuration $BUILD_CONFIGURATION --filter FullyQualifiedName~Infrastructure.Tests.Services.Repositories --no-build
 
       # Publish application
