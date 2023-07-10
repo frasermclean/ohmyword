@@ -253,6 +253,29 @@ resource managedCertificate 'Microsoft.Web/certificates@2022-03-01' = {
   }
 }
 
+// azure signalr service
+resource signalrService 'Microsoft.SignalRService/signalR@2023-02-01' = {
+  name: 'sigr-${appName}-${appEnv}'
+  location: location
+  tags: tags
+  kind: 'SignalR'
+  sku: {
+    name: 'Free_F1'
+  }
+  properties: {
+    disableLocalAuth: true
+    features: [
+      {
+        flag: 'ServiceMode'
+        value: 'Default'
+      }
+    ]
+    cors: {
+      allowedOrigins: [ 'https://${frontendHostname}' ]
+    }
+  }
+}
+
 module appConfig 'appConfig.bicep' = {
   name: 'appConfig-${appEnv}'
   scope: resourceGroup(sharedResourceGroup)
@@ -263,6 +286,7 @@ module appConfig 'appConfig.bicep' = {
     azureAdClientId: authClientId
     cosmosDbDatabaseId: databaseId
     principalId: appService.identity.principalId
+    signalRServiceHostname: signalrService.properties.hostName
   }
 }
 
