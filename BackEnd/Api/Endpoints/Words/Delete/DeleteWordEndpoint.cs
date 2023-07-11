@@ -1,4 +1,5 @@
 ﻿using OhMyWord.Domain.Services;
+using OhMyWord.Infrastructure.Errors;
 
 namespace OhMyWord.Api.Endpoints.Words.Delete;
 
@@ -18,6 +19,14 @@ public class DeleteWordEndpoint : Endpoint<DeleteWordRequest>
 
     public override async Task HandleAsync(DeleteWordRequest request, CancellationToken cancellationToken)
     {
-        await wordsService.DeleteWordAsync(request.WordId, cancellationToken);
+        var result = await wordsService.DeleteWordAsync(request.WordId, cancellationToken);
+
+        if (result.HasError<ItemNotFoundError>())
+        {
+            await SendNotFoundAsync(cancellationToken);
+            return;
+        }
+
+        await SendNoContentAsync(cancellationToken);
     }
 }

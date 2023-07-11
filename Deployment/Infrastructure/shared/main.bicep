@@ -9,6 +9,7 @@ param location string
 @description('Apex domain name for the application')
 param domainName string
 
+@minValue(400)
 @description('Total throughput of the Cosmos DB account')
 param totalThroughputLimit int
 

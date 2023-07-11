@@ -3,7 +3,7 @@ using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using OhMyWord.Infrastructure.Options;
-using OhMyWord.Infrastructure.Services;
+using OhMyWord.Infrastructure.Services.Repositories;
 
 namespace OhMyWord.Infrastructure.DependencyInjection;
 

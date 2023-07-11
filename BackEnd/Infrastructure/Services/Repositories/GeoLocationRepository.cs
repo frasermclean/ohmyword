@@ -5,7 +5,7 @@ using OhMyWord.Infrastructure.Models.Entities;
 using System.Net;
 using System.Net.Sockets;
 
-namespace OhMyWord.Infrastructure.Services;
+namespace OhMyWord.Infrastructure.Services.Repositories;
 
 public interface IGeoLocationRepository
 {

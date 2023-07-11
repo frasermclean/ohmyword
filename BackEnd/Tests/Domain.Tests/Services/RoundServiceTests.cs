@@ -2,7 +2,7 @@
 using OhMyWord.Domain.Services;
 using OhMyWord.Domain.Services.State;
 using OhMyWord.Infrastructure.Models.Entities;
-using OhMyWord.Infrastructure.Services;
+using OhMyWord.Infrastructure.Services.Repositories;
 
 namespace Domain.Tests.Services;
 
@@ -13,13 +13,14 @@ public class RoundServiceTests : IClassFixture<TestDataFixture>
     private readonly Mock<IPlayerState> playerStateMock = new();
     private readonly Mock<IWordQueueService> wordQueueServiceMock = new();
     private readonly Mock<IRoundsRepository> roundsRepositoryMock = new();
+    private readonly Mock<IPlayerService> playerServiceMock = new();
 
     public RoundServiceTests(TestDataFixture fixture)
     {
         this.fixture = fixture;
 
         roundService = new RoundService(Mock.Of<ILogger<RoundService>>(), fixture.CreateOptions(),
-            playerStateMock.Object, wordQueueServiceMock.Object, roundsRepositoryMock.Object);
+            playerStateMock.Object, wordQueueServiceMock.Object, roundsRepositoryMock.Object, playerServiceMock.Object);
     }
 
     [Fact]

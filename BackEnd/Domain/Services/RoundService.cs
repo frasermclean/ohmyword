@@ -7,7 +7,7 @@ using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Options;
 using OhMyWord.Domain.Services.State;
 using OhMyWord.Infrastructure.Models.Entities;
-using OhMyWord.Infrastructure.Services;
+using OhMyWord.Infrastructure.Services.Repositories;
 
 namespace OhMyWord.Domain.Services;
 
@@ -25,18 +25,20 @@ public class RoundService : IRoundService
     private readonly IPlayerState playerState;
     private readonly IWordQueueService wordQueueService;
     private readonly IRoundsRepository roundsRepository;
+    private readonly IPlayerService playerService;
 
     private readonly TimeSpan letterHintDelay;
     private readonly TimeSpan postRoundDelay;
     private readonly int guessLimit;
 
     public RoundService(ILogger<RoundService> logger, IOptions<RoundOptions> options, IPlayerState playerState,
-        IWordQueueService wordQueueService, IRoundsRepository roundsRepository)
+        IWordQueueService wordQueueService, IRoundsRepository roundsRepository, IPlayerService playerService)
     {
         this.logger = logger;
         this.playerState = playerState;
         this.wordQueueService = wordQueueService;
         this.roundsRepository = roundsRepository;
+        this.playerService = playerService;
 
         letterHintDelay = TimeSpan.FromSeconds(options.Value.LetterHintDelay);
         postRoundDelay = TimeSpan.FromSeconds(options.Value.PostRoundDelay);
@@ -73,6 +75,11 @@ public class RoundService : IRoundService
     public async Task SaveRoundAsync(Round round, CancellationToken cancellationToken)
     {
         await roundsRepository.CreateRoundAsync(round.ToEntity(), cancellationToken);
+
+        // update player scores
+        await Task.WhenAll(round.GetPlayerData()
+            .Where(data => data.PointsAwarded > 0)
+            .Select(data => playerService.IncrementPlayerScoreAsync(data.PlayerId, data.PointsAwarded)));
     }
 
     public (TimeSpan, RoundSummary) GetRoundEndData(Round round)
@@ -121,6 +128,7 @@ public class RoundService : IRoundService
         {
             PlayerName = player?.Name ?? string.Empty,
             ConnectionId = player?.ConnectionId ?? string.Empty,
+            CountryName = player?.GeoLocation.CountryName ?? string.Empty,
             CountryCode = player?.GeoLocation.CountryCode ?? string.Empty,
             PointsAwarded = data.PointsAwarded,
             GuessCount = data.GuessCount,

@@ -12,7 +12,6 @@ public class ProcessGuessHandler : ICommandHandler<ProcessGuessCommand, ProcessG
     private readonly IRoundState roundState;
     private readonly IPlayerState playerState;
 
-
     public ProcessGuessHandler(ILogger<ProcessGuessHandler> logger, IRoundState roundState, IPlayerState playerState)
     {
         this.logger = logger;
@@ -31,6 +30,11 @@ public class ProcessGuessHandler : ICommandHandler<ProcessGuessCommand, ProcessG
         }
 
         var result = roundState.ProcessGuess(player.Id, command.RoundId, command.Value);
-        return Task.FromResult(new ProcessGuessResult { IsCorrect = result.IsSuccess, PointsAwarded = result.Value });
+        return Task.FromResult(new ProcessGuessResult
+        {
+            IsCorrect = result.IsSuccess,
+            PointsAwarded = result.ValueOrDefault,
+            Message = result.IsFailed ? result.Errors.First().Message : string.Empty
+        });
     }
 }

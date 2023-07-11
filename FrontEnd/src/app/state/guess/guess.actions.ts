@@ -28,5 +28,8 @@ export namespace Guess {
 
   export class Failed {
     static readonly type = '[Game Service] Guess.Failed';
+
+    constructor(public message: string) {
+    }
   }
 }

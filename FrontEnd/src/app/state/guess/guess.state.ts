@@ -11,6 +11,7 @@ interface GuessStateModel {
   count: number;
   maxLength: number;
   guessedCorrectly: boolean;
+  message: string;
 }
 
 const GUESS_VALUE_DEFAULT = '';
@@ -24,6 +25,7 @@ export const GUESS_DEFAULT_CHAR = '_';
     count: 0,
     maxLength: 0,
     guessedCorrectly: false,
+    message: '',
   },
 })
 @Injectable()
@@ -61,10 +63,11 @@ export class GuessState {
   }
 
   @Action(Guess.Failed)
-  guessFailed(context: StateContext<GuessStateModel>) {
+  guessFailed(context: StateContext<GuessStateModel>, action: Guess.Failed) {
     this.soundService.playIncorrect();
     context.patchState({
       value: GUESS_VALUE_DEFAULT,
+      message: action.message
     })
   }
 
@@ -75,6 +78,7 @@ export class GuessState {
       count: 0,
       maxLength: action.data.wordHint?.length || 0,
       guessedCorrectly: false,
+      message: '',
     });
   }
 

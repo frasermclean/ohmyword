@@ -11,8 +11,8 @@ namespace OhMyWord.Infrastructure.Services.RapidApi.IpGeoLocation;
 
 public interface IGeoLocationApiClient
 {
-    Task<GeoLocationEntity> GetGetLocationAsync(string ipAddress, CancellationToken cancellationToken = default);
-    Task<GeoLocationEntity> GetGetLocationAsync(IPAddress ipAddress, CancellationToken cancellationToken = default);
+    Task<GeoLocationEntity> GetGeoLocationAsync(string ipAddress, CancellationToken cancellationToken = default);
+    Task<GeoLocationEntity> GetGeoLocationAsync(IPAddress ipAddress, CancellationToken cancellationToken = default);
 }
 
 public class GeoLocationApiClient : IGeoLocationApiClient
@@ -31,7 +31,7 @@ public class GeoLocationApiClient : IGeoLocationApiClient
         this.httpClient = httpClient;
     }
 
-    public async Task<GeoLocationEntity> GetGetLocationAsync(string ipAddress,
+    public async Task<GeoLocationEntity> GetGeoLocationAsync(string ipAddress,
         CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Getting IP address info for: {IpAddress}", ipAddress);
@@ -46,6 +46,6 @@ public class GeoLocationApiClient : IGeoLocationApiClient
         return apiResponse.ToEntity();
     }
 
-    public Task<GeoLocationEntity> GetGetLocationAsync(IPAddress ipAddress, CancellationToken cancellationToken)
-        => GetGetLocationAsync(ipAddress.ToString(), cancellationToken);
+    public Task<GeoLocationEntity> GetGeoLocationAsync(IPAddress ipAddress, CancellationToken cancellationToken)
+        => GetGeoLocationAsync(ipAddress.ToString(), cancellationToken);
 }

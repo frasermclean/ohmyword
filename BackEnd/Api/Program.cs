@@ -50,11 +50,7 @@ public static class Program
             services.AddFastEndpoints();
 
             // signalR services
-            services.AddSignalR()
-                .AddJsonProtocol(options =>
-                    options.PayloadSerializerOptions.Converters.Add(
-                        new JsonStringEnumConverter(JsonNamingPolicy.CamelCase))
-                );
+            services.AddSignalRServices(context);
 
             // game services
             services.AddHostedService<GameBackgroundService>();

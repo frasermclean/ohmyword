@@ -21,7 +21,7 @@ public class SearchWordsEndpoint : Endpoint<SearchWordsRequest, SearchWordsRespo
     {
         var totalTask = wordsService.GetTotalWordCountAsync(cancellationToken);
         var wordsTask = wordsService
-            .SearchWords(request.Offset, request.Limit, request.Filter, request.OrderBy, request.Direction,
+            .SearchWords(request.Offset, request.Limit, request.Filter, request.OrderBy, request.IsDescending,
                 cancellationToken)
             .ToListAsync(cancellationToken)
             .AsTask();

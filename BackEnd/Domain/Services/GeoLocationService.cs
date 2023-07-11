@@ -1,15 +1,17 @@
-﻿using OhMyWord.Domain.Extensions;
+﻿using FluentResults;
 using OhMyWord.Domain.Models;
-using OhMyWord.Infrastructure.Services;
+using OhMyWord.Infrastructure.Errors;
+using OhMyWord.Infrastructure.Models.Entities;
 using OhMyWord.Infrastructure.Services.RapidApi.IpGeoLocation;
+using OhMyWord.Infrastructure.Services.Repositories;
 using System.Net;
 
 namespace OhMyWord.Domain.Services;
 
 public interface IGeoLocationService
 {
-    Task<GeoLocation> GetGeoLocationAsync(string ipAddress, CancellationToken cancellationToken = default);
-    Task<GeoLocation> GetGeoLocationAsync(IPAddress ipAddress, CancellationToken cancellationToken = default);
+    Task<Result<GeoLocation>> GetGeoLocationAsync(string ipAddress, CancellationToken cancellationToken = default);
+    Task<Result<GeoLocation>> GetGeoLocationAsync(IPAddress ipAddress, CancellationToken cancellationToken = default);
 }
 
 public class GeoLocationService : IGeoLocationService
@@ -23,19 +25,31 @@ public class GeoLocationService : IGeoLocationService
         this.apiClient = apiClient;
     }
 
-    public Task<GeoLocation> GetGeoLocationAsync(string ipAddress, CancellationToken cancellationToken = default)
-        => GetGeoLocationAsync(IPAddress.Parse(ipAddress), cancellationToken);
+    public async Task<Result<GeoLocation>> GetGeoLocationAsync(string address,
+        CancellationToken cancellationToken = default) => IPAddress.TryParse(address, out var ipAddress)
+        ? await GetGeoLocationAsync(ipAddress, cancellationToken)
+        : new InvalidIpAddressError(address);
 
-    public async Task<GeoLocation> GetGeoLocationAsync(IPAddress ipAddress,
+    public async Task<Result<GeoLocation>> GetGeoLocationAsync(IPAddress ipAddress,
         CancellationToken cancellationToken = default)
     {
         // lookup in table storage
         var entity = await repository.GetGeoLocationAsync(ipAddress, cancellationToken);
-        if (entity is not null) return entity.ToGeoLocation();
+        if (entity is not null) return MapToGeoLocation(entity);
 
         // lookup in API and store in table storage
-        entity = await apiClient.GetGetLocationAsync(ipAddress, cancellationToken);
+        entity = await apiClient.GetGeoLocationAsync(ipAddress, cancellationToken);
         await repository.AddGeoLocationAsync(entity);
-        return entity.ToGeoLocation();
+
+        return MapToGeoLocation(entity);
     }
+
+    private static GeoLocation MapToGeoLocation(GeoLocationEntity entity) => new()
+    {
+        IpAddress = IPAddress.TryParse(entity.RowKey, out var ipAddress) ? ipAddress : IPAddress.None,
+        CountryCode = entity.CountryCode.ToLower(),
+        CountryName = entity.CountryName,
+        City = entity.City,
+        LastUpdated = entity.Timestamp?.UtcDateTime ?? default
+    };
 }

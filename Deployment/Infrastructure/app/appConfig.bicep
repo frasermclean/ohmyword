@@ -19,22 +19,17 @@ param principalId string
 @allowed([ 'prod', 'test' ])
 param appEnv string
 
-@secure()
-@description('RapidAPI key')
-param rapidApiKey string
-
 @description('IP lookup feature enabled')
 param ipLookupFeatureEnabled bool = true
+
+@description('Azure SignalR Service hostname')
+param signalRServiceHostname string
 
 resource keyVault 'Microsoft.KeyVault/vaults@2022-11-01' existing = {
   name: 'kv-ohmyword-shared'
 
-  resource rapidApiKeySecret 'secrets' = if (!empty(rapidApiKey)) {
-    name: 'RapidApiKey-${appEnv}'
-    properties: {
-      value: rapidApiKey
-      contentType: 'text/plain'
-    }
+  resource rapidApiKeySecret 'secrets' existing = {
+    name: 'rapidApi-key-${appEnv}'
   }
 }
 
@@ -62,6 +57,11 @@ var appConfigurationKeyValues = [
   {
     name: 'ServiceBus:IpLookupQueueName$${appEnv}'
     value: 'shared-ip-lookup'
+    contentType: 'text/plain'
+  }
+  {
+    name: 'SignalRService:ConnectionString$${appEnv}'
+    value: 'Endpoint=https://${signalRServiceHostname};AuthType=azure.msi;Version=1.0;'
     contentType: 'text/plain'
   }
 ]

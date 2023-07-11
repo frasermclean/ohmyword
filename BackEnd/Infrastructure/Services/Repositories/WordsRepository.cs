@@ -1,10 +1,11 @@
-﻿using Microsoft.Azure.Cosmos;
+﻿using FluentResults;
+using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OhMyWord.Infrastructure.Models.Entities;
 using OhMyWord.Infrastructure.Options;
 
-namespace OhMyWord.Infrastructure.Services;
+namespace OhMyWord.Infrastructure.Services.Repositories;
 
 public interface IWordsRepository
 {
@@ -14,18 +15,18 @@ public interface IWordsRepository
         int offset = WordsRepository.OffsetMinimum,
         int limit = WordsRepository.LimitDefault,
         string filter = "",
-        SearchWordsOrderBy orderBy = SearchWordsOrderBy.Id,
-        SortDirection direction = SortDirection.Ascending,
+        string orderBy = "",
+        bool isDescending = false,
         CancellationToken cancellationToken = default);
 
     IAsyncEnumerable<string> GetAllWordIds(CancellationToken cancellationToken = default);
 
     Task<int> GetTotalWordCountAsync(CancellationToken cancellationToken = default);
 
-    Task<WordEntity?> GetWordAsync(string id, CancellationToken cancellationToken = default);
-    Task<WordEntity> CreateWordAsync(WordEntity entity, CancellationToken cancellationToken = default);
-    Task<WordEntity> UpdateWordAsync(WordEntity entity, CancellationToken cancellationToken = default);
-    Task DeleteWordAsync(string wordId, CancellationToken cancellationToken = default);
+    Task<Result<WordEntity>> GetWordAsync(string id, CancellationToken cancellationToken = default);
+    Task<Result<WordEntity>> CreateWordAsync(WordEntity entity, CancellationToken cancellationToken = default);
+    Task<Result<WordEntity>> UpdateWordAsync(WordEntity entity, CancellationToken cancellationToken = default);
+    Task<Result> DeleteWordAsync(string wordId, CancellationToken cancellationToken = default);
 }
 
 public class WordsRepository : Repository<WordEntity>, IWordsRepository
@@ -37,24 +38,24 @@ public class WordsRepository : Repository<WordEntity>, IWordsRepository
 
     public WordsRepository(CosmosClient cosmosClient, IOptions<CosmosDbOptions> options,
         ILogger<WordsRepository> logger)
-        : base(cosmosClient, options, logger, "words")
+        : base(cosmosClient, logger, options.Value.DatabaseId, "words")
     {
     }
 
     public IAsyncEnumerable<WordEntity> GetAllWordsAsync(CancellationToken cancellationToken = default)
         => ReadPartitionItems(null, cancellationToken);
 
-    public IAsyncEnumerable<WordEntity> SearchWords(int offset, int limit, string filter,
-        SearchWordsOrderBy orderBy, SortDirection direction, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<WordEntity> SearchWords(int offset, int limit, string filter, string orderBy,
+        bool isDescending, CancellationToken cancellationToken = default)
     {
         var orderByString = orderBy switch
         {
-            SearchWordsOrderBy.LastModifiedTime => "word._ts",
-            SearchWordsOrderBy.Length => "word.id.length",
+            "lastModifiedTime" => "word._ts",
+            "length" => "word.id.length",
             _ => "word.id"
         };
 
-        var directionString = direction == SortDirection.Ascending ? "ASC" : "DESC";
+        var directionString = isDescending ? "DESC" : "ASC";
 
         var queryDefinition = new QueryDefinition($"""
             SELECT * FROM word
@@ -75,22 +76,22 @@ public class WordsRepository : Repository<WordEntity>, IWordsRepository
     public Task<int> GetTotalWordCountAsync(CancellationToken cancellationToken) =>
         GetItemCountAsync(cancellationToken: cancellationToken);
 
-    public Task<WordEntity?> GetWordAsync(string id, CancellationToken cancellationToken) =>
+    public Task<Result<WordEntity>> GetWordAsync(string id, CancellationToken cancellationToken) =>
         ReadItemAsync(id, id, cancellationToken: cancellationToken);
 
-    public Task<WordEntity> CreateWordAsync(WordEntity entity, CancellationToken cancellationToken) =>
+    public Task<Result<WordEntity>> CreateWordAsync(WordEntity entity, CancellationToken cancellationToken) =>
         CreateItemAsync(entity, cancellationToken);
 
-    public Task<WordEntity> UpdateWordAsync(WordEntity entity, CancellationToken cancellationToken) =>
-        UpdateItemAsync(entity, cancellationToken);
+    public Task<Result<WordEntity>> UpdateWordAsync(WordEntity entity, CancellationToken cancellationToken) =>
+        ReplaceItemAsync(entity, cancellationToken);
 
-    public Task DeleteWordAsync(string wordId, CancellationToken cancellationToken) =>
+    public Task<Result> DeleteWordAsync(string wordId, CancellationToken cancellationToken) =>
         DeleteItemAsync(wordId, wordId, cancellationToken);
-}
-
-public enum SearchWordsOrderBy
-{
-    Id,
-    Length,
-    LastModifiedTime,
+    
+    public static readonly IEnumerable<string> ValidOrderByValues = new[]
+    {
+        "id",
+        "lastModifiedTime",
+        "length"
+    }; 
 }

@@ -28,6 +28,7 @@
     "@ngxs/logger-plugin": "^3.8.0",
     "@ngxs/router-plugin": "^3.8.0",
     "@ngxs/store": "^3.8.0",
+    "flag-icons": "^6.7.0",
     "howler": "^2.2.3",
     "rxjs": "~6.6.0",
     "tslib": "^2.5.0",
