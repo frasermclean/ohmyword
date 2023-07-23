@@ -42,6 +42,17 @@ jobs:
         with:
           node-version: "18"
 
+      # Cache node modules
+      - name: Cache node modules
+        uses: actions/cache@v3
+        env:
+          cache-name: npm
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ env.cache-name }}-
+
       # Install Angular CLI globally
       - name: Install Angular CLI
         run: npm install -g @angular/cli
@@ -83,12 +94,13 @@ jobs:
       # Cache packages
       - name: Cache packages
         uses: actions/cache@v3
-        id: cache
+        env:
+          cache-name: npm
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+          key: ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('**/packages.lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-nuget-
+            ${{ runner.os }}-${{ env.cache-name }}-
 
       # Restore packages
       - name: Restore packages
