@@ -95,7 +95,7 @@ jobs:
       - name: Cache packages
         uses: actions/cache@v3
         env:
-          cache-name: npm
+          cache-name: nuget
         with:
           path: ~/.nuget/packages
           key: ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('**/packages.lock.json') }}
