@@ -80,9 +80,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Install packages
+      # Cache NuGet packages
+      - uses: actions/cache@v3
+        id: cache
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      # Restore packages
       - name: Restore packages
-        run: dotnet restore --verbosity normal
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: dotnet restore --locked-mode
 
       # Build solution
       - name: Build solution
