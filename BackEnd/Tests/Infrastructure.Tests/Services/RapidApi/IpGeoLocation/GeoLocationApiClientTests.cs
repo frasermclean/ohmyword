@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using OhMyWord.Infrastructure.Services.RapidApi.IpGeoLocation;
+using OhMyWord.Infrastructure.Tests.Fixtures;
 using System.Net;
 
 namespace OhMyWord.Infrastructure.Tests.Services.RapidApi.IpGeoLocation;
@@ -11,7 +12,7 @@ public class GeoLocationApiClientTests : IClassFixture<RapidApiFixture>
 
     public GeoLocationApiClientTests(RapidApiFixture fixture)
     {
-        geoLocationApiClient = fixture.ServiceProvider.GetRequiredService<IGeoLocationApiClient>();
+        geoLocationApiClient = fixture.GeoLocationApiClient;
     }
 
     [Theory]
