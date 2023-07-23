@@ -6,6 +6,7 @@ using OhMyWord.Api.Hubs;
 using OhMyWord.Api.Services;
 using OhMyWord.Domain.DependencyInjection;
 using OhMyWord.Infrastructure.DependencyInjection;
+using Serilog;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -15,27 +16,54 @@ public static class Program
 {
     public static void Main(string[] args)
     {
-        var builder = WebApplication.CreateBuilder(args);
+        // create serilog bootstrap logger
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Debug()
+            .WriteTo.Console()
+            .CreateBootstrapLogger();
 
-        ConfigureAppConfiguration(builder);
+        try
+        {
+            Log.Information("Starting application");
 
-        // configure app host
-        builder.Host
-            .ConfigureServices(AddServices);
+            var builder = WebApplication.CreateBuilder(args);
 
-        // build the application and configure the pipeline
-        var app = builder.Build();
-        ConfigurePipeline(app);
+            ConfigureAppConfiguration(builder);
 
-        // run the application
-        app.Run();
+            // configure app host
+            builder.Host
+                .UseSerilog((context, provider, configuration) => configuration
+                    .ReadFrom.Configuration(context.Configuration)
+                    .ReadFrom.Services(provider))
+                .ConfigureServices(AddServices);
+
+            // build the application and configure the pipeline
+            var app = builder.Build();
+            ConfigurePipeline(app);
+
+            // run the application
+            app.Run();
+        }
+        catch (Exception ex)
+        {
+            Log.Fatal(ex, "Application terminated unexpectedly");
+        }
+        finally
+        {
+            Log.CloseAndFlush();
+        }
     }
 
     private static void ConfigureAppConfiguration(WebApplicationBuilder builder)
     {
         // azure app configuration
         var isAzureAppConfigEnabled = builder.Configuration.GetValue("AppConfig:Enabled", false);
-        if (!isAzureAppConfigEnabled) return;
+        if (!isAzureAppConfigEnabled)
+        {
+            return;
+        }
+
+        Log.Information("Configuring Azure App Configuration");
 
         builder.Configuration.AddAzureAppConfiguration(options =>
         {
