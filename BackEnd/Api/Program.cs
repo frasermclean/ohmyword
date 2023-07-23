@@ -15,67 +15,83 @@ public static class Program
 {
     public static void Main(string[] args)
     {
-        var appBuilder = WebApplication.CreateBuilder(args);
+        var builder = WebApplication.CreateBuilder(args);
 
-        // azure app configuration
-        var isAzureAppConfigEnabled = appBuilder.Configuration.GetValue("AppConfig:Enabled", true);
-        if (isAzureAppConfigEnabled)
-            appBuilder.Configuration.AddAzureAppConfiguration(options =>
-            {
-                var endpoint = appBuilder.Configuration.GetValue<string>("AppConfig:Endpoint") ??
-                               throw new InvalidOperationException("Application configuration endpoint is not set.");
-                var appEnv = appBuilder.Configuration.GetValue<string>("AppConfig:Environment", "dev");
-                options.Connect(new Uri(endpoint), new DefaultAzureCredential())
-                    .Select(KeyFilter.Any)
-                    .Select(KeyFilter.Any, appEnv)
-                    .ConfigureKeyVault(vaultOptions => vaultOptions.SetCredential(new DefaultAzureCredential()))
-                    .UseFeatureFlags(flagOptions =>
-                    {
-                        flagOptions.Select(KeyFilter.Any)
-                            .Select(KeyFilter.Any, appEnv);
-                        flagOptions.CacheExpirationInterval = TimeSpan.FromMinutes(5);
-                    });
-            });
+        ConfigureAppConfiguration(builder);
 
         // configure app host
-        appBuilder.Host.ConfigureServices((context, services) =>
+        builder.Host
+            .ConfigureServices(AddServices);
+
+        // build the application and configure the pipeline
+        var app = builder.Build();
+        ConfigurePipeline(app);
+
+        // run the application
+        app.Run();
+    }
+
+    private static void ConfigureAppConfiguration(WebApplicationBuilder builder)
+    {
+        // azure app configuration
+        var isAzureAppConfigEnabled = builder.Configuration.GetValue("AppConfig:Enabled", false);
+        if (!isAzureAppConfigEnabled) return;
+
+        builder.Configuration.AddAzureAppConfiguration(options =>
         {
-            // microsoft identity authentication services
-            services.AddMicrosoftIdentityAuthentication(context);
-
-            // feature management
-            services.AddFeatureManagement();
-
-            // fast endpoints
-            services.AddFastEndpoints();
-
-            // signalR services
-            services.AddSignalRServices(context);
-
-            // game services
-            services.AddHostedService<GameBackgroundService>();
-
-            // local project services
-            services.AddDomainServices(context.Configuration)
-                .AddCosmosDbRepositories(context)
-                .AddTableRepositories(context.Configuration)
-                .AddMessagingServices(context)
-                .AddRapidApiServices()
-                .AddGraphApiClient(context.Configuration);
-
-            // development services
-            if (context.HostingEnvironment.IsDevelopment())
-            {
-                services.AddCors();
-            }
-
-            // health checks
-            services.AddApplicationHealthChecks(context.Configuration);
+            var endpoint = builder.Configuration.GetValue<string>("AppConfig:Endpoint") ??
+                           throw new InvalidOperationException("Application configuration endpoint is not set.");
+            var appEnv = builder.Configuration.GetValue<string>("AppConfig:Environment", "dev");
+            options.Connect(new Uri(endpoint), new DefaultAzureCredential())
+                .Select(KeyFilter.Any)
+                .Select(KeyFilter.Any, appEnv)
+                .ConfigureKeyVault(vaultOptions => vaultOptions.SetCredential(new DefaultAzureCredential()))
+                .UseFeatureFlags(flagOptions =>
+                {
+                    flagOptions.Select(KeyFilter.Any)
+                        .Select(KeyFilter.Any, appEnv);
+                    flagOptions.CacheExpirationInterval = TimeSpan.FromMinutes(5);
+                });
         });
+    }
 
-        // build the application
-        var app = appBuilder.Build();
+    private static void AddServices(HostBuilderContext context, IServiceCollection collection)
+    {
+        // microsoft identity authentication services
+        collection.AddMicrosoftIdentityAuthentication(context);
 
+        // feature management
+        collection.AddFeatureManagement();
+
+        // fast endpoints
+        collection.AddFastEndpoints();
+
+        // signalR services
+        collection.AddSignalRServices(context);
+
+        // game services
+        collection.AddHostedService<GameBackgroundService>();
+
+        // local project services
+        collection.AddDomainServices(context.Configuration)
+            .AddCosmosDbRepositories(context)
+            .AddTableRepositories(context.Configuration)
+            .AddMessagingServices(context)
+            .AddRapidApiServices()
+            .AddGraphApiClient(context.Configuration);
+
+        // development services
+        if (context.HostingEnvironment.IsDevelopment())
+        {
+            collection.AddCors();
+        }
+
+        // health checks
+        collection.AddApplicationHealthChecks(context.Configuration);
+    }
+
+    private static void ConfigurePipeline(WebApplication app)
+    {
         app.UseAuthorization();
 
         // development pipeline
@@ -100,8 +116,5 @@ public static class Program
 
         app.MapHub<GameHub>("/hub");
         app.UseHealthChecks("/health");
-
-        // run the application
-        app.Run();
     }
 }
