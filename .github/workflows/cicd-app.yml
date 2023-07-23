@@ -92,7 +92,6 @@ jobs:
 
       # Restore packages
       - name: Restore packages
-        if: steps.cache.outputs.cache-hit != 'true'
         run: dotnet restore --locked-mode
 
       # Build solution
