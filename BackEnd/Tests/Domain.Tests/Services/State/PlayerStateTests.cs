@@ -2,7 +2,7 @@
 using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Services.State;
 
-namespace Domain.Tests.Services.State;
+namespace OhMyWord.Domain.Tests.Services.State;
 
 public class PlayerStateTests
 {

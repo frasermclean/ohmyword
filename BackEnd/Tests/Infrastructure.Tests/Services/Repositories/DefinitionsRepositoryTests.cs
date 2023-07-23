@@ -1,8 +1,8 @@
-﻿using Infrastructure.Tests.Fixtures;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using OhMyWord.Infrastructure.Services.Repositories;
+using OhMyWord.Infrastructure.Tests.Fixtures;
 
-namespace Infrastructure.Tests.Services.Repositories;
+namespace OhMyWord.Infrastructure.Tests.Services.Repositories;
 
 [Collection("CosmosDbEmulator")]
 [Trait("Category", "Integration")]

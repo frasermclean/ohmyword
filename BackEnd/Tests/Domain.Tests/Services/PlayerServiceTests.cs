@@ -7,7 +7,7 @@ using OhMyWord.Infrastructure.Services.Repositories;
 using System.Net;
 using User = Microsoft.Graph.Models.User;
 
-namespace Domain.Tests.Services;
+namespace OhMyWord.Domain.Tests.Services;
 
 [Trait("Category", "Unit")]
 public class PlayerServiceTests

@@ -2,11 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
+    <RootNamespace>OhMyWord.Infrastructure.Tests</RootNamespace>
+    <AssemblyName>OhMyWord.Infrastructure.Tests</AssemblyName>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
-    <IsTestProject>true</IsTestProject>
-    <RootNamespace>Infrastructure.Tests</RootNamespace>
+    <IsTestProject>true</IsTestProject>    
     <UserSecretsId>9bd63fa5-8a79-4c89-ba9b-88b02470f3d5</UserSecretsId>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>

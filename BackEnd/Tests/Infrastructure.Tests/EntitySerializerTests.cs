@@ -1,8 +1,7 @@
-using Infrastructure.Tests.Models;
-using OhMyWord.Infrastructure;
 using OhMyWord.Infrastructure.Models.Entities;
+using OhMyWord.Infrastructure.Tests.Models;
 
-namespace Infrastructure.Tests;
+namespace OhMyWord.Infrastructure.Tests;
 
 [Trait("Category", "Unit")]
 public class EntitySerializerTests : IClassFixture<DataFixture>

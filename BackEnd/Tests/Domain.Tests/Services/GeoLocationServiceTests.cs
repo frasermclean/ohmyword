@@ -6,7 +6,7 @@ using OhMyWord.Infrastructure.Services.Repositories;
 using System.Net;
 using System.Net.Sockets;
 
-namespace Domain.Tests.Services;
+namespace OhMyWord.Domain.Tests.Services;
 
 [Trait("Category", "Unit")]
 public class GeoLocationServiceTests

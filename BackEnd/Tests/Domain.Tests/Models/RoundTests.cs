@@ -2,7 +2,7 @@
 using OhMyWord.Domain.Options;
 using OhMyWord.Infrastructure.Models.Entities;
 
-namespace Domain.Tests.Models;
+namespace OhMyWord.Domain.Tests.Models;
 
 [Trait("Category", "Unit")]
 public class RoundTests

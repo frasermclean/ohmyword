@@ -4,7 +4,7 @@ using Microsoft.Extensions.Hosting;
 using OhMyWord.Infrastructure.DependencyInjection;
 using OhMyWord.Infrastructure.Services.GraphApi;
 
-namespace Infrastructure.Tests.Services.GraphApi;
+namespace OhMyWord.Infrastructure.Tests.Services.GraphApi;
 
 [Trait("Category", "Integration")]
 public class GraphApiClientTests

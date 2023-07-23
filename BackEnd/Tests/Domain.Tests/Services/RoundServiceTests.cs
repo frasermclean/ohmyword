@@ -4,7 +4,7 @@ using OhMyWord.Domain.Services.State;
 using OhMyWord.Infrastructure.Models.Entities;
 using OhMyWord.Infrastructure.Services.Repositories;
 
-namespace Domain.Tests.Services;
+namespace OhMyWord.Domain.Tests.Services;
 
 public class RoundServiceTests : IClassFixture<TestDataFixture>
 {

@@ -1,6 +1,6 @@
 using OhMyWord.Infrastructure.Models.Entities;
 
-namespace Infrastructure.Tests.Models;
+namespace OhMyWord.Infrastructure.Tests.Models;
 
 [Trait("Category", "Unit")]
 public class ModelTests : IClassFixture<DataFixture>

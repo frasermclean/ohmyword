@@ -1567,27 +1567,27 @@
           "xunit.extensibility.core": "[2.5.0]"
         }
       },
-      "api": {
+      "OhMyWord.Api": {
         "type": "Project",
         "dependencies": {
           "AspNetCore.HealthChecks.AzureStorage": "[6.1.2, )",
           "AspNetCore.HealthChecks.CosmosDb": "[6.1.0, )",
-          "Domain": "[1.0.0, )",
           "FastEndpoints": "[5.14.0, )",
           "Microsoft.Azure.AppConfiguration.AspNetCore": "[6.0.1, )",
           "Microsoft.Azure.SignalR": "[1.21.4, )",
-          "Microsoft.Identity.Web": "[2.13.0, )"
+          "Microsoft.Identity.Web": "[2.13.0, )",
+          "OhMyWord.Domain": "[1.0.0, )"
         }
       },
-      "domain": {
+      "OhMyWord.Domain": {
         "type": "Project",
         "dependencies": {
           "FastEndpoints": "[5.14.0, )",
-          "Infrastructure": "[1.0.0, )",
-          "Microsoft.FeatureManagement.AspNetCore": "[2.6.1, )"
+          "Microsoft.FeatureManagement.AspNetCore": "[2.6.1, )",
+          "OhMyWord.Infrastructure": "[1.0.0, )"
         }
       },
-      "infrastructure": {
+      "OhMyWord.Infrastructure": {
         "type": "Project",
         "dependencies": {
           "Azure.Data.Tables": "[12.8.0, )",

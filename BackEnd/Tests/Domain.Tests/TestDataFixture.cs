@@ -4,12 +4,12 @@ using OhMyWord.Domain.Options;
 using OhMyWord.Infrastructure.Models.Entities;
 using System.Net;
 
-namespace Domain.Tests;
+namespace OhMyWord.Domain.Tests;
 
 public class TestDataFixture
 {
     public IOptions<RoundOptions> CreateOptions() =>
-        Options.Create(new RoundOptions { LetterHintDelay = 3, PostRoundDelay = 5, GuessLimit = 3 });
+        Microsoft.Extensions.Options.Options.Create(new RoundOptions { LetterHintDelay = 3, PostRoundDelay = 5, GuessLimit = 3 });
 
     public Word CreateWord() => new()
     {

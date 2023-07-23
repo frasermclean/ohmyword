@@ -4,7 +4,7 @@ using OhMyWord.Domain.Services;
 using OhMyWord.Domain.Services.State;
 using OhMyWord.Infrastructure.Models.Entities;
 
-namespace Domain.Tests.Services.State;
+namespace OhMyWord.Domain.Tests.Services.State;
 
 public class RoundStateTests
 {

@@ -1,9 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
-    <AzureFunctionsVersion>V4</AzureFunctionsVersion>
-    <OutputType>Exe</OutputType>
     <RootNamespace>OhMyWord.Functions</RootNamespace>
+    <AssemblyName>OhMyWord.Functions</AssemblyName>
+    <AzureFunctionsVersion>V4</AzureFunctionsVersion>
+    <OutputType>Exe</OutputType>    
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>

@@ -1312,15 +1312,15 @@
         "resolved": "2.0.0",
         "contentHash": "GbetWNcPIaXvWtanHlBqlEp2KflFrsJf8RBNXmI8Yyeft9CSGxNrcsoKWEiEzyrn7gGVQ25ZC6ep9UfWPR0Otw=="
       },
-      "domain": {
+      "OhMyWord.Domain": {
         "type": "Project",
         "dependencies": {
           "FastEndpoints": "[5.14.0, )",
-          "Infrastructure": "[1.0.0, )",
-          "Microsoft.FeatureManagement.AspNetCore": "[2.6.1, )"
+          "Microsoft.FeatureManagement.AspNetCore": "[2.6.1, )",
+          "OhMyWord.Infrastructure": "[1.0.0, )"
         }
       },
-      "infrastructure": {
+      "OhMyWord.Infrastructure": {
         "type": "Project",
         "dependencies": {
           "Azure.Data.Tables": "[12.8.0, )",

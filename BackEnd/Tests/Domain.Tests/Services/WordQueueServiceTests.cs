@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Services;
 
-namespace Domain.Tests.Services;
+namespace OhMyWord.Domain.Tests.Services;
 
 public class WordQueueServiceTests
 {

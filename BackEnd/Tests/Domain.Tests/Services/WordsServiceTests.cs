@@ -5,7 +5,7 @@ using OhMyWord.Infrastructure.Errors;
 using OhMyWord.Infrastructure.Models.Entities;
 using OhMyWord.Infrastructure.Services.Repositories;
 
-namespace Domain.Tests.Services;
+namespace OhMyWord.Domain.Tests.Services;
 
 [Trait("Category", "Unit")]
 public class WordsServiceTests

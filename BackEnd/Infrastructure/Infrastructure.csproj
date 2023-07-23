@@ -2,9 +2,10 @@
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
+    <RootNamespace>OhMyWord.Infrastructure</RootNamespace>
+    <AssemblyName>OhMyWord.Infrastructure</AssemblyName>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <RootNamespace>OhMyWord.Infrastructure</RootNamespace>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
 
@@ -26,7 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="Infrastructure.Tests" />    
+    <InternalsVisibleTo Include="$(AssemblyName).Tests" />
   </ItemGroup>
 
 </Project>

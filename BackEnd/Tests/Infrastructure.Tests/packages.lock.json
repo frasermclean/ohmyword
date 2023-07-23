@@ -1151,7 +1151,7 @@
           "xunit.extensibility.core": "[2.5.0]"
         }
       },
-      "infrastructure": {
+      "OhMyWord.Infrastructure": {
         "type": "Project",
         "dependencies": {
           "Azure.Data.Tables": "[12.8.0, )",

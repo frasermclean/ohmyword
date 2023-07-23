@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using OhMyWord.Infrastructure.DependencyInjection;
 
-namespace Infrastructure.Tests.Services.RapidApi;
+namespace OhMyWord.Infrastructure.Tests.Services.RapidApi;
 
 public class RapidApiFixture
 {

@@ -1170,7 +1170,7 @@
         "resolved": "2.0.0",
         "contentHash": "GbetWNcPIaXvWtanHlBqlEp2KflFrsJf8RBNXmI8Yyeft9CSGxNrcsoKWEiEzyrn7gGVQ25ZC6ep9UfWPR0Otw=="
       },
-      "infrastructure": {
+      "OhMyWord.Infrastructure": {
         "type": "Project",
         "dependencies": {
           "Azure.Data.Tables": "[12.8.0, )",

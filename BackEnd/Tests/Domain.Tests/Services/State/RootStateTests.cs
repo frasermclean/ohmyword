@@ -2,7 +2,7 @@
 using OhMyWord.Domain.Services;
 using OhMyWord.Domain.Services.State;
 
-namespace Domain.Tests.Services.State;
+namespace OhMyWord.Domain.Tests.Services.State;
 
 [Trait("Category", "Unit")]
 public class RootStateTests
