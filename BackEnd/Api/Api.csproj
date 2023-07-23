@@ -4,6 +4,7 @@
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <RootNamespace>OhMyWord.Api</RootNamespace>
     <UserSecretsId>e6275c8e-6c1b-451d-b5ca-3ea212e1684f</UserSecretsId>
   </PropertyGroup>
