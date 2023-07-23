@@ -26,7 +26,6 @@ public sealed class CosmosDbEmulatorFixture : IDisposable, IAsyncLifetime
             .WithPortBinding(ContainerPort)
             .WithEnvironment("AZURE_COSMOS_EMULATOR_PARTITION_COUNT", PartitionCount.ToString())
             .WithEnvironment("AZURE_COSMOS_EMULATOR_IP_ADDRESS_OVERRIDE", IpAddress)
-            .WithOutputConsumer(Consume.RedirectStdoutAndStderrToStream(new MemoryStream(), new MemoryStream()))
             .WithWaitStrategy(Wait.ForUnixContainer()
                 .UntilPortIsAvailable(ContainerPort)
                 .UntilMessageIsLogged($"Started {PartitionCount + 1}/{PartitionCount + 1} partitions"))
