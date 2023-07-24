@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using OhMyWord.Infrastructure.Services.RapidApi.IpGeoLocation;
+﻿using OhMyWord.Infrastructure.Services.RapidApi.IpGeoLocation;
 using OhMyWord.Infrastructure.Tests.Fixtures;
 using System.Net;
 

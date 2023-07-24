@@ -2,12 +2,15 @@
 using Microsoft.Extensions.DependencyInjection;
 using OhMyWord.Infrastructure.DependencyInjection;
 using OhMyWord.Infrastructure.Services.RapidApi.IpGeoLocation;
+using OhMyWord.Infrastructure.Services.RapidApi.WordsApi;
 
 namespace OhMyWord.Infrastructure.Tests.Fixtures;
 
 public class RapidApiFixture
 {
-    public IGeoLocationApiClient GeoLocationApiClient { get; }    
+    public IGeoLocationApiClient GeoLocationApiClient { get; }
+    
+    public IWordsApiClient WordsApiClient { get; }
 
     public RapidApiFixture()
     {
@@ -23,5 +26,6 @@ public class RapidApiFixture
             .BuildServiceProvider();
         
         GeoLocationApiClient = serviceProvider.GetRequiredService<IGeoLocationApiClient>();
+        WordsApiClient = serviceProvider.GetRequiredService<IWordsApiClient>();
     }
 }
