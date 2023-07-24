@@ -17,6 +17,7 @@ public class GraphApiClientTests
             .UseEnvironment("Development")
             .ConfigureAppConfiguration(builder =>
             {
+                builder.AddEnvironmentVariables("OhMyWord_");
                 builder.AddJsonFile("appsettings.json", false);
                 builder.AddUserSecrets<GraphApiClientTests>();
             })

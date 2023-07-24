@@ -82,6 +82,8 @@ jobs:
   build-backend-app:
     name: Build backend application
     runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
     env:
       BUILD_CONFIGURATION: Release
       PUBLISH_OS: linux
@@ -108,16 +110,14 @@ jobs:
 
       # Build solution
       - name: Build solution
-        run: dotnet build --configuration $BUILD_CONFIGURATION --no-restore
+        run: dotnet build --no-restore --configuration $BUILD_CONFIGURATION
 
-      # Run unit tests
-      - name: Run unit tests
-        run: dotnet test --configuration $BUILD_CONFIGURATION --filter Category=Unit --no-build
-
-      # Run integration tests
-      - name: Run integration tests
-        if: github.ref_name == 'main'
-        run: dotnet test --configuration $BUILD_CONFIGURATION --filter FullyQualifiedName~Infrastructure.Tests.Services.Repositories --no-build
+      # Run tests
+      - name: Run tests
+        run: dotnet test --no-build --configuration $BUILD_CONFIGURATION
+        env:
+          OHMYWORD_RAPIDAPI__APIKEY: ${{ secrets.RAPID_API_KEY }}
+          OHMYWORD_GRAPHAPICLIENT__CLIENTSECRET: ${{ secrets.GRAPH_API_CLIENT_SECRET }}
 
       # Publish application
       - name: Publish application
