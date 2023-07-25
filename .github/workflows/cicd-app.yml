@@ -116,8 +116,8 @@ jobs:
       - name: Run tests
         run: dotnet test --no-build --configuration $BUILD_CONFIGURATION
         env:
-          OHMYWORD_RAPIDAPI__APIKEY: ${{ secrets.RAPID_API_KEY }}
-          OHMYWORD_GRAPHAPICLIENT__CLIENTSECRET: ${{ secrets.GRAPH_API_CLIENT_SECRET }}
+          OhMyWord_RapidApi__ApiKey: ${{ secrets.RAPID_API_KEY }}
+          OhMyWord_GraphApiClient__ClientSecret: ${{ secrets.GRAPH_API_CLIENT_SECRET }}
 
       # Publish application
       - name: Publish application

@@ -1,33 +1,16 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using OhMyWord.Infrastructure.DependencyInjection;
-using OhMyWord.Infrastructure.Services.GraphApi;
+﻿using OhMyWord.Infrastructure.Services.GraphApi;
+using OhMyWord.Infrastructure.Tests.Fixtures;
 
 namespace OhMyWord.Infrastructure.Tests.Services.GraphApi;
 
 [Trait("Category", "Integration")]
-public class GraphApiClientTests
+public class GraphApiClientTests : IClassFixture<GraphApiClientFixture>
 {
     private readonly IGraphApiClient graphApiClient;
 
-    public GraphApiClientTests()
+    public GraphApiClientTests(GraphApiClientFixture fixture)
     {
-        var host = new HostBuilder()
-            .UseEnvironment("Development")
-            .ConfigureAppConfiguration(builder =>
-            {
-                builder.AddEnvironmentVariables("OhMyWord_");
-                builder.AddJsonFile("appsettings.json", false);
-                builder.AddUserSecrets<GraphApiClientTests>();
-            })
-            .ConfigureServices((context, collection) =>
-            {
-                collection.AddGraphApiClient(context.Configuration);
-            })
-            .Build();
-
-        graphApiClient = host.Services.GetRequiredService<IGraphApiClient>();
+        graphApiClient = fixture.GraphApiClient;        
     }
 
     [Theory]

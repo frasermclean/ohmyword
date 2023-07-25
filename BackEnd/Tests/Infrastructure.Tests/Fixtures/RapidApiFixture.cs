@@ -9,13 +9,14 @@ namespace OhMyWord.Infrastructure.Tests.Fixtures;
 public class RapidApiFixture
 {
     public IGeoLocationApiClient GeoLocationApiClient { get; }
-    
+
     public IWordsApiClient WordsApiClient { get; }
 
     public RapidApiFixture()
     {
         var configuration = new ConfigurationBuilder()
-            .AddJsonFile("appsettings.json", false)            
+            .AddEnvironmentVariables("OhMyWord_")
+            .AddJsonFile("appsettings.json", false)
             .AddUserSecrets(typeof(RapidApiFixture).Assembly)
             .Build();
 
@@ -24,7 +25,7 @@ public class RapidApiFixture
             .AddSingleton<IConfiguration>(configuration)
             .AddRapidApiServices()
             .BuildServiceProvider();
-        
+
         GeoLocationApiClient = serviceProvider.GetRequiredService<IGeoLocationApiClient>();
         WordsApiClient = serviceProvider.GetRequiredService<IWordsApiClient>();
     }
