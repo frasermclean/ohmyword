@@ -14,6 +14,9 @@ public class ApiWebFactory : WebApplicationFactory<Program>
         // remove logging
         builder.ConfigureLogging(loggingBuilder => loggingBuilder.ClearProviders());
 
+        // disable authorization for testing
+        builder.UseSetting("FeatureManagement:Authorization", "false");
+
         builder.ConfigureTestServices(collection =>
         {
             collection.RemoveAll(typeof(CosmosClient));
