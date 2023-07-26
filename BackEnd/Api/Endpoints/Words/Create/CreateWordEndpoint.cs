@@ -5,7 +5,7 @@ using OhMyWord.Infrastructure.Errors;
 
 namespace OhMyWord.Api.Endpoints.Words.Create;
 
-public class CreateWordEndpoint : Endpoint<CreateWordRequest, Word>
+public sealed class CreateWordEndpoint : Endpoint<CreateWordRequest, Word>
 {
     private readonly IWordsService wordsService;
 
@@ -26,7 +26,7 @@ public class CreateWordEndpoint : Endpoint<CreateWordRequest, Word>
 
         if (result.HasError<ItemConflictError>())
         {
-            AddError(r => r.Id, $"A word with ID: {request.Id} already exists.");            
+            AddError(r => r.Id, $"A word with ID: {request.Id} already exists.");
             await SendErrorsAsync(StatusCodes.Status409Conflict, cancellationToken);
             return;
         }

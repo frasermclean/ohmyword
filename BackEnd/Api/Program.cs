@@ -11,7 +11,7 @@ using System.Text.Json.Serialization;
 
 namespace OhMyWord.Api;
 
-public static class Program
+public class Program
 {
     public static void Main(string[] args)
     {
@@ -109,7 +109,14 @@ public static class Program
             config.Endpoints.RoutePrefix = "api";
             config.Endpoints.Configurator = endpoint =>
             {
-                endpoint.Roles("admin");
+                var isAuthorizationEnabled = app.Configuration.GetValue("FeatureManagement:Authorization", true);
+                if (isAuthorizationEnabled)
+                {
+                    endpoint.Roles("admin");
+                    return;
+                }
+
+                endpoint.AllowAnonymous();
             };
             config.Serializer.Options.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
         });
