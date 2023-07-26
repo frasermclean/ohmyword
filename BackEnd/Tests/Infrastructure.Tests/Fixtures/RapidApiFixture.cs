@@ -15,9 +15,9 @@ public class RapidApiFixture
     public RapidApiFixture()
     {
         var configuration = new ConfigurationBuilder()
-            .AddEnvironmentVariables("OhMyWord_")
             .AddJsonFile("appsettings.json", false)
-            .AddUserSecrets(typeof(RapidApiFixture).Assembly)
+            .AddUserSecrets<RapidApiFixture>()
+            .AddEnvironmentVariables("OhMyWord_")
             .Build();
 
         var serviceProvider = new ServiceCollection()

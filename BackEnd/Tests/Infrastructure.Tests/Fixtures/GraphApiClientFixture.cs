@@ -15,18 +15,18 @@ public sealed class GraphApiClientFixture
             .UseEnvironment("Development")
             .ConfigureAppConfiguration(builder =>
             {
-                builder.AddEnvironmentVariables("OhMyWord_");
                 builder.AddJsonFile("appsettings.json", false);
                 builder.AddUserSecrets<GraphApiClientFixture>();
+                builder.AddEnvironmentVariables("OhMyWord_");
             })
             .ConfigureServices((context, collection) =>
             {
                 collection.AddGraphApiClient(context.Configuration);
             })
             .Build();
-        
+
         GraphApiClient = host.Services.GetRequiredService<IGraphApiClient>();
     }
-    
+
     public IGraphApiClient GraphApiClient { get; }
 }
