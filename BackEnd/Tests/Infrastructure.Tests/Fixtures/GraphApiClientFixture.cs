@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OhMyWord.Infrastructure.DependencyInjection;
 using OhMyWord.Infrastructure.Services.GraphApi;
-using OhMyWord.Infrastructure.Tests.Services.GraphApi;
 
 namespace OhMyWord.Infrastructure.Tests.Fixtures;
 

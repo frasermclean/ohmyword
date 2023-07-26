@@ -1,5 +1,4 @@
-﻿using OhMyWord.Infrastructure.Models.WordsApi;
-using OhMyWord.Infrastructure.Services.RapidApi.WordsApi;
+﻿using OhMyWord.Infrastructure.Services.RapidApi.WordsApi;
 using OhMyWord.Infrastructure.Tests.Fixtures;
 
 namespace OhMyWord.Infrastructure.Tests.Services.RapidApi.WordsApi;
