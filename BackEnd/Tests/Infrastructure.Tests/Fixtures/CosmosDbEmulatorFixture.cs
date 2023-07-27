@@ -13,6 +13,13 @@ public sealed class CosmosDbEmulatorFixture : IDisposable, IAsyncLifetime
     private readonly IContainer container;
     private readonly Lazy<CosmosClient> cosmosClient;
 
+    private bool isDisposed;
+
+    private static readonly (string ContainerId, string PartitionKeyPath)[] ContainerDefinitions =
+    {
+        ("words", "/id"), ("definitions", "/wordId")
+    };
+
     private const string DatabaseId = "test-db";
     private const string IpAddress = "127.0.0.1";
     private const int ContainerPort = 8081;
@@ -46,12 +53,13 @@ public sealed class CosmosDbEmulatorFixture : IDisposable, IAsyncLifetime
                 .WithConnectionModeGateway()
                 .Build();
         });
+
+        Options = Microsoft.Extensions.Options.Options.Create(new CosmosDbOptions { DatabaseId = DatabaseId });
     }
 
     public CosmosClient CosmosClient => cosmosClient.Value;
 
-    public IOptions<CosmosDbOptions> Options =>
-        Microsoft.Extensions.Options.Options.Create(new CosmosDbOptions { DatabaseId = DatabaseId, });
+    public IOptions<CosmosDbOptions> Options { get; }
 
     public async Task InitializeAsync()
     {
@@ -62,20 +70,26 @@ public sealed class CosmosDbEmulatorFixture : IDisposable, IAsyncLifetime
         var database = await cosmosClient.Value.CreateDatabaseAsync(DatabaseId);
 
         // create containers
-        await database.Database.CreateContainerAsync("words", "/id");
-        await database.Database.CreateContainerAsync("definitions", "/wordId");
+        foreach (var definition in ContainerDefinitions)
+        {
+            await database.Database.CreateContainerAsync(definition.ContainerId, definition.PartitionKeyPath);
+        }
     }
 
     public void Dispose()
     {
-        if (cosmosClient.IsValueCreated)
+        if (isDisposed || !cosmosClient.IsValueCreated)
         {
-            cosmosClient.Value.Dispose();
+            return;
         }
+
+        cosmosClient.Value.Dispose();
+        isDisposed = true;
     }
 
     public async Task DisposeAsync()
     {
         await container.DisposeAsync();
+        Dispose();
     }
 }
