@@ -1,4 +1,5 @@
 ﻿using OhMyWord.Api.Endpoints.Words.Create;
+using OhMyWord.Api.Tests.Data;
 using OhMyWord.Api.Tests.Fixtures;
 using OhMyWord.Api.Tests.Priority;
 using OhMyWord.Domain.Models;
@@ -20,19 +21,13 @@ public class CreateWordEndpointTests
     }
 
     [Theory]
-    [InlineData("house", PartOfSpeech.Noun, "Building for human habitation")]
-    [InlineData("jump", PartOfSpeech.Verb, "To propel oneself upward")]
-    [InlineData("happy", PartOfSpeech.Adjective, "Feeling or showing joy or pleasure")]
-    [InlineData("quickly", PartOfSpeech.Adverb, "At a fast pace")]
     [TestPriority(1)]
+    [ClassData(typeof(WordsData))]
     public async Task CreateWord_WithValidWord_Should_ReturnCreated(string wordId, PartOfSpeech partOfSpeech,
         string definition)
     {
         // arrange
-        var request = new CreateWordRequest
-        {
-            Id = wordId, Definitions = new[] { new Definition { PartOfSpeech = partOfSpeech, Value = definition } }
-        };
+        var request = CreateRequest(wordId, partOfSpeech, definition);
 
         // act
         var (message, word) = await httpClient.POSTAsync<CreateWordEndpoint, CreateWordRequest, Word>(request);
@@ -46,22 +41,23 @@ public class CreateWordEndpointTests
         word.Definitions.First().Value.Should().Be(definition);
     }
 
-    [Fact]
+    [Theory]
     [TestPriority(2)]
-    public async Task CreateWord_WithExistingWord_Should_Return_Conflict()
+    [ClassData(typeof(WordsData))]
+    public async Task CreateWord_WithExistingWord_Should_Return_Conflict(string wordId, PartOfSpeech partOfSpeech,
+        string definition)
     {
         // arrange
-        var request = new CreateWordRequest
-        {
-            Id = "house",
-            Definitions = new[] { new Definition { PartOfSpeech = PartOfSpeech.Noun, Value = "A building" } }
-        };
+        var request = CreateRequest(wordId, partOfSpeech, definition);
 
         // act
-        var message = await httpClient.POSTAsync<CreateWordEndpoint, CreateWordRequest>(request);
+        var (message, errorResponse) =
+            await httpClient.POSTAsync<CreateWordEndpoint, CreateWordRequest, ErrorResponse>(request);
 
         // assert
         message.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        Assert.NotNull(errorResponse);
+        errorResponse.Errors.Should().NotBeEmpty();
     }
 
     [Fact]
@@ -79,4 +75,10 @@ public class CreateWordEndpointTests
         Assert.NotNull(errorResponse);
         errorResponse.Errors.Should().NotBeEmpty();
     }
+
+    private static CreateWordRequest CreateRequest(string wordId, PartOfSpeech partOfSpeech, string definition) =>
+        new()
+        {
+            Id = wordId, Definitions = new[] { new Definition { PartOfSpeech = partOfSpeech, Value = definition } }
+        };
 }
