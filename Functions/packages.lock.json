@@ -46,11 +46,11 @@
       },
       "Microsoft.Azure.Functions.Worker.Sdk": {
         "type": "Direct",
-        "requested": "[1.12.0, )",
-        "resolved": "1.12.0",
-        "contentHash": "tQswTLdH/LEbbCn5RWUiyzI3X6FxcxKpKGhdN+JDuBRsu1xN181X/LKgDI1H3btcSSxPd3GRW/C/TyFSxWzu1w==",
+        "requested": "[1.13.0, )",
+        "resolved": "1.13.0",
+        "contentHash": "WSNfIdKtE43igtxWhcePBkhGzrnknQ88ST0YiyYUm1Biz/+Rw+x5wQSxJDMGzBYi8AyfbGW+M6y2poJvmLu7HA==",
         "dependencies": {
-          "Microsoft.Azure.Functions.Worker.Sdk.Analyzers": "1.1.2",
+          "Microsoft.Azure.Functions.Worker.Sdk.Analyzers": "1.2.0",
           "Microsoft.Azure.Functions.Worker.Sdk.Generators": "1.1.0-preview4"
         }
       },
@@ -244,8 +244,8 @@
       },
       "Microsoft.Azure.Functions.Worker.Sdk.Analyzers": {
         "type": "Transitive",
-        "resolved": "1.1.2",
-        "contentHash": "e/7MOc5Tf40eiJgOBkg3O2LVtZZlqbh07Mldf/QKtNJ3JkFHHZNq8sMy5M/Ji6JOCOemSNpOwVtfSue7rJTp6Q=="
+        "resolved": "1.2.0",
+        "contentHash": "0a4q6Sfo1SFawWHRu5pYIyujPxuizKWfllU2U49pm/g3Dj+W/NnfjqMipVO3coES5BhOPoDUivlTsai7oAGKrA=="
       },
       "Microsoft.Azure.Functions.Worker.Sdk.Generators": {
         "type": "Transitive",
@@ -623,8 +623,8 @@
       },
       "Microsoft.Graph": {
         "type": "Transitive",
-        "resolved": "5.19.0",
-        "contentHash": "z1oldlPvbJ0hII5kUgCJlTwbTgXeNNACIwcWnnAsAZXhi74eorRhdeBeNxzM4Mazn6TAfaGNAX6UTA/gm3D+3Q==",
+        "resolved": "5.20.0",
+        "contentHash": "PcC1nucAIxy8toakcry2pU4HFSY1U8DNWZhih+gZKbIPNuj8ohH0PbX7GTeGFnduhoTo+x51xlXlhYv45b9mJg==",
         "dependencies": {
           "Microsoft.Graph.Core": "3.0.9"
         }
@@ -1359,7 +1359,7 @@
           "Microsoft.Extensions.Options": "[7.0.1, )",
           "Microsoft.Extensions.Options.ConfigurationExtensions": "[7.0.0, )",
           "Microsoft.Extensions.Options.DataAnnotations": "[7.0.0, )",
-          "Microsoft.Graph": "[5.19.0, )",
+          "Microsoft.Graph": "[5.20.0, )",
           "System.Linq.Async": "[6.0.1, )"
         }
       }

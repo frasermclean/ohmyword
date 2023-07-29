@@ -580,8 +580,8 @@
       },
       "Microsoft.Graph": {
         "type": "Transitive",
-        "resolved": "5.19.0",
-        "contentHash": "z1oldlPvbJ0hII5kUgCJlTwbTgXeNNACIwcWnnAsAZXhi74eorRhdeBeNxzM4Mazn6TAfaGNAX6UTA/gm3D+3Q==",
+        "resolved": "5.20.0",
+        "contentHash": "PcC1nucAIxy8toakcry2pU4HFSY1U8DNWZhih+gZKbIPNuj8ohH0PbX7GTeGFnduhoTo+x51xlXlhYv45b9mJg==",
         "dependencies": {
           "Microsoft.Graph.Core": "3.0.9"
         }
@@ -1201,7 +1201,7 @@
           "Microsoft.Extensions.Options": "[7.0.1, )",
           "Microsoft.Extensions.Options.ConfigurationExtensions": "[7.0.0, )",
           "Microsoft.Extensions.Options.DataAnnotations": "[7.0.0, )",
-          "Microsoft.Graph": "[5.19.0, )",
+          "Microsoft.Graph": "[5.20.0, )",
           "System.Linq.Async": "[6.0.1, )"
         }
       }
