@@ -2,24 +2,22 @@
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
-    <RootNamespace>OhMyWord.Infrastructure.Tests</RootNamespace>
-    <AssemblyName>OhMyWord.Infrastructure.Tests</AssemblyName>
+    <RootNamespace>OhMyWord.Domain.Tests</RootNamespace>
+    <AssemblyName>OhMyWord.Domain.Tests</AssemblyName>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <IsPackable>false</IsPackable>
-    <IsTestProject>true</IsTestProject>    
-    <UserSecretsId>9bd63fa5-8a79-4c89-ba9b-88b02470f3d5</UserSecretsId>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <UserSecretsId>51b0be92-4156-40fc-bc70-92a61596e4f8</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="AutoFixture.Xunit2" Version="4.18.0" />
     <PackageReference Include="FluentAssertions" Version="6.11.0" />
     <PackageReference Include="FluentResults.Extensions.FluentAssertions" Version="2.1.1" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.3" />
     <PackageReference Include="Moq" Version="4.18.4" />
-    <PackageReference Include="Testcontainers" Version="3.3.0" />
     <PackageReference Include="xunit" Version="2.5.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -32,13 +30,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Infrastructure\Infrastructure.csproj" />
+    <ProjectReference Include="..\..\BackEnd\Domain\Domain.csproj" />
+    <ProjectReference Include="..\..\BackEnd\Infrastructure\Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="rooster.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Update="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
