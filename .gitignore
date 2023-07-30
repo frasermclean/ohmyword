@@ -375,3 +375,6 @@ FodyWeavers.xsd
 .idea/**/dynamic.xml
 .idea/**/uiDesigner.xml
 .idea/**/dbnavigator.xml
+
+# Environment variables
+.env
