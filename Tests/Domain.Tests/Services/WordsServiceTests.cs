@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using OhMyWord.Domain.Models;
+﻿using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Services;
 using OhMyWord.Infrastructure.Errors;
 using OhMyWord.Infrastructure.Models.Entities;
@@ -11,14 +10,12 @@ namespace OhMyWord.Domain.Tests.Services;
 public class WordsServiceTests
 {
     private readonly IWordsService wordsService;
-    private readonly Mock<ILogger<WordsService>> loggerMock = new();
     private readonly Mock<IWordsRepository> wordsRepositoryMock = new();
     private readonly Mock<IDefinitionsService> definitionsServiceMock = new();
 
     public WordsServiceTests()
     {
-        wordsService =
-            new WordsService(loggerMock.Object, wordsRepositoryMock.Object, definitionsServiceMock.Object);
+        wordsService = new WordsService(wordsRepositoryMock.Object, definitionsServiceMock.Object);
     }
 
     [Theory, AutoData]
