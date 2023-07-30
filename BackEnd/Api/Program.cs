@@ -4,8 +4,10 @@ using Microsoft.FeatureManagement;
 using OhMyWord.Api.Extensions;
 using OhMyWord.Api.Hubs;
 using OhMyWord.Api.Services;
+using OhMyWord.Api.Startup;
 using OhMyWord.Domain.DependencyInjection;
 using OhMyWord.Infrastructure.DependencyInjection;
+using Serilog;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -15,44 +17,45 @@ public static class Program
 {
     public static void Main(string[] args)
     {
-        var builder = WebApplication.CreateBuilder(args);
+        // create serilog bootstrap logger
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Debug()
+            .WriteTo.Console()
+            .CreateBootstrapLogger();
 
-        ConfigureAppConfiguration(builder);
-
-        // configure app host
-        builder.Host
-            .ConfigureServices(AddServices);
-
-        // build the application and configure the pipeline
-        var app = builder.Build();
-        ConfigurePipeline(app);
-
-        // run the application
-        app.Run();
-    }
-
-    private static void ConfigureAppConfiguration(WebApplicationBuilder builder)
-    {
-        // azure app configuration
-        var isAzureAppConfigEnabled = builder.Configuration.GetValue("AppConfig:Enabled", false);
-        if (!isAzureAppConfigEnabled) return;
-
-        builder.Configuration.AddAzureAppConfiguration(options =>
+        try
         {
-            var endpoint = builder.Configuration.GetValue<string>("AppConfig:Endpoint") ??
-                           throw new InvalidOperationException("Application configuration endpoint is not set.");
-            var appEnv = builder.Configuration.GetValue<string>("AppConfig:Environment", "dev");
-            options.Connect(new Uri(endpoint), new DefaultAzureCredential())
-                .Select(KeyFilter.Any)
-                .Select(KeyFilter.Any, appEnv)
-                .ConfigureKeyVault(vaultOptions => vaultOptions.SetCredential(new DefaultAzureCredential()))
-                .UseFeatureFlags(flagOptions =>
+            Log.Information("Starting application");
+
+            var builder = WebApplication
+                .CreateBuilder(args)
+                .AddAzureAppConfiguration();
+
+            // configure app host
+            builder.Host
+                .UseSerilog((context, provider, configuration) =>
                 {
-                    flagOptions.Select(KeyFilter.Any)
-                        .Select(KeyFilter.Any, appEnv);
-                    flagOptions.CacheExpirationInterval = TimeSpan.FromMinutes(5);
-                });
-        });
+                    configuration
+                        .ReadFrom.Configuration(context.Configuration)
+                        .ReadFrom.Services(provider);
+                })
+                .ConfigureServices(AddServices);
+
+            // build the application and configure the pipeline
+            var app = builder.Build();
+            ConfigurePipeline(app);
+
+            // run the application
+            app.Run();
+        }
+        catch (Exception ex)
+        {
+            Log.Fatal(ex, "Application terminated unexpectedly");
+        }
+        finally
+        {
+            Log.CloseAndFlush();
+        }
     }
 
     private static void AddServices(HostBuilderContext context, IServiceCollection collection)

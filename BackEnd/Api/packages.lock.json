@@ -77,6 +77,23 @@
           "System.Text.Encodings.Web": "7.0.0"
         }
       },
+      "Serilog.AspNetCore": {
+        "type": "Direct",
+        "requested": "[7.0.0, )",
+        "resolved": "7.0.0",
+        "contentHash": "F6p6rzOmg/R0EPI/PjJXcAlhCzusW5+xFx8kbsy6mJ6/mHI6wWWPxZbsLPoAYTpMiopKFl7HZhAr//KABGHtBQ==",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection": "7.0.0",
+          "Microsoft.Extensions.Logging": "7.0.0",
+          "Serilog": "2.12.0",
+          "Serilog.Extensions.Hosting": "7.0.0",
+          "Serilog.Formatting.Compact": "1.1.0",
+          "Serilog.Settings.Configuration": "7.0.0",
+          "Serilog.Sinks.Console": "4.0.1",
+          "Serilog.Sinks.Debug": "2.0.0",
+          "Serilog.Sinks.File": "5.0.0"
+        }
+      },
       "Azure.Core": {
         "type": "Transitive",
         "resolved": "1.33.0",
@@ -642,6 +659,15 @@
         "resolved": "7.0.0",
         "contentHash": "h3j/QfmFN4S0w4C2A6X7arXij/M/OVw3uQHSOFxnND4DyAzO1F9eMX7Eti7lU/OkSthEE0WzRsfT/Dmx86jzCw=="
       },
+      "Microsoft.Extensions.DependencyModel": {
+        "type": "Transitive",
+        "resolved": "7.0.0",
+        "contentHash": "oONNYd71J3LzkWc4fUHl3SvMfiQMYUCo/mDHDEu76hYYxdhdrPYv6fvGv9nnKVyhE9P0h20AU8RZB5OOWQcAXg==",
+        "dependencies": {
+          "System.Text.Encodings.Web": "7.0.0",
+          "System.Text.Json": "7.0.0"
+        }
+      },
       "Microsoft.Extensions.Diagnostics.HealthChecks": {
         "type": "Transitive",
         "resolved": "6.0.10",
@@ -1172,6 +1198,74 @@
         "contentHash": "drrG+hB3pYFY7w1c3BD+lSGYvH2oIclH8GRSehgfyP5kjnFnHKQuuBhuHLv+PWyFuaTDyk/vfRpnxOzd11+J8g==",
         "dependencies": {
           "Polly": "7.1.0"
+        }
+      },
+      "Serilog": {
+        "type": "Transitive",
+        "resolved": "2.12.0",
+        "contentHash": "xaiJLIdu6rYMKfQMYUZgTy8YK7SMZjB4Yk50C/u//Z4OsvxkUfSPJy4nknfvwAC34yr13q7kcyh4grbwhSxyZg=="
+      },
+      "Serilog.Extensions.Hosting": {
+        "type": "Transitive",
+        "resolved": "7.0.0",
+        "contentHash": "AWsDTs6TeCtyXYDWakzLXCOZA3/IdIfBWBwkYAF0ZvVktVr3E15oYP9pfI7GzKaGVmHaJF9TgFQnFEfcnzEkcw==",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "7.0.0",
+          "Microsoft.Extensions.Hosting.Abstractions": "7.0.0",
+          "Microsoft.Extensions.Logging.Abstractions": "7.0.0",
+          "Serilog": "2.12.0",
+          "Serilog.Extensions.Logging": "7.0.0"
+        }
+      },
+      "Serilog.Extensions.Logging": {
+        "type": "Transitive",
+        "resolved": "7.0.0",
+        "contentHash": "9faU0zNQqU7I6soVhLUMYaGNpgWv6cKlKb2S5AnS8gXxzW/em5Ladm/6FMrWTnX41cdbdGPOWNAo6adi4WaJ6A==",
+        "dependencies": {
+          "Microsoft.Extensions.Logging": "7.0.0",
+          "Serilog": "2.12.0"
+        }
+      },
+      "Serilog.Formatting.Compact": {
+        "type": "Transitive",
+        "resolved": "1.1.0",
+        "contentHash": "pNroKVjo+rDqlxNG5PXkRLpfSCuDOBY0ri6jp9PLe505ljqwhwZz8ospy2vWhQlFu5GkIesh3FcDs4n7sWZODA==",
+        "dependencies": {
+          "Serilog": "2.8.0"
+        }
+      },
+      "Serilog.Settings.Configuration": {
+        "type": "Transitive",
+        "resolved": "7.0.0",
+        "contentHash": "MlabSn74uXAGKNv9WWDdGejmsr7cKhsfi98ZtdeK119s4lTLp+hakBtnPm8OvXNUvtXYs2ijXKA0tIy4IMnjWQ==",
+        "dependencies": {
+          "Microsoft.Extensions.Configuration.Binder": "7.0.0",
+          "Microsoft.Extensions.DependencyModel": "7.0.0",
+          "Serilog": "2.12.0"
+        }
+      },
+      "Serilog.Sinks.Console": {
+        "type": "Transitive",
+        "resolved": "4.0.1",
+        "contentHash": "apLOvSJQLlIbKlbx+Y2UDHSP05kJsV7mou+fvJoRGs/iR+jC22r8cuFVMjjfVxz/AD4B2UCltFhE1naRLXwKNw==",
+        "dependencies": {
+          "Serilog": "2.10.0"
+        }
+      },
+      "Serilog.Sinks.Debug": {
+        "type": "Transitive",
+        "resolved": "2.0.0",
+        "contentHash": "Y6g3OBJ4JzTyyw16fDqtFcQ41qQAydnEvEqmXjhwhgjsnG/FaJ8GUqF5ldsC/bVkK8KYmqrPhDO+tm4dF6xx4A==",
+        "dependencies": {
+          "Serilog": "2.10.0"
+        }
+      },
+      "Serilog.Sinks.File": {
+        "type": "Transitive",
+        "resolved": "5.0.0",
+        "contentHash": "uwV5hdhWPwUH1szhO8PJpFiahqXmzPzJT/sOijH/kFgUx+cyoDTMM8MHD0adw9+Iem6itoibbUXHYslzXsLEAg==",
+        "dependencies": {
+          "Serilog": "2.10.0"
         }
       },
       "System.Buffers": {
