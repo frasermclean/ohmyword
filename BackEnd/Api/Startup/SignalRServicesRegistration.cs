@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace OhMyWord.Api.Extensions;
+namespace OhMyWord.Api.Startup;
 
 public static class SignalRServicesRegistration
 {

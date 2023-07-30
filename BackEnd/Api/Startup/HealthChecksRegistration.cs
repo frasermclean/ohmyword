@@ -1,6 +1,6 @@
 ﻿using Azure.Identity;
 
-namespace OhMyWord.Api.Extensions;
+namespace OhMyWord.Api.Startup;
 
 public static class HealthChecksRegistration
 {

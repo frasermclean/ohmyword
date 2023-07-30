@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Web;
 
-namespace OhMyWord.Api.Extensions;
+namespace OhMyWord.Api.Startup;
 
 public static class MicrosoftIdentityRegistration
 {

@@ -4,7 +4,7 @@ using Serilog;
 
 namespace OhMyWord.Api.Startup;
 
-public static class AzureAppConfigurationExtension
+public static class AzureAppConfiguration
 {
     /// <summary>
     /// Configures Azure App Configuration for the application
