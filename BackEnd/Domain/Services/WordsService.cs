@@ -1,5 +1,4 @@
 using FluentResults;
-using Microsoft.Extensions.Logging;
 using OhMyWord.Domain.Models;
 using OhMyWord.Infrastructure.Models.Entities;
 using OhMyWord.Infrastructure.Services.Repositories;
@@ -35,14 +34,11 @@ public interface IWordsService
 
 public class WordsService : IWordsService
 {
-    private readonly ILogger<WordsService> logger;
     private readonly IWordsRepository wordsRepository;
     private readonly IDefinitionsService definitionsService;
 
-    public WordsService(ILogger<WordsService> logger, IWordsRepository wordsRepository,
-        IDefinitionsService definitionsService)
+    public WordsService(IWordsRepository wordsRepository, IDefinitionsService definitionsService)
     {
-        this.logger = logger;
         this.wordsRepository = wordsRepository;
         this.definitionsService = definitionsService;
     }

@@ -147,7 +147,7 @@ resource appService 'Microsoft.Web/sites@2022-03-01' = {
           value: 'https://${appConfigName}.azconfig.io'
         }
         {
-          name: 'AppConfig__Environment'
+          name: 'ASPNETCORE_ENVIRONMENT'
           value: appEnv
         }
         {

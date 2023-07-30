@@ -42,6 +42,17 @@ jobs:
         with:
           node-version: "18"
 
+      # Cache node modules
+      - name: Cache node modules
+        uses: actions/cache@v3
+        env:
+          cache-name: npm
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ env.cache-name }}-
+
       # Install Angular CLI globally
       - name: Install Angular CLI
         run: npm install -g @angular/cli
@@ -71,6 +82,8 @@ jobs:
   build-backend-app:
     name: Build backend application
     runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
     env:
       BUILD_CONFIGURATION: Release
       PUBLISH_OS: linux
@@ -80,22 +93,36 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Install packages
+      # Cache packages
+      - name: Cache packages
+        uses: actions/cache@v3
+        env:
+          cache-name: nuget
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('**/packages.lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ env.cache-name }}-
+
+      # Restore packages
       - name: Restore packages
-        run: dotnet restore --verbosity normal
+        run: dotnet restore --locked-mode
 
       # Build solution
       - name: Build solution
-        run: dotnet build --configuration $BUILD_CONFIGURATION --no-restore
+        run: dotnet build --no-restore --configuration $BUILD_CONFIGURATION
 
       # Run unit tests
       - name: Run unit tests
-        run: dotnet test --configuration $BUILD_CONFIGURATION --filter Category=Unit --no-build
+        run: dotnet test --no-build --configuration $BUILD_CONFIGURATION --filter Category=Unit
 
       # Run integration tests
       - name: Run integration tests
-        if: github.ref_name == 'main'
-        run: dotnet test --configuration $BUILD_CONFIGURATION --filter FullyQualifiedName~Infrastructure.Tests.Services.Repositories --no-build
+        if: ${{ vars.RUN_INTEGRATION_TESTS == 'true' }}
+        run: dotnet test --no-build --configuration $BUILD_CONFIGURATION --filter Category=Integration
+        env:
+          OhMyWord_RapidApi__ApiKey: ${{ secrets.RAPID_API_KEY }}
+          OhMyWord_GraphApiClient__ClientSecret: ${{ secrets.GRAPH_API_CLIENT_SECRET }}
 
       # Publish application
       - name: Publish application
