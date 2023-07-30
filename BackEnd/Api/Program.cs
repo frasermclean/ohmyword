@@ -20,8 +20,7 @@ public static class Program
             // build the application and configure the pipeline
             var app = WebApplication.CreateBuilder(args)
                 .AddAzureAppConfiguration()
-                .AddServices()
-                .Build()
+                .ConfigureAndBuildHost()
                 .ConfigurePipeline();
 
             // run the application

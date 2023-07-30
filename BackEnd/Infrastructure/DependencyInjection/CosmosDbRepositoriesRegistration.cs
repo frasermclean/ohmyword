@@ -1,7 +1,7 @@
 ﻿using Azure.Identity;
 using Microsoft.Azure.Cosmos.Fluent;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using OhMyWord.Infrastructure.Options;
 using OhMyWord.Infrastructure.Services.Repositories;
@@ -11,13 +11,13 @@ namespace OhMyWord.Infrastructure.DependencyInjection;
 public static class CosmosDbRepositoriesRegistration
 {
     public static IServiceCollection AddCosmosDbRepositories(this IServiceCollection services,
-        HostBuilderContext context)
+        IConfiguration configuration)
     {
         services.AddHttpClient();
 
         // options
         services.AddOptions<CosmosDbOptions>()
-            .Bind(context.Configuration.GetSection(CosmosDbOptions.SectionName))
+            .Bind(configuration.GetSection(CosmosDbOptions.SectionName))
             .Validate(CosmosDbOptions.Validate, "Invalid CosmosDb configuration")
             .ValidateOnStart();
 
