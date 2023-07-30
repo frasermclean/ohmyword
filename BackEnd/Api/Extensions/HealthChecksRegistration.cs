@@ -40,10 +40,10 @@ public static class HealthChecksRegistration
         foreach (var table in TableStorageTables)
         {
             var checkName = $"table-{table}";
-            
+
             if (!string.IsNullOrEmpty(connectionString))
                 builder.AddAzureTable(connectionString, table, checkName);
-            else
+            else if (!string.IsNullOrEmpty(endpoint))
                 builder.AddAzureTable(new Uri(endpoint), new DefaultAzureCredential(), table, checkName);
         }
 
