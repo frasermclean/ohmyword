@@ -41,6 +41,30 @@ resource dnsZone 'Microsoft.Network/dnsZones@2018-05-01' = {
   name: domainName
   location: 'global'
   tags: tags
+
+  resource dnsRecord 'A' = {
+    name: '*.apps'
+    properties: {
+      TTL: 3600
+      ARecords: [
+        {
+          ipv4Address: containerAppsEnvironment.properties.staticIp
+        }
+      ]
+    }
+  }
+
+  resource txtRecord 'TXT' = {
+    name: 'asuid.apps'
+    properties: {
+      TTL: 3600
+      TXTRecords: [
+        {
+          value: [ containerAppsEnvironment.properties.customDomainConfiguration.customDomainVerificationId ]
+        }
+      ]
+    }
+  }
 }
 
 // virtual network
@@ -171,6 +195,22 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
 
     resource getLocationsTable 'tables' = {
       name: 'geoLocations'
+    }
+  }
+}
+
+// container apps environment
+resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2022-10-01' = {
+  name: 'cae-${workload}-shared'
+  location: location
+  tags: tags
+  properties: {
+    appLogsConfiguration: {
+      destination: 'log-analytics'
+      logAnalyticsConfiguration: {
+        customerId: logAnalyticsWorkspace.properties.customerId
+        sharedKey: logAnalyticsWorkspace.listKeys().primarySharedKey
+      }
     }
   }
 }
