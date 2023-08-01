@@ -10,6 +10,9 @@ param storageAccountRoles array = []
 param serviceBusNamespaceName string = 'sbns-ohmyword-shared'
 param serviceBusNamespaceRoles array = []
 
+param containerRegistryName string = 'ohmyword'
+param containerRegistryRoles array = []
+
 resource keyVault 'Microsoft.KeyVault/vaults@2022-11-01' existing = {
   name: keyVaultName
 }
@@ -48,6 +51,21 @@ resource serviceBusNamespace 'Microsoft.ServiceBus/namespaces@2022-10-01-preview
 resource serviceBusNamespaceRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [for item in serviceBusNamespaceRoles: {
   name: guid(serviceBusNamespace.id, item.roleDefinitionId, item.principalId)
   scope: serviceBusNamespace
+  properties: {
+    roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', item.roleDefinitionId)
+    principalId: item.principalId
+    principalType: 'ServicePrincipal'
+  }
+}]
+
+resource containerRegistry 'Microsoft.ContainerRegistry/registries@2022-12-01' existing = {
+  name: containerRegistryName
+}
+
+// container registry role assignments
+resource containerRegistryRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = [for item in containerRegistryRoles: {
+  name: guid(containerRegistry.id, item.roleDefinitionId, item.principalId)
+  scope: containerRegistry
   properties: {
     roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', item.roleDefinitionId)
     principalId: item.principalId

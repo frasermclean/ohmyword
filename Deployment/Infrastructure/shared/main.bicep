@@ -490,18 +490,12 @@ module roleAssignments '../modules/roleAssignments.bicep' = if (attemptRoleAssig
         roleDefinitionId: '4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0' // Azure Service Bus Data Receiver
       }
     ]
-  }
-}
-
-resource acrPullRoleDefinition 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
-  name: '7f951dda-4ed3-4680-a7ca-43fe172d538d' // AcrPull
-}
-
-resource containerRegistryRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (attemptRoleAssignments) {
-  name: guid(containerRegistry.id, sharedIdentity.id, acrPullRoleDefinition.id)
-  scope: containerRegistry
-  properties: {
-    principalId: sharedIdentity.properties.principalId
-    roleDefinitionId: acrPullRoleDefinition.id
+    containerRegistryName: containerRegistry.name
+    containerRegistryRoles: [
+      {
+        principalId: sharedIdentity.properties.principalId
+        roleDefinitionId: '7f951dda-4ed3-4680-a7ca-43fe172d538d' // AcrPull
+      }
+    ]
   }
 }
