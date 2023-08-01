@@ -35,7 +35,7 @@ var frontendHostname = appEnv == 'prod' ? domainName : 'test.${domainName}'
 var backendHostname = appEnv == 'prod' ? 'api.${domainName}' : 'test.api.${domainName}'
 var databaseId = '${appName}-${appEnv}'
 var appConfigName = 'ac-${appName}-shared'
-var containerAppName = 'ca-${appName}-api-${appEnv}'
+var containerAppName = 'ca-${appName}-${appEnv}'
 
 @description('Azure AD B2C client ID of single page application')
 var authClientId = appEnv == 'prod' ? 'ee95c3c0-c6f7-4675-9097-0e4d9bca14e3' : '1f427277-e4b2-4f9b-97b1-4f47f4ff03c0'
@@ -90,11 +90,6 @@ resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2022-10-01'
   scope: resourceGroup(sharedResourceGroup)
 }
 
-resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' existing = {
-  name: 'asp-${appName}-shared'
-  scope: resourceGroup(sharedResourceGroup)
-}
-
 resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' existing = {
   name: 'law-${appName}-shared'
   scope: resourceGroup(sharedResourceGroup)
@@ -114,7 +109,7 @@ module database 'database.bicep' = {
     databaseId: databaseId
     databaseContainers: databaseContainers
     databaseThroughput: databaseThroughput
-    appServicePrincipalId: appService.identity.principalId
+    appServicePrincipalId: containerApp.identity.principalId
   }
 }
 
@@ -188,87 +183,6 @@ resource containerApp 'Microsoft.App/containerApps@2022-10-01' = {
   }
 }
 
-// app service
-resource appService 'Microsoft.Web/sites@2022-03-01' = {
-  name: toLower('app-${appName}-${appEnv}')
-  location: location
-  tags: tags
-  kind: 'app,linux'
-  identity: {
-    type: 'SystemAssigned'
-  }
-  properties: {
-    enabled: true
-    httpsOnly: true
-    serverFarmId: appServicePlan.id
-    virtualNetworkSubnetId: virtualNetwork::subnet.id
-    vnetRouteAllEnabled: true
-    siteConfig: {
-      linuxFxVersion: 'DOTNETCORE|7.0'
-      healthCheckPath: '/health'
-      http20Enabled: true
-      ftpsState: 'Disabled'
-      cors: {
-        supportCredentials: true
-        allowedOrigins: [ 'https://${frontendHostname}' ]
-      }
-      appSettings: [
-        {
-          name: 'AppConfig__Endpoint'
-          value: 'https://${appConfigName}.azconfig.io'
-        }
-        {
-          name: 'ASPNETCORE_ENVIRONMENT'
-          value: appEnv
-        }
-        {
-          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-          value: appInsights.properties.ConnectionString
-        }
-        {
-          name: 'ApplicationInsightsAgent_EXTENSION_VERSION'
-          value: '~3'
-        }
-        {
-          name: 'XDT_MicrosoftApplicationInsights_Mode'
-          value: 'Recommended'
-        }
-      ]
-    }
-  }
-
-  resource hostNameBinding 'hostNameBindings' = {
-    name: backendHostname
-    properties: {
-      siteName: appService.name
-      hostNameType: 'Verified'
-    }
-  }
-}
-
-// diagnostic settings
-resource appServiceDiagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: appService.name
-  scope: appService
-  properties: {
-    workspaceId: logAnalyticsWorkspace.id
-    logs: [
-      {
-        category: 'AppServiceAuditLogs'
-        enabled: true
-      }
-      {
-        category: 'AppServiceIPSecAuditLogs'
-        enabled: true
-      }
-      {
-        category: 'AppServicePlatformLogs'
-        enabled: true
-      }
-    ]
-  }
-}
-
 // static web app
 resource staticWebApp 'Microsoft.Web/staticSites@2022-03-01' = {
   name: 'swa-${appName}-${appEnv}'
@@ -307,20 +221,9 @@ module dnsRecords 'dnsRecords.bicep' = {
     appName: appName
     appEnv: appEnv
     domainName: domainName
-    appServiceVerificationId: appService.properties.customDomainVerificationId
+    customDomainVerificationId: containerApp.properties.customDomainVerificationId
     staticWebAppResourceId: staticWebApp.id
     staticWebAppDefaultHostname: staticWebApp.properties.defaultHostname
-  }
-}
-
-// app service managed certificate
-resource managedCertificate 'Microsoft.Web/certificates@2022-03-01' = {
-  name: 'cert-${appName}-${appEnv}'
-  location: location
-  tags: tags
-  properties: {
-    serverFarmId: appServicePlan.id
-    canonicalName: appService::hostNameBinding.name
   }
 }
 
@@ -357,16 +260,6 @@ module appConfig 'appConfig.bicep' = {
     azureAdClientId: authClientId
     cosmosDbDatabaseId: databaseId
     signalRServiceHostname: signalrService.properties.hostName
-  }
-}
-
-// use module to enable hostname SNI binding
-module sniEnable '../modules/sniEnable.bicep' = {
-  name: 'sniEnable'
-  params: {
-    appServiceName: appService.name
-    hostname: appService::hostNameBinding.name
-    certificateThumbprint: managedCertificate.properties.thumbprint
   }
 }
 

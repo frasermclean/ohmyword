@@ -10,8 +10,8 @@ param appEnv string
 @description('Apex domain name for the application')
 param domainName string
 
-@description('Domain ownership ID')
-param appServiceVerificationId string
+@description('Custom domain verification ID')
+param customDomainVerificationId string
 
 @description('Resource ID of the static web app')
 param staticWebAppResourceId string
@@ -32,7 +32,7 @@ var swaRecordName = appEnv == 'prod' ? '@' : 'test'
 resource dnsZone 'Microsoft.Network/dnsZones@2018-05-01' existing = {
   name: domainName
 
-  // TXT verification record for the app service API
+  // custom domain verification record
   resource apiTxtRecord 'TXT' = {
     name: apiTxtRecordName
     properties: {
@@ -40,7 +40,7 @@ resource dnsZone 'Microsoft.Network/dnsZones@2018-05-01' existing = {
       TXTRecords: [
         {
           value: [
-            appServiceVerificationId
+            customDomainVerificationId
           ]
         }
       ]
