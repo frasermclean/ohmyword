@@ -16,6 +16,9 @@ param totalThroughputLimit int
 @description('Public IP addresses allowed to access Azure resources')
 param allowedIpAddresses array
 
+@description('Whether to attempt to assign roles to resources')
+param attemptRoleAssignments bool
+
 var tags = {
   workload: workload
   environment: 'shared'
@@ -141,7 +144,25 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-08-15' = {
   }
 }
 
-var linkedStorageNames = [ 'CustomLogs', 'Query', 'Alerts' ]
+// user assigned identity
+resource sharedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
+  name: 'id-${workload}-shared'
+  location: location
+  tags: tags
+}
+
+// container registry
+resource containerRegistry 'Microsoft.ContainerRegistry/registries@2022-12-01' = {
+  name: workload
+  location: location
+  tags: tags
+  sku: {
+    name: 'Basic'
+  }
+  properties: {
+    adminUserEnabled: true
+  }
+}
 
 // log analytics workspace
 resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
@@ -158,7 +179,7 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10
     }
   }
 
-  resource linkedStorageAccount 'linkedStorageAccounts@2020-08-01' = [for name in linkedStorageNames: {
+  resource linkedStorageAccount 'linkedStorageAccounts@2020-08-01' = [for name in [ 'CustomLogs', 'Query', 'Alerts' ]: {
     name: name
     properties: {
       storageAccountIds: [
@@ -445,7 +466,7 @@ module functions 'functions.bicep' = {
   }
 }
 
-module roleAssignments '../modules/roleAssignments.bicep' = {
+module roleAssignments '../modules/roleAssignments.bicep' = if (attemptRoleAssignments) {
   name: 'roleAssignments-shared'
   params: {
     keyVaultName: keyVault.name
@@ -469,5 +490,18 @@ module roleAssignments '../modules/roleAssignments.bicep' = {
         roleDefinitionId: '4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0' // Azure Service Bus Data Receiver
       }
     ]
+  }
+}
+
+resource acrPullRoleDefinition 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+  name: '7f951dda-4ed3-4680-a7ca-43fe172d538d' // AcrPull
+}
+
+resource containerRegistryRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (attemptRoleAssignments) {
+  name: guid(containerRegistry.id, sharedIdentity.id, acrPullRoleDefinition.id)
+  scope: containerRegistry
+  properties: {
+    principalId: sharedIdentity.properties.principalId
+    roleDefinitionId: acrPullRoleDefinition.id
   }
 }
