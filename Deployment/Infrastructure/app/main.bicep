@@ -13,6 +13,9 @@ param location string = resourceGroup().location
 @description('Apex domain name for the application')
 param domainName string = 'ohmyword.live'
 
+@description('Whether to attempt to assign roles to resources')
+param attemptRoleAssignments bool = false
+
 @description('Database request units per second.')
 @minValue(400)
 param databaseThroughput int = 400
@@ -32,6 +35,7 @@ var frontendHostname = appEnv == 'prod' ? domainName : 'test.${domainName}'
 var backendHostname = appEnv == 'prod' ? 'api.${domainName}' : 'test.api.${domainName}'
 var databaseId = '${appName}-${appEnv}'
 var appConfigName = 'ac-${appName}-shared'
+var containerAppName = 'ca-${appName}-api-${appEnv}'
 
 @description('Azure AD B2C client ID of single page application')
 var authClientId = appEnv == 'prod' ? 'ee95c3c0-c6f7-4675-9097-0e4d9bca14e3' : '1f427277-e4b2-4f9b-97b1-4f47f4ff03c0'
@@ -76,6 +80,16 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-08-15' exis
   scope: resourceGroup(sharedResourceGroup)
 }
 
+resource containerRegistry 'Microsoft.ContainerRegistry/registries@2022-12-01' existing = {
+  name: appName
+  scope: resourceGroup(sharedResourceGroup)
+}
+
+resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2022-10-01' existing = {
+  name: 'cae-${appName}-shared'
+  scope: resourceGroup(sharedResourceGroup)
+}
+
 resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' existing = {
   name: 'asp-${appName}-shared'
   scope: resourceGroup(sharedResourceGroup)
@@ -86,8 +100,8 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10
   scope: resourceGroup(sharedResourceGroup)
 }
 
-resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' existing = {
-  name: '${appName}shared'
+resource sharedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' existing = {
+  name: 'id-${appName}-shared'
   scope: resourceGroup(sharedResourceGroup)
 }
 
@@ -114,6 +128,63 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
     Application_Type: 'web'
     Request_Source: 'rest'
     WorkspaceResourceId: logAnalyticsWorkspace.id
+  }
+}
+
+// container app
+resource containerApp 'Microsoft.App/containerApps@2022-10-01' = {
+  name: containerAppName
+  location: location
+  tags: tags
+  identity: {
+    type: 'SystemAssigned,UserAssigned'
+    userAssignedIdentities: {
+      '${sharedIdentity.id}': {}
+    }
+  }
+  properties: {
+    managedEnvironmentId: containerAppsEnvironment.id
+    configuration: {
+      activeRevisionsMode: 'Single'
+      ingress: {
+        external: true
+        targetPort: 80
+        traffic: [
+          {
+            latestRevision: true
+            weight: 100
+          }
+        ]
+      }
+      registries: [
+        {
+          server: containerRegistry.properties.loginServer
+          identity: sharedIdentity.id
+        }
+      ]
+    }
+    template: {
+      containers: [
+        {
+          name: containerAppName
+          image: 'ohmyword.azurecr.io/ohmyword-api:latest'
+          resources: {
+            cpu: 1
+            memory: '2Gi'
+          }
+          env: [
+            {
+              name: 'ASPNETCORE_ENVIRONMENT'
+              value: appEnv
+            }
+          ]
+        }
+      ]
+      scale: {
+        minReplicas: 0
+        maxReplicas: 2
+      }
+    }
   }
 }
 
@@ -285,7 +356,6 @@ module appConfig 'appConfig.bicep' = {
     azureAdAudience: authAudience
     azureAdClientId: authClientId
     cosmosDbDatabaseId: databaseId
-    principalId: appService.identity.principalId
     signalRServiceHostname: signalrService.properties.hostName
   }
 }
@@ -300,23 +370,29 @@ module sniEnable '../modules/sniEnable.bicep' = {
   }
 }
 
-// role assignment for app service to access storage account
-module storageAccountRoleAssignment '../modules/roleAssignments.bicep' = {
-  name: 'roleAssignment-${storageAccount.name}-${appService.name}'
+resource signalrAppServerRoleDefinition 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+  name: '420fcaa2-552c-430f-98ca-3264be4806c7'
+}
+
+// role assignment for signalr service
+resource signalrServiceRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (attemptRoleAssignments) {
+  name: guid(signalrService.id, signalrAppServerRoleDefinition.id, containerApp.id)
+  scope: signalrService
+  properties: {
+    principalId: containerApp.identity.principalId
+    roleDefinitionId: signalrAppServerRoleDefinition.id
+  }
+}
+
+// shared resource role assignments
+module roleAssignments '../modules/roleAssignments.bicep' = if (attemptRoleAssignments) {
+  name: 'roleAssignments-${containerAppName}'
   scope: resourceGroup(sharedResourceGroup)
   params: {
-    storageAccountName: storageAccount.name
-    storageAccountRoles: [
-      {
-        principalId: appService.identity.principalId
-        roleDefinitionId: '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3' // Storage Table Data Contributor
-      }
-    ]
-    serviceBusNamespaceRoles: [
-      {
-        principalId: appService.identity.principalId
-        roleDefinitionId: '69a216fc-b8fb-44d8-bc22-1f3c2cd27a39' // Azure Service Bus Data Sender
-      }
-    ]
+    principalId: containerApp.identity.principalId
+    keyVaultRoles: [ 'SecretsUser' ]
+    appConfigurationRoles: [ 'DataReader' ]
+    storageAccountRoles: [ 'TableDataContributor' ]
+    serviceBusNamespaceRoles: [ 'DataSender' ]
   }
 }
