@@ -13,6 +13,9 @@ param location string = resourceGroup().location
 @description('Apex domain name for the application')
 param domainName string = 'ohmyword.live'
 
+@description('Whether to attempt to assign roles to resources')
+param attemptRoleAssignments bool = false
+
 @description('Database request units per second.')
 @minValue(400)
 param databaseThroughput int = 400
@@ -297,6 +300,20 @@ module sniEnable '../modules/sniEnable.bicep' = {
     appServiceName: appService.name
     hostname: appService::hostNameBinding.name
     certificateThumbprint: managedCertificate.properties.thumbprint
+  }
+}
+
+resource signalrAppServerRoleDefinition 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+  name: '420fcaa2-552c-430f-98ca-3264be4806c7'
+}
+
+// role assignment for signalr service
+resource signalrServiceRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (attemptRoleAssignments) {
+  name: guid(signalrService.id, signalrAppServerRoleDefinition.id, appService.id)
+  scope: signalrService
+  properties: {
+    principalId: appService.identity.principalId
+    roleDefinitionId: signalrAppServerRoleDefinition.id
   }
 }
 
