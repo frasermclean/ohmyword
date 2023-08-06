@@ -61,7 +61,7 @@ public class WordQueueService : IWordQueueService
             return Word.Default;
         }
 
-        var result = await wordsService.GetWordAsync(wordId, cancellationToken);
+        var result = await wordsService.GetWordAsync(wordId, false, cancellationToken);
         return result.IsSuccess ? result.Value : Word.Default;
     }
 
