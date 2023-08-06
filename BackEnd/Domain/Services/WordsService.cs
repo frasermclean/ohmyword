@@ -1,5 +1,4 @@
 using FluentResults;
-using OhMyWord.Domain.Extensions;
 using OhMyWord.Domain.Models;
 using OhMyWord.Infrastructure.Models.Entities;
 using OhMyWord.Infrastructure.Models.WordsApi;

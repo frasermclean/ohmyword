@@ -1,10 +1,12 @@
-﻿using OhMyWord.Domain.Models;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Services;
-using OhMyWord.Infrastructure.Errors;
+using static Microsoft.AspNetCore.Http.TypedResults;
 
 namespace OhMyWord.Api.Endpoints.Words.Update;
 
-public class UpdateWordEndpoint : Endpoint<UpdateWordRequest, Word>
+[HttpPut("/words/{wordId}")]
+public class UpdateWordEndpoint : Endpoint<UpdateWordRequest, Results<Ok<Word>, NotFound>>
 {
     private readonly IWordsService wordsService;
 
@@ -13,29 +15,15 @@ public class UpdateWordEndpoint : Endpoint<UpdateWordRequest, Word>
         this.wordsService = wordsService;
     }
 
-    public override void Configure()
-    {
-        Put("words/{wordId}");
-    }
-
-    public override async Task HandleAsync(UpdateWordRequest request, CancellationToken cancellationToken)
+    public override async Task<Results<Ok<Word>, NotFound>> ExecuteAsync(UpdateWordRequest request,
+        CancellationToken cancellationToken)
     {
         var result = await wordsService.UpdateWordAsync(
-            new Word
-            {
-                Id = request.WordId,
-                Definitions = request.Definitions,
-                Frequency = request.Frequency,
-                LastModifiedTime = DateTime.UtcNow
-            },
+            new Word { Id = request.WordId, Definitions = request.Definitions, Frequency = request.Frequency },
             cancellationToken);
 
-        if (result.HasError<ItemNotFoundError>())
-        {
-            await SendNotFoundAsync(cancellationToken);
-            return;
-        }
-
-        await SendOkAsync(result.Value, cancellationToken);
+        return result.IsSuccess
+            ? Ok(result.Value)
+            : NotFound();
     }
 }

@@ -1,11 +1,13 @@
-﻿using OhMyWord.Api.Endpoints.Words.Get;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Services;
-using OhMyWord.Infrastructure.Errors;
+using static Microsoft.AspNetCore.Http.TypedResults;
 
 namespace OhMyWord.Api.Endpoints.Words.Create;
 
-public class CreateWordEndpoint : Endpoint<CreateWordRequest, Word>
+[FastEndpoints.HttpPost("words")]
+public class CreateWordEndpoint : Endpoint<CreateWordRequest, Results<Created<Word>, Conflict>>
 {
     private readonly IWordsService wordsService;
 
@@ -14,25 +16,15 @@ public class CreateWordEndpoint : Endpoint<CreateWordRequest, Word>
         this.wordsService = wordsService;
     }
 
-    public override void Configure()
-    {
-        Post("words");
-    }
-
-    public override async Task HandleAsync(CreateWordRequest request, CancellationToken cancellationToken)
+    public override async Task<Results<Created<Word>, Conflict>> ExecuteAsync(CreateWordRequest request,
+        CancellationToken cancellationToken)
     {
         var result = await wordsService.CreateWordAsync(
             new Word { Id = request.Id, Definitions = request.Definitions, Frequency = request.Frequency },
             cancellationToken);
 
-        if (result.HasError<ItemConflictError>())
-        {
-            AddError(r => r.Id, $"A word with ID: {request.Id} already exists.");
-            await SendErrorsAsync(StatusCodes.Status409Conflict, cancellationToken);
-            return;
-        }
-
-        await SendCreatedAtAsync<GetWordEndpoint>(new { WordId = result.Value.Id }, result.Value,
-            cancellation: cancellationToken);
+        return result.IsSuccess
+            ? Created($"/words/{result.Value.Id}", result.Value)
+            : Conflict();
     }
 }
