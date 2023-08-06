@@ -9,12 +9,16 @@ namespace OhMyWord.Domain.Tests;
 public class TestDataFixture
 {
     public IOptions<RoundOptions> CreateOptions() =>
-        Microsoft.Extensions.Options.Options.Create(new RoundOptions { LetterHintDelay = 3, PostRoundDelay = 5, GuessLimit = 3 });
+        Microsoft.Extensions.Options.Options.Create(new RoundOptions
+        {
+            LetterHintDelay = 3, PostRoundDelay = 5, GuessLimit = 3
+        });
 
     public Word CreateWord() => new()
     {
         Id = "test",
-        Definitions = new[] { new Definition { PartOfSpeech = PartOfSpeech.Noun, Value = "Test noun" } }
+        Definitions = new[] { new Definition { PartOfSpeech = PartOfSpeech.Noun, Value = "Test noun" } },
+        Frequency = 5
     };
 
     public Round CreateRound()

@@ -2,6 +2,7 @@
 using OhMyWord.Domain.Services;
 using OhMyWord.Infrastructure.Errors;
 using OhMyWord.Infrastructure.Models.Entities;
+using OhMyWord.Infrastructure.Services.RapidApi.WordsApi;
 using OhMyWord.Infrastructure.Services.Repositories;
 
 namespace OhMyWord.Domain.Tests.Services;
@@ -12,10 +13,12 @@ public class WordsServiceTests
     private readonly IWordsService wordsService;
     private readonly Mock<IWordsRepository> wordsRepositoryMock = new();
     private readonly Mock<IDefinitionsService> definitionsServiceMock = new();
+    private readonly Mock<IWordsApiClient> wordsApiClientMock = new();
 
     public WordsServiceTests()
     {
-        wordsService = new WordsService(wordsRepositoryMock.Object, definitionsServiceMock.Object);
+        wordsService = new WordsService(wordsRepositoryMock.Object, definitionsServiceMock.Object,
+            wordsApiClientMock.Object);
     }
 
     [Theory, AutoData]

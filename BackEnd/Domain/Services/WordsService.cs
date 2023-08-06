@@ -1,5 +1,4 @@
 using FluentResults;
-using OhMyWord.Domain.Extensions;
 using OhMyWord.Domain.Models;
 using OhMyWord.Infrastructure.Models.Entities;
 using OhMyWord.Infrastructure.Models.WordsApi;
@@ -86,11 +85,11 @@ public class WordsService : IWordsService
         }
 
         var wordResult = await wordsRepository.GetWordAsync(wordId, cancellationToken);
-        var definitions = await definitionsService.GetDefinitions(wordId, cancellationToken)
-            .ToListAsync(cancellationToken);
 
         return wordResult.IsSuccess
-            ? MapToWord(wordResult.Value, definitions)
+            ? MapToWord(wordResult.Value, await definitionsService
+                .GetDefinitions(wordId, cancellationToken)
+                .ToListAsync(cancellationToken))
             : wordResult.ToResult();
     }
 
