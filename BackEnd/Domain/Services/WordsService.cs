@@ -1,6 +1,9 @@
 using FluentResults;
+using OhMyWord.Domain.Extensions;
 using OhMyWord.Domain.Models;
 using OhMyWord.Infrastructure.Models.Entities;
+using OhMyWord.Infrastructure.Models.WordsApi;
+using OhMyWord.Infrastructure.Services.RapidApi.WordsApi;
 using OhMyWord.Infrastructure.Services.Repositories;
 
 namespace OhMyWord.Domain.Services;
@@ -25,7 +28,16 @@ public interface IWordsService
     /// <returns>The total word count.</returns>
     Task<int> GetTotalWordCountAsync(CancellationToken cancellationToken = default);
 
-    Task<Result<Word>> GetWordAsync(string wordId, CancellationToken cancellationToken = default);
+    /// <summary>
+    /// Get a word by its ID.
+    /// </summary>
+    /// <param name="wordId">The word to attempt to find.</param>
+    /// <param name="performExternalLookup">If set to true, will search for the word using an external service.</param>
+    /// <param name="cancellationToken">Task cancellation token.</param>
+    /// <returns>Success if found, failure if not.</returns>
+    Task<Result<Word>> GetWordAsync(string wordId, bool performExternalLookup = false,
+        CancellationToken cancellationToken = default);
+
     Task<Result<Word>> CreateWordAsync(Word word, CancellationToken cancellationToken = default);
 
     Task<Result<Word>> UpdateWordAsync(Word word, CancellationToken cancellationToken = default);
@@ -36,11 +48,14 @@ public class WordsService : IWordsService
 {
     private readonly IWordsRepository wordsRepository;
     private readonly IDefinitionsService definitionsService;
+    private readonly IWordsApiClient wordsApiClient;
 
-    public WordsService(IWordsRepository wordsRepository, IDefinitionsService definitionsService)
+    public WordsService(IWordsRepository wordsRepository, IDefinitionsService definitionsService,
+        IWordsApiClient wordsApiClient)
     {
         this.wordsRepository = wordsRepository;
         this.definitionsService = definitionsService;
+        this.wordsApiClient = wordsApiClient;
     }
 
     public IAsyncEnumerable<Word> SearchWords(int offset, int limit, string filter, string orderBy, bool isDescending,
@@ -59,8 +74,17 @@ public class WordsService : IWordsService
     public Task<int> GetTotalWordCountAsync(CancellationToken cancellationToken = default) =>
         wordsRepository.GetTotalWordCountAsync(cancellationToken);
 
-    public async Task<Result<Word>> GetWordAsync(string wordId, CancellationToken cancellationToken = default)
+    public async Task<Result<Word>> GetWordAsync(string wordId, bool performExternalLookup,
+        CancellationToken cancellationToken = default)
     {
+        // lookup up using external service if requested
+        if (performExternalLookup)
+        {
+            var details = await wordsApiClient.GetWordDetailsAsync(wordId, cancellationToken);
+            if (details is not null)
+                return MapToWord(details);
+        }
+
         var wordResult = await wordsRepository.GetWordAsync(wordId, cancellationToken);
         var definitions = await definitionsService.GetDefinitions(wordId, cancellationToken)
             .ToListAsync(cancellationToken);
@@ -125,5 +149,18 @@ public class WordsService : IWordsService
         Definitions = definitions,
         Frequency = entity.Frequency,
         LastModifiedTime = entity.LastModifiedTime,
+    };
+
+    private static Word MapToWord(WordDetails details) => new()
+    {
+        Id = details.Word,
+        Definitions = details.DefinitionResults.Select(result => new Definition
+        {
+            Id = Guid.NewGuid(),
+            PartOfSpeech = Enum.Parse<PartOfSpeech>(result.PartOfSpeech, true),
+            Value = result.Definition,
+            Example = result.Examples.FirstOrDefault()
+        }),
+        Frequency = details.Frequency
     };
 }

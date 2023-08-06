@@ -19,8 +19,9 @@ public class GetWordEndpoint : Endpoint<GetWordRequest, Word>
 
     public override async Task HandleAsync(GetWordRequest request, CancellationToken cancellationToken)
     {
-        var result = await wordsService.GetWordAsync(request.WordId, cancellationToken);
-        
+        var result = await wordsService.GetWordAsync(request.WordId, request.PerformExternalLookup.GetValueOrDefault(),
+            cancellationToken);
+
         await (result.IsSuccess
             ? SendOkAsync(result.Value, cancellationToken)
             : SendNotFoundAsync(cancellationToken));
