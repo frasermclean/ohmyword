@@ -6,4 +6,5 @@ public class CreateWordRequest
 {
     public string Id { get; init; } = string.Empty;
     public List<Definition> Definitions { get; init; } = new();
+    public double Frequency { get; init; }
 }

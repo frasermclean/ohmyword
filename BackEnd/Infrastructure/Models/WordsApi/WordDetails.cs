@@ -8,4 +8,6 @@ public class WordDetails
 
     [JsonPropertyName("results")]
     public IEnumerable<DefinitionResult> DefinitionResults { get; init; } = Enumerable.Empty<DefinitionResult>();
+
+    public double Frequency { get; init; }
 }

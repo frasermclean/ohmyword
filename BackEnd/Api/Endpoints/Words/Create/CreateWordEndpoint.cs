@@ -21,12 +21,13 @@ public class CreateWordEndpoint : Endpoint<CreateWordRequest, Word>
 
     public override async Task HandleAsync(CreateWordRequest request, CancellationToken cancellationToken)
     {
-        var result = await wordsService.CreateWordAsync(new Word { Id = request.Id, Definitions = request.Definitions },
+        var result = await wordsService.CreateWordAsync(
+            new Word { Id = request.Id, Definitions = request.Definitions, Frequency = request.Frequency },
             cancellationToken);
 
         if (result.HasError<ItemConflictError>())
         {
-            AddError(r => r.Id, $"A word with ID: {request.Id} already exists.");            
+            AddError(r => r.Id, $"A word with ID: {request.Id} already exists.");
             await SendErrorsAsync(StatusCodes.Status409Conflict, cancellationToken);
             return;
         }

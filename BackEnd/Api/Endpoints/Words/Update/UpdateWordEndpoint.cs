@@ -21,7 +21,13 @@ public class UpdateWordEndpoint : Endpoint<UpdateWordRequest, Word>
     public override async Task HandleAsync(UpdateWordRequest request, CancellationToken cancellationToken)
     {
         var result = await wordsService.UpdateWordAsync(
-            new Word { Id = request.WordId, Definitions = request.Definitions, LastModifiedTime = DateTime.UtcNow },
+            new Word
+            {
+                Id = request.WordId,
+                Definitions = request.Definitions,
+                Frequency = request.Frequency,
+                LastModifiedTime = DateTime.UtcNow
+            },
             cancellationToken);
 
         if (result.HasError<ItemNotFoundError>())

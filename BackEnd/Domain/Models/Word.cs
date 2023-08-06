@@ -15,6 +15,12 @@ public class Word
     public int Length => Id.Length;
 
     public required IEnumerable<Definition> Definitions { get; init; }
+
+    /// <summary>
+    /// Logarithmic frequency of the word ranging from 1 to 7. Higher is more frequent.
+    /// </summary>
+    public required double Frequency { get; init; }
+
     public DateTime LastModifiedTime { get; init; } = DateTime.UtcNow;
 
     public LetterHint GetLetterHint(int position) => new(position, Id[position - 1]);
@@ -25,6 +31,7 @@ public class Word
     {
         Id = "default",
         Definitions = new List<Definition> { new() { PartOfSpeech = PartOfSpeech.Noun, Value = "Default word" } },
+        Frequency = default,
         LastModifiedTime = DateTime.UtcNow,
     };
 }

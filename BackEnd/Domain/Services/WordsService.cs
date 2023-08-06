@@ -46,7 +46,12 @@ public class WordsService : IWordsService
     public IAsyncEnumerable<Word> SearchWords(int offset, int limit, string filter, string orderBy, bool isDescending,
         CancellationToken cancellationToken = default) =>
         wordsRepository.SearchWords(offset, limit, filter, orderBy, isDescending, cancellationToken)
-            .SelectAwait(async wordEntity => await MapToWordAsync(wordEntity, cancellationToken));
+            .SelectAwait(async wordEntity =>
+            {
+                var definitions = await definitionsService.GetDefinitions(wordEntity.Id, cancellationToken)
+                    .ToListAsync(cancellationToken);
+                return MapToWord(wordEntity, definitions);
+            });
 
     public IAsyncEnumerable<string> GetAllWordIds(CancellationToken cancellationToken) =>
         wordsRepository.GetAllWordIds(cancellationToken);
@@ -56,11 +61,13 @@ public class WordsService : IWordsService
 
     public async Task<Result<Word>> GetWordAsync(string wordId, CancellationToken cancellationToken = default)
     {
-        var result = await wordsRepository.GetWordAsync(wordId, cancellationToken);
+        var wordResult = await wordsRepository.GetWordAsync(wordId, cancellationToken);
+        var definitions = await definitionsService.GetDefinitions(wordId, cancellationToken)
+            .ToListAsync(cancellationToken);
 
-        return result.IsSuccess
-            ? await MapToWordAsync(result.Value, cancellationToken)
-            : result.ToResult();
+        return wordResult.IsSuccess
+            ? MapToWord(wordResult.Value, definitions)
+            : wordResult.ToResult();
     }
 
     public async Task<Result<Word>> CreateWordAsync(Word word, CancellationToken cancellationToken = default)
@@ -109,19 +116,14 @@ public class WordsService : IWordsService
 
     private static WordEntity MapToEntity(Word word) => new()
     {
-        Id = word.Id, DefinitionCount = word.Definitions.Count(),
+        Id = word.Id, DefinitionCount = word.Definitions.Count(), Frequency = word.Frequency
     };
 
-    private static Word MapToWord(Entity entity, IEnumerable<Definition> definitions) => new()
-    {
-        Id = entity.Id, Definitions = definitions, LastModifiedTime = entity.LastModifiedTime
-    };
-
-    private async Task<Word> MapToWordAsync(Entity entity, CancellationToken cancellationToken) => new()
+    private static Word MapToWord(WordEntity entity, IEnumerable<Definition> definitions) => new()
     {
         Id = entity.Id,
-        Definitions = await definitionsService.GetDefinitions(entity.Id, cancellationToken)
-            .ToListAsync(cancellationToken),
+        Definitions = definitions,
+        Frequency = entity.Frequency,
         LastModifiedTime = entity.LastModifiedTime,
     };
 }
