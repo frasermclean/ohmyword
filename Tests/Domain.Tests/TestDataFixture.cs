@@ -18,7 +18,8 @@ public class TestDataFixture
     {
         Id = "test",
         Definitions = new[] { new Definition { PartOfSpeech = PartOfSpeech.Noun, Value = "Test noun" } },
-        Frequency = 5
+        Frequency = 5,
+        LastModifiedBy = Guid.NewGuid()
     };
 
     public Round CreateRound()

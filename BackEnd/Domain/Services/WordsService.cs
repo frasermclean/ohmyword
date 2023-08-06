@@ -37,6 +37,12 @@ public interface IWordsService
     Task<Result<Word>> GetWordAsync(string wordId, bool performExternalLookup = false,
         CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Create a new word.
+    /// </summary>
+    /// <param name="word">The <see cref="Word"/> to create.</param>
+    /// <param name="cancellationToken">Task cancellation token.</param>
+    /// <returns>Success if created, failure if not.</returns>
     Task<Result<Word>> CreateWordAsync(Word word, CancellationToken cancellationToken = default);
 
     Task<Result<Word>> UpdateWordAsync(Word word, CancellationToken cancellationToken = default);
@@ -48,6 +54,7 @@ public class WordsService : IWordsService
     private readonly IWordsRepository wordsRepository;
     private readonly IDefinitionsService definitionsService;
     private readonly IWordsApiClient wordsApiClient;
+
 
     public WordsService(IWordsRepository wordsRepository, IDefinitionsService definitionsService,
         IWordsApiClient wordsApiClient)
@@ -139,7 +146,10 @@ public class WordsService : IWordsService
 
     private static WordEntity MapToEntity(Word word) => new()
     {
-        Id = word.Id, DefinitionCount = word.Definitions.Count(), Frequency = word.Frequency
+        Id = word.Id,
+        DefinitionCount = word.Definitions.Count(),
+        Frequency = word.Frequency,
+        LastModifiedBy = word.LastModifiedBy
     };
 
     private static Word MapToWord(WordEntity entity, IEnumerable<Definition> definitions) => new()
@@ -147,6 +157,7 @@ public class WordsService : IWordsService
         Id = entity.Id,
         Definitions = definitions,
         Frequency = entity.Frequency,
+        LastModifiedBy = entity.LastModifiedBy.GetValueOrDefault(),
         LastModifiedTime = entity.LastModifiedTime,
     };
 
@@ -160,6 +171,7 @@ public class WordsService : IWordsService
             Value = result.Definition,
             Example = result.Examples.FirstOrDefault()
         }),
-        Frequency = details.Frequency
+        Frequency = details.Frequency,
+        LastModifiedBy = Guid.Empty
     };
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
+using OhMyWord.Api.Extensions;
 using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Services;
 using static Microsoft.AspNetCore.Http.TypedResults;
@@ -18,9 +19,15 @@ public class UpdateWordEndpoint : Endpoint<UpdateWordRequest, Results<Ok<Word>, 
     public override async Task<Results<Ok<Word>, NotFound>> ExecuteAsync(UpdateWordRequest request,
         CancellationToken cancellationToken)
     {
-        var result = await wordsService.UpdateWordAsync(
-            new Word { Id = request.WordId, Definitions = request.Definitions, Frequency = request.Frequency },
-            cancellationToken);
+        var word = new Word
+        {
+            Id = request.WordId,
+            Definitions = request.Definitions,
+            Frequency = request.Frequency,
+            LastModifiedBy = HttpContext.User.GetUserId()
+        };
+
+        var result = await wordsService.UpdateWordAsync(word, cancellationToken);
 
         return result.IsSuccess
             ? Ok(result.Value)

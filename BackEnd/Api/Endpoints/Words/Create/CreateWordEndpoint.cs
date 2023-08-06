@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
+using OhMyWord.Api.Extensions;
 using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Services;
 using static Microsoft.AspNetCore.Http.TypedResults;
 
 namespace OhMyWord.Api.Endpoints.Words.Create;
 
-[FastEndpoints.HttpPost("words")]
+[HttpPost("words")]
 public class CreateWordEndpoint : Endpoint<CreateWordRequest, Results<Created<Word>, Conflict>>
 {
     private readonly IWordsService wordsService;
@@ -20,7 +20,13 @@ public class CreateWordEndpoint : Endpoint<CreateWordRequest, Results<Created<Wo
         CancellationToken cancellationToken)
     {
         var result = await wordsService.CreateWordAsync(
-            new Word { Id = request.Id, Definitions = request.Definitions, Frequency = request.Frequency },
+            new Word
+            {
+                Id = request.Id,
+                Definitions = request.Definitions,
+                Frequency = request.Frequency,
+                LastModifiedBy = HttpContext.User.GetUserId()
+            },
             cancellationToken);
 
         return result.IsSuccess

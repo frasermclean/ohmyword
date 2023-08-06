@@ -50,7 +50,7 @@ public class GameHub : Hub<IGameHub>
         logger.LogInformation("Attempting to register player with visitor ID: {VisitorId}", visitorId);
 
         var result = await new RegisterPlayerCommand(Context.ConnectionId, playerId, visitorId, Context.GetIpAddress(),
-            Context.GetUserId()).ExecuteAsync();
+            Context.User?.GetUserId()).ExecuteAsync();
 
         await Clients.Others.SendPlayerCount(result.PlayerCount);
 
