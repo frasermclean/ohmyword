@@ -2,6 +2,7 @@
 using OhMyWord.Domain.Services;
 using OhMyWord.Infrastructure.Errors;
 using OhMyWord.Infrastructure.Models.Entities;
+using OhMyWord.Infrastructure.Models.WordsApi;
 using OhMyWord.Infrastructure.Services.RapidApi.WordsApi;
 using OhMyWord.Infrastructure.Services.Repositories;
 
@@ -63,14 +64,16 @@ public class WordsServiceTests
     }
 
     [Theory, AutoData]
-    public async Task GetWordAsync_Should_ReturnWord(WordEntity wordEntity, Definition[] definitions)
+    public async Task GetWordAsync_WithNoExternalLookup_Should_ReturnExpectedResult(WordEntity wordEntity,
+        Definition[] definitions)
     {
+        // arrange
         wordsRepositoryMock
-            .Setup(repository => repository.GetWordAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Setup(repository => repository.GetWordAsync(wordEntity.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(wordEntity);
 
         definitionsServiceMock
-            .Setup(service => service.GetDefinitions(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Setup(service => service.GetDefinitions(wordEntity.Id, It.IsAny<CancellationToken>()))
             .Returns(definitions.ToAsyncEnumerable());
 
         // act
@@ -82,6 +85,27 @@ public class WordsServiceTests
         result.Should().BeSuccess();
         word.Id.Should().Be(wordEntity.Id);
         word.Definitions.Should().HaveCount(definitions.Length);
+    }
+
+    [Theory, AutoData]
+    public async Task GetWordAsync_WithExternalLookup_Should_ReturnExpectedResult(string wordId)
+    {
+        // arrange
+        var fixture = new Fixture().Customize(new DefinitionResultCustomization());
+        var wordDetails = fixture.Create<WordDetails>();
+        wordsApiClientMock
+            .Setup(client => client.GetWordDetailsAsync(wordDetails.Word, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(wordDetails);
+
+        // act
+        var result = await wordsService.GetWordAsync(wordDetails.Word, true);
+        var word = result.Value;
+
+        // assert
+        result.Value.Should().BeOfType<Word>();
+        result.Should().BeSuccess();
+        word.Id.Should().Be(wordDetails.Word);
+        word.Definitions.Should().HaveCount(wordDetails.DefinitionResults.Count());
     }
 
     [Theory, AutoData]
@@ -98,5 +122,13 @@ public class WordsServiceTests
         // assert
         result.Should().BeFailure().Which.Should()
             .HaveError($"Item with ID: {wordId} was not found on partition: {wordId}");
+    }
+
+    private class DefinitionResultCustomization : ICustomization
+    {
+        public void Customize(IFixture fixture)
+        {
+            fixture.Customize<DefinitionResult>(composer => composer.With(result => result.PartOfSpeech, "noun"));
+        }
     }
 }
