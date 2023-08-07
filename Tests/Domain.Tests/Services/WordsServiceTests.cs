@@ -16,7 +16,7 @@ public class WordsServiceTests
     private readonly Mock<IDefinitionsService> definitionsServiceMock = new();
     private readonly Mock<IWordsApiClient> wordsApiClientMock = new();
 
-    public WordsServiceTests()a
+    public WordsServiceTests()
     {
         wordsService = new WordsService(wordsRepositoryMock.Object, definitionsServiceMock.Object,
             wordsApiClientMock.Object);
@@ -87,8 +87,8 @@ public class WordsServiceTests
         word.Definitions.Should().HaveCount(definitions.Length);
     }
 
-    [Theory, AutoData]
-    public async Task GetWordAsync_WithExternalLookup_Should_ReturnExpectedResult(string wordId)
+    [Fact]
+    public async Task GetWordAsync_WithExternalLookup_Should_ReturnExpectedResult()
     {
         // arrange
         var fixture = new Fixture().Customize(new DefinitionResultCustomization());
