@@ -61,11 +61,15 @@ public class RoundServiceTests : IClassFixture<TestDataFixture>
         summary.EndReason.Should().Be(RoundEndReason.AllPlayersGuessed);
         summary.NextRoundStart.Should().BeAfter(DateTime.UtcNow);
         summary.Scores.Should().HaveCount(3);
-        summary.Scores.Should().AllSatisfy(line => line.PlayerName.Should().NotBeEmpty());
-        summary.Scores.Should().AllSatisfy(line => line.PointsAwarded.Should().Be(100));
-        summary.Scores.Should().AllSatisfy(line => line.GuessCount.Should().Be(1));
-        summary.Scores.Should().AllSatisfy(line => line.ConnectionId.Should().NotBeEmpty());
-        summary.Scores.Should().AllSatisfy(line => line.CountryCode.Should().NotBeEmpty());
-        summary.Scores.Should().AllSatisfy(line => line.GuessTimeMilliseconds.Should().BePositive());
+        summary.Scores.Should().AllSatisfy(line =>
+        {
+            line.PlayerName.Should().NotBeEmpty();
+            line.PointsAwarded.Should().Be(100);
+            line.GuessCount.Should().Be(1);
+            line.ConnectionId.Should().NotBeEmpty();
+            line.CountryName.Should().NotBeEmpty();
+            line.CountryCode.Should().NotBeEmpty();
+            line.GuessTimeMilliseconds.Should().BePositive();
+        });
     }
 }
