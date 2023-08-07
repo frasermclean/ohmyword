@@ -1,9 +1,9 @@
 ﻿using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using OhMyWord.Infrastructure.Options;
+using OhMyWord.Integrations.Options;
 
-namespace OhMyWord.Infrastructure.Services.Messaging;
+namespace OhMyWord.Integrations.Services.Messaging;
 
 public interface IMessageSender
 {

@@ -1,5 +1,4 @@
-using OhMyWord.Infrastructure;
-using OhMyWord.Infrastructure.Models.Entities;
+using OhMyWord.Integrations.Models.Entities;
 using OhMyWord.Integrations.Tests.Models;
 
 namespace OhMyWord.Integrations.Tests;

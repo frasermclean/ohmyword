@@ -3,10 +3,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Graph;
-using OhMyWord.Infrastructure.Options;
-using OhMyWord.Infrastructure.Services.GraphApi;
+using OhMyWord.Integrations.Options;
+using OhMyWord.Integrations.Services.GraphApi;
 
-namespace OhMyWord.Infrastructure.DependencyInjection;
+namespace OhMyWord.Integrations.DependencyInjection;
 
 public static class GraphApiClientRegistration
 {

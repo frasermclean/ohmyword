@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace OhMyWord.Infrastructure;
+namespace OhMyWord.Integrations;
 
 internal class CountResponse
 {

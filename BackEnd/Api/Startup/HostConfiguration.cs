@@ -1,7 +1,7 @@
 ﻿using Microsoft.FeatureManagement;
 using OhMyWord.Api.Services;
 using OhMyWord.Domain.DependencyInjection;
-using OhMyWord.Infrastructure.DependencyInjection;
+using OhMyWord.Integrations.DependencyInjection;
 using Serilog;
 
 namespace OhMyWord.Api.Startup;

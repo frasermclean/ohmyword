@@ -1,6 +1,6 @@
 ﻿using OhMyWord.Core.Models;
 using OhMyWord.Domain.Extensions;
-using OhMyWord.Infrastructure.Services.Repositories;
+using OhMyWord.Integrations.Services.Repositories;
 
 namespace OhMyWord.Domain.Services;
 

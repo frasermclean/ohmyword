@@ -4,7 +4,7 @@ using OhMyWord.Core.Models;
 using OhMyWord.Domain.Contracts.Events;
 using OhMyWord.Domain.Extensions;
 using OhMyWord.Domain.Services.State;
-using OhMyWord.Infrastructure.Services.Repositories;
+using OhMyWord.Integrations.Services.Repositories;
 
 namespace OhMyWord.Domain.Services;
 

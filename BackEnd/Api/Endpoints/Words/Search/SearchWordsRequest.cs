@@ -1,4 +1,4 @@
-﻿using OhMyWord.Infrastructure.Services.Repositories;
+﻿using OhMyWord.Integrations.Services.Repositories;
 
 namespace OhMyWord.Api.Endpoints.Words.Search;
 

@@ -1,4 +1,4 @@
-﻿namespace OhMyWord.Infrastructure.Options;
+﻿namespace OhMyWord.Integrations.Options;
 
 public class TableServiceOptions
 {

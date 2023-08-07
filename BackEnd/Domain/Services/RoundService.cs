@@ -6,7 +6,7 @@ using OhMyWord.Domain.Contracts.Events;
 using OhMyWord.Domain.Extensions;
 using OhMyWord.Domain.Options;
 using OhMyWord.Domain.Services.State;
-using OhMyWord.Infrastructure.Services.Repositories;
+using OhMyWord.Integrations.Services.Repositories;
 
 namespace OhMyWord.Domain.Services;
 
@@ -103,7 +103,7 @@ public class RoundService : IRoundService
     {
         try
         {
-            foreach (var index in GetShuffledIndices(round.Word))
+            foreach (var index in GetShuffledRange(round.Word.Length))
             {
                 await Task.Delay(letterHintDelay, cancellationToken);
 
@@ -135,8 +135,8 @@ public class RoundService : IRoundService
         };
     }
 
-    private static IEnumerable<int> GetShuffledIndices(Word word) =>
-        Enumerable.Range(0, word.Length).OrderBy(_ => Random.Shared.Next());
+    private static IEnumerable<int> GetShuffledRange(int maximum) =>
+        Enumerable.Range(0, maximum).OrderBy(_ => Random.Shared.Next());
 
     private static LetterHint CreateLetterHint(Word word, int index) =>
         new(index + 1, word.Id[index]);

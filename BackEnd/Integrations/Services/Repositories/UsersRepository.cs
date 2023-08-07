@@ -1,8 +1,8 @@
 ﻿using Azure.Data.Tables;
 using Microsoft.Extensions.Logging;
-using OhMyWord.Infrastructure.Models.Entities;
+using OhMyWord.Integrations.Models.Entities;
 
-namespace OhMyWord.Infrastructure.Services.Repositories;
+namespace OhMyWord.Integrations.Services.Repositories;
 
 public interface IUsersRepository
 {

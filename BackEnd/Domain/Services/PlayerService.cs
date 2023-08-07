@@ -1,7 +1,7 @@
 ﻿using OhMyWord.Core.Models;
-using OhMyWord.Infrastructure.Models.Entities;
-using OhMyWord.Infrastructure.Services.GraphApi;
-using OhMyWord.Infrastructure.Services.Repositories;
+using OhMyWord.Integrations.Models.Entities;
+using OhMyWord.Integrations.Services.GraphApi;
+using OhMyWord.Integrations.Services.Repositories;
 using System.Net;
 
 namespace OhMyWord.Domain.Services;

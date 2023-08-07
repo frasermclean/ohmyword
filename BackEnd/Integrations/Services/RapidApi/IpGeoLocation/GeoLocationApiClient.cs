@@ -1,13 +1,13 @@
 ﻿using Microsoft.Extensions.Logging;
-using OhMyWord.Infrastructure.Extensions;
-using OhMyWord.Infrastructure.Models.Entities;
-using OhMyWord.Infrastructure.Models.IpGeoLocation;
+using OhMyWord.Integrations.Extensions;
+using OhMyWord.Integrations.Models.Entities;
+using OhMyWord.Integrations.Models.IpGeoLocation;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace OhMyWord.Infrastructure.Services.RapidApi.IpGeoLocation;
+namespace OhMyWord.Integrations.Services.RapidApi.IpGeoLocation;
 
 public interface IGeoLocationApiClient
 {

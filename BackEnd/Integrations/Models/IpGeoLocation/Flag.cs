@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace OhMyWord.Infrastructure.Models.IpGeoLocation;
+namespace OhMyWord.Integrations.Models.IpGeoLocation;
 
 internal class Flag
 {

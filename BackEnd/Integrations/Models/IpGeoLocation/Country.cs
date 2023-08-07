@@ -1,4 +1,4 @@
-﻿namespace OhMyWord.Infrastructure.Models.IpGeoLocation;
+﻿namespace OhMyWord.Integrations.Models.IpGeoLocation;
 
 internal class Country
 {

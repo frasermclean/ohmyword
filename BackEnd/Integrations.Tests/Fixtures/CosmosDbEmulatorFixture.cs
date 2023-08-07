@@ -3,8 +3,7 @@ using DotNet.Testcontainers.Containers;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Fluent;
 using Microsoft.Extensions.Options;
-using OhMyWord.Infrastructure;
-using OhMyWord.Infrastructure.Options;
+using OhMyWord.Integrations.Options;
 using ContainerBuilder = DotNet.Testcontainers.Builders.ContainerBuilder;
 
 namespace OhMyWord.Integrations.Tests.Fixtures;
