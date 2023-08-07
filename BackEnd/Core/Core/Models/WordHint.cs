@@ -1,7 +1,6 @@
-﻿using OhMyWord.Infrastructure.Models.Entities;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
-namespace OhMyWord.Domain.Models;
+namespace OhMyWord.Core.Models;
 
 public class WordHint
 {

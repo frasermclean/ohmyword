@@ -1,15 +1,14 @@
 ﻿using FluentResults;
-using OhMyWord.Infrastructure.Models.Entities;
 using System.Collections.Concurrent;
 
-namespace OhMyWord.Domain.Models;
+namespace OhMyWord.Core.Models;
 
 public sealed class Round : IDisposable
 {
     private readonly ConcurrentDictionary<Guid, RoundPlayerData> playerData;
     private readonly CancellationTokenSource cancellationTokenSource = new();
 
-    internal Round(Word word, TimeSpan letterHintDelay, IEnumerable<Guid>? playerIds = default)
+    public Round(Word word, TimeSpan letterHintDelay, IEnumerable<Guid>? playerIds = default)
     {
         Word = word;
         WordHint = new WordHint(word);
@@ -49,10 +48,11 @@ public sealed class Round : IDisposable
 
     public Result<int> ProcessGuess(Guid playerId, Guid roundId, string value)
     {
+        // TODO: Move Round methods to RoundState service
         // check that round is active and ID matches
         if (!IsActive || roundId != Id)
             return Result.Fail("Round is inactive or ID does not match");
-        
+
         // ensure player is in round
         if (!playerData.ContainsKey(playerId))
             return Result.Fail($"Player with ID: {playerId} is not in round");

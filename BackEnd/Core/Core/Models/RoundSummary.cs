@@ -1,6 +1,4 @@
-﻿using OhMyWord.Infrastructure.Models.Entities;
-
-namespace OhMyWord.Domain.Models;
+﻿namespace OhMyWord.Core.Models;
 
 public class RoundSummary
 {

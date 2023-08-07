@@ -1,4 +1,4 @@
-﻿using OhMyWord.Domain.Models;
+﻿using OhMyWord.Core.Models;
 
 namespace OhMyWord.Domain.Contracts.Results;
 

@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OhMyWord.Infrastructure.Options;
-using System.Net;
 
 namespace OhMyWord.Infrastructure.Services.Messaging;
 

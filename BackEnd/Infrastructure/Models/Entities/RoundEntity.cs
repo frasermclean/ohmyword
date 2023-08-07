@@ -1,4 +1,6 @@
-﻿namespace OhMyWord.Infrastructure.Models.Entities;
+﻿using OhMyWord.Core.Models;
+
+namespace OhMyWord.Infrastructure.Models.Entities;
 
 public record RoundEntity : Entity
 {
@@ -11,6 +13,6 @@ public record RoundEntity : Entity
     public RoundEndReason EndReason { get; init; }
     public Guid SessionId { get; init; }
     public IEnumerable<RoundPlayerData> PlayerData { get; init; } = Enumerable.Empty<RoundPlayerData>();
-    
+
     public override string GetPartition() => SessionId.ToString();
 }

@@ -1,4 +1,4 @@
-﻿using OhMyWord.Infrastructure.Models.Entities;
+﻿using OhMyWord.Core.Models;
 using System.Collections;
 
 namespace OhMyWord.Api.Tests.Data;

@@ -1,4 +1,6 @@
-﻿namespace OhMyWord.Infrastructure.Models.Entities;
+﻿using OhMyWord.Core.Models;
+
+namespace OhMyWord.Infrastructure.Models.Entities;
 
 public record DefinitionEntity : Entity
 {

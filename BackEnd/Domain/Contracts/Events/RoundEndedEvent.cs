@@ -1,5 +1,5 @@
 ﻿using FastEndpoints;
-using OhMyWord.Domain.Models;
+using OhMyWord.Core.Models;
 
 namespace OhMyWord.Domain.Contracts.Events;
 

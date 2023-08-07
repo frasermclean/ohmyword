@@ -2,8 +2,7 @@
 using OhMyWord.Api.Tests.Data;
 using OhMyWord.Api.Tests.Fixtures;
 using OhMyWord.Api.Tests.Priority;
-using OhMyWord.Domain.Models;
-using OhMyWord.Infrastructure.Models.Entities;
+using OhMyWord.Core.Models;
 using System.Net;
 
 namespace OhMyWord.Api.Tests.Endpoints.Words;

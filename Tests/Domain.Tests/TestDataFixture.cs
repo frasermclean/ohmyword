@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
-using OhMyWord.Domain.Models;
+using OhMyWord.Core.Models;
 using OhMyWord.Domain.Options;
-using OhMyWord.Infrastructure.Models.Entities;
 using System.Net;
 
 namespace OhMyWord.Domain.Tests;

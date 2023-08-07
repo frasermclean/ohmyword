@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace OhMyWord.Domain.Models;
+namespace OhMyWord.Core.Models;
 
 public record GeoLocation
 {

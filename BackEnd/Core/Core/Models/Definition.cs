@@ -1,7 +1,4 @@
-﻿using OhMyWord.Infrastructure.Models.Entities;
-using System.Text.Json.Serialization;
-
-namespace OhMyWord.Domain.Models;
+﻿namespace OhMyWord.Core.Models;
 
 public class Definition
 {
@@ -12,6 +9,5 @@ public class Definition
     /// <summary>
     /// Example of this <see cref="Definition"/> used in a sentence.
     /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Example { get; init; }
 }

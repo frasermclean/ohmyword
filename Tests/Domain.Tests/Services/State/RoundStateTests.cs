@@ -1,8 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
-using OhMyWord.Domain.Models;
+using OhMyWord.Core.Models;
 using OhMyWord.Domain.Services;
 using OhMyWord.Domain.Services.State;
-using OhMyWord.Infrastructure.Models.Entities;
 
 namespace OhMyWord.Domain.Tests.Services.State;
 

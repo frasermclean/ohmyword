@@ -1,6 +1,5 @@
-﻿using OhMyWord.Domain.Models;
+﻿using OhMyWord.Core.Models;
 using OhMyWord.Domain.Options;
-using OhMyWord.Infrastructure.Models.Entities;
 
 namespace OhMyWord.Domain.Tests.Models;
 
@@ -78,12 +77,13 @@ public class RoundTests
     }
 
     [Theory, AutoData]
-    public void ProcessGuess_Should_ReturnCorrectResult(Word word, int roundNumber, Guid playerId, string incorrectGuess,
+    public void ProcessGuess_Should_ReturnCorrectResult(Word word, int roundNumber, Guid playerId,
+        string incorrectGuess,
         Guid invalidPlayerId, Guid invalidRoundId)
     {
         // arrange
         using var round = CreateRound(word, roundNumber, guessLimit: 2);
-        round.AddPlayer(playerId);        
+        round.AddPlayer(playerId);
 
         // act
         var result1 = round.ProcessGuess(playerId, round.Id, word.Id);

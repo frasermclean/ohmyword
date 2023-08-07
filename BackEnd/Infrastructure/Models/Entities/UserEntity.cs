@@ -1,5 +1,6 @@
 ﻿using Azure;
 using Azure.Data.Tables;
+using OhMyWord.Core.Models;
 
 namespace OhMyWord.Infrastructure.Models.Entities;
 

@@ -1,4 +1,4 @@
-﻿namespace OhMyWord.Infrastructure.Models.Entities;
+﻿namespace OhMyWord.Core.Models;
 
 public enum PartOfSpeech
 {

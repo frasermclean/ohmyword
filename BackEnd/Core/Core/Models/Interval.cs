@@ -1,4 +1,4 @@
-﻿namespace OhMyWord.Domain.Models;
+﻿namespace OhMyWord.Core.Models;
 
 public record struct Interval(DateTime StartDate, DateTime EndDate)
 {

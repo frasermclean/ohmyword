@@ -1,7 +1,6 @@
 ﻿using OhMyWord.Api.Endpoints.Words.Create;
 using OhMyWord.Api.Tests.Data;
-using OhMyWord.Domain.Models;
-using OhMyWord.Infrastructure.Models.Entities;
+using OhMyWord.Core.Models;
 
 namespace OhMyWord.Api.Tests.Endpoints.Words;
 
