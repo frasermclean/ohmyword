@@ -9,9 +9,9 @@ public static class ClaimsPrincipalExtensions
     /// </summary>
     /// <param name="principal">The <see cref="ClaimsPrincipal"/> to operate on.</param>
     /// <returns>The user ID in <see cref="Guid"/> format.</returns>
-    public static Guid GetUserId(this ClaimsPrincipal principal)
+    public static Guid? GetUserId(this ClaimsPrincipal principal)
         => Guid.TryParse(principal.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier)?.Value,
             out var userId)
             ? userId
-            : Guid.Empty;
+            : null;
 }

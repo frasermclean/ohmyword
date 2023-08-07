@@ -9,6 +9,7 @@ public abstract record Entity
     /// <summary>
     /// User ID of the user who last modified the entity.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public Guid? LastModifiedBy { get; init; }
 
     /// <summary>
