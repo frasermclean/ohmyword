@@ -26,8 +26,6 @@ public class Word
 
     public DateTime LastModifiedTime { get; init; } = DateTime.UtcNow;
 
-    public LetterHint GetLetterHint(int position) => new(position, Id[position - 1]);
-
     public override string ToString() => Id;
 
     public static readonly Word Default = new()

@@ -154,7 +154,7 @@ public class WordsService : IWordsService
         Id = entity.Id,
         Definitions = definitions,
         Frequency = entity.Frequency,
-        LastModifiedBy = entity.LastModifiedBy.GetValueOrDefault(),
+        LastModifiedBy = entity.LastModifiedBy,
         LastModifiedTime = entity.LastModifiedTime,
     };
 

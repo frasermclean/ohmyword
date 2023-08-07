@@ -107,7 +107,7 @@ public class RoundService : IRoundService
             {
                 await Task.Delay(letterHintDelay, cancellationToken);
 
-                var letterHint = round.Word.GetLetterHint(index + 1);
+                var letterHint = CreateLetterHint(round.Word, index);
                 round.WordHint.AddLetterHint(letterHint);
                 await new LetterHintAddedEvent(letterHint).PublishAsync(cancellation: cancellationToken);
             }
@@ -137,4 +137,7 @@ public class RoundService : IRoundService
 
     private static IEnumerable<int> GetShuffledIndices(Word word) =>
         Enumerable.Range(0, word.Length).OrderBy(_ => Random.Shared.Next());
+
+    private static LetterHint CreateLetterHint(Word word, int index) =>
+        new(index + 1, word.Id[index]);
 }
