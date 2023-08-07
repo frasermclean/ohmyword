@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Http.HttpResults;
 using OhMyWord.Api.Extensions;
 using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Services;
