@@ -3,10 +3,11 @@ using DotNet.Testcontainers.Containers;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Fluent;
 using Microsoft.Extensions.Options;
+using OhMyWord.Infrastructure;
 using OhMyWord.Infrastructure.Options;
 using ContainerBuilder = DotNet.Testcontainers.Builders.ContainerBuilder;
 
-namespace OhMyWord.Infrastructure.Tests.Fixtures;
+namespace OhMyWord.Integrations.Tests.Fixtures;
 
 public sealed class CosmosDbEmulatorFixture : IDisposable, IAsyncLifetime
 {

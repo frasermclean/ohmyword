@@ -4,7 +4,7 @@ using OhMyWord.Infrastructure.DependencyInjection;
 using OhMyWord.Infrastructure.Services.RapidApi.IpGeoLocation;
 using OhMyWord.Infrastructure.Services.RapidApi.WordsApi;
 
-namespace OhMyWord.Infrastructure.Tests.Fixtures;
+namespace OhMyWord.Integrations.Tests.Fixtures;
 
 public class RapidApiFixture
 {

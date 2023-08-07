@@ -4,7 +4,7 @@ using Microsoft.Extensions.Hosting;
 using OhMyWord.Infrastructure.DependencyInjection;
 using OhMyWord.Infrastructure.Services.GraphApi;
 
-namespace OhMyWord.Infrastructure.Tests.Fixtures;
+namespace OhMyWord.Integrations.Tests.Fixtures;
 
 public sealed class GraphApiClientFixture
 {

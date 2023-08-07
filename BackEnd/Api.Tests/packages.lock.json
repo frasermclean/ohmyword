@@ -1909,10 +1909,10 @@
         "dependencies": {
           "FastEndpoints": "[5.15.0, )",
           "Microsoft.FeatureManagement.AspNetCore": "[2.6.1, )",
-          "OhMyWord.Infrastructure": "[1.0.0, )"
+          "OhMyWord.Integrations": "[1.0.0, )"
         }
       },
-      "OhMyWord.Infrastructure": {
+      "OhMyWord.Integrations": {
         "type": "Project",
         "dependencies": {
           "Azure.Data.Tables": "[12.8.0, )",
@@ -1933,7 +1933,7 @@
           "System.Linq.Async": "[6.0.1, )"
         }
       },
-      "OhMyWord.Infrastructure.Tests": {
+      "OhMyWord.Integrations.Tests": {
         "type": "Project",
         "dependencies": {
           "AutoFixture.Xunit2": "[4.18.0, )",
@@ -1942,7 +1942,7 @@
           "Microsoft.Extensions.Hosting": "[7.0.1, )",
           "Microsoft.NET.Test.Sdk": "[17.7.0, )",
           "Moq": "[4.18.4, )",
-          "OhMyWord.Infrastructure": "[1.0.0, )",
+          "OhMyWord.Integrations": "[1.0.0, )",
           "Testcontainers": "[3.3.0, )",
           "xunit": "[2.5.0, )"
         }

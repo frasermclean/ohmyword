@@ -29,7 +29,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\BackEnd\Api\Api.csproj"/>
-    <ProjectReference Include="..\Infrastructure.Tests\Infrastructure.Tests.csproj"/>
+    <ProjectReference Include="..\Integrations.Tests\Integrations.Tests.csproj" />
   </ItemGroup>
 
 </Project>

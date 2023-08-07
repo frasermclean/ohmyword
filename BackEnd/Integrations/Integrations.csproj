@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
-    <RootNamespace>OhMyWord.Infrastructure</RootNamespace>
-    <AssemblyName>OhMyWord.Infrastructure</AssemblyName>
+    <RootNamespace>OhMyWord.Integrations</RootNamespace>
+    <AssemblyName>OhMyWord.Integrations</AssemblyName>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>

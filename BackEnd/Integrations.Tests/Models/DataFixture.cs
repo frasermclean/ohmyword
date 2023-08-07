@@ -1,7 +1,7 @@
 ﻿using OhMyWord.Core.Models;
 using OhMyWord.Infrastructure.Models.Entities;
 
-namespace OhMyWord.Infrastructure.Tests.Models;
+namespace OhMyWord.Integrations.Tests.Models;
 
 public class DataFixture
 {

@@ -2,9 +2,9 @@
 using OhMyWord.Infrastructure.Errors;
 using OhMyWord.Infrastructure.Models.Entities;
 using OhMyWord.Infrastructure.Services.Repositories;
-using OhMyWord.Infrastructure.Tests.Fixtures;
+using OhMyWord.Integrations.Tests.Fixtures;
 
-namespace OhMyWord.Infrastructure.Tests.Services.Repositories;
+namespace OhMyWord.Integrations.Tests.Services.Repositories;
 
 [Collection("CosmosDbEmulator")]
 [Trait("Category", "Integration")]

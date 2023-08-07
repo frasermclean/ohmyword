@@ -2,8 +2,8 @@
 
     <PropertyGroup>
         <TargetFramework>net7.0</TargetFramework>
-        <RootNamespace>OhMyWord.Infrastructure.Tests</RootNamespace>
-        <AssemblyName>OhMyWord.Infrastructure.Tests</AssemblyName>
+        <RootNamespace>OhMyWord.Integrations.Tests</RootNamespace>
+        <AssemblyName>OhMyWord.Integrations.Tests</AssemblyName>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>
@@ -32,7 +32,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\BackEnd\Infrastructure\Infrastructure.csproj"/>
+        <ProjectReference Include="..\Integrations\Integrations.csproj"/>
     </ItemGroup>
 
     <ItemGroup>

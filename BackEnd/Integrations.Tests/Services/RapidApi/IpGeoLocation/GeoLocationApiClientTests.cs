@@ -1,8 +1,8 @@
 ﻿using OhMyWord.Infrastructure.Services.RapidApi.IpGeoLocation;
-using OhMyWord.Infrastructure.Tests.Fixtures;
+using OhMyWord.Integrations.Tests.Fixtures;
 using System.Net;
 
-namespace OhMyWord.Infrastructure.Tests.Services.RapidApi.IpGeoLocation;
+namespace OhMyWord.Integrations.Tests.Services.RapidApi.IpGeoLocation;
 
 [Trait("Category", "Integration")]
 public class GeoLocationApiClientTests : IClassFixture<RapidApiFixture>

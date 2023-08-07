@@ -1180,7 +1180,7 @@
           "FluentResults": "[3.15.2, )"
         }
       },
-      "OhMyWord.Infrastructure": {
+      "OhMyWord.Integrations": {
         "type": "Project",
         "dependencies": {
           "Azure.Data.Tables": "[12.8.0, )",

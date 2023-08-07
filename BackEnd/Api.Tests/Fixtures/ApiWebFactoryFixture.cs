@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OhMyWord.Infrastructure.Options;
-using OhMyWord.Infrastructure.Tests.Fixtures;
+using OhMyWord.Integrations.Tests.Fixtures;
 
 namespace OhMyWord.Api.Tests.Fixtures;
 

@@ -1346,10 +1346,10 @@
         "dependencies": {
           "FastEndpoints": "[5.15.0, )",
           "Microsoft.FeatureManagement.AspNetCore": "[2.6.1, )",
-          "OhMyWord.Infrastructure": "[1.0.0, )"
+          "OhMyWord.Integrations": "[1.0.0, )"
         }
       },
-      "OhMyWord.Infrastructure": {
+      "OhMyWord.Integrations": {
         "type": "Project",
         "dependencies": {
           "Azure.Data.Tables": "[12.8.0, )",
