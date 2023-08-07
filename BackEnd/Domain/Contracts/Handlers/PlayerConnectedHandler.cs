@@ -32,8 +32,8 @@ public class PlayerConnectedHandler : IEventHandler<PlayerConnectedEvent>
         if (isFeatureEnabled)
         {
             await using var scope = serviceScopeFactory.CreateAsyncScope();
-            var ipAddressMessageSender = scope.ServiceProvider.GetRequiredService<IIpAddressMessageSender>();
-            await ipAddressMessageSender.SendIpLookupMessageAsync(eventModel.IpAddress);
+            var messageSender = scope.ServiceProvider.GetRequiredService<IMessageSender>();
+            await messageSender.SendIpLookupMessageAsync(eventModel.IpAddress.ToString());
         }
     }
 }

@@ -23,7 +23,7 @@ public static class MessagingServicesRegistration
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        services.AddScoped<IIpAddressMessageSender, IpAddressMessageSender>();
+        services.AddScoped<IMessageSender, MessageSender>();
 
         return services;
     }
