@@ -16,7 +16,7 @@ public class WordsServiceTests
     private readonly Mock<IDefinitionsService> definitionsServiceMock = new();
     private readonly Mock<IWordsApiClient> wordsApiClientMock = new();
 
-    public WordsServiceTests()
+    public WordsServiceTests()a
     {
         wordsService = new WordsService(wordsRepositoryMock.Object, definitionsServiceMock.Object,
             wordsApiClientMock.Object);
@@ -113,7 +113,7 @@ public class WordsServiceTests
     {
         // arrange
         wordsRepositoryMock
-            .Setup(repository => repository.GetWordAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Setup(repository => repository.GetWordAsync(wordId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ItemNotFoundError(wordId, wordId));
 
         // act
@@ -122,6 +122,47 @@ public class WordsServiceTests
         // assert
         result.Should().BeFailure().Which.Should()
             .HaveError($"Item with ID: {wordId} was not found on partition: {wordId}");
+    }
+
+    [Theory, AutoData]
+    public async Task SearchWords_Should_ReturnExpectedResults(WordEntity[] wordEntities, Definition[] definitions)
+    {
+        // arrange
+        wordsRepositoryMock
+            .Setup(x => x.SearchWords(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(),
+                It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+            .Returns(wordEntities.ToAsyncEnumerable());
+
+        definitionsServiceMock
+            .Setup(service => service.GetDefinitions(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns(definitions.ToAsyncEnumerable());
+
+        // act
+        var words = await wordsService.SearchWords().ToListAsync();
+
+        // assert
+        words.Should().HaveCount(wordEntities.Length);
+        words.Should().AllSatisfy(word => word.Definitions.Should().HaveCount(definitions.Length));
+    }
+
+    [Theory, AutoData]
+    public async Task UpdateWord_Should_Return_ExpectedResult(Word word)
+    {
+        // arrange
+        wordsRepositoryMock
+            .Setup(repository => repository.UpdateWordAsync(It.IsAny<WordEntity>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((WordEntity entity, CancellationToken _) => entity);
+
+        definitionsServiceMock
+            .Setup(service => service.UpdateDefinitionAsync(It.IsAny<string>(), It.IsAny<Definition>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync((string _, Definition definition, CancellationToken _) => definition);
+
+        // act
+        var result = await wordsService.UpdateWordAsync(word);
+
+        // assert
+        result.Should().BeSuccess();
     }
 
     private class DefinitionResultCustomization : ICustomization

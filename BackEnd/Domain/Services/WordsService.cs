@@ -126,12 +126,9 @@ public class WordsService : IWordsService
         var definitionResults = await Task.WhenAll(word.Definitions.Select(definition =>
             definitionsService.UpdateDefinitionAsync(word.Id, definition, cancellationToken)));
 
-        definitionResults.Merge();
-        if (definitionResults.Any(result => result.IsFailed))
-        {
-        }
-
-        return MapToWord(wordResult.Value, definitionResults.Select(result => result.Value));
+        return definitionResults.All(result => result.IsSuccess)
+            ? MapToWord(wordResult.Value, definitionResults.Select(result => result.Value))
+            : definitionResults.Merge().ToResult();
     }
 
     public async Task<Result> DeleteWordAsync(string wordId, CancellationToken cancellationToken = default)
