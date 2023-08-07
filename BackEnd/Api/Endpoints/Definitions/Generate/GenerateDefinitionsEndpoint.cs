@@ -1,4 +1,4 @@
-﻿using OhMyWord.Domain.Models;
+﻿using OhMyWord.Core.Models;
 using OhMyWord.Domain.Services;
 
 namespace OhMyWord.Api.Endpoints.Definitions.Generate;

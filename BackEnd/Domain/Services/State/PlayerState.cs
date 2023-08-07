@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
-using OhMyWord.Domain.Models;
+using OhMyWord.Core.Models;
 using System.Collections.Concurrent;
 
 namespace OhMyWord.Domain.Services.State;
@@ -42,7 +42,7 @@ public interface IPlayerState : IState
     /// </summary>
     /// <param name="playerId">The ID of the player to look up.</param>
     /// <returns>A <see cref="Player"/> reference if found, null if not.</returns>
-    Player? GetPlayerById(Guid playerId);    
+    Player? GetPlayerById(Guid playerId);
 }
 
 public class PlayerState : IPlayerState
@@ -93,6 +93,6 @@ public class PlayerState : IPlayerState
     public Player? GetPlayerByConnectionId(string connectionId)
         => players.TryGetValue(connectionId, out var player) ? player : default;
 
-    
+
     public void Reset() => players.Clear();
 }

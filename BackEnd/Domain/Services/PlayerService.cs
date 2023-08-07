@@ -1,4 +1,4 @@
-﻿using OhMyWord.Domain.Models;
+﻿using OhMyWord.Core.Models;
 using OhMyWord.Infrastructure.Models.Entities;
 using OhMyWord.Infrastructure.Services.GraphApi;
 using OhMyWord.Infrastructure.Services.Repositories;

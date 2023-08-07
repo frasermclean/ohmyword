@@ -1193,7 +1193,13 @@
         "resolved": "2.0.0",
         "contentHash": "GbetWNcPIaXvWtanHlBqlEp2KflFrsJf8RBNXmI8Yyeft9CSGxNrcsoKWEiEzyrn7gGVQ25ZC6ep9UfWPR0Otw=="
       },
-      "OhMyWord.Infrastructure": {
+      "OhMyWord.Core": {
+        "type": "Project",
+        "dependencies": {
+          "FluentResults": "[3.15.2, )"
+        }
+      },
+      "OhMyWord.Integrations": {
         "type": "Project",
         "dependencies": {
           "Azure.Data.Tables": "[12.8.0, )",
@@ -1210,6 +1216,7 @@
           "Microsoft.Extensions.Options.ConfigurationExtensions": "[7.0.0, )",
           "Microsoft.Extensions.Options.DataAnnotations": "[7.0.0, )",
           "Microsoft.Graph": "[5.20.0, )",
+          "OhMyWord.Core": "[1.0.0, )",
           "System.Linq.Async": "[6.0.1, )"
         }
       }

@@ -1,5 +1,5 @@
 ﻿using OhMyWord.Infrastructure.Models.Entities;
-using User = OhMyWord.Domain.Models.User;
+using User = OhMyWord.Core.Models.User;
 
 namespace OhMyWord.Domain.Extensions;
 

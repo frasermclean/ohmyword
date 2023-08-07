@@ -1,4 +1,4 @@
-﻿using OhMyWord.Domain.Models;
+﻿using OhMyWord.Core.Models;
 using OhMyWord.Domain.Services;
 using OhMyWord.Domain.Services.State;
 
@@ -29,7 +29,7 @@ public class GameBackgroundService : BackgroundService
             Session session;
             using (session = rootState.SessionState.NextSession())
             {
-                await sessionService.ExecuteSessionAsync(session, cancellationToken);    
+                await sessionService.ExecuteSessionAsync(session, cancellationToken);
             }
 
             // save the session to the database

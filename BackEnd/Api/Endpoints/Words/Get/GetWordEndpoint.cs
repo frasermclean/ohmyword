@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
-using OhMyWord.Domain.Models;
+using OhMyWord.Core.Models;
 using OhMyWord.Domain.Services;
 using static Microsoft.AspNetCore.Http.TypedResults;
 

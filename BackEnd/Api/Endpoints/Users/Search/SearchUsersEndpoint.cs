@@ -1,4 +1,4 @@
-﻿using OhMyWord.Domain.Models;
+﻿using OhMyWord.Core.Models;
 using OhMyWord.Domain.Services;
 
 namespace OhMyWord.Api.Endpoints.Users.Search;
@@ -22,7 +22,7 @@ public class SearchUsersEndpoint : Endpoint<SearchUsersRequest, IEnumerable<User
         var users = await usersService
             .SearchUsers(request.Filter, cancellationToken)
             .ToListAsync(cancellationToken);
-        
+
         await SendOkAsync(users, cancellationToken);
     }
 }

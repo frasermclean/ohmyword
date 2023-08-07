@@ -1,12 +1,11 @@
 ﻿using FastEndpoints;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using OhMyWord.Core.Models;
 using OhMyWord.Domain.Contracts.Events;
 using OhMyWord.Domain.Extensions;
-using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Options;
 using OhMyWord.Domain.Services.State;
-using OhMyWord.Infrastructure.Models.Entities;
 using OhMyWord.Infrastructure.Services.Repositories;
 
 namespace OhMyWord.Domain.Services;

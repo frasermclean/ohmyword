@@ -1,5 +1,5 @@
 ﻿using FluentResults;
-using OhMyWord.Domain.Models;
+using OhMyWord.Core.Models;
 using OhMyWord.Infrastructure.Errors;
 using OhMyWord.Infrastructure.Models.Entities;
 using OhMyWord.Infrastructure.Services.RapidApi.IpGeoLocation;
