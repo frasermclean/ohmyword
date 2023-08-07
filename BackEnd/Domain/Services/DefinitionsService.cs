@@ -92,8 +92,7 @@ public class DefinitionsService : IDefinitionsService
         return details is null
             ? Enumerable.Empty<Definition>()
             : details.DefinitionResults.Select(MapToDefinition)
-                .Where(definition => definition.PartOfSpeech != PartOfSpeech.Unknown &&
-                                     (partOfSpeech is null || definition.PartOfSpeech == partOfSpeech));
+                .Where(definition => definition.PartOfSpeech == partOfSpeech || partOfSpeech is null);
     }
 
     private static DefinitionEntity MapToEntity(string wordId, Definition definition) => new()
@@ -105,20 +104,15 @@ public class DefinitionsService : IDefinitionsService
         WordId = wordId,
     };
 
-    private static Definition MapToDefinition(DefinitionEntity definitionEntity) => new()
+    private static Definition MapToDefinition(DefinitionEntity entity) => new()
     {
-        Id = Guid.Parse(definitionEntity.Id),
-        PartOfSpeech = definitionEntity.PartOfSpeech,
-        Value = definitionEntity.Value,
-        Example = definitionEntity.Example,
+        Id = Guid.Parse(entity.Id), PartOfSpeech = entity.PartOfSpeech, Value = entity.Value, Example = entity.Example,
     };
 
-    private static Definition MapToDefinition(DefinitionResult definitionResult) => new()
+    private static Definition MapToDefinition(DefinitionResult result) => new()
     {
-        Value = definitionResult.Definition,
-        PartOfSpeech = Enum.TryParse<PartOfSpeech>(definitionResult.PartOfSpeech, true, out var partOfSpeech)
-            ? partOfSpeech
-            : PartOfSpeech.Unknown,
-        Example = definitionResult.Examples.FirstOrDefault()
+        Value = result.Definition,
+        PartOfSpeech = Enum.Parse<PartOfSpeech>(result.PartOfSpeech),
+        Example = result.Examples.FirstOrDefault()
     };
 }

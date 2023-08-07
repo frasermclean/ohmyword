@@ -21,7 +21,8 @@ public class WordQueueServiceTests
         // arrange
         wordsServiceMock.Setup(service => service.GetAllWordIds(It.IsAny<CancellationToken>()))
             .Returns(wordIds.ToAsyncEnumerable());
-        wordsServiceMock.Setup(service => service.GetWordAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+        wordsServiceMock.Setup(service =>
+                service.GetWordAsync(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Ok(expectedWord));
 
         // act
@@ -32,7 +33,8 @@ public class WordQueueServiceTests
         wordQueueService.TotalWordCount.Should().Be(wordIds.Length);
         wordQueueService.RemainingWordCount.Should().Be(wordIds.Length - 1);
         wordsServiceMock.Verify(service => service.GetAllWordIds(It.IsAny<CancellationToken>()), Times.Once);
-        wordsServiceMock.Verify(service => service.GetWordAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
+        wordsServiceMock.Verify(
+            service => service.GetWordAsync(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()),
             Times.Once);
     }
 

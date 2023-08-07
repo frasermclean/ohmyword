@@ -33,16 +33,15 @@ public class GameHub : Hub<IGameHub>
         await new PlayerConnectedEvent(Context.ConnectionId, Context.GetIpAddress()).PublishAsync(Mode.WaitForNone);
     }
 
-    public override Task OnDisconnectedAsync(Exception? exception)
+    public override async Task OnDisconnectedAsync(Exception? exception)
     {
         if (exception is null)
-            logger.LogDebug("Client disconnected. Connection ID: {ConnectionId}", Context.ConnectionId);
+            logger.LogInformation("Client disconnected. Connection ID: {ConnectionId}", Context.ConnectionId);
         else
-            logger.LogError(exception, "Client disconnected. Connection ID: {ConnectionId}", Context.ConnectionId);
+            logger.LogWarning(exception, "Client disconnected. Connection ID: {ConnectionId}", Context.ConnectionId);
 
-        return Task.WhenAll(
-            new PlayerDisconnectedEvent(Context.ConnectionId).PublishAsync(),
-            Clients.Others.SendPlayerCount(rootState.PlayerState.PlayerCount));
+        await new PlayerDisconnectedEvent(Context.ConnectionId).PublishAsync();
+        await Clients.Others.SendPlayerCount(rootState.PlayerState.PlayerCount);
     }
 
     [HubMethodName("registerPlayer")]
@@ -51,7 +50,7 @@ public class GameHub : Hub<IGameHub>
         logger.LogInformation("Attempting to register player with visitor ID: {VisitorId}", visitorId);
 
         var result = await new RegisterPlayerCommand(Context.ConnectionId, playerId, visitorId, Context.GetIpAddress(),
-            Context.GetUserId()).ExecuteAsync();
+            Context.User?.GetUserId()).ExecuteAsync();
 
         await Clients.Others.SendPlayerCount(result.PlayerCount);
 

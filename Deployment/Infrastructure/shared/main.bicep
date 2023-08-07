@@ -117,6 +117,8 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-08-15' = {
   }
 }
 
+var linkedStorageNames = [ 'CustomLogs', 'Query', 'Alerts' ]
+
 // log analytics workspace
 resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
   name: 'law-${workload}-shared'
@@ -131,6 +133,15 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10
       dailyQuotaGb: 1
     }
   }
+
+  resource linkedStorageAccount 'linkedStorageAccounts@2020-08-01' = [for name in linkedStorageNames: {
+    name: name
+    properties: {
+      storageAccountIds: [
+        storageAccount.id
+      ]
+    }
+  }]
 }
 
 // storage account

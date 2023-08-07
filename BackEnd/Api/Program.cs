@@ -3,7 +3,7 @@ using Serilog;
 
 namespace OhMyWord.Api;
 
-public static class Program
+public class Program
 {
     public static void Main(string[] args)
     {
@@ -20,8 +20,7 @@ public static class Program
             // build the application and configure the pipeline
             var app = WebApplication.CreateBuilder(args)
                 .AddAzureAppConfiguration()
-                .AddServices()
-                .Build()
+                .ConfigureAndBuildHost()
                 .ConfigurePipeline();
 
             // run the application

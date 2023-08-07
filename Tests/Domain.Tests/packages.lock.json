@@ -39,12 +39,12 @@
       },
       "Microsoft.NET.Test.Sdk": {
         "type": "Direct",
-        "requested": "[17.6.3, )",
-        "resolved": "17.6.3",
-        "contentHash": "MglaNTl646dC2xpHKotSk1xscmHO5uV3x3NK057IUA9BM3Wgl16WMEb9ptGczk518JfLd1+Th5OAYwnoWgHQQQ==",
+        "requested": "[17.7.0, )",
+        "resolved": "17.7.0",
+        "contentHash": "sEhKSZqPYWCLbOvdwG1g0hW0FHzm8P+1T7e/WpueaKXDbeKm6NkWCdN/wYmowyExtOgcxEZQs0pKGZHQPTIc1Q==",
         "dependencies": {
-          "Microsoft.CodeCoverage": "17.6.3",
-          "Microsoft.TestPlatform.TestHost": "17.6.3"
+          "Microsoft.CodeCoverage": "17.7.0",
+          "Microsoft.TestPlatform.TestHost": "17.7.0"
         }
       },
       "Moq": {
@@ -159,23 +159,23 @@
       },
       "FastEndpoints": {
         "type": "Transitive",
-        "resolved": "5.14.0",
-        "contentHash": "VDa3Yu2D2wvHtl1Y0sdLi6F8p7ZG+EFpcqY1PcMQB0XvGSKxqGEBQeMfnIjUAOjcprELp2fPahvIM2EkNlWSYw==",
+        "resolved": "5.15.0",
+        "contentHash": "q6/XjhxpGWOeF+cs9ep4vqGZsQo0+mvXyVH7L9fgoN0HHp3GKgqA4BDP85ugn32EKPm9mVuT1Z1avSYH9Q9aQg==",
         "dependencies": {
-          "FastEndpoints.Attributes": "5.14.0",
-          "FastEndpoints.Messaging.Core": "5.14.0",
+          "FastEndpoints.Attributes": "5.15.0",
+          "FastEndpoints.Messaging.Core": "5.15.0",
           "FluentValidation": "11.6.0"
         }
       },
       "FastEndpoints.Attributes": {
         "type": "Transitive",
-        "resolved": "5.14.0",
-        "contentHash": "V2FTCDqmQehWPHGFlGwLb/U97G68F2T4MLhEgrgN7RGO3r4uy72cxrBO6N/6TwZF07hJ27Cd2c96ZMlBcHUKRA=="
+        "resolved": "5.15.0",
+        "contentHash": "wlCXnBUMhC33tRGwTqFdam31LXCHMJSokdwsF055D8lnZLElbko9r3azWQw13Y5ky+g9Be//GJp2IwrqrYguxg=="
       },
       "FastEndpoints.Messaging.Core": {
         "type": "Transitive",
-        "resolved": "5.14.0",
-        "contentHash": "3hTHJLMmg4TJ4EZZGDfjSHjlSK6TC5AMwKL6tQPqKXnLLNOLFfTSk+eHPrAPJexeOCvHgjAnNdHwBjqmp0WTMw=="
+        "resolved": "5.15.0",
+        "contentHash": "hB06RVsE6dTgbHrxDyZwJCEvPDZlgeo6H+/ayq0emXYpdSv4JZBWHe999jwAD8HFj0BVnLiK9+QC/g5i5FYL7Q=="
       },
       "FluentResults": {
         "type": "Transitive",
@@ -227,8 +227,8 @@
       },
       "Microsoft.CodeCoverage": {
         "type": "Transitive",
-        "resolved": "17.6.3",
-        "contentHash": "Gorg6F1dOxlI28yHYKhbQ3pOOfHeW6sUfsmwFQFaIV+xttUAZ+l8KarHIfsR+rBAnjY9VH71BXvPXBuObCkXsw=="
+        "resolved": "17.7.0",
+        "contentHash": "oBZHjl2Y10ERfZUjQf9IPxqDBghKm7/V3naA+mgIK5y+dtcJyPw7Px530jTFoWQTryzgxVGPSdf9wvEJ+K7Zgw=="
       },
       "Microsoft.CSharp": {
         "type": "Transitive",
@@ -734,8 +734,8 @@
       },
       "Microsoft.TestPlatform.ObjectModel": {
         "type": "Transitive",
-        "resolved": "17.6.3",
-        "contentHash": "gSqtX3RvcFisaLPs6sKXdZkSwUix83NQ9nOU/w6pYrHTl+d8GsVHSL9rvDNxMgoV5BNOdyU7zK7JOfbSaVMDWQ==",
+        "resolved": "17.7.0",
+        "contentHash": "wHzM3AM5K0XZQIh+E+/qM3EvDWxZh984LPQGOe4oVOo4/OWZe9rAMzX9+Ws6NwKoaaUyXHXIx+7QW3BINQ7hUQ==",
         "dependencies": {
           "NuGet.Frameworks": "6.5.0",
           "System.Reflection.Metadata": "1.6.0"
@@ -743,10 +743,10 @@
       },
       "Microsoft.TestPlatform.TestHost": {
         "type": "Transitive",
-        "resolved": "17.6.3",
-        "contentHash": "lrgRXKFfIZSPlhuoQGLtciO/osL+4oADYEYb0d5or7n7YyJATIWespq3lRgz2IQpRh6N7cm0DnCOWeZiCRGzxA==",
+        "resolved": "17.7.0",
+        "contentHash": "UUTU0zo9kirI/MObGuaeG/8VfgJEBkW/+laGflgWWWgehKgfOyZOXNUjEa4AXV/f9rorOh9Jvw6ZPVFpXclfug==",
         "dependencies": {
-          "Microsoft.TestPlatform.ObjectModel": "17.6.3",
+          "Microsoft.TestPlatform.ObjectModel": "17.7.0",
           "Newtonsoft.Json": "13.0.1"
         }
       },
@@ -1180,7 +1180,7 @@
       "OhMyWord.Domain": {
         "type": "Project",
         "dependencies": {
-          "FastEndpoints": "[5.14.0, )",
+          "FastEndpoints": "[5.15.0, )",
           "Microsoft.FeatureManagement.AspNetCore": "[2.6.1, )",
           "OhMyWord.Infrastructure": "[1.0.0, )"
         }

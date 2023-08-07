@@ -14,12 +14,4 @@ public class Definition
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Example { get; init; }
-
-    public static Definition FromEntity(DefinitionEntity entity) => new()
-    {
-        Id = Guid.TryParse(entity.Id, out var id) ? id : Guid.Empty,
-        PartOfSpeech = entity.PartOfSpeech,
-        Value = entity.Value,
-        Example = entity.Example,
-    };
 }
