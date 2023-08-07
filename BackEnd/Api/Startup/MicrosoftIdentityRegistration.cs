@@ -1,23 +1,23 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Web;
 
-namespace OhMyWord.Api.Extensions;
+namespace OhMyWord.Api.Startup;
 
 public static class MicrosoftIdentityRegistration
 {
     private const string SectionName = "AzureAd";
 
     public static IServiceCollection AddMicrosoftIdentityAuthentication(this IServiceCollection services,
-        HostBuilderContext context)
+        IConfiguration configuration)
     {
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddMicrosoftIdentityWebApi(options =>
             {
-                context.Configuration.GetSection(SectionName).Bind(options);
+                configuration.GetSection(SectionName).Bind(options);
                 options.Events = new JwtBearerEvents { OnMessageReceived = OnMessageReceived };
             }, options =>
             {
-                context.Configuration.GetSection(SectionName).Bind(options);
+                configuration.GetSection(SectionName).Bind(options);
             });
 
         return services;

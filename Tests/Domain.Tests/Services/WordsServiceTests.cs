@@ -1,8 +1,8 @@
-﻿using Microsoft.Extensions.Logging;
-using OhMyWord.Domain.Models;
+﻿using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Services;
 using OhMyWord.Infrastructure.Errors;
 using OhMyWord.Infrastructure.Models.Entities;
+using OhMyWord.Infrastructure.Services.RapidApi.WordsApi;
 using OhMyWord.Infrastructure.Services.Repositories;
 
 namespace OhMyWord.Domain.Tests.Services;
@@ -11,18 +11,18 @@ namespace OhMyWord.Domain.Tests.Services;
 public class WordsServiceTests
 {
     private readonly IWordsService wordsService;
-    private readonly Mock<ILogger<WordsService>> loggerMock = new();
     private readonly Mock<IWordsRepository> wordsRepositoryMock = new();
     private readonly Mock<IDefinitionsService> definitionsServiceMock = new();
+    private readonly Mock<IWordsApiClient> wordsApiClientMock = new();
 
     public WordsServiceTests()
     {
-        wordsService =
-            new WordsService(loggerMock.Object, wordsRepositoryMock.Object, definitionsServiceMock.Object);
+        wordsService = new WordsService(wordsRepositoryMock.Object, definitionsServiceMock.Object,
+            wordsApiClientMock.Object);
     }
 
     [Theory, AutoData]
-    public async Task CreateWordAsync_WithValidInput_Should_ReturnWord(Word word)
+    public async Task CreateWordAsync_WithValidInput_Should_ReturnWord(Word wordToCreate)
     {
         wordsRepositoryMock.Setup(repository =>
                 repository.CreateWordAsync(It.IsAny<WordEntity>(), It.IsAny<CancellationToken>()))
@@ -34,14 +34,16 @@ public class WordsServiceTests
             .ReturnsAsync((string _, Definition definition, CancellationToken _) => definition);
 
         // act
-        var result = await wordsService.CreateWordAsync(word);
+        var result = await wordsService.CreateWordAsync(wordToCreate);
         var createdWord = result.Value;
 
         // assert
         result.Should().BeSuccess();
         result.Value.Should().BeOfType<Word>();
-        createdWord.Id.Should().Be(word.Id);
-        createdWord.Definitions.Count().Should().Be(word.Definitions.Count());
+        createdWord.Id.Should().Be(wordToCreate.Id);
+        createdWord.Definitions.Count().Should().Be(wordToCreate.Definitions.Count());
+        createdWord.LastModifiedBy.Should().Be(wordToCreate.LastModifiedBy);
+        createdWord.LastModifiedTime.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
     }
 
     [Theory, AutoData]

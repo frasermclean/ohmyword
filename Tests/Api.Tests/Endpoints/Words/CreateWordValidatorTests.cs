@@ -15,7 +15,12 @@ public class CreateWordValidatorTests
     public void Validate_WithValidRequest_ShouldPass(string wordId, PartOfSpeech partOfSpeech, string definition)
     {
         // arrange
-        var request = CreateRequest(wordId, partOfSpeech, definition);
+        var request = new CreateWordRequest
+        {
+            Id = wordId,
+            Definitions = new[] { new Definition { PartOfSpeech = partOfSpeech, Value = definition } },
+            Frequency = Random.Shared.NextDouble() * 6 + 1
+        };
 
         // act
         var result = validator.Validate(request);
@@ -35,14 +40,8 @@ public class CreateWordValidatorTests
 
         // assert
         result.IsValid.Should().BeFalse();
-        result.Errors.Should().HaveCount(2);
+        result.Errors.Should().HaveCount(4);
         result.Errors.Should().Contain(failure =>
             failure.PropertyName == "Id" && failure.ErrorMessage == "'Id' must not be empty.");
     }
-
-    private static CreateWordRequest CreateRequest(string wordId, PartOfSpeech partOfSpeech, string definition) =>
-        new()
-        {
-            Id = wordId, Definitions = new[] { new Definition { PartOfSpeech = partOfSpeech, Value = definition } }
-        };
 }

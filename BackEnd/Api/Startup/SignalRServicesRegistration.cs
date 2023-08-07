@@ -1,12 +1,12 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace OhMyWord.Api.Extensions;
+namespace OhMyWord.Api.Startup;
 
 public static class SignalRServicesRegistration
 {
     public static IServiceCollection AddSignalRServices(this IServiceCollection services,
-        HostBuilderContext context)
+        IConfiguration configuration)
     {
         var builder = services.AddSignalR()
             .AddJsonProtocol(options =>
@@ -16,7 +16,7 @@ public static class SignalRServicesRegistration
             });
 
         // add azure signalR service if connection string is present
-        var connectionString = context.Configuration["SignalRService:ConnectionString"];
+        var connectionString = configuration["SignalRService:ConnectionString"];
         if (!string.IsNullOrEmpty(connectionString))
         {
             builder.AddAzureSignalR(connectionString);

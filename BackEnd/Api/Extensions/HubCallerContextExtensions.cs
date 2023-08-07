@@ -1,18 +1,11 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using System.Net;
-using System.Security.Claims;
 
 namespace OhMyWord.Api.Extensions;
 
 public static class HubCallerContextExtensions
 {
     private static readonly string[] ForwardHeaders = { "X-Forwarded-For", "X-Real-IP" };
-
-    public static Guid? GetUserId(this HubCallerContext context)
-        => Guid.TryParse(context.User?.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier)?.Value,
-            out var userId)
-            ? userId
-            : null;
 
     public static IPAddress GetIpAddress(this HubCallerContext context)
     {
@@ -27,9 +20,9 @@ public static class HubCallerContextExtensions
                 IPAddress.TryParse(addresses.FirstOrDefault(), out var address))
             {
                 return address;
-            }                
+            }
         }
-        
+
         return IPAddress.None;
     }
 }

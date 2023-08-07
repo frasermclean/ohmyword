@@ -25,6 +25,8 @@ public class WordsApiClientTests : IClassFixture<RapidApiFixture>
 
         // assert
         Assert.NotNull(details);
+        details.Word.Should().Be(word);
+        details.Frequency.Should().BeGreaterThan(0);
         Assert.NotNull(firstResult);
         firstResult.Definition.Should().NotBeEmpty();
         firstResult.PartOfSpeech.Should().Be(expectedPartOfSpeech);
