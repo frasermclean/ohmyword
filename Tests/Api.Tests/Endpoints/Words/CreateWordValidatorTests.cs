@@ -12,14 +12,15 @@ public class CreateWordValidatorTests
 
     [Theory]
     [ClassData(typeof(WordsData))]
-    public void Validate_WithValidRequest_ShouldPass(string wordId, PartOfSpeech partOfSpeech, string definition)
+    public void Validate_WithValidRequest_ShouldPass(string wordId, PartOfSpeech partOfSpeech, string definition,
+        double frequency)
     {
         // arrange
         var request = new CreateWordRequest
         {
             Id = wordId,
             Definitions = new[] { new Definition { PartOfSpeech = partOfSpeech, Value = definition } },
-            Frequency = Random.Shared.NextDouble() * 6 + 1
+            Frequency = frequency
         };
 
         // act

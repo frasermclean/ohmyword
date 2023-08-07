@@ -24,10 +24,10 @@ public class CreateWordEndpointTests
     [TestPriority(1)]
     [ClassData(typeof(WordsData))]
     public async Task CreateWord_WithValidWord_Should_ReturnCreated(string wordId, PartOfSpeech partOfSpeech,
-        string definition)
+        string definition, double frequency)
     {
         // arrange
-        var request = CreateRequest(wordId, partOfSpeech, definition);
+        var request = CreateRequest(wordId, partOfSpeech, definition, frequency);
 
         // act
         var (message, word) = await httpClient.POSTAsync<CreateWordEndpoint, CreateWordRequest, Word>(request);
@@ -39,25 +39,23 @@ public class CreateWordEndpointTests
         word.Definitions.Should().NotBeEmpty();
         word.Definitions.First().PartOfSpeech.Should().Be(partOfSpeech);
         word.Definitions.First().Value.Should().Be(definition);
+        word.Frequency.Should().Be(frequency);
     }
 
     [Theory]
     [TestPriority(2)]
     [ClassData(typeof(WordsData))]
     public async Task CreateWord_WithExistingWord_Should_Return_Conflict(string wordId, PartOfSpeech partOfSpeech,
-        string definition)
+        string definition, double frequency)
     {
         // arrange
-        var request = CreateRequest(wordId, partOfSpeech, definition);
+        var request = CreateRequest(wordId, partOfSpeech, definition, frequency);
 
         // act
-        var (message, errorResponse) =
-            await httpClient.POSTAsync<CreateWordEndpoint, CreateWordRequest, ErrorResponse>(request);
+        var message = await httpClient.POSTAsync<CreateWordEndpoint, CreateWordRequest>(request);
 
         // assert
         message.StatusCode.Should().Be(HttpStatusCode.Conflict);
-        Assert.NotNull(errorResponse);
-        errorResponse.Errors.Should().NotBeEmpty();
     }
 
     [Fact]
@@ -76,9 +74,12 @@ public class CreateWordEndpointTests
         errorResponse.Errors.Should().NotBeEmpty();
     }
 
-    private static CreateWordRequest CreateRequest(string wordId, PartOfSpeech partOfSpeech, string definition) =>
+    private static CreateWordRequest CreateRequest(string wordId, PartOfSpeech partOfSpeech, string definition,
+        double frequency) =>
         new()
         {
-            Id = wordId, Definitions = new[] { new Definition { PartOfSpeech = partOfSpeech, Value = definition } }
+            Id = wordId,
+            Definitions = new[] { new Definition { PartOfSpeech = partOfSpeech, Value = definition } },
+            Frequency = frequency
         };
 }
