@@ -42,7 +42,7 @@ public class RoundServiceTests : IClassFixture<TestDataFixture>
     }
 
     [Fact]
-    public void GetRoundEndDataAsync_Should_Return_ExpectedValues()
+    public async Task ExecuteRoundAsync_Should_Return_ExpectedValues()
     {
         // arrange
         playerStateMock.Setup(state => state.GetPlayerById(It.IsAny<Guid>()))
@@ -50,10 +50,9 @@ public class RoundServiceTests : IClassFixture<TestDataFixture>
         var round = fixture.CreateRound();
 
         // act
-        var (postRoundDelay, summary) = roundService.GetRoundEndData(round);
+        var summary = await roundService.ExecuteRoundAsync(round);
 
         // assert
-        postRoundDelay.Should().Be(TimeSpan.FromSeconds(5));
         summary.Word.Should().Be(round.Word.Id);
         summary.PartOfSpeech.Should().Be(round.WordHint.PartOfSpeech);
         summary.RoundId.Should().Be(round.Id);

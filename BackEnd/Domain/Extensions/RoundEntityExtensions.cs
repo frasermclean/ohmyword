@@ -16,6 +16,6 @@ public static class RoundEntityExtensions
         EndDate = round.EndDate,
         EndReason = round.EndReason ?? throw new InvalidOperationException("Round end reason has not been set"),
         SessionId = round.SessionId,
-        PlayerData = round.GetPlayerData()
+        PlayerData = round.PlayerData.Values
     };
 }

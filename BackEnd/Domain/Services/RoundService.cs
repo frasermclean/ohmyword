@@ -12,10 +12,19 @@ namespace OhMyWord.Domain.Services;
 
 public interface IRoundService
 {
-    Task<Round> CreateRoundAsync(int roundNumber, Guid sessionId, CancellationToken cancellationToken = default);
-    Task ExecuteRoundAsync(Round round, CancellationToken cancellationToken = default);
+    /// <summary>
+    /// Factory method for creating a <see cref="Round"/>.
+    /// </summary>
+    /// <param name="roundNumber">The round number to assign to the round.</param>
+    /// <param name="sessionId">The <see cref="Session"/> ID associated with the round.</param>
+    /// <param name="reloadWords">Optional flag to trigger a reload of words from the database.</param>
+    /// <param name="cancellationToken">Task cancellation token.</param>
+    /// <returns>A new <see cref="Round"/> object.</returns>
+    Task<Round> CreateRoundAsync(int roundNumber, Guid sessionId, bool reloadWords = false,
+        CancellationToken cancellationToken = default);
+
+    Task<RoundSummary> ExecuteRoundAsync(Round round, CancellationToken cancellationToken = default);
     Task SaveRoundAsync(Round round, CancellationToken cancellationToken = default);
-    (TimeSpan, RoundSummary) GetRoundEndData(Round round);
 }
 
 public class RoundService : IRoundService
@@ -44,63 +53,29 @@ public class RoundService : IRoundService
         guessLimit = options.Value.GuessLimit;
     }
 
-    public async Task<Round> CreateRoundAsync(int roundNumber, Guid sessionId,
+    public async Task<Round> CreateRoundAsync(int roundNumber, Guid sessionId, bool reloadWords = false,
         CancellationToken cancellationToken = default)
     {
-        var word = await wordQueueService.GetNextWordAsync(cancellationToken: cancellationToken);
+        logger.LogInformation("Creating round {RoundNumber} for session {SessionId}", roundNumber, sessionId);
+        var word = await wordQueueService.GetNextWordAsync(reloadWords, cancellationToken);
+        var now = DateTime.UtcNow;
 
-        return new Round(word, letterHintDelay, playerState.PlayerIds)
+        return new Round(playerState.PlayerIds)
         {
-            Number = roundNumber, GuessLimit = guessLimit, SessionId = sessionId,
+            Word = word,
+            WordHint = new WordHint(word),
+            StartDate = now,
+            EndDate = now + word.Length * letterHintDelay,
+            Number = roundNumber,
+            GuessLimit = guessLimit,
+            SessionId = sessionId,
         };
     }
 
-    public async Task ExecuteRoundAsync(Round round, CancellationToken cancellationToken)
+    public async Task<RoundSummary> ExecuteRoundAsync(Round round, CancellationToken cancellationToken)
     {
-        logger.LogInformation("Starting round {RoundNumber} for session {SessionId}", round.Number, round.SessionId);
+        logger.LogInformation("Executing round {RoundNumber} for session {SessionId}", round.Number, round.SessionId);
 
-        // create linked cancellation token source
-        using var linkedTokenSource =
-            CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, round.CancellationToken);
-
-        // send letter hints
-        await SendLetterHintsAsync(round, linkedTokenSource.Token);
-
-        // round ended due to timeout
-        if (round.EndReason is null)
-            round.EndRound(RoundEndReason.Timeout);
-    }
-
-    public async Task SaveRoundAsync(Round round, CancellationToken cancellationToken)
-    {
-        await roundsRepository.CreateRoundAsync(round.ToEntity(), cancellationToken);
-
-        // update player scores
-        await Task.WhenAll(round.GetPlayerData()
-            .Where(data => data.PointsAwarded > 0)
-            .Select(data => playerService.IncrementPlayerScoreAsync(data.PlayerId, data.PointsAwarded)));
-    }
-
-    public (TimeSpan, RoundSummary) GetRoundEndData(Round round)
-    {
-        var summary = new RoundSummary
-        {
-            Word = round.Word.Id,
-            PartOfSpeech = round.WordHint.PartOfSpeech,
-            EndReason = round.EndReason.GetValueOrDefault(),
-            RoundId = round.Id,
-            DefinitionId = round.WordHint.DefinitionId,
-            NextRoundStart = DateTime.UtcNow + postRoundDelay,
-            Scores = round.GetPlayerData()
-                .Where(data => data.PointsAwarded > 0)
-                .Select(CreateScoreLine)
-        };
-
-        return (postRoundDelay, summary);
-    }
-
-    private async Task SendLetterHintsAsync(Round round, CancellationToken cancellationToken)
-    {
         try
         {
             foreach (var index in GetShuffledRange(round.Word.Length))
@@ -108,7 +83,7 @@ public class RoundService : IRoundService
                 await Task.Delay(letterHintDelay, cancellationToken);
 
                 var letterHint = CreateLetterHint(round.Word, index);
-                round.WordHint.AddLetterHint(letterHint);
+                round.WordHint.LetterHints.Add(letterHint);
                 await new LetterHintAddedEvent(letterHint).PublishAsync(cancellation: cancellationToken);
             }
         }
@@ -117,11 +92,40 @@ public class RoundService : IRoundService
             logger.LogInformation("Round {RoundNumber} has been terminated early. Reason: {EndReason}",
                 round.Number, round.EndReason);
         }
+
+        return CreateRoundSummary(round);
     }
+
+    public async Task SaveRoundAsync(Round round, CancellationToken cancellationToken)
+    {
+        await roundsRepository.CreateRoundAsync(round.ToEntity(), cancellationToken);
+
+        // update player scores
+        await Task.WhenAll(round.PlayerData.Values
+            .Where(data => data.PointsAwarded > 0)
+            .Select(data => playerService.IncrementPlayerScoreAsync(data.PlayerId, data.PointsAwarded)));
+    }
+
+    private RoundSummary CreateRoundSummary(Round round) =>
+        new()
+        {
+            Word = round.Word.Id,
+            PartOfSpeech = round.WordHint.PartOfSpeech,
+            EndReason = round.EndReason.GetValueOrDefault(),
+            RoundId = round.Id,
+            DefinitionId = round.WordHint.DefinitionId,
+            NextRoundStart = DateTime.UtcNow + postRoundDelay,
+            Scores = round.PlayerData.Values
+                .Where(data => data.PointsAwarded > 0)
+                .Select(CreateScoreLine)
+        };
 
     private ScoreLine CreateScoreLine(RoundPlayerData data)
     {
         var player = playerState.GetPlayerById(data.PlayerId);
+
+        if (player is null)
+            logger.LogWarning("Player {PlayerId} not found when attempting to create score line", data.PlayerId);
 
         return new ScoreLine
         {

@@ -1899,10 +1899,7 @@
         }
       },
       "OhMyWord.Core": {
-        "type": "Project",
-        "dependencies": {
-          "FluentResults": "[3.15.2, )"
-        }
+        "type": "Project"
       },
       "OhMyWord.Domain": {
         "type": "Project",
