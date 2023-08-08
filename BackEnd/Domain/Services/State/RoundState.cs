@@ -121,7 +121,7 @@ public class RoundState : IRoundState
         var points = AwardPoints();
 
         // end the round if all players have guessed
-        if (round.AllPlayersGuessed)
+        if (round.AllPlayersAwarded)
             EndRound(RoundEndReason.AllPlayersGuessed);
 
         return points;

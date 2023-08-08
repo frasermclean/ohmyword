@@ -21,7 +21,12 @@ public sealed class Round
     public required Guid SessionId { get; init; }
     public RoundEndReason? EndReason { get; set; }
     public ConcurrentDictionary<Guid, RoundPlayerData> PlayerData { get; }
-    public bool AllPlayersGuessed => !PlayerData.IsEmpty && PlayerData.Values.All(player => player.PointsAwarded > 0);
+
+    /// <summary>
+    /// True if all players have been awarded points for this round.
+    /// </summary>
+    public bool AllPlayersAwarded => !PlayerData.IsEmpty && PlayerData.Values.All(player => player.PointsAwarded > 0);
+
     public bool IsActive => EndReason is null && EndDate > DateTime.UtcNow;
 
     public static readonly Round Default = new()
