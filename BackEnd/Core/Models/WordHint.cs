@@ -4,22 +4,17 @@ namespace OhMyWord.Core.Models;
 
 public class WordHint
 {
-    public int Length { get; }
-    public string Definition { get; }
-    [JsonIgnore] public Guid DefinitionId { get; }
-    public PartOfSpeech PartOfSpeech { get; }
-
+    public required int Length { get; init; }
+    public required string Definition { get; init; }
+    [JsonIgnore] public required Guid DefinitionId { get; init; }
+    public required PartOfSpeech PartOfSpeech { get; init; }
     public List<LetterHint> LetterHints { get; } = new();
 
-    public WordHint(Word word)
+    public static readonly WordHint Default = new()
     {
-        var definition = word.Definitions.ElementAt(Random.Shared.Next(word.Definitions.Count()));
-
-        Length = word.Length;
-        Definition = definition.Value;
-        DefinitionId = definition.Id;
-        PartOfSpeech = definition.PartOfSpeech;
-    }
-
-    public static readonly WordHint Default = new(Word.Default);
+        Length = Word.Default.Length,
+        Definition = "Default word",
+        DefinitionId = Guid.Empty,
+        PartOfSpeech = PartOfSpeech.Noun,
+    };
 }

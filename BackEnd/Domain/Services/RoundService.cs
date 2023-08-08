@@ -63,7 +63,7 @@ public class RoundService : IRoundService
         return new Round(playerState.PlayerIds)
         {
             Word = word,
-            WordHint = new WordHint(word),
+            WordHint = CreateWordHint(word),
             StartDate = now,
             EndDate = now + word.Length * letterHintDelay,
             Number = roundNumber,
@@ -144,4 +144,18 @@ public class RoundService : IRoundService
 
     private static LetterHint CreateLetterHint(Word word, int index) =>
         new(index + 1, word.Id[index]);
+
+    private static WordHint CreateWordHint(Word word)
+    {
+        // randomly select a definition
+        var definition = word.Definitions.ElementAt(Random.Shared.Next(word.Definitions.Count()));
+
+        return new WordHint
+        {
+            Length = word.Length,
+            Definition = definition.Value,
+            DefinitionId = definition.Id,
+            PartOfSpeech = definition.PartOfSpeech
+        };
+    }
 }
