@@ -1,6 +1,9 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using FastEndpoints;
+using Microsoft.Extensions.Logging;
 using OhMyWord.Core.Models;
+using OhMyWord.Domain.Contracts.Events;
 using OhMyWord.Domain.Extensions;
+using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Services.State;
 using OhMyWord.Integrations.Services.Repositories;
 
@@ -36,11 +39,17 @@ public sealed class SessionService : ISessionService
         while (playerState.PlayerCount > 0)
         {
             // start and execute round
+            var startData = await roundState.CreateRoundAsync(cancellationToken);
+            await SendRoundStartedNotificationAsync(startData, cancellationToken);
+
+            // execute round
             var summary = await roundState.ExecuteRoundAsync(cancellationToken);
 
             // session ended due to all players leaving
             if (summary.EndReason == RoundEndReason.NoPlayersLeft)
                 break;
+
+            await SendRoundEndedNotificationAsync(summary, cancellationToken);
 
             // post round delay
             var delay = summary.NextRoundStart - DateTime.UtcNow;
@@ -50,4 +59,10 @@ public sealed class SessionService : ISessionService
 
     public Task SaveSessionAsync(Session session, CancellationToken cancellationToken)
         => sessionsRepository.CreateSessionAsync(session.ToEntity(), cancellationToken);
+
+    private static Task SendRoundStartedNotificationAsync(RoundStartData data, CancellationToken cancellationToken)
+        => new RoundStartedEvent(data).PublishAsync(cancellation: cancellationToken);
+
+    private static Task SendRoundEndedNotificationAsync(RoundSummary summary, CancellationToken cancellationToken)
+        => new RoundEndedEvent(summary).PublishAsync(cancellation: cancellationToken);
 }

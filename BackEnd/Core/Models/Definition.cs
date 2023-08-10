@@ -10,4 +10,9 @@ public class Definition
     /// Example of this <see cref="Definition"/> used in a sentence.
     /// </summary>
     public string? Example { get; init; }
+
+    public static readonly Definition Default = new()
+    {
+        PartOfSpeech = PartOfSpeech.Noun, Value = "Default definition",
+    };
 }

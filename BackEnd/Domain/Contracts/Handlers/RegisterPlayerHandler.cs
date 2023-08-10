@@ -1,6 +1,6 @@
 ﻿using FastEndpoints;
 using OhMyWord.Domain.Contracts.Commands;
-using OhMyWord.Domain.Contracts.Results;
+using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Services;
 using OhMyWord.Domain.Services.State;
 
@@ -38,7 +38,7 @@ public class RegisterPlayerHandler : ICommandHandler<RegisterPlayerCommand, Regi
             PlayerCount = playerState.PlayerCount,
             Score = player.Score,
             RegistrationCount = player.RegistrationCount,
-            StateSnapshot = roundState.GetSnapshot()
+            RoundStateSnapshot = roundState.GetSnapshot()
         };
     }
 }

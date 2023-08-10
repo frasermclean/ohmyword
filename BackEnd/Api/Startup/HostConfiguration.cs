@@ -30,24 +30,22 @@ public static class HostConfiguration
 
     private static void AddServices(HostBuilderContext context, IServiceCollection collection)
     {
-        var configuration = context.Configuration;
-
         collection
-            .AddMicrosoftIdentityAuthentication(configuration)
-            .AddSignalRServices(configuration)
+            .AddMicrosoftIdentityAuthentication(context.Configuration)
+            .AddSignalRServices(context.Configuration)
             .AddFastEndpoints()
-            .AddApplicationHealthChecks(configuration)
+            .AddApplicationHealthChecks(context.Configuration)
             .AddFeatureManagement();
 
         // local project services
         collection
             .AddHostedService<GameBackgroundService>()
-            .AddDomainServices(configuration)
-            .AddCosmosDbRepositories(configuration)
-            .AddTableRepositories(configuration)
-            .AddMessagingServices(configuration)
+            .AddDomainServices(context.Configuration)
+            .AddCosmosDbRepositories(context.Configuration)
+            .AddTableRepositories(context.Configuration)
+            .AddMessagingServices(context.Configuration)
             .AddRapidApiServices()
-            .AddGraphApiClient(configuration);
+            .AddGraphApiClient(context.Configuration);
 
         // development services
         if (context.HostingEnvironment.IsDevelopment())

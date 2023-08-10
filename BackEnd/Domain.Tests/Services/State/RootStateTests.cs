@@ -13,7 +13,7 @@ public class RootStateTests
     {
         var playerState = new PlayerState(Mock.Of<ILogger<PlayerState>>());
         var sessionState = new SessionState(Mock.Of<ILogger<SessionState>>());
-        var roundState = new RoundState(Mock.Of<ILogger<RoundState>>(), sessionState, Mock.Of<IRoundFactory>());
+        var roundState = new RoundState(Mock.Of<ILogger<RoundState>>(), sessionState, Mock.Of<IRoundService>());
 
         rootState = new RootState(playerState, roundState, sessionState);
     }

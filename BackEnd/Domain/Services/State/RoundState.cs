@@ -1,8 +1,7 @@
-﻿using FastEndpoints;
-using FluentResults;
+﻿using FluentResults;
 using Microsoft.Extensions.Logging;
 using OhMyWord.Core.Models;
-using OhMyWord.Domain.Contracts.Events;
+using OhMyWord.Domain.Models;
 
 namespace OhMyWord.Domain.Services.State;
 
@@ -13,12 +12,13 @@ public interface IRoundState : IState
     Guid RoundId { get; }
     Interval Interval { get; }
 
+    Task<RoundStartData> CreateRoundAsync(CancellationToken cancellationToken = default);
     Task<RoundSummary> ExecuteRoundAsync(CancellationToken cancellationToken = default);
 
     void EndRound(RoundEndReason endReason);
     void AddPlayer(Guid playerId);
     Result<int> ProcessGuess(Guid playerId, Guid roundId, string value);
-    StateSnapshot GetSnapshot();
+    RoundStateSnapshot GetSnapshot();
 }
 
 public class RoundState : IRoundState
@@ -26,6 +26,7 @@ public class RoundState : IRoundState
     private readonly ILogger<RoundState> logger;
     private readonly ISessionState sessionState;
     private readonly IRoundService roundService;
+
 
     private Round round = Round.Default;
     private CancellationTokenSource? roundCancellationTokenSource;
@@ -37,38 +38,44 @@ public class RoundState : IRoundState
         this.roundService = roundService;
     }
 
-    public bool IsActive => round != Round.Default && round.IsActive;
+    public bool IsActive => round != Round.Default && round.EndDate > DateTime.UtcNow;
     public Guid RoundId => round.Id;
     public int RoundNumber => round.Number;
     public Interval Interval { get; private set; } = Interval.Default;
     public bool IsDefault => round == Round.Default && Interval == Interval.Default;
 
-    public async Task<RoundSummary> ExecuteRoundAsync(
-        CancellationToken cancellationToken)
+    public async Task<RoundStartData> CreateRoundAsync(CancellationToken cancellationToken)
     {
-        // create new round
         round = await roundService.CreateRoundAsync(sessionState.IncrementRoundCount(), sessionState.SessionId,
             cancellationToken: cancellationToken);
         Interval = new Interval(round.StartDate, round.EndDate);
-        roundCancellationTokenSource = new CancellationTokenSource();
 
-        // send round started notification
-        await SendRoundStartedNotificationAsync(round, cancellationToken);
+        return new RoundStartData
+        {
+            RoundNumber = round.Number,
+            RoundId = round.Id,
+            WordHint = round.WordHint,
+            StartDate = round.StartDate,
+            EndDate = round.EndDate
+        };
+    }
 
-        // create linked cancellation token source
-        using var linkedTokenSource =
-            CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, roundCancellationTokenSource.Token);
+    public async Task<RoundSummary> ExecuteRoundAsync(
+        CancellationToken cancellationToken)
+    {
+        using (roundCancellationTokenSource = new CancellationTokenSource())
+        {
+            // create linked cancellation token source
+            using var linkedTokenSource =
+                CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, roundCancellationTokenSource.Token);
 
-        // execute round
-        var summary = await roundService.ExecuteRoundAsync(round, linkedTokenSource.Token);
+            // execute round
+            var summary = await roundService.ExecuteRoundAsync(round, linkedTokenSource.Token);
+            if (round.EndReason is null)
+                EndRound(RoundEndReason.Timeout);
 
-        if (round.EndReason is null)
-            EndRound(RoundEndReason.Timeout);
-        await SendRoundEndedNotificationAsync(summary, cancellationToken);
-
-        roundCancellationTokenSource.Dispose();
-
-        return summary;
+            return summary;
+        }
     }
 
     public void EndRound(RoundEndReason endReason)
@@ -79,6 +86,7 @@ public class RoundState : IRoundState
         logger.LogInformation("Ending round {RoundId}, reason: {EndReason}", round.Id, endReason);
         round.EndReason = endReason;
         round.EndDate = DateTime.UtcNow;
+        round = Round.Default;
 
         // cancel round in progress
         if (!roundCancellationTokenSource?.IsCancellationRequested ?? false)
@@ -96,7 +104,7 @@ public class RoundState : IRoundState
         }
 
         logger.LogInformation("Adding player: {PlayerId} to round: {RoundId}", playerId, round.Id);
-        round.PlayerData[playerId] = new RoundPlayerData(playerId);
+        round.PlayerData[playerId] = new RoundPlayerData();
     }
 
     public Result<int> ProcessGuess(Guid playerId, Guid roundId, string value)
@@ -146,7 +154,7 @@ public class RoundState : IRoundState
         }
     }
 
-    public StateSnapshot GetSnapshot() => new()
+    public RoundStateSnapshot GetSnapshot() => new()
     {
         RoundActive = IsActive,
         RoundNumber = round.Number,
@@ -160,17 +168,4 @@ public class RoundState : IRoundState
         round = Round.Default;
         Interval = Interval.Default;
     }
-
-    private static Task SendRoundEndedNotificationAsync(RoundSummary summary, CancellationToken cancellationToken)
-        => new RoundEndedEvent(summary).PublishAsync(cancellation: cancellationToken);
-
-    private static Task SendRoundStartedNotificationAsync(Round round, CancellationToken cancellationToken)
-        => new RoundStartedEvent
-        {
-            RoundNumber = round.Number,
-            RoundId = round.Id,
-            WordHint = round.WordHint,
-            StartDate = round.StartDate,
-            EndDate = round.EndDate
-        }.PublishAsync(cancellation: cancellationToken);
 }

@@ -10,7 +10,7 @@ public static class RoundEntityExtensions
         Id = round.Id.ToString(),
         Number = round.Number,
         WordId = round.Word.Id,
-        DefinitionId = round.WordHint.DefinitionId,
+        DefinitionId = round.WordHint.Definition.Id,
         GuessLimit = round.GuessLimit,
         StartDate = round.StartDate,
         EndDate = round.EndDate,

@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using OhMyWord.Core.Models;
 using OhMyWord.Domain.Contracts.Events;
 using OhMyWord.Domain.Extensions;
+using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Options;
 using OhMyWord.Domain.Services.State;
 using OhMyWord.Integrations.Services.Repositories;
@@ -60,16 +61,22 @@ public class RoundService : IRoundService
         var word = await wordQueueService.GetNextWordAsync(reloadWords, cancellationToken);
         var now = DateTime.UtcNow;
 
-        return new Round(playerState.PlayerIds)
+        var round = new Round
         {
             Word = word,
-            WordHint = CreateWordHint(word),
+            WordHint = WordHint.FromWord(word),
             StartDate = now,
             EndDate = now + word.Length * letterHintDelay,
             Number = roundNumber,
             GuessLimit = guessLimit,
-            SessionId = sessionId,
+            SessionId = sessionId
         };
+
+        // create player data for each player
+        foreach (var playerId in playerState.PlayerIds)
+            round.PlayerData[playerId] = new RoundPlayerData();
+
+        return round;
     }
 
     public async Task<RoundSummary> ExecuteRoundAsync(Round round, CancellationToken cancellationToken)
@@ -84,7 +91,7 @@ public class RoundService : IRoundService
 
                 var letterHint = CreateLetterHint(round.Word, index);
                 round.WordHint.LetterHints.Add(letterHint);
-                await new LetterHintAddedEvent(letterHint).PublishAsync(cancellation: cancellationToken);
+                await PublishLetterHintAddedEventAsync(letterHint, cancellationToken);
             }
         }
         catch (TaskCanceledException)
@@ -101,31 +108,31 @@ public class RoundService : IRoundService
         await roundsRepository.CreateRoundAsync(round.ToEntity(), cancellationToken);
 
         // update player scores
-        await Task.WhenAll(round.PlayerData.Values
-            .Where(data => data.PointsAwarded > 0)
-            .Select(data => playerService.IncrementPlayerScoreAsync(data.PlayerId, data.PointsAwarded)));
+        await Task.WhenAll(round.PlayerData
+            .Where(pair => pair.Value.PointsAwarded > 0)
+            .Select(pair => playerService.IncrementPlayerScoreAsync(pair.Key, pair.Value.PointsAwarded)));
     }
 
     private RoundSummary CreateRoundSummary(Round round) =>
         new()
         {
             Word = round.Word.Id,
-            PartOfSpeech = round.WordHint.PartOfSpeech,
+            PartOfSpeech = round.WordHint.Definition.PartOfSpeech,
             EndReason = round.EndReason.GetValueOrDefault(),
             RoundId = round.Id,
-            DefinitionId = round.WordHint.DefinitionId,
+            DefinitionId = round.WordHint.Definition.Id,
             NextRoundStart = DateTime.UtcNow + postRoundDelay,
-            Scores = round.PlayerData.Values
-                .Where(data => data.PointsAwarded > 0)
-                .Select(CreateScoreLine)
+            Scores = round.PlayerData
+                .Where(pair => pair.Value.PointsAwarded > 0)
+                .Select(pair => CreateScoreLine(pair.Key, pair.Value))
         };
 
-    private ScoreLine CreateScoreLine(RoundPlayerData data)
+    private ScoreLine CreateScoreLine(Guid playerId, RoundPlayerData data)
     {
-        var player = playerState.GetPlayerById(data.PlayerId);
+        var player = playerState.GetPlayerById(playerId);
 
         if (player is null)
-            logger.LogWarning("Player {PlayerId} not found when attempting to create score line", data.PlayerId);
+            logger.LogWarning("Player {PlayerId} not found when attempting to create score line", playerId);
 
         return new ScoreLine
         {
@@ -145,17 +152,6 @@ public class RoundService : IRoundService
     private static LetterHint CreateLetterHint(Word word, int index) =>
         new(index + 1, word.Id[index]);
 
-    private static WordHint CreateWordHint(Word word)
-    {
-        // randomly select a definition
-        var definition = word.Definitions.ElementAt(Random.Shared.Next(word.Definitions.Count()));
-
-        return new WordHint
-        {
-            Length = word.Length,
-            Definition = definition.Value,
-            DefinitionId = definition.Id,
-            PartOfSpeech = definition.PartOfSpeech
-        };
-    }
+    private static Task PublishLetterHintAddedEventAsync(LetterHint letterHint, CancellationToken cancellationToken) =>
+        new LetterHintAddedEvent(letterHint).PublishAsync(cancellation: cancellationToken);
 }
