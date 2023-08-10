@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using OhMyWord.Api.Extensions;
 using OhMyWord.Api.Models;
-using OhMyWord.Core.Models;
 using OhMyWord.Domain.Contracts.Commands;
 using OhMyWord.Domain.Contracts.Events;
 using OhMyWord.Domain.Models;
@@ -11,10 +10,10 @@ namespace OhMyWord.Api.Hubs;
 
 public interface IGameHub
 {
-    Task SendRoundStarted(RoundStartData data, CancellationToken cancellationToken = default);
-    Task SendRoundEnded(RoundSummary summary, CancellationToken cancellationToken = default);
+    Task SendRoundStarted(RoundStartedResponse response, CancellationToken cancellationToken = default);
+    Task SendRoundEnded(RoundEndedResponse summary, CancellationToken cancellationToken = default);
     Task SendPlayerCount(int count, CancellationToken cancellationToken = default);
-    Task SendLetterHint(LetterHint letterHint, CancellationToken cancellationToken = default);
+    Task SendLetterHint(LetterHintResponse letterHint, CancellationToken cancellationToken = default);
 }
 
 public class GameHub : Hub<IGameHub>
