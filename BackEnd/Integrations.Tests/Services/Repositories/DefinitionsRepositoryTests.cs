@@ -12,8 +12,8 @@ public class DefinitionsRepositoryTests
 
     public DefinitionsRepositoryTests(CosmosDbEmulatorFixture fixture)
     {
-        definitionsRepository =
-            new DefinitionsRepository(fixture.CosmosClient, fixture.Options, Mock.Of<ILogger<DefinitionsRepository>>());
+        var logger = Substitute.For<ILogger<DefinitionsRepository>>();
+        definitionsRepository = new DefinitionsRepository(fixture.CosmosClient, fixture.Options, logger);
     }
 
     [Fact]
@@ -21,11 +21,11 @@ public class DefinitionsRepositoryTests
     {
         // arrange
         var wordId = Guid.NewGuid().ToString();
-        
+
         // act
         var definitions = await definitionsRepository.GetDefinitions(wordId).ToListAsync();
-        
+
         // assert
-        definitions.Count.Should().Be(0);
+        definitions.Should().BeEmpty();
     }
 }

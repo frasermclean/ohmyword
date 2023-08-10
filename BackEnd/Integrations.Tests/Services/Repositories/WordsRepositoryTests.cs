@@ -14,8 +14,8 @@ public class WordsRepositoryTests
 
     public WordsRepositoryTests(CosmosDbEmulatorFixture fixture)
     {
-        wordsRepository =
-            new WordsRepository(fixture.CosmosClient, fixture.Options, Mock.Of<ILogger<WordsRepository>>());
+        var logger = Substitute.For<ILogger<WordsRepository>>();
+        wordsRepository = new WordsRepository(fixture.CosmosClient, fixture.Options, logger);
     }
 
     [Theory, AutoData]
