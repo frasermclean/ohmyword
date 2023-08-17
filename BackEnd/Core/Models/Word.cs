@@ -4,6 +4,8 @@ public class Word
 {
     public const int MinLength = 4;
     public const int MaxLength = 16;
+    public const double FrequencyMinValue = 1;
+    public const double FrequencyMaxValue = 7;
 
     public required string Id { get; init; } = string.Empty;
 

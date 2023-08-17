@@ -1,4 +1,5 @@
-﻿using OhMyWord.Domain.Services;
+﻿using OhMyWord.Api.Models;
+using OhMyWord.Domain.Services;
 
 namespace OhMyWord.Api.Endpoints.Words.Search;
 
@@ -24,6 +25,9 @@ public class SearchWordsEndpoint : Endpoint<SearchWordsRequest, SearchWordsRespo
 
         await Task.WhenAll(totalTask, wordsTask);
 
-        return new SearchWordsResponse { Total = totalTask.Result, Words = wordsTask.Result };
+        return new SearchWordsResponse
+        {
+            Total = totalTask.Result, Words = wordsTask.Result.Select(WordResponse.FromWord)
+        };
     }
 }

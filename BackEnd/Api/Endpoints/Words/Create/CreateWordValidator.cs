@@ -17,6 +17,6 @@ public class CreateWordValidator : Validator<CreateWordRequest>
             .NotEmpty();
 
         RuleFor(request => request.Frequency)
-            .InclusiveBetween(1, 7);
+            .InclusiveBetween(Word.FrequencyMinValue, Word.FrequencyMaxValue);
     }
 }

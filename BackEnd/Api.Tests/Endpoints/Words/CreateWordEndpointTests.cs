@@ -1,4 +1,5 @@
 ﻿using OhMyWord.Api.Endpoints.Words.Create;
+using OhMyWord.Api.Models;
 using OhMyWord.Api.Tests.Data;
 using OhMyWord.Api.Tests.Fixtures;
 using OhMyWord.Api.Tests.Priority;
@@ -29,7 +30,7 @@ public class CreateWordEndpointTests
         var request = CreateRequest(wordId, partOfSpeech, definition, frequency);
 
         // act
-        var (message, word) = await httpClient.POSTAsync<CreateWordEndpoint, CreateWordRequest, Word>(request);
+        var (message, word) = await httpClient.POSTAsync<CreateWordEndpoint, CreateWordRequest, WordResponse>(request);
 
         // assert
         message.StatusCode.Should().Be(HttpStatusCode.Created);

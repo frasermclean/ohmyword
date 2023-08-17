@@ -61,7 +61,7 @@ public class ModelsTests
     public void WordHint_FromWord_Should_Have_Expected_Properties()
     {
         // arrange
-        var definition = new Definition() { PartOfSpeech = PartOfSpeech.Noun, Value = "test" };
+        var definition = new Definition { PartOfSpeech = PartOfSpeech.Noun, Value = "test" };
         var word = new Word
         {
             Id = "test",
