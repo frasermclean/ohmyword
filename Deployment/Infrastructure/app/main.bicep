@@ -23,6 +23,18 @@ param databaseThroughput int = 400
 @description('Location for the static web app')
 param staticWebAppLocation string = 'centralus'
 
+@description('Name of the container registry')
+param containerRegistryName string
+
+@description('Container registry resource group')
+param containerRegistryResourceGroup string
+
+@description('Container image name')
+param containerImageName string
+
+@description('Container image tag')
+param containerImageTag string
+
 var sharedResourceGroup = 'rg-${appName}-shared'
 
 var tags = {
@@ -32,7 +44,6 @@ var tags = {
 }
 
 var frontendHostname = appEnv == 'prod' ? domainName : 'test.${domainName}'
-var backendHostname = appEnv == 'prod' ? 'api.${domainName}' : 'test.api.${domainName}'
 var databaseId = '${appName}-${appEnv}'
 var appConfigName = 'ac-${appName}-shared'
 var containerAppName = 'ca-${appName}-${appEnv}'
@@ -81,8 +92,8 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-08-15' exis
 }
 
 resource containerRegistry 'Microsoft.ContainerRegistry/registries@2022-12-01' existing = {
-  name: appName
-  scope: resourceGroup(sharedResourceGroup)
+  name: containerRegistryName
+  scope: resourceGroup(containerRegistryResourceGroup)
 }
 
 resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2022-10-01' existing = {
@@ -161,8 +172,8 @@ resource containerApp 'Microsoft.App/containerApps@2022-10-01' = {
     template: {
       containers: [
         {
-          name: containerAppName
-          image: 'ohmyword.azurecr.io/ohmyword-api:latest'
+          name: containerImageName
+          image: '${containerRegistryName}.azurecr.io/${containerImageName}:${containerImageTag}'
           resources: {
             cpu: 1
             memory: '2Gi'
@@ -171,6 +182,21 @@ resource containerApp 'Microsoft.App/containerApps@2022-10-01' = {
             {
               name: 'ASPNETCORE_ENVIRONMENT'
               value: appEnv
+            }
+            {
+              name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+              value: appInsights.properties.ConnectionString
+            }
+          ]
+          probes: [
+            {
+              type: 'Liveness'
+              httpGet: {
+                path: '/health'
+                port: 80
+              }
+              initialDelaySeconds: 30
+              periodSeconds: 60
             }
           ]
         }
@@ -279,7 +305,7 @@ resource signalrServiceRoleAssignment 'Microsoft.Authorization/roleAssignments@2
 
 // shared resource role assignments
 module roleAssignments '../modules/roleAssignments.bicep' = if (attemptRoleAssignments) {
-  name: 'roleAssignments-${containerAppName}'
+  name: 'roleAssignments-${containerApp.name}'
   scope: resourceGroup(sharedResourceGroup)
   params: {
     principalId: containerApp.identity.principalId
