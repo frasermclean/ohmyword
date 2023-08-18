@@ -151,19 +151,6 @@ resource sharedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-0
   tags: tags
 }
 
-// container registry
-resource containerRegistry 'Microsoft.ContainerRegistry/registries@2022-12-01' = {
-  name: workload
-  location: location
-  tags: tags
-  sku: {
-    name: 'Basic'
-  }
-  properties: {
-    adminUserEnabled: true
-  }
-}
-
 // log analytics workspace
 resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
   name: 'law-${workload}-shared'
@@ -476,13 +463,5 @@ module roleAssignments '../modules/roleAssignments.bicep' = if (attemptRoleAssig
     storageAccountRoles: [ 'TableDataContributor' ]
     serviceBusNamespaceName: serviceBusNamespace.name
     serviceBusNamespaceRoles: [ 'DataReceiver' ]
-  }
-}
-
-module sharedIdentityRoleAssignments '../modules/roleAssignments.bicep' = if (attemptRoleAssignments) {
-  name: 'roleAssignments-sharedIdentity'
-  params: {
-    principalId: sharedIdentity.properties.principalId
-    containerRegistryRoles: [ 'AcrPull' ]
   }
 }

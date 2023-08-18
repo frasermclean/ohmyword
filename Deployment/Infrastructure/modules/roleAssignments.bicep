@@ -21,11 +21,6 @@ param serviceBusNamespaceName string = 'sbns-ohmyword-shared'
 @allowed([ 'DataOwner', 'DataReceiver', 'DataSender' ])
 param serviceBusNamespaceRoles array = []
 
-@description('The name of the container registry.')
-param containerRegistryName string = 'ohmyword'
-@allowed([ 'AcrPull', 'AcrPush', 'AcrDelete' ])
-param containerRegistryRoles array = []
-
 var keyVaultRoleIds = {
   Administrator: '00482a5a-887f-4fb3-b363-3b7fe8e74483'
   SecretsUser: '4633458b-17de-408a-b874-0445c86b69e6'
@@ -47,12 +42,6 @@ var serviceBusNamespaceRoleIds = {
   DataSender: '69a216fc-b8fb-44d8-bc22-1f3c2cd27a39'
 }
 
-var containerRegistryRoleIds = {
-  AcrPull: '7f951dda-4ed3-4680-a7ca-43fe172d538d'
-  AcrPush: 'cdda3590-29a3-44f6-95f2-9f980659eb04'
-  AcrDelete: 'c2f4ef07-c644-48eb-af81-4b1b4947fb11'
-}
-
 resource keyVault 'Microsoft.KeyVault/vaults@2022-11-01' existing = {
   name: keyVaultName
 }
@@ -67,10 +56,6 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' existing 
 
 resource serviceBusNamespace 'Microsoft.ServiceBus/namespaces@2022-10-01-preview' existing = {
   name: serviceBusNamespaceName
-}
-
-resource containerRegistry 'Microsoft.ContainerRegistry/registries@2022-12-01' existing = {
-  name: containerRegistryName
 }
 
 // key vault role assignments
@@ -109,16 +94,6 @@ resource serviceBusNamespaceRoleAssignments 'Microsoft.Authorization/roleAssignm
   scope: serviceBusNamespace
   properties: {
     roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', serviceBusNamespaceRoleIds[role])
-    principalId: principalId
-  }
-}]
-
-// container registry role assignments
-resource containerRegistryRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = [for role in containerRegistryRoles: {
-  name: guid(containerRegistry.id, containerRegistryRoleIds[role], principalId)
-  scope: containerRegistry
-  properties: {
-    roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', containerRegistryRoleIds[role])
     principalId: principalId
   }
 }]
