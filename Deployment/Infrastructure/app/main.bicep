@@ -247,6 +247,7 @@ module dnsRecords 'dnsRecords.bicep' = {
     appName: appName
     appEnv: appEnv
     domainName: domainName
+    containerAppIngressAddress: containerApp.properties.configuration.ingress.fqdn
     customDomainVerificationId: containerApp.properties.customDomainVerificationId
     staticWebAppResourceId: staticWebApp.id
     staticWebAppDefaultHostname: staticWebApp.properties.defaultHostname
