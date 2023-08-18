@@ -3,7 +3,7 @@ using Serilog;
 
 namespace OhMyWord.Api;
 
-public static class Program
+public class Program
 {
     public static void Main(string[] args)
     {

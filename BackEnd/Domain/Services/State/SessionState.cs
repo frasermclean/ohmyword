@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
-using OhMyWord.Domain.Models;
+using OhMyWord.Core.Models;
 
 namespace OhMyWord.Domain.Services.State;
 

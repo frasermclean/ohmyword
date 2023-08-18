@@ -1,7 +1,9 @@
 using FluentResults;
-using OhMyWord.Domain.Models;
-using OhMyWord.Infrastructure.Models.Entities;
-using OhMyWord.Infrastructure.Services.Repositories;
+using OhMyWord.Core.Models;
+using OhMyWord.Integrations.Models.Entities;
+using OhMyWord.Integrations.Models.WordsApi;
+using OhMyWord.Integrations.Services.RapidApi.WordsApi;
+using OhMyWord.Integrations.Services.Repositories;
 
 namespace OhMyWord.Domain.Services;
 
@@ -25,7 +27,22 @@ public interface IWordsService
     /// <returns>The total word count.</returns>
     Task<int> GetTotalWordCountAsync(CancellationToken cancellationToken = default);
 
-    Task<Result<Word>> GetWordAsync(string wordId, CancellationToken cancellationToken = default);
+    /// <summary>
+    /// Get a word by its ID.
+    /// </summary>
+    /// <param name="wordId">The word to attempt to find.</param>
+    /// <param name="performExternalLookup">If set to true, will search for the word using an external service.</param>
+    /// <param name="cancellationToken">Task cancellation token.</param>
+    /// <returns>Success if found, failure if not.</returns>
+    Task<Result<Word>> GetWordAsync(string wordId, bool performExternalLookup = false,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Create a new word.
+    /// </summary>
+    /// <param name="word">The <see cref="Word"/> to create.</param>
+    /// <param name="cancellationToken">Task cancellation token.</param>
+    /// <returns>Success if created, failure if not.</returns>
     Task<Result<Word>> CreateWordAsync(Word word, CancellationToken cancellationToken = default);
 
     Task<Result<Word>> UpdateWordAsync(Word word, CancellationToken cancellationToken = default);
@@ -36,17 +53,26 @@ public class WordsService : IWordsService
 {
     private readonly IWordsRepository wordsRepository;
     private readonly IDefinitionsService definitionsService;
+    private readonly IWordsApiClient wordsApiClient;
 
-    public WordsService(IWordsRepository wordsRepository, IDefinitionsService definitionsService)
+
+    public WordsService(IWordsRepository wordsRepository, IDefinitionsService definitionsService,
+        IWordsApiClient wordsApiClient)
     {
         this.wordsRepository = wordsRepository;
         this.definitionsService = definitionsService;
+        this.wordsApiClient = wordsApiClient;
     }
 
     public IAsyncEnumerable<Word> SearchWords(int offset, int limit, string filter, string orderBy, bool isDescending,
         CancellationToken cancellationToken = default) =>
         wordsRepository.SearchWords(offset, limit, filter, orderBy, isDescending, cancellationToken)
-            .SelectAwait(async wordEntity => await MapToWordAsync(wordEntity, cancellationToken));
+            .SelectAwait(async wordEntity =>
+            {
+                var definitions = await definitionsService.GetDefinitions(wordEntity.Id, cancellationToken)
+                    .ToListAsync(cancellationToken);
+                return MapToWord(wordEntity, definitions);
+            });
 
     public IAsyncEnumerable<string> GetAllWordIds(CancellationToken cancellationToken) =>
         wordsRepository.GetAllWordIds(cancellationToken);
@@ -54,13 +80,24 @@ public class WordsService : IWordsService
     public Task<int> GetTotalWordCountAsync(CancellationToken cancellationToken = default) =>
         wordsRepository.GetTotalWordCountAsync(cancellationToken);
 
-    public async Task<Result<Word>> GetWordAsync(string wordId, CancellationToken cancellationToken = default)
+    public async Task<Result<Word>> GetWordAsync(string wordId, bool performExternalLookup,
+        CancellationToken cancellationToken = default)
     {
-        var result = await wordsRepository.GetWordAsync(wordId, cancellationToken);
+        // lookup up using external service if requested
+        if (performExternalLookup)
+        {
+            var details = await wordsApiClient.GetWordDetailsAsync(wordId, cancellationToken);
+            if (details is not null)
+                return MapToWord(details);
+        }
 
-        return result.IsSuccess
-            ? await MapToWordAsync(result.Value, cancellationToken)
-            : result.ToResult();
+        var wordResult = await wordsRepository.GetWordAsync(wordId, cancellationToken);
+
+        return wordResult.IsSuccess
+            ? MapToWord(wordResult.Value, await definitionsService
+                .GetDefinitions(wordId, cancellationToken)
+                .ToListAsync(cancellationToken))
+            : wordResult.ToResult();
     }
 
     public async Task<Result<Word>> CreateWordAsync(Word word, CancellationToken cancellationToken = default)
@@ -89,12 +126,9 @@ public class WordsService : IWordsService
         var definitionResults = await Task.WhenAll(word.Definitions.Select(definition =>
             definitionsService.UpdateDefinitionAsync(word.Id, definition, cancellationToken)));
 
-        definitionResults.Merge();
-        if (definitionResults.Any(result => result.IsFailed))
-        {
-        }
-
-        return MapToWord(wordResult.Value, definitionResults.Select(result => result.Value));
+        return definitionResults.All(result => result.IsSuccess)
+            ? MapToWord(wordResult.Value, definitionResults.Select(result => result.Value))
+            : definitionResults.Merge().ToResult();
     }
 
     public async Task<Result> DeleteWordAsync(string wordId, CancellationToken cancellationToken = default)
@@ -109,19 +143,32 @@ public class WordsService : IWordsService
 
     private static WordEntity MapToEntity(Word word) => new()
     {
-        Id = word.Id, DefinitionCount = word.Definitions.Count(),
+        Id = word.Id,
+        DefinitionCount = word.Definitions.Count(),
+        Frequency = word.Frequency,
+        LastModifiedBy = word.LastModifiedBy
     };
 
-    private static Word MapToWord(Entity entity, IEnumerable<Definition> definitions) => new()
-    {
-        Id = entity.Id, Definitions = definitions, LastModifiedTime = entity.LastModifiedTime
-    };
-
-    private async Task<Word> MapToWordAsync(Entity entity, CancellationToken cancellationToken) => new()
+    private static Word MapToWord(WordEntity entity, IEnumerable<Definition> definitions) => new()
     {
         Id = entity.Id,
-        Definitions = await definitionsService.GetDefinitions(entity.Id, cancellationToken)
-            .ToListAsync(cancellationToken),
+        Definitions = definitions,
+        Frequency = entity.Frequency,
+        LastModifiedBy = entity.LastModifiedBy,
         LastModifiedTime = entity.LastModifiedTime,
+    };
+
+    private static Word MapToWord(WordDetails details) => new()
+    {
+        Id = details.Word,
+        Definitions = details.DefinitionResults.Select(result => new Definition
+        {
+            Id = Guid.NewGuid(),
+            PartOfSpeech = Enum.Parse<PartOfSpeech>(result.PartOfSpeech, true),
+            Value = result.Definition,
+            Example = result.Examples.FirstOrDefault()
+        }),
+        Frequency = details.Frequency,
+        LastModifiedBy = Guid.Empty
     };
 }

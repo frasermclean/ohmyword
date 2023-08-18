@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.FeatureManagement;
 using OhMyWord.Domain.Contracts.Events;
 using OhMyWord.Domain.Options;
-using OhMyWord.Infrastructure.Services.Messaging;
+using OhMyWord.Integrations.Services.Messaging;
 
 namespace OhMyWord.Domain.Contracts.Handlers;
 
@@ -32,8 +32,8 @@ public class PlayerConnectedHandler : IEventHandler<PlayerConnectedEvent>
         if (isFeatureEnabled)
         {
             await using var scope = serviceScopeFactory.CreateAsyncScope();
-            var ipAddressMessageSender = scope.ServiceProvider.GetRequiredService<IIpAddressMessageSender>();
-            await ipAddressMessageSender.SendIpLookupMessageAsync(eventModel.IpAddress);
+            var messageSender = scope.ServiceProvider.GetRequiredService<IMessageSender>();
+            await messageSender.SendIpLookupMessageAsync(eventModel.IpAddress.ToString());
         }
     }
 }

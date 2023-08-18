@@ -4,12 +4,12 @@
     "net7.0": {
       "FastEndpoints": {
         "type": "Direct",
-        "requested": "[5.14.0, )",
-        "resolved": "5.14.0",
-        "contentHash": "VDa3Yu2D2wvHtl1Y0sdLi6F8p7ZG+EFpcqY1PcMQB0XvGSKxqGEBQeMfnIjUAOjcprELp2fPahvIM2EkNlWSYw==",
+        "requested": "[5.15.0, )",
+        "resolved": "5.15.0",
+        "contentHash": "q6/XjhxpGWOeF+cs9ep4vqGZsQo0+mvXyVH7L9fgoN0HHp3GKgqA4BDP85ugn32EKPm9mVuT1Z1avSYH9Q9aQg==",
         "dependencies": {
-          "FastEndpoints.Attributes": "5.14.0",
-          "FastEndpoints.Messaging.Core": "5.14.0",
+          "FastEndpoints.Attributes": "5.15.0",
+          "FastEndpoints.Messaging.Core": "5.15.0",
           "FluentValidation": "11.6.0"
         }
       },
@@ -83,13 +83,13 @@
       },
       "FastEndpoints.Attributes": {
         "type": "Transitive",
-        "resolved": "5.14.0",
-        "contentHash": "V2FTCDqmQehWPHGFlGwLb/U97G68F2T4MLhEgrgN7RGO3r4uy72cxrBO6N/6TwZF07hJ27Cd2c96ZMlBcHUKRA=="
+        "resolved": "5.15.0",
+        "contentHash": "wlCXnBUMhC33tRGwTqFdam31LXCHMJSokdwsF055D8lnZLElbko9r3azWQw13Y5ky+g9Be//GJp2IwrqrYguxg=="
       },
       "FastEndpoints.Messaging.Core": {
         "type": "Transitive",
-        "resolved": "5.14.0",
-        "contentHash": "3hTHJLMmg4TJ4EZZGDfjSHjlSK6TC5AMwKL6tQPqKXnLLNOLFfTSk+eHPrAPJexeOCvHgjAnNdHwBjqmp0WTMw=="
+        "resolved": "5.15.0",
+        "contentHash": "hB06RVsE6dTgbHrxDyZwJCEvPDZlgeo6H+/ayq0emXYpdSv4JZBWHe999jwAD8HFj0BVnLiK9+QC/g5i5FYL7Q=="
       },
       "FluentResults": {
         "type": "Transitive",
@@ -1193,7 +1193,10 @@
         "resolved": "2.0.0",
         "contentHash": "GbetWNcPIaXvWtanHlBqlEp2KflFrsJf8RBNXmI8Yyeft9CSGxNrcsoKWEiEzyrn7gGVQ25ZC6ep9UfWPR0Otw=="
       },
-      "OhMyWord.Infrastructure": {
+      "OhMyWord.Core": {
+        "type": "Project"
+      },
+      "OhMyWord.Integrations": {
         "type": "Project",
         "dependencies": {
           "Azure.Data.Tables": "[12.8.0, )",
@@ -1210,6 +1213,7 @@
           "Microsoft.Extensions.Options.ConfigurationExtensions": "[7.0.0, )",
           "Microsoft.Extensions.Options.DataAnnotations": "[7.0.0, )",
           "Microsoft.Graph": "[5.20.0, )",
+          "OhMyWord.Core": "[1.0.0, )",
           "System.Linq.Async": "[6.0.1, )"
         }
       }

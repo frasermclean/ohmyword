@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using OhMyWord.Api.Hubs;
+using OhMyWord.Api.Models;
 using OhMyWord.Domain.Contracts.Events;
 
 namespace OhMyWord.Api.Handlers;
@@ -13,6 +14,9 @@ public class LetterHintAddedHandler : IEventHandler<LetterHintAddedEvent>
         this.gameHubContext = gameHubContext;
     }
 
-    public Task HandleAsync(LetterHintAddedEvent eventModel, CancellationToken cancellationToken = new())
-        => gameHubContext.Clients.All.SendLetterHint(eventModel.LetterHint, cancellationToken);
+    public async Task HandleAsync(LetterHintAddedEvent eventModel, CancellationToken cancellationToken)
+    {
+        var response = LetterHintResponse.FromLetterHint(eventModel.LetterHint);
+        await gameHubContext.Clients.All.SendLetterHint(response, cancellationToken);
+    }
 }

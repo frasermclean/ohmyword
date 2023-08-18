@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using OhMyWord.Api.Hubs;
+using OhMyWord.Api.Models;
 using OhMyWord.Domain.Contracts.Events;
 
 namespace OhMyWord.Api.Handlers;
@@ -13,6 +14,9 @@ public class RoundEndedHandler : IEventHandler<RoundEndedEvent>
         this.gameHubContext = gameHubContext;
     }
 
-    public Task HandleAsync(RoundEndedEvent eventModel, CancellationToken cancellationToken = new())
-        => gameHubContext.Clients.All.SendRoundEnded(eventModel.Summary, cancellationToken);
+    public async Task HandleAsync(RoundEndedEvent eventModel, CancellationToken cancellationToken)
+    {
+        var response = RoundEndedResponse.FromRoundSummary(eventModel.Summary);
+        await gameHubContext.Clients.All.SendRoundEnded(response, cancellationToken);
+    }
 }

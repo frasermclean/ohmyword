@@ -30,7 +30,15 @@ public static class MiddlewarePipelineConfiguration
             config.Endpoints.RoutePrefix = "api";
             config.Endpoints.Configurator = endpoint =>
             {
-                endpoint.Roles("admin");
+                var isAuthorizationEnabled = app.Configuration.GetValue("FeatureManagement:Authorization", true);
+                if (isAuthorizationEnabled)
+                {
+                    endpoint.Roles("admin");
+                }
+                else
+                {
+                    endpoint.AllowAnonymous();
+                }
             };
             config.Serializer.Options.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
         });

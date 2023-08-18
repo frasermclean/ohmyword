@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using OhMyWord.Domain.Models;
+using OhMyWord.Core.Models;
 
 namespace OhMyWord.Api.Endpoints.Words.Create;
 
@@ -8,7 +8,6 @@ public class CreateWordValidator : Validator<CreateWordRequest>
     public CreateWordValidator()
     {
         RuleFor(request => request.Id)
-            .Cascade(CascadeMode.Stop)
             .NotEmpty()
             .Length(Word.MinLength, Word.MaxLength)
             .Must(id => id.All(Char.IsLetter))
@@ -16,5 +15,8 @@ public class CreateWordValidator : Validator<CreateWordRequest>
 
         RuleFor(request => request.Definitions)
             .NotEmpty();
+
+        RuleFor(request => request.Frequency)
+            .InclusiveBetween(Word.FrequencyMinValue, Word.FrequencyMaxValue);
     }
 }

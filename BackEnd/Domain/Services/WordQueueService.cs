@@ -1,5 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
-using OhMyWord.Domain.Models;
+using Microsoft.Extensions.Logging;
+using OhMyWord.Core.Models;
 
 namespace OhMyWord.Domain.Services;
 
@@ -61,7 +61,7 @@ public class WordQueueService : IWordQueueService
             return Word.Default;
         }
 
-        var result = await wordsService.GetWordAsync(wordId, cancellationToken);
+        var result = await wordsService.GetWordAsync(wordId, cancellationToken: cancellationToken);
         return result.IsSuccess ? result.Value : Word.Default;
     }
 

@@ -1,11 +1,14 @@
-﻿using OhMyWord.Api.Endpoints.Words.Get;
-using OhMyWord.Domain.Models;
+using Microsoft.AspNetCore.Http.HttpResults;
+using OhMyWord.Api.Extensions;
+using OhMyWord.Api.Models;
+using OhMyWord.Core.Models;
 using OhMyWord.Domain.Services;
-using OhMyWord.Infrastructure.Errors;
+using static Microsoft.AspNetCore.Http.TypedResults;
 
 namespace OhMyWord.Api.Endpoints.Words.Create;
 
-public class CreateWordEndpoint : Endpoint<CreateWordRequest, Word>
+[HttpPost("words")]
+public class CreateWordEndpoint : Endpoint<CreateWordRequest, Results<Created<WordResponse>, Conflict>>
 {
     private readonly IWordsService wordsService;
 
@@ -14,24 +17,21 @@ public class CreateWordEndpoint : Endpoint<CreateWordRequest, Word>
         this.wordsService = wordsService;
     }
 
-    public override void Configure()
+    public override async Task<Results<Created<WordResponse>, Conflict>> ExecuteAsync(CreateWordRequest request,
+        CancellationToken cancellationToken)
     {
-        Post("words");
-    }
-
-    public override async Task HandleAsync(CreateWordRequest request, CancellationToken cancellationToken)
-    {
-        var result = await wordsService.CreateWordAsync(new Word { Id = request.Id, Definitions = request.Definitions },
+        var result = await wordsService.CreateWordAsync(
+            new Word
+            {
+                Id = request.Id,
+                Definitions = request.Definitions,
+                Frequency = request.Frequency,
+                LastModifiedBy = HttpContext.User.GetUserId()
+            },
             cancellationToken);
 
-        if (result.HasError<ItemConflictError>())
-        {
-            AddError(r => r.Id, $"A word with ID: {request.Id} already exists.");            
-            await SendErrorsAsync(StatusCodes.Status409Conflict, cancellationToken);
-            return;
-        }
-
-        await SendCreatedAtAsync<GetWordEndpoint>(new { WordId = result.Value.Id }, result.Value,
-            cancellation: cancellationToken);
+        return result.IsSuccess
+            ? Created($"/words/{result.Value.Id}", WordResponse.FromWord(result.Value))
+            : Conflict();
     }
 }

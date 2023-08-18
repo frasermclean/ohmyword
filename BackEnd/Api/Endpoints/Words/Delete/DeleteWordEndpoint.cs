@@ -1,9 +1,11 @@
-﻿using OhMyWord.Domain.Services;
-using OhMyWord.Infrastructure.Errors;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using OhMyWord.Domain.Services;
+using static Microsoft.AspNetCore.Http.TypedResults;
 
 namespace OhMyWord.Api.Endpoints.Words.Delete;
 
-public class DeleteWordEndpoint : Endpoint<DeleteWordRequest>
+[HttpDelete("/words/{wordId}")]
+public class DeleteWordEndpoint : Endpoint<DeleteWordRequest, Results<NoContent, NotFound>>
 {
     private readonly IWordsService wordsService;
 
@@ -12,21 +14,13 @@ public class DeleteWordEndpoint : Endpoint<DeleteWordRequest>
         this.wordsService = wordsService;
     }
 
-    public override void Configure()
-    {
-        Delete("words/{wordId}");
-    }
-
-    public override async Task HandleAsync(DeleteWordRequest request, CancellationToken cancellationToken)
+    public override async Task<Results<NoContent, NotFound>> ExecuteAsync(DeleteWordRequest request,
+        CancellationToken cancellationToken)
     {
         var result = await wordsService.DeleteWordAsync(request.WordId, cancellationToken);
 
-        if (result.HasError<ItemNotFoundError>())
-        {
-            await SendNotFoundAsync(cancellationToken);
-            return;
-        }
-
-        await SendNoContentAsync(cancellationToken);
+        return result.IsSuccess
+            ? NoContent()
+            : NotFound();
     }
 }

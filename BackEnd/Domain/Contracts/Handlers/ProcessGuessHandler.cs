@@ -1,7 +1,7 @@
 ﻿using FastEndpoints;
 using Microsoft.Extensions.Logging;
 using OhMyWord.Domain.Contracts.Commands;
-using OhMyWord.Domain.Contracts.Results;
+using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Services.State;
 
 namespace OhMyWord.Domain.Contracts.Handlers;

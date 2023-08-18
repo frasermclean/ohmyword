@@ -1,7 +1,9 @@
-﻿using OhMyWord.Domain.Services;
+﻿using OhMyWord.Api.Models;
+using OhMyWord.Domain.Services;
 
 namespace OhMyWord.Api.Endpoints.Words.Search;
 
+[HttpGet("words")]
 public class SearchWordsEndpoint : Endpoint<SearchWordsRequest, SearchWordsResponse>
 {
     private readonly IWordsService wordsService;
@@ -9,11 +11,6 @@ public class SearchWordsEndpoint : Endpoint<SearchWordsRequest, SearchWordsRespo
     public SearchWordsEndpoint(IWordsService wordsService)
     {
         this.wordsService = wordsService;
-    }
-
-    public override void Configure()
-    {
-        Get("words");
     }
 
     public override async Task<SearchWordsResponse> ExecuteAsync(SearchWordsRequest request,
@@ -28,6 +25,9 @@ public class SearchWordsEndpoint : Endpoint<SearchWordsRequest, SearchWordsRespo
 
         await Task.WhenAll(totalTask, wordsTask);
 
-        return new SearchWordsResponse { Total = totalTask.Result, Words = wordsTask.Result };
+        return new SearchWordsResponse
+        {
+            Total = totalTask.Result, Words = wordsTask.Result.Select(WordResponse.FromWord)
+        };
     }
 }
