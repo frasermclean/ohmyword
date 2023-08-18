@@ -1,4 +1,5 @@
-﻿using Microsoft.FeatureManagement;
+﻿using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.FeatureManagement;
 using OhMyWord.Api.Services;
 using OhMyWord.Domain.DependencyInjection;
 using OhMyWord.Integrations.DependencyInjection;
@@ -20,17 +21,21 @@ public static class HostConfiguration
         return builder.Build();
     }
 
-    private static void ConfigureSerilog(HostBuilderContext context, IServiceProvider provider,
+    private static void ConfigureSerilog(HostBuilderContext context, IServiceProvider serviceProvider,
         LoggerConfiguration configuration)
     {
+        var telemetryConfiguration = serviceProvider.GetRequiredService<TelemetryConfiguration>();
         configuration
-            .ReadFrom.Configuration(context.Configuration)
-            .ReadFrom.Services(provider);
+            .MinimumLevel.Information()
+            .Enrich.FromLogContext()
+            .WriteTo.Console()
+            .WriteTo.ApplicationInsights(telemetryConfiguration, TelemetryConverter.Traces);
     }
 
     private static void AddServices(HostBuilderContext context, IServiceCollection collection)
     {
         collection
+            .AddApplicationInsightsTelemetry()
             .AddMicrosoftIdentityAuthentication(context.Configuration)
             .AddSignalRServices(context.Configuration)
             .AddFastEndpoints()
