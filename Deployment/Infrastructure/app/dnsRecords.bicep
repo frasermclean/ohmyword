@@ -1,8 +1,5 @@
 targetScope = 'resourceGroup'
 
-@description('Name of the application / workload')
-param appName string
-
 @description('Application environment')
 @allowed([ 'prod', 'test' ])
 param appEnv string

@@ -6,15 +6,35 @@ param cosmosDbAccountName string
 @description('ID of the database')
 param databaseId string
 
-@description('Containers to create in the database.')
-param databaseContainers array
-
 @description('Database request units per second.')
 @minValue(400)
 param databaseThroughput int
 
-@description('The principal ID of the app service. This is used to assign the database contributor role to the app service.')
-param appServicePrincipalId string
+@description('Principal ID used to assign the database contributor role to.')
+param principalId string
+
+var databaseContainers = [
+  {
+    id: 'words'
+    partitionKeyPath: '/id'
+  }
+  {
+    id: 'definitions'
+    partitionKeyPath: '/wordId'
+  }
+  {
+    id: 'players'
+    partitionKeyPath: '/id'
+  }
+  {
+    id: 'rounds'
+    partitionKeyPath: '/sessionId'
+  }
+  {
+    id: 'sessions'
+    partitionKeyPath: '/id'
+  }
+]
 
 resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-11-15' existing = {
   name: cosmosDbAccountName
@@ -68,10 +88,10 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-11-15' exis
 
   // custom role assignment for the database
   resource roleAssignment 'sqlRoleAssignments' = {
-    name: guid(cosmosDbAccount.name, databaseId, appServicePrincipalId)
+    name: guid(cosmosDbAccount.name, databaseId, principalId)
     properties: {
       roleDefinitionId: roleDefinition.id
-      principalId: appServicePrincipalId
+      principalId: principalId
       scope: '${cosmosDbAccount.id}/dbs/${databaseId}'
     }
   }

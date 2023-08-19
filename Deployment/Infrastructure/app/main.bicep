@@ -1,7 +1,7 @@
 targetScope = 'resourceGroup'
 
 @description('Name of the application / workload')
-param appName string = 'ohmyword'
+param workload string = 'ohmyword'
 
 @description('Application environment')
 @allowed([ 'prod', 'test' ])
@@ -35,18 +35,18 @@ param containerImageName string
 @description('Container image tag')
 param containerImageTag string
 
-var sharedResourceGroup = 'rg-${appName}-shared'
+@description('Shared resource group')
+param sharedResourceGroup string = '${workload}-shared'
 
 var tags = {
-  workload: appName
+  workload: workload
   category: 'app'
   environment: appEnv
 }
 
 var frontendHostname = appEnv == 'prod' ? domainName : 'test.${domainName}'
-var databaseId = '${appName}-${appEnv}'
-var appConfigName = 'ac-${appName}-shared'
-var containerAppName = 'ca-${appName}-${appEnv}'
+var appConfigName = '${workload}-ac'
+var databaseId = '${workload}-${appEnv}'
 
 @description('Azure AD B2C client ID of single page application')
 var authClientId = appEnv == 'prod' ? 'ee95c3c0-c6f7-4675-9097-0e4d9bca14e3' : '1f427277-e4b2-4f9b-97b1-4f47f4ff03c0'
@@ -54,40 +54,8 @@ var authClientId = appEnv == 'prod' ? 'ee95c3c0-c6f7-4675-9097-0e4d9bca14e3' : '
 @description('Azure AD B2C audience for API to validate')
 var authAudience = appEnv == 'prod' ? '7a224ce3-b92f-4525-a563-a79856d04a78' : 'f1f90898-e7c9-40b0-8ebf-103c2b0b1e72'
 
-var databaseContainers = [
-  {
-    id: 'words'
-    partitionKeyPath: '/id'
-  }
-  {
-    id: 'definitions'
-    partitionKeyPath: '/wordId'
-  }
-  {
-    id: 'players'
-    partitionKeyPath: '/id'
-  }
-  {
-    id: 'rounds'
-    partitionKeyPath: '/sessionId'
-  }
-  {
-    id: 'sessions'
-    partitionKeyPath: '/id'
-  }
-]
-
-resource virtualNetwork 'Microsoft.Network/virtualNetworks@2022-09-01' existing = {
-  name: 'vnet-${appName}'
-  scope: resourceGroup(sharedResourceGroup)
-
-  resource subnet 'subnets' existing = {
-    name: 'snet-apps'
-  }
-}
-
 resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-08-15' existing = {
-  name: 'cosmos-${appName}-shared'
+  name: '${workload}-cosmos'
   scope: resourceGroup(sharedResourceGroup)
 }
 
@@ -97,17 +65,17 @@ resource containerRegistry 'Microsoft.ContainerRegistry/registries@2022-12-01' e
 }
 
 resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2022-10-01' existing = {
-  name: 'cae-${appName}-shared'
+  name: '${workload}-cae'
   scope: resourceGroup(sharedResourceGroup)
 }
 
 resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' existing = {
-  name: 'law-${appName}-shared'
+  name: '${workload}-law'
   scope: resourceGroup(sharedResourceGroup)
 }
 
 resource sharedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' existing = {
-  name: 'id-${appName}-shared'
+  name: '${workload}-id'
   scope: resourceGroup(sharedResourceGroup)
 }
 
@@ -118,15 +86,14 @@ module database 'database.bicep' = {
   params: {
     cosmosDbAccountName: cosmosDbAccount.name
     databaseId: databaseId
-    databaseContainers: databaseContainers
     databaseThroughput: databaseThroughput
-    appServicePrincipalId: containerApp.identity.principalId
+    principalId: containerApp.identity.principalId
   }
 }
 
 // application insights
 resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
-  name: toLower('appi-${appName}-${appEnv}')
+  name: toLower('${workload}-${appEnv}-appi')
   location: location
   tags: tags
   kind: 'web'
@@ -139,7 +106,7 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
 
 // container app
 resource containerApp 'Microsoft.App/containerApps@2022-10-01' = {
-  name: containerAppName
+  name: '${workload}-${appEnv}-ca'
   location: location
   tags: tags
   identity: {
@@ -187,6 +154,10 @@ resource containerApp 'Microsoft.App/containerApps@2022-10-01' = {
               name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
               value: appInsights.properties.ConnectionString
             }
+            {
+              name: 'APP_CONFIG_ENDPOINT'
+              value: 'https://${appConfigName}.azconfig.io'
+            }
           ]
           probes: [
             {
@@ -211,7 +182,7 @@ resource containerApp 'Microsoft.App/containerApps@2022-10-01' = {
 
 // static web app
 resource staticWebApp 'Microsoft.Web/staticSites@2022-03-01' = {
-  name: 'swa-${appName}-${appEnv}'
+  name: '${workload}-${appEnv}-swa'
   location: staticWebAppLocation
   tags: tags
   sku: {
@@ -244,7 +215,6 @@ module dnsRecords 'dnsRecords.bicep' = {
   name: 'dnsRecords-${appEnv}'
   scope: resourceGroup(sharedResourceGroup)
   params: {
-    appName: appName
     appEnv: appEnv
     domainName: domainName
     containerAppIngressAddress: containerApp.properties.configuration.ingress.fqdn
@@ -256,7 +226,7 @@ module dnsRecords 'dnsRecords.bicep' = {
 
 // azure signalr service
 resource signalrService 'Microsoft.SignalRService/signalR@2023-02-01' = {
-  name: 'sigr-${appName}-${appEnv}'
+  name: '${workload}-${appEnv}-sigr'
   location: location
   tags: tags
   kind: 'SignalR'
@@ -306,7 +276,7 @@ resource signalrServiceRoleAssignment 'Microsoft.Authorization/roleAssignments@2
 
 // shared resource role assignments
 module roleAssignments '../modules/roleAssignments.bicep' = if (attemptRoleAssignments) {
-  name: 'roleAssignments-${containerApp.name}'
+  name: 'roleAssignments-${appEnv}'
   scope: resourceGroup(sharedResourceGroup)
   params: {
     principalId: containerApp.identity.principalId

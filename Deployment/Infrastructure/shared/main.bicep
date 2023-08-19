@@ -24,7 +24,7 @@ param functionsResourceGroup string
 
 var tags = {
   workload: workload
-  environment: 'shared'
+  category: 'shared'
 }
 
 // dns zone for the application
@@ -59,8 +59,8 @@ resource dnsZone 'Microsoft.Network/dnsZones@2018-05-01' = {
 }
 
 // cosmos db account
-resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-08-15' = {
-  name: 'cosmos-${workload}-shared'
+resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2023-04-15' = {
+  name: '${workload}-cosmos'
   location: location
   tags: tags
   properties: {
@@ -69,31 +69,28 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-08-15' = {
     backupPolicy: {
       type: 'Continuous'
     }
-    consistencyPolicy: {
-      defaultConsistencyLevel: 'Session'
-    }
     capacity: {
       totalThroughputLimit: totalThroughputLimit
     }
+    consistencyPolicy: {
+      defaultConsistencyLevel: 'Session'
+    }
     locations: [
-      {
-        locationName: location
-      }
+      { locationName: location }
     ]
-    isVirtualNetworkFilterEnabled: false
   }
 }
 
 // user assigned identity
 resource sharedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
-  name: 'id-${workload}-shared'
+  name: '${workload}-id'
   location: location
   tags: tags
 }
 
 // log analytics workspace
 resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
-  name: 'law-${workload}-shared'
+  name: '${workload}-law'
   location: location
   tags: tags
   properties: {
@@ -150,7 +147,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
 
 // container apps environment
 resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2022-10-01' = {
-  name: 'cae-${workload}-shared'
+  name: '${workload}-cae'
   location: location
   tags: tags
   properties: {
@@ -164,23 +161,9 @@ resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2022-10-01'
   }
 }
 
-// app service plan for app services and function apps
-resource appServicePlan 'Microsoft.Web/serverfarms@2022-09-01' = {
-  name: 'asp-${workload}-shared'
-  location: location
-  tags: tags
-  kind: 'linux'
-  sku: {
-    name: 'B2'
-  }
-  properties: {
-    reserved: true
-  }
-}
-
 // app configuration
 resource appConfiguration 'Microsoft.AppConfiguration/configurationStores@2022-05-01' = {
-  name: 'ac-${workload}-shared'
+  name: '${workload}-ac'
   location: location
   tags: tags
   sku: {
@@ -297,7 +280,7 @@ resource appConfiguration 'Microsoft.AppConfiguration/configurationStores@2022-0
 
 // key vault
 resource keyVault 'Microsoft.KeyVault/vaults@2023-02-01' = {
-  name: 'kv-${workload}-shared'
+  name: '${workload}-kv'
   location: location
   tags: tags
   properties: {
@@ -323,7 +306,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-02-01' = {
 
 // service bus namespace
 resource serviceBusNamespace 'Microsoft.ServiceBus/namespaces@2022-10-01-preview' = {
-  name: 'sbns-${workload}-shared'
+  name: '${workload}-sbns'
   location: location
   tags: tags
   sku: {
