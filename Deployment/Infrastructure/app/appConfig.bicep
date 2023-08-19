@@ -23,7 +23,7 @@ param ipLookupFeatureEnabled bool = true
 param signalRServiceHostname string
 
 resource keyVault 'Microsoft.KeyVault/vaults@2022-11-01' existing = {
-  name: 'kv-ohmyword-shared'
+  name: 'ohmyword-kv'
 
   resource rapidApiKeySecret 'secrets' existing = {
     name: 'rapidApi-key-${appEnv}'

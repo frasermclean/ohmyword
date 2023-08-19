@@ -34,4 +34,4 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
 }
 
 @description('Azure B2C Tenant ID')
-output b2cTenantId string = b2cTenant.id
+output b2cTenantId string = b2cTenant.properties.tenantId
