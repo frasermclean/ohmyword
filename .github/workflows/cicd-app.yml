@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - develop
+      - feature/container-apps
     paths:
       - .github/workflows/cicd-app.yml
       - FrontEnd/**
@@ -124,22 +125,6 @@ jobs:
           OhMyWord_RapidApi__ApiKey: ${{ secrets.RAPID_API_KEY }}
           OhMyWord_GraphApiClient__ClientSecret: ${{ secrets.GRAPH_API_CLIENT_SECRET }}
 
-      # Publish application
-      - name: Publish application
-        working-directory: ./BackEnd/Api
-        run: dotnet publish --configuration $BUILD_CONFIGURATION --os $PUBLISH_OS --output $PUBLISH_DIRECTORY
-
-      # Delete app settings file
-      - name: Remove development settings
-        run: rm $PUBLISH_DIRECTORY/appsettings.Development.json
-
-      # Upload published application artifact
-      - name: Upload published application artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: backend-app
-          path: ${{ env.PUBLISH_DIRECTORY }}
-
   # Deploy shared infrastructure
   deploy-shared-infra:
     name: Deploy shared infrastructure
@@ -251,6 +236,10 @@ jobs:
     env:
       APP_NAME: ${{ github.ref_name == 'main' && 'app-ohmyword-prod' || 'app-ohmyword-test' }}
     steps:
+      # Check out the repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
       # Login to Azure
       - uses: azure/login@v1
         name: Login to Azure
@@ -259,15 +248,11 @@ jobs:
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
-      # Download application artifact
-      - name: Download application artifact
-        uses: actions/download-artifact@v3
+      # Build and deploy Container App
+      - name: Build and deploy Container App
+        uses: azure/container-apps-deploy-action@v1
         with:
-          name: backend-app
-
-      # Deploy to Azure app service
-      - name: Deploy to Azure Web App
-        id: deploy-to-webapp
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: ${{ env.APP_NAME }}
+          appSourcePath: ${{ github.workspace }}/BackEnd
+          acrName: ${{ vars.AZURE_CONTAINER_REGISTRY }}
+          containerAppName: ohmyword-api
+          resourceGroup: ${{ vars.APP_RESOURCE_GROUP }}
