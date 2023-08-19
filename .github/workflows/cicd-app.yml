@@ -132,7 +132,7 @@ jobs:
     if: github.event_name != 'pull_request'
     with:
       environment: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
-      resourceGroupName: rg-ohmyword-shared
+      resourceGroupName: ohmyword-shared
       tenant-id: ${{ vars.AZURE_TENANT_ID }}
       subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
       client-id: ${{ vars.AZURE_CLIENT_ID }}

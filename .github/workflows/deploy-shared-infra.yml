@@ -53,7 +53,9 @@ jobs:
           resourceGroupName: ${{ inputs.resourceGroupName }}
           template: ${{ env.TEMPLATE_ROOT }}/shared/main.bicep
           scope: resourcegroup
-          parameters: ${{ env.TEMPLATE_ROOT }}/shared/main.bicepparam
+          parameters: >-
+            ${{ env.TEMPLATE_ROOT }}/shared/main.bicepparam
+            attemptRoleAssignments=false
 
       # Upload published application artifact
       - name: Upload artifact
