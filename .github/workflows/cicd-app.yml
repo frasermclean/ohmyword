@@ -159,7 +159,7 @@ jobs:
       id-token: write
     env:
       TEMPLATE_ROOT: ${{ github.workspace }}/templates
-      RESOURCE_GROUP_NAME: rg-ohmyword-${{ github.ref_name == 'main' && 'prod' || 'test' }}
+      RESOURCE_GROUP_NAME: ohmyword-${{ github.ref_name == 'main' && 'prod' || 'test' }}
       APPLICATION_ENVIRONMENT: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
     steps:
       # Download application artifact
