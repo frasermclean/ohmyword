@@ -4,17 +4,19 @@
     <RootNamespace>OhMyWord.Functions</RootNamespace>
     <AssemblyName>OhMyWord.Functions</AssemblyName>
     <AzureFunctionsVersion>V4</AzureFunctionsVersion>
-    <OutputType>Exe</OutputType>    
+    <OutputType>Exe</OutputType>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <RunTimeIdentifier>linux-x64</RunTimeIdentifier>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="AspNetCore.HealthChecks.CosmosDb" Version="6.1.0" />
-    <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.19.0" />
-    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.1.0" />
-    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.ServiceBus" Version="5.12.0" />
-    <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="1.14.0" OutputItemType="Analyzer" />
+    <PackageReference Include="AspNetCore.HealthChecks.CosmosDb" Version="6.1.0"/>
+    <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.19.0"/>
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.1.0"/>
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.ServiceBus" Version="5.12.0"/>
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="1.14.0" OutputItemType="Analyzer"/>
   </ItemGroup>
   <ItemGroup>
     <None Update="host.json">
@@ -26,9 +28,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Using Include="System.Threading.ExecutionContext" Alias="ExecutionContext" />
+    <Using Include="System.Threading.ExecutionContext" Alias="ExecutionContext"/>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\BackEnd\Domain\Domain.csproj" />
+    <ProjectReference Include="..\BackEnd\Domain\Domain.csproj"/>
   </ItemGroup>
 </Project>
