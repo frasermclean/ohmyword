@@ -195,7 +195,7 @@ jobs:
   deploy-functions-app:
     name: Deploy Functions application
     uses: ./.github/workflows/deploy-functions-app.yml
-    needs: deploy-shared-infra
+    needs: deploy-infra
     secrets:
       PUBLISH_PROFILE: ${{ secrets.AZURE_FUNCTIONS_PUBLISH_PROFILE }}
 
