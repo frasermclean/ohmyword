@@ -132,11 +132,12 @@ jobs:
           dotnet publish
           --configuration $BUILD_CONFIGURATION
           --runtime $PUBLISH_RUNTIME
-          --output $PUBLISH_DIRECTORY
+          --output $PUBLISH_DIRECTORY/publish
 
-      # Delete app settings file
-      - name: Remove development settings
-        run: rm $PUBLISH_DIRECTORY/appsettings.Development.json
+      # Copy Dockerfile
+      - name: Copy Dockerfile
+        working-directory: ./BackEnd/Api
+        run: cp Dockerfile $PUBLISH_DIRECTORY
 
       # Upload published application artifact
       - name: Upload published application artifact
@@ -254,11 +255,14 @@ jobs:
     permissions:
       id-token: write
     env:
-      APP_NAME: ${{ github.ref_name == 'main' && 'app-ohmyword-prod' || 'app-ohmyword-test' }}
+      APP_PATH: ${{ github.workspace }}/app
     steps:
-      # Check out the repository
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      # Download application artifact
+      - name: Download application artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: backend-app
+          path: ${{ env.APP_PATH }}
 
       # Login to Azure
       - uses: azure/login@v1
@@ -272,7 +276,7 @@ jobs:
       - name: Build and deploy Container App
         uses: azure/container-apps-deploy-action@v1
         with:
-          appSourcePath: ${{ github.workspace }}/BackEnd
+          appSourcePath: ${{ env.APP_PATH }}
           acrName: ${{ vars.AZURE_CONTAINER_REGISTRY }}
-          containerAppName: ohmyword-api
+          containerAppName: ${{ vars.CONTAINER_APP_NAME }}
           resourceGroup: ${{ vars.APP_RESOURCE_GROUP }}
