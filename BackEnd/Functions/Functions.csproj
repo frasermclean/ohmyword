@@ -29,6 +29,6 @@
     <Using Include="System.Threading.ExecutionContext" Alias="ExecutionContext"/>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\BackEnd\Domain\Domain.csproj"/>
+    <ProjectReference Include="..\Domain\Domain.csproj"/>
   </ItemGroup>
 </Project>
