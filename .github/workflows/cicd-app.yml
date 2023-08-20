@@ -310,5 +310,6 @@ jobs:
         with:
           appSourcePath: ${{ env.APP_PATH }}
           acrName: ${{ vars.AZURE_CONTAINER_REGISTRY }}
+          imageToBuild: ${{ vars.AZURE_CONTAINER_REGISTRY }}.azurecr.io/ohmyword-api:${{ github.sha }}
           containerAppName: ${{ vars.CONTAINER_APP_NAME }}
           resourceGroup: ${{ vars.APP_RESOURCE_GROUP }}
