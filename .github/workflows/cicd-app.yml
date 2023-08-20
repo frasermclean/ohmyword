@@ -87,7 +87,7 @@ jobs:
       name: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
     env:
       BUILD_CONFIGURATION: Release
-      PUBLISH_OS: linux
+      PUBLISH_RUNTIME: linux-x64
       PUBLISH_DIRECTORY: ${{ github.workspace }}/app
     steps:
       # Check out the repository
@@ -124,6 +124,26 @@ jobs:
         env:
           OhMyWord_RapidApi__ApiKey: ${{ secrets.RAPID_API_KEY }}
           OhMyWord_GraphApiClient__ClientSecret: ${{ secrets.GRAPH_API_CLIENT_SECRET }}
+      
+      # Publish application
+      - name: Publish application
+        working-directory: ./BackEnd/Api
+        run: >-
+          dotnet publish
+            --configuration $BUILD_CONFIGURATION
+            --runtime $PUBLISH_RUNTIME
+            --output $PUBLISH_DIRECTORY
+
+      # Delete app settings file
+      - name: Remove development settings
+        run: rm $PUBLISH_DIRECTORY/appsettings.Development.json
+
+      # Upload published application artifact
+      - name: Upload published application artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: backend-app
+          path: ${{ env.PUBLISH_DIRECTORY }}
 
   # Deploy shared infrastructure
   deploy-shared-infra:
