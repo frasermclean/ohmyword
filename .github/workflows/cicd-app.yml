@@ -257,14 +257,6 @@ jobs:
           name: frontend-app
           path: ${{ env.APP_PATH }}
 
-      # Login to Azure
-      - uses: azure/login@v1
-        name: Login to Azure
-        with:
-          client-id: ${{ vars.AZURE_CLIENT_ID }}
-          tenant-id: ${{ vars.AZURE_TENANT_ID }}
-          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-
       # Deploy application
       - uses: azure/static-web-apps-deploy@v1
         name: Deploy application
@@ -307,9 +299,11 @@ jobs:
       # Build and deploy Container App
       - name: Build and deploy Container App
         uses: azure/container-apps-deploy-action@v1
+        env:
+          IMAGE_TAG: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
         with:
           appSourcePath: ${{ env.APP_PATH }}
           acrName: ${{ vars.AZURE_CONTAINER_REGISTRY }}
-          imageToBuild: ${{ vars.AZURE_CONTAINER_REGISTRY }}.azurecr.io/ohmyword-api:${{ github.sha }}
+          imageToBuild: ${{ vars.AZURE_CONTAINER_REGISTRY }}.azurecr.io/ohmyword-api:${{ env.IMAGE_TAG }}
           containerAppName: ${{ vars.CONTAINER_APP_NAME }}
           resourceGroup: ${{ vars.APP_RESOURCE_GROUP }}
