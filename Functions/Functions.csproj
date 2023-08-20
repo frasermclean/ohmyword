@@ -8,8 +8,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
-    <PublishReadyToRun>true</PublishReadyToRun>
-    <RunTimeIdentifier>linux-x64</RunTimeIdentifier>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="AspNetCore.HealthChecks.CosmosDb" Version="6.1.0"/>
