@@ -133,6 +133,7 @@ jobs:
           dotnet publish
           --configuration $BUILD_CONFIGURATION
           --runtime $PUBLISH_RUNTIME
+          --self-contained false
           --output $API_PUBLISH_DIRECTORY/publish
 
       # Copy API Dockerfile
@@ -154,6 +155,7 @@ jobs:
           dotnet publish
           --configuration $BUILD_CONFIGURATION
           --runtime $PUBLISH_RUNTIME
+          --self-contained false
           --output $FUNCTIONS_PUBLISH_DIRECTORY
 
       # Upload Functions artifact
@@ -231,7 +233,7 @@ jobs:
         with:
           app-name: ohmyword-functions
           package: ${{ env.APP_PATH }}
-          publish-profile: ${{ secrets.PUBLISH_PROFILE }}
+          publish-profile: ${{ secrets.AZURE_FUNCTIONS_PUBLISH_PROFILE }}
 
   # Deploy frontend application
   deploy-frontend-app:
