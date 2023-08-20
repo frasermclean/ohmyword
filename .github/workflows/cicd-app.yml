@@ -124,15 +124,15 @@ jobs:
         env:
           OhMyWord_RapidApi__ApiKey: ${{ secrets.RAPID_API_KEY }}
           OhMyWord_GraphApiClient__ClientSecret: ${{ secrets.GRAPH_API_CLIENT_SECRET }}
-      
+
       # Publish application
       - name: Publish application
         working-directory: ./BackEnd/Api
         run: >-
           dotnet publish
-            --configuration $BUILD_CONFIGURATION
-            --runtime $PUBLISH_RUNTIME
-            --output $PUBLISH_DIRECTORY
+          --configuration $BUILD_CONFIGURATION
+          --runtime $PUBLISH_RUNTIME
+          --output $PUBLISH_DIRECTORY
 
       # Delete app settings file
       - name: Remove development settings
