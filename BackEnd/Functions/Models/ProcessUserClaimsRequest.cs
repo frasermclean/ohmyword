@@ -1,6 +1,6 @@
 ﻿namespace OhMyWord.Functions.Models;
 
-public class GetUserClaimsRequest
+public record ProcessUserClaimsRequest
 {
     public string IdentityProvider { get; init; } = string.Empty;
     public string UserId { get; init; } = string.Empty;
