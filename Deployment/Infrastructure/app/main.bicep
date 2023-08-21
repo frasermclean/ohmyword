@@ -32,11 +32,11 @@ param containerRegistryResourceGroup string
 @description('Container image name')
 param containerImageName string
 
-@description('Container image tag')
-param containerImageTag string
-
 @description('Shared resource group')
 param sharedResourceGroup string = '${workload}-shared'
+
+@description('Attempt to bind to a previously created managed certificate. This should be set to false on the first deployment of a new environment.')
+param bindManagedCertificate bool
 
 var tags = {
   workload: workload
@@ -45,6 +45,7 @@ var tags = {
 }
 
 var frontendHostname = appEnv == 'prod' ? domainName : 'test.${domainName}'
+var backendHostname = appEnv == 'prod' ? 'api.${domainName}' : 'test.api.${domainName}'
 var appConfigName = '${workload}-ac'
 var databaseId = '${workload}-${appEnv}'
 
@@ -53,6 +54,9 @@ var authClientId = appEnv == 'prod' ? 'ee95c3c0-c6f7-4675-9097-0e4d9bca14e3' : '
 
 @description('Azure AD B2C audience for API to validate')
 var authAudience = appEnv == 'prod' ? '7a224ce3-b92f-4525-a563-a79856d04a78' : 'f1f90898-e7c9-40b0-8ebf-103c2b0b1e72'
+
+var containerAppName = '${workload}-${appEnv}-ca'
+var certificateName = '${containerAppName}-cert'
 
 resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-08-15' existing = {
   name: '${workload}-cosmos'
@@ -64,9 +68,13 @@ resource containerRegistry 'Microsoft.ContainerRegistry/registries@2022-12-01' e
   scope: resourceGroup(containerRegistryResourceGroup)
 }
 
-resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2022-10-01' existing = {
+resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2023-05-01' existing = {
   name: '${workload}-cae'
   scope: resourceGroup(sharedResourceGroup)
+
+  resource managedCertificate 'managedCertificates' existing = {
+    name: certificateName
+  }
 }
 
 resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' existing = {
@@ -91,6 +99,20 @@ module database 'database.bicep' = {
   }
 }
 
+// dns records for custom domain validation
+module dnsRecords 'dnsRecords.bicep' = {
+  name: 'dnsRecords-${appEnv}'
+  scope: resourceGroup(sharedResourceGroup)
+  params: {
+    appEnv: appEnv
+    domainName: domainName
+    containerAppIngressAddress: '${containerAppName}.${containerAppsEnvironment.properties.defaultDomain}'
+    customDomainVerificationId: containerAppsEnvironment.properties.customDomainConfiguration.customDomainVerificationId
+    staticWebAppResourceId: staticWebApp.id
+    staticWebAppDefaultHostname: staticWebApp.properties.defaultHostname
+  }
+}
+
 // application insights
 resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   name: toLower('${workload}-${appEnv}-appi')
@@ -106,9 +128,10 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
 
 // container app
 resource containerApp 'Microsoft.App/containerApps@2022-10-01' = {
-  name: '${workload}-${appEnv}-ca'
+  name: containerAppName
   location: location
   tags: tags
+  dependsOn: [ dnsRecords ]
   identity: {
     type: 'SystemAssigned,UserAssigned'
     userAssignedIdentities: {
@@ -128,6 +151,13 @@ resource containerApp 'Microsoft.App/containerApps@2022-10-01' = {
             weight: 100
           }
         ]
+        customDomains: [
+          {
+            name: backendHostname
+            certificateId: bindManagedCertificate ? containerAppsEnvironment::managedCertificate.id : null
+            bindingType: bindManagedCertificate ? 'SniEnabled' : 'Disabled'
+          }
+        ]
       }
       registries: [
         {
@@ -140,7 +170,7 @@ resource containerApp 'Microsoft.App/containerApps@2022-10-01' = {
       containers: [
         {
           name: containerImageName
-          image: '${containerRegistryName}.azurecr.io/${containerImageName}:${containerImageTag}'
+          image: '${containerRegistryName}.azurecr.io/${containerImageName}:${appEnv}'
           resources: {
             cpu: 1
             memory: '2Gi'
@@ -180,6 +210,19 @@ resource containerApp 'Microsoft.App/containerApps@2022-10-01' = {
   }
 }
 
+// container apps environment managed certificate
+module managedCertificate 'managedCertificate.bicep' = if (!bindManagedCertificate) {
+  name: 'managedCertificate-${appEnv}'
+  scope: resourceGroup(sharedResourceGroup)
+  dependsOn: [ containerApp ]
+  params: {
+    workload: workload
+    location: location
+    certificateName: certificateName
+    customDomainFqdn: backendHostname
+  }
+}
+
 // static web app
 resource staticWebApp 'Microsoft.Web/staticSites@2022-03-01' = {
   name: '${workload}-${appEnv}-swa'
@@ -207,20 +250,6 @@ resource staticWebApp 'Microsoft.Web/staticSites@2022-03-01' = {
     properties: {
       validationMethod: 'dns-txt-token'
     }
-  }
-}
-
-// dns records for custom domain validation
-module dnsRecords 'dnsRecords.bicep' = {
-  name: 'dnsRecords-${appEnv}'
-  scope: resourceGroup(sharedResourceGroup)
-  params: {
-    appEnv: appEnv
-    domainName: domainName
-    containerAppIngressAddress: containerApp.properties.configuration.ingress.fqdn
-    customDomainVerificationId: containerApp.properties.customDomainVerificationId
-    staticWebAppResourceId: staticWebApp.id
-    staticWebAppDefaultHostname: staticWebApp.properties.defaultHostname
   }
 }
 

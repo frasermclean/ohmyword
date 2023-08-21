@@ -6,4 +6,4 @@ param attemptRoleAssignments = true
 param containerRegistryName = 'snakebyte'
 param containerRegistryResourceGroup = 'rg-snakebyte-core'
 param containerImageName = 'ohmyword-api'
-param containerImageTag = 'latest'
+param bindManagedCertificate = true

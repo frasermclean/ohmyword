@@ -146,7 +146,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
 }
 
 // container apps environment
-resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2022-10-01' = {
+resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2023-05-01' = {
   name: '${workload}-cae'
   location: location
   tags: tags
