@@ -38,6 +38,12 @@ param sharedResourceGroup string = '${workload}-shared'
 @description('Attempt to bind to a previously created managed certificate. This should be set to false on the first deployment of a new environment.')
 param bindManagedCertificate bool
 
+@description('Minimum number of container app replicas')
+param containerAppMinReplicas int
+
+@description('Maximum number of container app replicas')
+param containerAppMaxReplicas int
+
 var tags = {
   workload: workload
   category: 'app'
@@ -209,8 +215,8 @@ resource containerApp 'Microsoft.App/containerApps@2022-10-01' = {
         }
       ]
       scale: {
-        minReplicas: 0
-        maxReplicas: 2
+        minReplicas: containerAppMinReplicas
+        maxReplicas: containerAppMaxReplicas
       }
     }
   }
