@@ -3,8 +3,9 @@ WORKDIR /src
 
 # Copy solution and project files and restore dependencies
 COPY Api/Api.csproj Api/
+COPY Core/Core.csproj Core/
 COPY Domain/Domain.csproj Domain/
-COPY Infrastructure/Infrastructure.csproj Infrastructure/
+COPY Integrations/Integrations.csproj Integrations/
 RUN dotnet restore --use-lock-file Api/Api.csproj
 
 # Copy source files and publish app

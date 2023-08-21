@@ -11,7 +11,7 @@ public static class AzureAppConfiguration
     /// </summary>    
     public static WebApplicationBuilder AddAzureAppConfiguration(this WebApplicationBuilder builder)
     {
-        var endpoint = builder.Configuration["AppConfig:Endpoint"];
+        var endpoint = builder.Configuration["APP_CONFIG_ENDPOINT"];
         if (string.IsNullOrEmpty(endpoint))
         {
             Log.Information("Azure App Configuration endpoint is not set, using local configuration");

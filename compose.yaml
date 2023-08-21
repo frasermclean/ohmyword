@@ -1,10 +1,11 @@
 services:
   backend:
-    image: snakebyte.azurecr.io/ohmyword-api
+    image: ohmyword.azurecr.io/ohmyword-api
     build:
       context: BackEnd
       dockerfile: Dockerfile
     environment:
+      - ASPNETCORE_ENVIRONMENT=test
       - AZURE_TENANT_ID=${AZURE_TENANT_ID}
       - AZURE_CLIENT_ID=${AZURE_CLIENT_ID}
       - AZURE_CLIENT_SECRET=${AZURE_CLIENT_SECRET}

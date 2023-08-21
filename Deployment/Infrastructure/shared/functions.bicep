@@ -7,7 +7,7 @@ param workload string
 param location string
 
 @description('Category of the workload')
-param category string = 'functions'
+param category string
 
 @description('DNS domain name')
 param domainName string
@@ -15,17 +15,11 @@ param domainName string
 @description('Name of the shared log analytics workspace')
 param logAnalyticsWorkspaceName string
 
-@description('Name of the shared app service plan')
-param appServicePlanName string
-
 @description('Name of the shared storage account')
-param storageAccountName string
+param sharedStorageAccountName string
 
 @description('Shared resource group name')
 param sharedResourceGroup string
-
-@description('Virtual network subnet resource id')
-param virtualNetworkSubnetId string
 
 @description('Name of the service bus namespace')
 param serviceBusNamespaceName string
@@ -35,6 +29,9 @@ param ipLookupQueueName string
 
 @description('Name of the key vault')
 param keyVaultName string
+
+@description('Whether to attempt to assign roles to resources')
+param attemptRoleAssignments bool
 
 var tags = {
   workload: workload
@@ -47,13 +44,8 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10
 }
 
 // shared storage account
-resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' existing = {
-  name: storageAccountName
-  scope: resourceGroup(sharedResourceGroup)
-}
-
-resource appServicePlan 'Microsoft.Web/serverfarms@2022-09-01' existing = {
-  name: appServicePlanName
+resource sharedStorageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' existing = {
+  name: sharedStorageAccountName
   scope: resourceGroup(sharedResourceGroup)
 }
 
@@ -62,9 +54,28 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-02-01' existing = {
   scope: resourceGroup(sharedResourceGroup)
 }
 
+resource serviceBusNamespace 'Microsoft.ServiceBus/namespaces@2022-10-01-preview' existing = {
+  name: serviceBusNamespaceName
+  scope: resourceGroup(sharedResourceGroup)
+}
+
+// storage account for function app
+resource functionAppStorageAccount 'Microsoft.Storage/storageAccounts@2022-05-01' = {
+  name: '${workload}${category}'
+  location: location
+  sku: {
+    name: 'Standard_LRS'
+  }
+  kind: 'StorageV2'
+  properties: {
+    supportsHttpsTrafficOnly: true
+    defaultToOAuthAuthentication: true
+  }
+}
+
 // application insights
 resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
-  name: toLower('appi-${workload}-${category}')
+  name: toLower('${workload}-${category}-appi')
   location: location
   tags: tags
   kind: 'web'
@@ -77,7 +88,7 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
 
 // action group
 resource actionGroup 'Microsoft.Insights/actionGroups@2023-01-01' = {
-  name: toLower('ag-${workload}-${category}')
+  name: toLower('${workload}-${category}-ag')
   location: 'global'
   tags: tags
   properties: {
@@ -100,7 +111,7 @@ resource actionGroup 'Microsoft.Insights/actionGroups@2023-01-01' = {
 
 // smart detector alert rule
 resource smartDetectorAlertRule 'Microsoft.AlertsManagement/smartDetectorAlertRules@2021-04-01' = {
-  name: toLower('sdar-${workload}-${category}-fa')
+  name: toLower('${workload}-${category}-fa-sdar')
   location: 'global'
   tags: tags
   properties: {
@@ -122,9 +133,23 @@ resource smartDetectorAlertRule 'Microsoft.AlertsManagement/smartDetectorAlertRu
   }
 }
 
+// app service plan
+resource appServicePlan 'Microsoft.Web/serverfarms@2022-09-01' = {
+  name: '${workload}-${category}-asp'
+  location: location
+  kind: 'linux'
+  sku: {
+    name: 'Y1'
+    capacity: 1
+  }
+  properties: {
+    reserved: true
+  }
+}
+
 // function app
 resource functionApp 'Microsoft.Web/sites@2022-09-01' = {
-  name: toLower('func-${workload}-${category}')
+  name: toLower('${workload}-${category}')
   location: location
   tags: tags
   kind: 'functionapp,linux'
@@ -133,20 +158,15 @@ resource functionApp 'Microsoft.Web/sites@2022-09-01' = {
   }
   properties: {
     serverFarmId: appServicePlan.id
-    virtualNetworkSubnetId: virtualNetworkSubnetId
-    vnetRouteAllEnabled: true
-    reserved: true
     httpsOnly: true
     siteConfig: {
       linuxFxVersion: 'DOTNET-ISOLATED|7.0'
-      alwaysOn: true
       http20Enabled: true
       ftpsState: 'Disabled'
-      healthCheckPath: '/api/health'
       appSettings: [
         {
           name: 'AzureWebJobsStorage'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};EndpointSuffix=${environment().suffixes.storage};AccountKey=${storageAccount.listKeys().keys[0].value}'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${functionAppStorageAccount.name};EndpointSuffix=${environment().suffixes.storage};AccountKey=${functionAppStorageAccount.listKeys().keys[0].value}'
         }
         {
           name: 'FUNCTIONS_EXTENSION_VERSION'
@@ -170,7 +190,7 @@ resource functionApp 'Microsoft.Web/sites@2022-09-01' = {
         }
         {
           name: 'TableService__Endpoint'
-          value: 'https://${storageAccount.name}.table.${environment().suffixes.storage}'
+          value: 'https://${sharedStorageAccount.name}.table.${environment().suffixes.storage}'
         }
         {
           name: 'ServiceBus__FullyQualifiedNamespace'
@@ -215,7 +235,7 @@ module customDomain '../modules/customDomain.bicep' = {
 
 // app service managed certificate
 resource managedCertificate 'Microsoft.Web/certificates@2022-03-01' = {
-  name: 'cert-${workload}-${category}'
+  name: '${workload}-${category}-cert'
   location: location
   tags: tags
   properties: {
@@ -249,5 +269,16 @@ module sniEnable '../modules/sniEnable.bicep' = {
   }
 }
 
-@description('The principal ID of the managed identity of function app')
-output functionAppPrincipalId string = functionApp.identity.principalId
+module roleAssignments '../modules/roleAssignments.bicep' = if (attemptRoleAssignments) {
+  name: 'roleAssignments-functions'
+  scope: resourceGroup(sharedResourceGroup)
+  params: {
+    principalId: functionApp.identity.principalId
+    keyVaultName: keyVault.name
+    keyVaultRoles: [ 'SecretsUser' ]
+    storageAccountName: sharedStorageAccount.name
+    storageAccountRoles: [ 'TableDataContributor' ]
+    serviceBusNamespaceName: serviceBusNamespace.name
+    serviceBusNamespaceRoles: [ 'DataReceiver' ]
+  }
+}
