@@ -159,10 +159,10 @@
       },
       "Azure.Data.Tables": {
         "type": "Transitive",
-        "resolved": "12.8.0",
-        "contentHash": "jBNOUXoANEv66mIyR+rzC7toogo48pYciH4n5xsb8nHRz6lfjX9jwsOjC8sdR1Zl75Z6MZvaZjajqVwCt3JqVw==",
+        "resolved": "12.6.1",
+        "contentHash": "EnbcshkRrDHlBGz6LcFlfDVOtd8P+atSREfStLzjnzzIZXY+N6xPldtPQPVda2s93ENdoE9oW0azTyju2ek3Ag==",
         "dependencies": {
-          "Azure.Core": "1.27.0",
+          "Azure.Core": "1.25.0",
           "System.Text.Json": "4.7.2"
         }
       },
@@ -1736,7 +1736,6 @@
       "OhMyWord.Integrations": {
         "type": "Project",
         "dependencies": {
-          "Azure.Data.Tables": "[12.8.0, )",
           "Azure.Messaging.ServiceBus": "[7.15.0, )",
           "FluentResults": "[3.15.2, )",
           "Microsoft.Azure.Cosmos": "[3.35.2, )",

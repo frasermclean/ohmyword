@@ -2,14 +2,15 @@
 using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using OhMyWord.Integrations.Options;
-using OhMyWord.Integrations.Services.Repositories;
+using OhMyWord.Core.Services;
+using OhMyWord.Data.Tables.Options;
+using OhMyWord.Data.Tables.Services;
 
-namespace OhMyWord.Integrations.DependencyInjection;
+namespace OhMyWord.Data.Tables.DependencyInjection;
 
-public static class TableRepositoriesRegistration
+public static class DataTablesServicesRegistration
 {
-    public static IServiceCollection AddTableRepositories(this IServiceCollection services,
+    public static IServiceCollection AddDataTableServices(this IServiceCollection services,
         IConfiguration configuration)
     {
         services.AddOptions<TableServiceOptions>()

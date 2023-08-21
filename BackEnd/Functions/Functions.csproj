@@ -10,7 +10,6 @@
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="AspNetCore.HealthChecks.CosmosDb" Version="6.1.0"/>
     <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.21.0"/>
     <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.19.0"/>
     <PackageReference Include="Microsoft.Azure.Functions.Worker.ApplicationInsights" Version="1.0.0"/>
@@ -34,6 +33,6 @@
     <Using Include="System.Threading.ExecutionContext" Alias="ExecutionContext"/>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Domain\Domain.csproj"/>
+    <ProjectReference Include="..\..\Data.Tables\Data.Tables.csproj"/>
   </ItemGroup>
 </Project>

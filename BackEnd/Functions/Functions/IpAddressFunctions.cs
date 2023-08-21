@@ -1,18 +1,16 @@
 ﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
-using OhMyWord.Domain.Services;
 
 namespace OhMyWord.Functions.Functions;
 
 public class IpAddressFunctions
 {
     private readonly ILogger<IpAddressFunctions> logger;
-    private readonly IGeoLocationService geoLocationService;
+    //private readonly IGeoLocationService geoLocationService;
 
-    public IpAddressFunctions(ILogger<IpAddressFunctions> logger, IGeoLocationService geoLocationService)
+    public IpAddressFunctions(ILogger<IpAddressFunctions> logger)
     {
         this.logger = logger;
-        this.geoLocationService = geoLocationService;
     }
 
     [Function("ProcessIpAddress")]
@@ -21,6 +19,6 @@ public class IpAddressFunctions
         string ipAddress)
     {
         logger.LogInformation("Processing IP address: {IpAddress}", ipAddress);
-        await geoLocationService.GetGeoLocationAsync(ipAddress);
+        //await geoLocationService.GetGeoLocationAsync(ipAddress);
     }
 }

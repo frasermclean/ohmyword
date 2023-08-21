@@ -1,9 +1,9 @@
 ﻿using Azure;
 using Azure.Data.Tables;
 
-namespace OhMyWord.Integrations.Models.Entities;
+namespace OhMyWord.Data.Tables.Models;
 
-public record GeoLocationEntity : ITableEntity
+internal record GeoLocationEntity : ITableEntity
 {
     /// <summary>
     /// PartitionKey is IP version
@@ -18,7 +18,7 @@ public record GeoLocationEntity : ITableEntity
     public string CountryCode { get; init; } = string.Empty;
     public string CountryName { get; init; } = string.Empty;
     public string City { get; init; } = string.Empty;
-    
+
 
     public DateTimeOffset? Timestamp { get; set; }
     public ETag ETag { get; set; }

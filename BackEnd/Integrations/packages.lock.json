@@ -2,16 +2,6 @@
   "version": 1,
   "dependencies": {
     "net7.0": {
-      "Azure.Data.Tables": {
-        "type": "Direct",
-        "requested": "[12.8.0, )",
-        "resolved": "12.8.0",
-        "contentHash": "jBNOUXoANEv66mIyR+rzC7toogo48pYciH4n5xsb8nHRz6lfjX9jwsOjC8sdR1Zl75Z6MZvaZjajqVwCt3JqVw==",
-        "dependencies": {
-          "Azure.Core": "1.27.0",
-          "System.Text.Json": "4.7.2"
-        }
-      },
       "Azure.Messaging.ServiceBus": {
         "type": "Direct",
         "requested": "[7.15.0, )",

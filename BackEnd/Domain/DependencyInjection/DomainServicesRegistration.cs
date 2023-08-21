@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using OhMyWord.Core.Services;
 using OhMyWord.Domain.Options;
 using OhMyWord.Domain.Services;
 using OhMyWord.Domain.Services.State;
@@ -16,7 +17,6 @@ public static class DomainServicesRegistration
             .ValidateOnStart();
 
         services.AddSingleton<IDefinitionsService, DefinitionsService>();
-        services.AddSingleton<IUsersService, UsersService>();
         services.AddSingleton<IGeoLocationService, GeoLocationService>();
         services.AddSingleton<IPlayerService, PlayerService>();
         services.AddSingleton<IRoundService, RoundService>();

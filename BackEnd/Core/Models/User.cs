@@ -1,6 +1,6 @@
 ﻿namespace OhMyWord.Core.Models;
 
-public class User
+public record User
 {
     public required string Id { get; init; }
     public required string Name { get; init; }

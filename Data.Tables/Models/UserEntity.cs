@@ -2,9 +2,9 @@
 using Azure.Data.Tables;
 using OhMyWord.Core.Models;
 
-namespace OhMyWord.Integrations.Models.Entities;
+namespace OhMyWord.Data.Tables.Models;
 
-public record UserEntity : ITableEntity
+internal record UserEntity : ITableEntity
 {
     public string PartitionKey { get; set; } = string.Empty;
     public string RowKey { get; set; } = string.Empty;

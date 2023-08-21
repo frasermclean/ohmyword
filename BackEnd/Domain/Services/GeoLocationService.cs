@@ -1,5 +1,6 @@
 ﻿using FluentResults;
 using OhMyWord.Core.Models;
+using OhMyWord.Core.Services;
 using OhMyWord.Integrations.Errors;
 using OhMyWord.Integrations.Models.Entities;
 using OhMyWord.Integrations.Services.RapidApi.IpGeoLocation;
@@ -7,12 +8,6 @@ using OhMyWord.Integrations.Services.Repositories;
 using System.Net;
 
 namespace OhMyWord.Domain.Services;
-
-public interface IGeoLocationService
-{
-    Task<Result<GeoLocation>> GetGeoLocationAsync(string ipAddress, CancellationToken cancellationToken = default);
-    Task<Result<GeoLocation>> GetGeoLocationAsync(IPAddress ipAddress, CancellationToken cancellationToken = default);
-}
 
 public class GeoLocationService : IGeoLocationService
 {
@@ -43,13 +38,4 @@ public class GeoLocationService : IGeoLocationService
 
         return MapToGeoLocation(entity);
     }
-
-    private static GeoLocation MapToGeoLocation(GeoLocationEntity entity) => new()
-    {
-        IpAddress = IPAddress.TryParse(entity.RowKey, out var ipAddress) ? ipAddress : IPAddress.None,
-        CountryCode = entity.CountryCode.ToLower(),
-        CountryName = entity.CountryName,
-        City = entity.City,
-        LastUpdated = entity.Timestamp?.UtcDateTime ?? default
-    };
 }
