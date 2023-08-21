@@ -18,34 +18,34 @@ public sealed class UserFunctions
         this.usersService = usersService;
     }
 
-    [Function(nameof(GetUserClaims))]
-    public async Task<HttpResponseData> GetUserClaims(
-        [HttpTrigger("post", Route = "get-user-claims")]
-        HttpRequestData httpRequest
+    [Function(nameof(ProcessUserClaims))]
+    public async Task<HttpResponseData> ProcessUserClaims(
+        [HttpTrigger("post", Route = "process-user-claims")]
+        HttpRequestData httpRequest,
+        [FromBody] ProcessUserClaimsRequest request
     )
     {
-        var getUserClaimsRequest = await httpRequest.ReadFromJsonAsync<GetUserClaimsRequest>();
-        if (getUserClaimsRequest is null) throw new InvalidOperationException("Couldn't deserialize request body");
+        logger.LogInformation("Processing request: {Request}", request);
 
-        var user = await usersService.GetUserAsync(getUserClaimsRequest.UserId);
+        var user = await usersService.GetUserAsync(request.UserId);
 
         // create user if it doesn't exist
         user ??= await usersService.CreateUserAsync(new User
         {
-            Id = getUserClaimsRequest.UserId,
-            Name = getUserClaimsRequest.Name,
-            Email = getUserClaimsRequest.Email,
-            IdentityProvider = getUserClaimsRequest.IdentityProvider,
+            Id = request.UserId,
+            Name = request.Name,
+            Email = request.Email,
+            IdentityProvider = request.IdentityProvider,
             Role = Role.User
         });
 
         var role = user.Role;
 
         logger.LogInformation("Authenticated user ID is: {UserId}, determined role as: {Role}",
-            getUserClaimsRequest.UserId, role);
+            request.UserId, role);
 
         var response = httpRequest.CreateResponse();
-        await response.WriteAsJsonAsync(new GetUserClaimsResponse { Role = role });
+        await response.WriteAsJsonAsync(new ProcessUserClaimsResponse { Role = role });
         return response;
     }
 }

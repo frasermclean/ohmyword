@@ -2,10 +2,10 @@
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using OhMyWord.Infrastructure.Models.Entities;
-using OhMyWord.Infrastructure.Options;
+using OhMyWord.Integrations.Models.Entities;
+using OhMyWord.Integrations.Options;
 
-namespace OhMyWord.Infrastructure.Services.Repositories;
+namespace OhMyWord.Integrations.Services.Repositories;
 
 public interface ISessionsRepository
 {

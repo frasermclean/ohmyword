@@ -1,4 +1,4 @@
-﻿using OhMyWord.Infrastructure.Options;
+﻿using OhMyWord.Integrations.Options;
 
 namespace OhMyWord.Integrations.Tests.Options;
 

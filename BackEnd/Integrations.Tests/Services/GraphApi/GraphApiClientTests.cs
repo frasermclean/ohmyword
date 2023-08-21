@@ -1,4 +1,4 @@
-﻿using OhMyWord.Infrastructure.Services.GraphApi;
+﻿using OhMyWord.Integrations.Services.GraphApi;
 using OhMyWord.Integrations.Tests.Fixtures;
 
 namespace OhMyWord.Integrations.Tests.Services.GraphApi;

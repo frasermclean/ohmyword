@@ -1,12 +1,12 @@
 ﻿using FluentResults;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
-using OhMyWord.Infrastructure.Errors;
-using OhMyWord.Infrastructure.Models.Entities;
+using OhMyWord.Integrations.Errors;
+using OhMyWord.Integrations.Models.Entities;
 using System.Net;
 using System.Runtime.CompilerServices;
 
-namespace OhMyWord.Infrastructure.Services.Repositories;
+namespace OhMyWord.Integrations.Services.Repositories;
 
 public abstract class Repository<TEntity> where TEntity : Entity
 {

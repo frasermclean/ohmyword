@@ -1,7 +1,7 @@
 targetScope = 'resourceGroup'
 
 @description('Name of the application / workload')
-param appName string = 'ohmyword'
+param workload string = 'ohmyword'
 
 @description('Application environment')
 @allowed([ 'prod', 'test' ])
@@ -23,18 +23,37 @@ param databaseThroughput int = 400
 @description('Location for the static web app')
 param staticWebAppLocation string = 'centralus'
 
-var sharedResourceGroup = 'rg-${appName}-shared'
+@description('Name of the container registry')
+param containerRegistryName string
+
+@description('Container registry resource group')
+param containerRegistryResourceGroup string
+
+@description('Container image name')
+param containerImageName string
+
+@description('Shared resource group')
+param sharedResourceGroup string = '${workload}-shared'
+
+@description('Attempt to bind to a previously created managed certificate. This should be set to false on the first deployment of a new environment.')
+param bindManagedCertificate bool
+
+@description('Minimum number of container app replicas')
+param containerAppMinReplicas int
+
+@description('Maximum number of container app replicas')
+param containerAppMaxReplicas int
 
 var tags = {
-  workload: appName
+  workload: workload
   category: 'app'
   environment: appEnv
 }
 
 var frontendHostname = appEnv == 'prod' ? domainName : 'test.${domainName}'
 var backendHostname = appEnv == 'prod' ? 'api.${domainName}' : 'test.api.${domainName}'
-var databaseId = '${appName}-${appEnv}'
-var appConfigName = 'ac-${appName}-shared'
+var appConfigName = '${workload}-ac'
+var databaseId = '${workload}-${appEnv}'
 
 @description('Azure AD B2C client ID of single page application')
 var authClientId = appEnv == 'prod' ? 'ee95c3c0-c6f7-4675-9097-0e4d9bca14e3' : '1f427277-e4b2-4f9b-97b1-4f47f4ff03c0'
@@ -42,55 +61,35 @@ var authClientId = appEnv == 'prod' ? 'ee95c3c0-c6f7-4675-9097-0e4d9bca14e3' : '
 @description('Azure AD B2C audience for API to validate')
 var authAudience = appEnv == 'prod' ? '7a224ce3-b92f-4525-a563-a79856d04a78' : 'f1f90898-e7c9-40b0-8ebf-103c2b0b1e72'
 
-var databaseContainers = [
-  {
-    id: 'words'
-    partitionKeyPath: '/id'
-  }
-  {
-    id: 'definitions'
-    partitionKeyPath: '/wordId'
-  }
-  {
-    id: 'players'
-    partitionKeyPath: '/id'
-  }
-  {
-    id: 'rounds'
-    partitionKeyPath: '/sessionId'
-  }
-  {
-    id: 'sessions'
-    partitionKeyPath: '/id'
-  }
-]
-
-resource virtualNetwork 'Microsoft.Network/virtualNetworks@2022-09-01' existing = {
-  name: 'vnet-${appName}'
-  scope: resourceGroup(sharedResourceGroup)
-
-  resource subnet 'subnets' existing = {
-    name: 'snet-apps'
-  }
-}
+var containerAppName = '${workload}-${appEnv}-ca'
+var certificateName = '${containerAppName}-cert'
 
 resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-08-15' existing = {
-  name: 'cosmos-${appName}-shared'
+  name: '${workload}-cosmos'
   scope: resourceGroup(sharedResourceGroup)
 }
 
-resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' existing = {
-  name: 'asp-${appName}-shared'
+resource containerRegistry 'Microsoft.ContainerRegistry/registries@2022-12-01' existing = {
+  name: containerRegistryName
+  scope: resourceGroup(containerRegistryResourceGroup)
+}
+
+resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2023-05-01' existing = {
+  name: '${workload}-cae'
   scope: resourceGroup(sharedResourceGroup)
+
+  resource managedCertificate 'managedCertificates' existing = {
+    name: certificateName
+  }
 }
 
 resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' existing = {
-  name: 'law-${appName}-shared'
+  name: '${workload}-law'
   scope: resourceGroup(sharedResourceGroup)
 }
 
-resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' existing = {
-  name: '${appName}shared'
+resource sharedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' existing = {
+  name: '${workload}-id'
   scope: resourceGroup(sharedResourceGroup)
 }
 
@@ -101,15 +100,28 @@ module database 'database.bicep' = {
   params: {
     cosmosDbAccountName: cosmosDbAccount.name
     databaseId: databaseId
-    databaseContainers: databaseContainers
     databaseThroughput: databaseThroughput
-    appServicePrincipalId: appService.identity.principalId
+    principalId: containerApp.identity.principalId
+  }
+}
+
+// dns records for custom domain validation
+module dnsRecords 'dnsRecords.bicep' = {
+  name: 'dnsRecords-${appEnv}'
+  scope: resourceGroup(sharedResourceGroup)
+  params: {
+    appEnv: appEnv
+    domainName: domainName
+    containerAppIngressAddress: '${containerAppName}.${containerAppsEnvironment.properties.defaultDomain}'
+    customDomainVerificationId: containerAppsEnvironment.properties.customDomainConfiguration.customDomainVerificationId
+    staticWebAppResourceId: staticWebApp.id
+    staticWebAppDefaultHostname: staticWebApp.properties.defaultHostname
   }
 }
 
 // application insights
 resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
-  name: toLower('appi-${appName}-${appEnv}')
+  name: toLower('${workload}-${appEnv}-appi')
   location: location
   tags: tags
   kind: 'web'
@@ -120,90 +132,112 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   }
 }
 
-// app service
-resource appService 'Microsoft.Web/sites@2022-03-01' = {
-  name: toLower('app-${appName}-${appEnv}')
+// container app
+resource containerApp 'Microsoft.App/containerApps@2022-10-01' = {
+  name: containerAppName
   location: location
   tags: tags
-  kind: 'app,linux'
+  dependsOn: [ dnsRecords ]
   identity: {
-    type: 'SystemAssigned'
+    type: 'SystemAssigned,UserAssigned'
+    userAssignedIdentities: {
+      '${sharedIdentity.id}': {}
+    }
   }
   properties: {
-    enabled: true
-    httpsOnly: true
-    serverFarmId: appServicePlan.id
-    virtualNetworkSubnetId: virtualNetwork::subnet.id
-    vnetRouteAllEnabled: true
-    siteConfig: {
-      linuxFxVersion: 'DOTNETCORE|7.0'
-      healthCheckPath: '/health'
-      http20Enabled: true
-      ftpsState: 'Disabled'
-      cors: {
-        supportCredentials: true
-        allowedOrigins: [ 'https://${frontendHostname}' ]
+    managedEnvironmentId: containerAppsEnvironment.id
+    configuration: {
+      activeRevisionsMode: 'Single'
+      ingress: {
+        external: true
+        targetPort: 80
+        traffic: [
+          {
+            latestRevision: true
+            weight: 100
+          }
+        ]
+        customDomains: [
+          {
+            name: backendHostname
+            certificateId: bindManagedCertificate ? containerAppsEnvironment::managedCertificate.id : null
+            bindingType: bindManagedCertificate ? 'SniEnabled' : 'Disabled'
+          }
+        ]
+        corsPolicy: {
+          allowCredentials: true
+          maxAge: 600
+          allowedOrigins: [ 'https://${frontendHostname}' ]
+          allowedMethods: [ '*' ]
+        }
       }
-      appSettings: [
+      registries: [
         {
-          name: 'AppConfig__Endpoint'
-          value: 'https://${appConfigName}.azconfig.io'
-        }
-        {
-          name: 'ASPNETCORE_ENVIRONMENT'
-          value: appEnv
-        }
-        {
-          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-          value: appInsights.properties.ConnectionString
-        }
-        {
-          name: 'ApplicationInsightsAgent_EXTENSION_VERSION'
-          value: '~3'
-        }
-        {
-          name: 'XDT_MicrosoftApplicationInsights_Mode'
-          value: 'Recommended'
+          server: containerRegistry.properties.loginServer
+          identity: sharedIdentity.id
         }
       ]
     }
-  }
-
-  resource hostNameBinding 'hostNameBindings' = {
-    name: backendHostname
-    properties: {
-      siteName: appService.name
-      hostNameType: 'Verified'
+    template: {
+      containers: [
+        {
+          name: containerImageName
+          image: '${containerRegistryName}.azurecr.io/${containerImageName}:${appEnv}'
+          resources: {
+            cpu: 1
+            memory: '2Gi'
+          }
+          env: [
+            {
+              name: 'ASPNETCORE_ENVIRONMENT'
+              value: appEnv
+            }
+            {
+              name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+              value: appInsights.properties.ConnectionString
+            }
+            {
+              name: 'APP_CONFIG_ENDPOINT'
+              value: 'https://${appConfigName}.azconfig.io'
+            }
+          ]
+          probes: [
+            {
+              type: 'Liveness'
+              httpGet: {
+                path: '/health'
+                port: 80
+              }
+              initialDelaySeconds: 30
+              periodSeconds: 60
+            }
+          ]
+        }
+      ]
+      scale: {
+        minReplicas: containerAppMinReplicas
+        maxReplicas: containerAppMaxReplicas
+      }
     }
   }
 }
 
-// diagnostic settings
-resource appServiceDiagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: appService.name
-  scope: appService
-  properties: {
-    workspaceId: logAnalyticsWorkspace.id
-    logs: [
-      {
-        category: 'AppServiceAuditLogs'
-        enabled: true
-      }
-      {
-        category: 'AppServiceIPSecAuditLogs'
-        enabled: true
-      }
-      {
-        category: 'AppServicePlatformLogs'
-        enabled: true
-      }
-    ]
+// container apps environment managed certificate
+module managedCertificate 'managedCertificate.bicep' = if (!bindManagedCertificate) {
+  name: 'managedCertificate-${appEnv}'
+  scope: resourceGroup(sharedResourceGroup)
+  dependsOn: [ containerApp ]
+  params: {
+    workload: workload
+    location: location
+    certificateName: certificateName
+    customDomainFqdn: backendHostname
   }
 }
 
 // static web app
 resource staticWebApp 'Microsoft.Web/staticSites@2022-03-01' = {
-  name: 'swa-${appName}-${appEnv}'
+  name: '${workload}-${appEnv}-swa'
   location: staticWebAppLocation
   tags: tags
   sku: {
@@ -231,34 +265,9 @@ resource staticWebApp 'Microsoft.Web/staticSites@2022-03-01' = {
   }
 }
 
-// dns records for custom domain validation
-module dnsRecords 'dnsRecords.bicep' = {
-  name: 'dnsRecords-${appEnv}'
-  scope: resourceGroup(sharedResourceGroup)
-  params: {
-    appName: appName
-    appEnv: appEnv
-    domainName: domainName
-    appServiceVerificationId: appService.properties.customDomainVerificationId
-    staticWebAppResourceId: staticWebApp.id
-    staticWebAppDefaultHostname: staticWebApp.properties.defaultHostname
-  }
-}
-
-// app service managed certificate
-resource managedCertificate 'Microsoft.Web/certificates@2022-03-01' = {
-  name: 'cert-${appName}-${appEnv}'
-  location: location
-  tags: tags
-  properties: {
-    serverFarmId: appServicePlan.id
-    canonicalName: appService::hostNameBinding.name
-  }
-}
-
 // azure signalr service
 resource signalrService 'Microsoft.SignalRService/signalR@2023-02-01' = {
-  name: 'sigr-${appName}-${appEnv}'
+  name: '${workload}-${appEnv}-sigr'
   location: location
   tags: tags
   kind: 'SignalR'
@@ -288,18 +297,7 @@ module appConfig 'appConfig.bicep' = {
     azureAdAudience: authAudience
     azureAdClientId: authClientId
     cosmosDbDatabaseId: databaseId
-    principalId: appService.identity.principalId
     signalRServiceHostname: signalrService.properties.hostName
-  }
-}
-
-// use module to enable hostname SNI binding
-module sniEnable '../modules/sniEnable.bicep' = {
-  name: 'sniEnable'
-  params: {
-    appServiceName: appService.name
-    hostname: appService::hostNameBinding.name
-    certificateThumbprint: managedCertificate.properties.thumbprint
   }
 }
 
@@ -309,31 +307,23 @@ resource signalrAppServerRoleDefinition 'Microsoft.Authorization/roleDefinitions
 
 // role assignment for signalr service
 resource signalrServiceRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (attemptRoleAssignments) {
-  name: guid(signalrService.id, signalrAppServerRoleDefinition.id, appService.id)
+  name: guid(signalrService.id, signalrAppServerRoleDefinition.id, containerApp.id)
   scope: signalrService
   properties: {
-    principalId: appService.identity.principalId
+    principalId: containerApp.identity.principalId
     roleDefinitionId: signalrAppServerRoleDefinition.id
   }
 }
 
-// role assignment for app service to access storage account
-module storageAccountRoleAssignment '../modules/roleAssignments.bicep' = {
-  name: 'roleAssignment-${storageAccount.name}-${appService.name}'
+// shared resource role assignments
+module roleAssignments '../modules/roleAssignments.bicep' = if (attemptRoleAssignments) {
+  name: 'roleAssignments-${appEnv}'
   scope: resourceGroup(sharedResourceGroup)
   params: {
-    storageAccountName: storageAccount.name
-    storageAccountRoles: [
-      {
-        principalId: appService.identity.principalId
-        roleDefinitionId: '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3' // Storage Table Data Contributor
-      }
-    ]
-    serviceBusNamespaceRoles: [
-      {
-        principalId: appService.identity.principalId
-        roleDefinitionId: '69a216fc-b8fb-44d8-bc22-1f3c2cd27a39' // Azure Service Bus Data Sender
-      }
-    ]
+    principalId: containerApp.identity.principalId
+    keyVaultRoles: [ 'SecretsUser' ]
+    appConfigurationRoles: [ 'DataReader' ]
+    storageAccountRoles: [ 'TableDataContributor' ]
+    serviceBusNamespaceRoles: [ 'DataSender' ]
   }
 }

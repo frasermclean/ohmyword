@@ -1,6 +1,6 @@
 ﻿namespace OhMyWord.Core.Models;
 
-public record RoundPlayerData(Guid PlayerId)
+public class RoundPlayerData
 {
     public int GuessCount { get; set; }
     public TimeSpan GuessTime { get; set; }

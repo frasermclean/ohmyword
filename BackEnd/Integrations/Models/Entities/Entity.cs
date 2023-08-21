@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace OhMyWord.Infrastructure.Models.Entities;
+namespace OhMyWord.Integrations.Models.Entities;
 
 public abstract record Entity
 {

@@ -2,7 +2,7 @@
 
 namespace OhMyWord.Functions.Models;
 
-public class GetUserClaimsResponse
+public class ProcessUserClaimsResponse
 {
     public Role Role { get; init; }
 }

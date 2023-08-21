@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace OhMyWord.Infrastructure.Models.WordsApi;
+namespace OhMyWord.Integrations.Models.WordsApi;
 
 public class WordDetails
 {

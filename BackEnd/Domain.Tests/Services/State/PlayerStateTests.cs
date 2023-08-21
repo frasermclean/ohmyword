@@ -6,12 +6,7 @@ namespace OhMyWord.Domain.Tests.Services.State;
 
 public class PlayerStateTests
 {
-    private readonly IPlayerState playerState;
-
-    public PlayerStateTests()
-    {
-        playerState = new PlayerState(Mock.Of<ILogger<PlayerState>>());
-    }
+    private readonly IPlayerState playerState = new PlayerState(Mock.Of<ILogger<PlayerState>>());
 
     [Fact]
     public void DefaultState_Should_Have_ExpectedValues()

@@ -1,6 +1,6 @@
 ﻿using FluentResults;
 
-namespace OhMyWord.Infrastructure.Errors;
+namespace OhMyWord.Integrations.Errors;
 
 public class ItemConflictError : Error
 {

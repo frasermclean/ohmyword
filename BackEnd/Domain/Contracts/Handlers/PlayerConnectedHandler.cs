@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.FeatureManagement;
 using OhMyWord.Domain.Contracts.Events;
 using OhMyWord.Domain.Options;
-using OhMyWord.Infrastructure.Services.Messaging;
+using OhMyWord.Integrations.Services.Messaging;
 
 namespace OhMyWord.Domain.Contracts.Handlers;
 

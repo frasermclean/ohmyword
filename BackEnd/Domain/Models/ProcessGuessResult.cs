@@ -1,7 +1,7 @@
-﻿namespace OhMyWord.Domain.Contracts.Results;
+﻿namespace OhMyWord.Domain.Models;
 
 public class ProcessGuessResult
-{    
+{
     public bool IsCorrect { get; init; }
     public int PointsAwarded { get; init; }
     public string Message { get; init; } = string.Empty;

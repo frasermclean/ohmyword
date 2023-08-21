@@ -1,9 +1,12 @@
 ﻿using Azure.Core.Serialization;
 using Azure.Identity;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using OhMyWord.Domain.DependencyInjection;
-using OhMyWord.Infrastructure.DependencyInjection;
+using OhMyWord.Integrations.DependencyInjection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -14,6 +17,10 @@ public static class Program
     public static void Main()
     {
         var host = new HostBuilder()
+            .ConfigureAppConfiguration((_, builder) =>
+            {
+                builder.AddJsonFile("appsettings.json");
+            })
             .ConfigureFunctionsWorkerDefaults(options =>
             {
                 options.Serializer = new JsonObjectSerializer(new JsonSerializerOptions
@@ -29,6 +36,10 @@ public static class Program
                 services.AddDomainServices(context.Configuration);
                 services.AddRapidApiServices();
                 services.AddTableRepositories(context.Configuration);
+
+                // application insights
+                services.AddApplicationInsightsTelemetryWorkerService();
+                services.ConfigureFunctionsApplicationInsights();
 
                 // health checks
                 if (context.HostingEnvironment.IsDevelopment())

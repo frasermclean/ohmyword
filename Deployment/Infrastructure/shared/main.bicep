@@ -13,27 +13,18 @@ param domainName string
 @description('Total throughput of the Cosmos DB account')
 param totalThroughputLimit int
 
-@description('Public IP addresses allowed to access Azure resources')
-param allowedIpAddresses array
+@description('Whether to attempt to assign roles to resources')
+param attemptRoleAssignments bool
+
+@description('Auth resource group name')
+param authResourceGroup string
+
+@description('Functions app resource group name')
+param functionsResourceGroup string
 
 var tags = {
   workload: workload
-  environment: 'shared'
-}
-
-var azurePortalIpAddresses = [
-  '104.42.195.92'
-  '40.76.54.131'
-  '52.176.6.30'
-  '52.169.50.45'
-  '52.187.184.26'
-]
-
-var appServiceSubnetName = 'snet-apps'
-
-// b2c tenant (existing)
-resource b2cTenant 'Microsoft.AzureActiveDirectory/b2cDirectories@2021-04-01' existing = {
-  name: 'ohmywordauth.onmicrosoft.com'
+  category: 'shared'
 }
 
 // dns zone for the application
@@ -41,50 +32,35 @@ resource dnsZone 'Microsoft.Network/dnsZones@2018-05-01' = {
   name: domainName
   location: 'global'
   tags: tags
-}
 
-// virtual network
-resource virtualNetwork 'Microsoft.Network/virtualNetworks@2022-09-01' = {
-  name: 'vnet-${workload}'
-  location: location
-  tags: tags
-  properties: {
-    addressSpace: {
-      addressPrefixes: [
-        '10.3.0.0/16'
+  resource dnsRecord 'A' = {
+    name: '*.apps'
+    properties: {
+      TTL: 3600
+      ARecords: [
+        {
+          ipv4Address: containerAppsEnvironment.properties.staticIp
+        }
       ]
     }
-    subnets: [
-      {
-        name: appServiceSubnetName
-        properties: {
-          addressPrefix: '10.3.1.0/24'
-          serviceEndpoints: [
-            { service: 'Microsoft.AzureCosmosDB' }
-            { service: 'Microsoft.KeyVault' }
-            { service: 'Microsoft.Storage' }
-          ]
-          delegations: [
-            {
-              name: 'dlg-serverFarms'
-              properties: {
-                serviceName: 'Microsoft.Web/serverFarms'
-              }
-            }
-          ]
-        }
-      }
-    ]
   }
 
-  resource appServiceSubnet 'subnets' existing = {
-    name: appServiceSubnetName
+  resource txtRecord 'TXT' = {
+    name: 'asuid.apps'
+    properties: {
+      TTL: 3600
+      TXTRecords: [
+        {
+          value: [ containerAppsEnvironment.properties.customDomainConfiguration.customDomainVerificationId ]
+        }
+      ]
+    }
   }
 }
 
 // cosmos db account
-resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-08-15' = {
-  name: 'cosmos-${workload}-shared'
+resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2023-04-15' = {
+  name: '${workload}-cosmos'
   location: location
   tags: tags
   properties: {
@@ -93,35 +69,28 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-08-15' = {
     backupPolicy: {
       type: 'Continuous'
     }
-    consistencyPolicy: {
-      defaultConsistencyLevel: 'Session'
-    }
     capacity: {
       totalThroughputLimit: totalThroughputLimit
     }
+    consistencyPolicy: {
+      defaultConsistencyLevel: 'Session'
+    }
     locations: [
-      {
-        locationName: location
-      }
+      { locationName: location }
     ]
-    isVirtualNetworkFilterEnabled: true
-    virtualNetworkRules: [
-      {
-        id: virtualNetwork::appServiceSubnet.id
-        ignoreMissingVNetServiceEndpoint: false
-      }
-    ]
-    ipRules: [for ipAddress in concat(azurePortalIpAddresses, allowedIpAddresses): {
-      ipAddressOrRange: ipAddress
-    }]
   }
 }
 
-var linkedStorageNames = [ 'CustomLogs', 'Query', 'Alerts' ]
+// user assigned identity
+resource sharedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
+  name: '${workload}-id'
+  location: location
+  tags: tags
+}
 
 // log analytics workspace
 resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
-  name: 'law-${workload}-shared'
+  name: '${workload}-law'
   location: location
   tags: tags
   properties: {
@@ -134,7 +103,7 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10
     }
   }
 
-  resource linkedStorageAccount 'linkedStorageAccounts@2020-08-01' = [for name in linkedStorageNames: {
+  resource linkedStorageAccount 'linkedStorageAccounts@2020-08-01' = [for name in [ 'CustomLogs', 'Query', 'Alerts' ]: {
     name: name
     properties: {
       storageAccountIds: [
@@ -159,17 +128,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
     minimumTlsVersion: 'TLS1_2'
     networkAcls: {
       bypass: 'AzureServices'
-      defaultAction: 'Deny'
-      virtualNetworkRules: [
-        {
-          id: virtualNetwork::appServiceSubnet.id
-          action: 'Allow'
-        }
-      ]
-      ipRules: [for ipAddress in allowedIpAddresses: {
-        value: ipAddress
-        action: 'Allow'
-      }]
+      defaultAction: 'Allow'
     }
   }
 
@@ -186,23 +145,25 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
   }
 }
 
-// app service plan for app services and function apps
-resource appServicePlan 'Microsoft.Web/serverfarms@2022-09-01' = {
-  name: 'asp-${workload}-shared'
+// container apps environment
+resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2023-05-01' = {
+  name: '${workload}-cae'
   location: location
   tags: tags
-  kind: 'linux'
-  sku: {
-    name: 'B2'
-  }
   properties: {
-    reserved: true
+    appLogsConfiguration: {
+      destination: 'log-analytics'
+      logAnalyticsConfiguration: {
+        customerId: logAnalyticsWorkspace.properties.customerId
+        sharedKey: logAnalyticsWorkspace.listKeys().primarySharedKey
+      }
+    }
   }
 }
 
 // app configuration
 resource appConfiguration 'Microsoft.AppConfiguration/configurationStores@2022-05-01' = {
-  name: 'ac-${workload}-shared'
+  name: '${workload}-ac'
   location: location
   tags: tags
   sku: {
@@ -231,7 +192,7 @@ resource appConfiguration 'Microsoft.AppConfiguration/configurationStores@2022-0
   resource azureAdTenantId 'keyValues' = {
     name: 'AzureAd:TenantId'
     properties: {
-      value: b2cTenant.properties.tenantId
+      value: auth.outputs.b2cTenantId
       contentType: 'text/plain'
     }
   }
@@ -295,7 +256,7 @@ resource appConfiguration 'Microsoft.AppConfiguration/configurationStores@2022-0
   resource graphApiClientTenantIdKeyValue 'keyValues' = {
     name: 'GraphApiClient:TenantId'
     properties: {
-      value: b2cTenant.properties.tenantId
+      value: auth.outputs.b2cTenantId
       contentType: 'text/plain'
     }
   }
@@ -319,7 +280,7 @@ resource appConfiguration 'Microsoft.AppConfiguration/configurationStores@2022-0
 
 // key vault
 resource keyVault 'Microsoft.KeyVault/vaults@2023-02-01' = {
-  name: 'kv-${workload}-shared'
+  name: '${workload}-kv'
   location: location
   tags: tags
   properties: {
@@ -334,16 +295,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-02-01' = {
     }
     networkAcls: {
       bypass: 'AzureServices'
-      defaultAction: 'Deny'
-      virtualNetworkRules: [
-        {
-          id: virtualNetwork::appServiceSubnet.id
-          ignoreMissingVnetServiceEndpoint: false
-        }
-      ]
-      ipRules: [for ipAddress in allowedIpAddresses: {
-        value: ipAddress
-      }]
+      defaultAction: 'Allow'
     }
   }
 
@@ -352,22 +304,9 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-02-01' = {
   }
 }
 
-// application insights for b2c logging
-resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
-  name: toLower('appi-${workload}-auth')
-  location: location
-  tags: tags
-  kind: 'web'
-  properties: {
-    Application_Type: 'web'
-    Request_Source: 'rest'
-    WorkspaceResourceId: logAnalyticsWorkspace.id
-  }
-}
-
 // service bus namespace
 resource serviceBusNamespace 'Microsoft.ServiceBus/namespaces@2022-10-01-preview' = {
-  name: 'sbns-${workload}-shared'
+  name: '${workload}-sbns'
   location: location
   tags: tags
   sku: {
@@ -387,47 +326,32 @@ resource serviceBusNamespace 'Microsoft.ServiceBus/namespaces@2022-10-01-preview
   }
 }
 
-module functions 'functions.bicep' = {
-  name: 'functions'
-  scope: resourceGroup('rg-${workload}-functions')
+module auth 'auth.bicep' = {
+  name: 'auth'
+  scope: resourceGroup(authResourceGroup)
   params: {
     workload: workload
+    category: 'auth'
     location: location
-    domainName: domainName
-    logAnalyticsWorkspaceName: logAnalyticsWorkspace.name
-    appServicePlanName: appServicePlan.name
     sharedResourceGroup: resourceGroup().name
-    storageAccountName: storageAccount.name
-    virtualNetworkSubnetId: virtualNetwork::appServiceSubnet.id
-    serviceBusNamespaceName: serviceBusNamespace.name
-    ipLookupQueueName: serviceBusNamespace::sharedIpLookupQueue.name
-    keyVaultName: keyVault.name
+    logAnalyticsWorkspaceName: logAnalyticsWorkspace.name
   }
 }
 
-module roleAssignments '../modules/roleAssignments.bicep' = {
-  name: 'roleAssignments-shared'
+module functions 'functions.bicep' = {
+  name: 'functions'
+  scope: resourceGroup(functionsResourceGroup)
   params: {
-    keyVaultName: keyVault.name
-    keyVaultRoles: [
-      {
-        principalId: functions.outputs.functionAppPrincipalId
-        roleDefinitionId: '4633458b-17de-408a-b874-0445c86b69e6' // Key Vault Secrets User
-      }
-    ]
-    storageAccountName: storageAccount.name
-    storageAccountRoles: [
-      {
-        principalId: functions.outputs.functionAppPrincipalId
-        roleDefinitionId: '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3' // Storage Table Data Contributor
-      }
-    ]
+    workload: workload
+    category: 'functions'
+    location: location
+    domainName: domainName
+    logAnalyticsWorkspaceName: logAnalyticsWorkspace.name
+    sharedStorageAccountName: storageAccount.name
+    sharedResourceGroup: resourceGroup().name
     serviceBusNamespaceName: serviceBusNamespace.name
-    serviceBusNamespaceRoles: [
-      {
-        principalId: functions.outputs.functionAppPrincipalId
-        roleDefinitionId: '4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0' // Azure Service Bus Data Receiver
-      }
-    ]
+    ipLookupQueueName: serviceBusNamespace::sharedIpLookupQueue.name
+    keyVaultName: keyVault.name
+    attemptRoleAssignments: attemptRoleAssignments
   }
 }

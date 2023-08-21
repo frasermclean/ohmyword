@@ -1,5 +1,5 @@
 ﻿using OhMyWord.Core.Models;
-using OhMyWord.Infrastructure.Models.Entities;
+using OhMyWord.Integrations.Models.Entities;
 
 namespace OhMyWord.Domain.Extensions;
 
@@ -10,12 +10,12 @@ public static class RoundEntityExtensions
         Id = round.Id.ToString(),
         Number = round.Number,
         WordId = round.Word.Id,
-        DefinitionId = round.WordHint.DefinitionId,
+        DefinitionId = round.WordHint.Definition.Id,
         GuessLimit = round.GuessLimit,
         StartDate = round.StartDate,
         EndDate = round.EndDate,
         EndReason = round.EndReason ?? throw new InvalidOperationException("Round end reason has not been set"),
         SessionId = round.SessionId,
-        PlayerData = round.GetPlayerData()
+        PlayerData = round.PlayerData.Values
     };
 }

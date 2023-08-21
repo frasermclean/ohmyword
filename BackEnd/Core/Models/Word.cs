@@ -4,6 +4,8 @@ public class Word
 {
     public const int MinLength = 4;
     public const int MaxLength = 16;
+    public const double FrequencyMinValue = 1;
+    public const double FrequencyMaxValue = 7;
 
     public required string Id { get; init; } = string.Empty;
 
@@ -12,6 +14,9 @@ public class Word
     /// </summary>
     public int Length => Id.Length;
 
+    /// <summary>
+    /// Collection of definitions for the word.
+    /// </summary>
     public required IEnumerable<Definition> Definitions { get; init; }
 
     /// <summary>
@@ -26,16 +31,14 @@ public class Word
 
     public DateTime LastModifiedTime { get; init; } = DateTime.UtcNow;
 
-    public LetterHint GetLetterHint(int position) => new(position, Id[position - 1]);
-
     public override string ToString() => Id;
 
     public static readonly Word Default = new()
     {
         Id = "default",
-        Definitions = new List<Definition> { new() { PartOfSpeech = PartOfSpeech.Noun, Value = "Default word" } },
+        Definitions = new[] { Definition.Default },
         Frequency = default,
-        LastModifiedBy = Guid.Empty,
+        LastModifiedBy = default,
         LastModifiedTime = DateTime.MinValue,
     };
 }

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using OhMyWord.Api.Extensions;
+using OhMyWord.Api.Models;
 using OhMyWord.Core.Models;
 using OhMyWord.Domain.Services;
 using static Microsoft.AspNetCore.Http.TypedResults;
@@ -7,7 +8,7 @@ using static Microsoft.AspNetCore.Http.TypedResults;
 namespace OhMyWord.Api.Endpoints.Words.Create;
 
 [HttpPost("words")]
-public class CreateWordEndpoint : Endpoint<CreateWordRequest, Results<Created<Word>, Conflict>>
+public class CreateWordEndpoint : Endpoint<CreateWordRequest, Results<Created<WordResponse>, Conflict>>
 {
     private readonly IWordsService wordsService;
 
@@ -16,7 +17,7 @@ public class CreateWordEndpoint : Endpoint<CreateWordRequest, Results<Created<Wo
         this.wordsService = wordsService;
     }
 
-    public override async Task<Results<Created<Word>, Conflict>> ExecuteAsync(CreateWordRequest request,
+    public override async Task<Results<Created<WordResponse>, Conflict>> ExecuteAsync(CreateWordRequest request,
         CancellationToken cancellationToken)
     {
         var result = await wordsService.CreateWordAsync(
@@ -30,7 +31,7 @@ public class CreateWordEndpoint : Endpoint<CreateWordRequest, Results<Created<Wo
             cancellationToken);
 
         return result.IsSuccess
-            ? Created($"/words/{result.Value.Id}", result.Value)
+            ? Created($"/words/{result.Value.Id}", WordResponse.FromWord(result.Value))
             : Conflict();
     }
 }

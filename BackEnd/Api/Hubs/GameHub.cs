@@ -1,19 +1,19 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using OhMyWord.Api.Extensions;
-using OhMyWord.Core.Models;
+using OhMyWord.Api.Models;
 using OhMyWord.Domain.Contracts.Commands;
 using OhMyWord.Domain.Contracts.Events;
-using OhMyWord.Domain.Contracts.Results;
+using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Services.State;
 
 namespace OhMyWord.Api.Hubs;
 
 public interface IGameHub
 {
-    Task SendRoundStarted(RoundStartedEvent eventModel, CancellationToken cancellationToken = default);
-    Task SendRoundEnded(RoundSummary summary, CancellationToken cancellationToken = default);
+    Task SendRoundStarted(RoundStartedResponse response, CancellationToken cancellationToken = default);
+    Task SendRoundEnded(RoundEndedResponse summary, CancellationToken cancellationToken = default);
     Task SendPlayerCount(int count, CancellationToken cancellationToken = default);
-    Task SendLetterHint(LetterHint letterHint, CancellationToken cancellationToken = default);
+    Task SendLetterHint(LetterHintResponse letterHint, CancellationToken cancellationToken = default);
 }
 
 public class GameHub : Hub<IGameHub>
@@ -45,7 +45,7 @@ public class GameHub : Hub<IGameHub>
     }
 
     [HubMethodName("registerPlayer")]
-    public async Task<RegisterPlayerResult> RegisterPlayerAsync(Guid playerId, string visitorId)
+    public async Task<RegisterPlayerResponse> RegisterPlayerAsync(Guid playerId, string visitorId)
     {
         logger.LogInformation("Attempting to register player with visitor ID: {VisitorId}", visitorId);
 
@@ -54,7 +54,7 @@ public class GameHub : Hub<IGameHub>
 
         await Clients.Others.SendPlayerCount(result.PlayerCount);
 
-        return result;
+        return RegisterPlayerResponse.FromRegisterPlayerResult(result);
     }
 
     [HubMethodName("submitGuess")]

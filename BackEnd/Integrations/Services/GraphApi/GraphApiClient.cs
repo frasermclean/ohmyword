@@ -2,7 +2,7 @@
 using Microsoft.Graph;
 using Microsoft.Graph.Models;
 
-namespace OhMyWord.Infrastructure.Services.GraphApi;
+namespace OhMyWord.Integrations.Services.GraphApi;
 
 public interface IGraphApiClient
 {

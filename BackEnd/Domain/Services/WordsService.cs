@@ -1,9 +1,9 @@
 using FluentResults;
 using OhMyWord.Core.Models;
-using OhMyWord.Infrastructure.Models.Entities;
-using OhMyWord.Infrastructure.Models.WordsApi;
-using OhMyWord.Infrastructure.Services.RapidApi.WordsApi;
-using OhMyWord.Infrastructure.Services.Repositories;
+using OhMyWord.Integrations.Models.Entities;
+using OhMyWord.Integrations.Models.WordsApi;
+using OhMyWord.Integrations.Services.RapidApi.WordsApi;
+using OhMyWord.Integrations.Services.Repositories;
 
 namespace OhMyWord.Domain.Services;
 
@@ -154,7 +154,7 @@ public class WordsService : IWordsService
         Id = entity.Id,
         Definitions = definitions,
         Frequency = entity.Frequency,
-        LastModifiedBy = entity.LastModifiedBy.GetValueOrDefault(),
+        LastModifiedBy = entity.LastModifiedBy,
         LastModifiedTime = entity.LastModifiedTime,
     };
 

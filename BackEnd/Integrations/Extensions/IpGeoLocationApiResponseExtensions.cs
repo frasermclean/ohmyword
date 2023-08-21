@@ -1,7 +1,7 @@
-﻿using OhMyWord.Infrastructure.Models.Entities;
-using OhMyWord.Infrastructure.Models.IpGeoLocation;
+﻿using OhMyWord.Integrations.Models.Entities;
+using OhMyWord.Integrations.Models.IpGeoLocation;
 
-namespace OhMyWord.Infrastructure.Extensions;
+namespace OhMyWord.Integrations.Extensions;
 
 internal static class IpGeoLocationApiResponseExtensions
 {

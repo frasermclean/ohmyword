@@ -102,7 +102,7 @@
           <Protocol Name="Proprietary"
             Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
           <Metadata>
-            <Item Key="ServiceUrl">https://functions.ohmyword.live/api/get-user-claims</Item>
+            <Item Key="ServiceUrl">https://functions.ohmyword.live/api/process-user-claims</Item>
             <Item Key="SendClaimsIn">Body</Item>
             <Item Key="AuthenticationType">ApiKeyHeader</Item>
           </Metadata>
@@ -132,7 +132,7 @@
             Handler="Web.TPEngine.Providers.Insights.AzureApplicationInsightsProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
           <Metadata>
             <!-- The ApplicationInsights instrumentation key, which you use for logging the events -->
-            <Item Key="InstrumentationKey">984c0aec-49e3-4175-bac0-ef83f359045e</Item>
+            <Item Key="InstrumentationKey">08109aa7-68a8-47ca-8eef-57fdb710f690</Item>
             <Item Key="DeveloperMode">true</Item> <!-- Set to false in production -->
             <Item Key="DisableTelemetry ">false</Item>
           </Metadata>

@@ -8,16 +8,12 @@ namespace OhMyWord.Domain.Tests.Services.State;
 public class RootStateTests
 {
     private readonly IRootState rootState;
-    private readonly Mock<IRoundService> roundServiceMock = new();
 
     public RootStateTests()
     {
-        
-
-
         var playerState = new PlayerState(Mock.Of<ILogger<PlayerState>>());
         var sessionState = new SessionState(Mock.Of<ILogger<SessionState>>());
-        var roundState = new RoundState(Mock.Of<ILogger<RoundState>>(), sessionState, roundServiceMock.Object);
+        var roundState = new RoundState(Mock.Of<ILogger<RoundState>>(), sessionState, Mock.Of<IRoundService>());
 
         rootState = new RootState(playerState, roundState, sessionState);
     }
@@ -30,7 +26,7 @@ public class RootStateTests
         rootState.PlayerState.IsDefault.Should().BeTrue();
         rootState.RoundState.IsDefault.Should().BeTrue();
         rootState.SessionState.IsDefault.Should().BeTrue();
-    }   
+    }
 
     [Fact]
     public void Reset_Should_ResetStateToDefaults()

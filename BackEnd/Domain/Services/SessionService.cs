@@ -3,8 +3,9 @@ using Microsoft.Extensions.Logging;
 using OhMyWord.Core.Models;
 using OhMyWord.Domain.Contracts.Events;
 using OhMyWord.Domain.Extensions;
+using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Services.State;
-using OhMyWord.Infrastructure.Services.Repositories;
+using OhMyWord.Integrations.Services.Repositories;
 
 namespace OhMyWord.Domain.Services;
 
@@ -17,16 +18,16 @@ public interface ISessionService
 public sealed class SessionService : ISessionService
 {
     private readonly ILogger<SessionService> logger;
-    private readonly IRootState rootState;
-    private readonly IRoundService roundService;
+    private readonly IPlayerState playerState;
+    private readonly IRoundState roundState;
     private readonly ISessionsRepository sessionsRepository;
 
-    public SessionService(ILogger<SessionService> logger, IRootState rootState, IRoundService roundService,
+    public SessionService(ILogger<SessionService> logger, IPlayerState playerState, IRoundState roundState,
         ISessionsRepository sessionsRepository)
     {
         this.logger = logger;
-        this.rootState = rootState;
-        this.roundService = roundService;
+        this.playerState = playerState;
+        this.roundState = roundState;
         this.sessionsRepository = sessionsRepository;
     }
 
@@ -35,36 +36,32 @@ public sealed class SessionService : ISessionService
         logger.LogInformation("Starting session: {SessionId}", session.Id);
 
         // create and execute rounds while there are players
-        while (rootState.PlayerState.PlayerCount > 0)
+        while (playerState.PlayerCount > 0)
         {
-            // load the next round
-            using var round = await rootState.RoundState.NextRoundAsync(cancellationToken);
-            await SendRoundStartedNotificationAsync(round, cancellationToken);
+            // start and execute round
+            var startData = await roundState.CreateRoundAsync(cancellationToken);
+            await SendRoundStartedNotificationAsync(startData, cancellationToken);
 
-            // execute round            
-            await roundService.ExecuteRoundAsync(round, cancellationToken);
-            await roundService.SaveRoundAsync(round, cancellationToken);
+            // execute round
+            var summary = await roundState.ExecuteRoundAsync(cancellationToken);
+
+            // session ended due to all players leaving
+            if (summary.EndReason == RoundEndReason.NoPlayersLeft)
+                break;
+
+            await SendRoundEndedNotificationAsync(summary, cancellationToken);
 
             // post round delay
-            var (postRoundDelay, summary) = roundService.GetRoundEndData(round);
-            await Task.WhenAll(
-                SendRoundEndedNotificationAsync(summary, cancellationToken),
-                Task.Delay(postRoundDelay, cancellationToken));
+            var delay = summary.NextRoundStart - DateTime.UtcNow;
+            await Task.Delay(delay, cancellationToken);
         }
     }
 
     public Task SaveSessionAsync(Session session, CancellationToken cancellationToken)
         => sessionsRepository.CreateSessionAsync(session.ToEntity(), cancellationToken);
 
-    private static Task SendRoundStartedNotificationAsync(Round round, CancellationToken cancellationToken)
-        => new RoundStartedEvent
-        {
-            RoundNumber = round.Number,
-            RoundId = round.Id,
-            WordHint = round.WordHint,
-            StartDate = round.StartDate,
-            EndDate = round.EndDate
-        }.PublishAsync(cancellation: cancellationToken);
+    private static Task SendRoundStartedNotificationAsync(RoundStartData data, CancellationToken cancellationToken)
+        => new RoundStartedEvent(data).PublishAsync(cancellation: cancellationToken);
 
     private static Task SendRoundEndedNotificationAsync(RoundSummary summary, CancellationToken cancellationToken)
         => new RoundEndedEvent(summary).PublishAsync(cancellation: cancellationToken);

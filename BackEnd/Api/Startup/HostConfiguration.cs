@@ -1,7 +1,8 @@
-﻿using Microsoft.FeatureManagement;
+﻿using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.FeatureManagement;
 using OhMyWord.Api.Services;
 using OhMyWord.Domain.DependencyInjection;
-using OhMyWord.Infrastructure.DependencyInjection;
+using OhMyWord.Integrations.DependencyInjection;
 using Serilog;
 
 namespace OhMyWord.Api.Startup;
@@ -20,34 +21,36 @@ public static class HostConfiguration
         return builder.Build();
     }
 
-    private static void ConfigureSerilog(HostBuilderContext context, IServiceProvider provider,
+    private static void ConfigureSerilog(HostBuilderContext context, IServiceProvider serviceProvider,
         LoggerConfiguration configuration)
     {
+        var telemetryConfiguration = serviceProvider.GetRequiredService<TelemetryConfiguration>();
         configuration
-            .ReadFrom.Configuration(context.Configuration)
-            .ReadFrom.Services(provider);
+            .MinimumLevel.Information()
+            .Enrich.FromLogContext()
+            .WriteTo.Console()
+            .WriteTo.ApplicationInsights(telemetryConfiguration, TelemetryConverter.Traces);
     }
 
     private static void AddServices(HostBuilderContext context, IServiceCollection collection)
     {
-        var configuration = context.Configuration;
-
         collection
-            .AddMicrosoftIdentityAuthentication(configuration)
-            .AddSignalRServices(configuration)
+            .AddApplicationInsightsTelemetry()
+            .AddMicrosoftIdentityAuthentication(context.Configuration)
+            .AddSignalRServices(context.Configuration)
             .AddFastEndpoints()
-            .AddApplicationHealthChecks(configuration)
+            .AddApplicationHealthChecks(context.Configuration)
             .AddFeatureManagement();
 
         // local project services
         collection
             .AddHostedService<GameBackgroundService>()
-            .AddDomainServices(configuration)
-            .AddCosmosDbRepositories(configuration)
-            .AddTableRepositories(configuration)
-            .AddMessagingServices(configuration)
+            .AddDomainServices(context.Configuration)
+            .AddCosmosDbRepositories(context.Configuration)
+            .AddTableRepositories(context.Configuration)
+            .AddMessagingServices(context.Configuration)
             .AddRapidApiServices()
-            .AddGraphApiClient(configuration);
+            .AddGraphApiClient(context.Configuration);
 
         // development services
         if (context.HostingEnvironment.IsDevelopment())
