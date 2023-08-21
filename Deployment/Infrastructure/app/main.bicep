@@ -158,6 +158,12 @@ resource containerApp 'Microsoft.App/containerApps@2022-10-01' = {
             bindingType: bindManagedCertificate ? 'SniEnabled' : 'Disabled'
           }
         ]
+        corsPolicy: {
+          allowCredentials: true
+          maxAge: 600
+          allowedOrigins: [ 'https://${frontendHostname}' ]
+          allowedMethods: [ '*' ]
+        }
       }
       registries: [
         {
