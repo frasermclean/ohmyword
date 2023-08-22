@@ -10,6 +10,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Integrations.GraphApi\Integrations.GraphApi.csproj"/>
+    <ProjectReference Include="..\Integrations.RapidApi\Integrations.RapidApi.csproj"/>
     <ProjectReference Include="..\Integrations\Integrations.csproj"/>
   </ItemGroup>
 

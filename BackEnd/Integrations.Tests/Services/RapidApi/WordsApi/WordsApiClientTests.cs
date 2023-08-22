@@ -1,5 +1,4 @@
-﻿using OhMyWord.Integrations.Services.RapidApi.WordsApi;
-using OhMyWord.Integrations.Tests.Fixtures;
+﻿using OhMyWord.Integrations.Tests.Fixtures;
 
 namespace OhMyWord.Integrations.Tests.Services.RapidApi.WordsApi;
 
@@ -24,10 +23,10 @@ public class WordsApiClientTests : IClassFixture<RapidApiFixture>
         var firstResult = details?.DefinitionResults.FirstOrDefault();
 
         // assert
-        Assert.NotNull(details);
+        details.Should().NotBeNull();
         details.Word.Should().Be(word);
-        details.Frequency.Should().BeGreaterThan(0);
-        Assert.NotNull(firstResult);
+        details.Frequency.Should().BePositive();
+        firstResult.Should().NotBeNull();
         firstResult.Definition.Should().NotBeEmpty();
         firstResult.PartOfSpeech.Should().Be(expectedPartOfSpeech);
     }

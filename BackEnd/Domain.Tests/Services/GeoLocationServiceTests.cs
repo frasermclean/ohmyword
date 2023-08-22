@@ -1,8 +1,7 @@
-﻿using OhMyWord.Domain.Services;
+﻿using OhMyWord.Core.Services;
+using OhMyWord.Domain.Services;
 using OhMyWord.Integrations.Errors;
-using OhMyWord.Integrations.Models.Entities;
-using OhMyWord.Integrations.Services.RapidApi.IpGeoLocation;
-using OhMyWord.Integrations.Services.Repositories;
+using OhMyWord.Integrations.RapidApi.Services;
 using System.Net;
 using System.Net.Sockets;
 

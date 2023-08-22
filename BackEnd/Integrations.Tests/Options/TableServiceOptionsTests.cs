@@ -1,6 +1,4 @@
-﻿using OhMyWord.Integrations.Options;
-
-namespace OhMyWord.Integrations.Tests.Options;
+﻿namespace OhMyWord.Integrations.Tests.Options;
 
 public class TableServiceOptionsTests
 {

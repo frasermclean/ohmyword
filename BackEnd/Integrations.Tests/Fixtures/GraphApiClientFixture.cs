@@ -1,8 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using OhMyWord.Integrations.DependencyInjection;
-using OhMyWord.Integrations.Services.GraphApi;
 
 namespace OhMyWord.Integrations.Tests.Fixtures;
 

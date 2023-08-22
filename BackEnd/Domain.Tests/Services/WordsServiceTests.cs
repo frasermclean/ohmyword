@@ -2,8 +2,6 @@
 using OhMyWord.Domain.Services;
 using OhMyWord.Integrations.Errors;
 using OhMyWord.Integrations.Models.Entities;
-using OhMyWord.Integrations.Models.WordsApi;
-using OhMyWord.Integrations.Services.RapidApi.WordsApi;
 using OhMyWord.Integrations.Services.Repositories;
 
 namespace OhMyWord.Domain.Tests.Services;

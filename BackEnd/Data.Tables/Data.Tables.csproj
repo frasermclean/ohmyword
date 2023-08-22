@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BackEnd\Core\Core.csproj"/>
+    <ProjectReference Include="..\Core\Core.csproj"/>
   </ItemGroup>
 
   <ItemGroup>
@@ -25,6 +25,5 @@
     <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="7.0.0"/>
     <PackageReference Include="System.Linq.Async" Version="6.0.1"/>
   </ItemGroup>
-
 
 </Project>

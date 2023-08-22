@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using OhMyWord.Core.Services;
 using OhMyWord.Domain.Options;
 using OhMyWord.Domain.Services;
 using OhMyWord.Domain.Services.State;

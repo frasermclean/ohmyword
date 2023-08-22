@@ -33,7 +33,7 @@
     <Using Include="System.Threading.ExecutionContext" Alias="ExecutionContext"/>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Data.Tables\Data.Tables.csproj"/>
-    <ProjectReference Include="..\..\Integrations.RapidApi\Integrations.RapidApi.csproj"/>
+    <ProjectReference Include="..\Data.Tables\Data.Tables.csproj"/>
+    <ProjectReference Include="..\Integrations.RapidApi\Integrations.RapidApi.csproj"/>
   </ItemGroup>
 </Project>

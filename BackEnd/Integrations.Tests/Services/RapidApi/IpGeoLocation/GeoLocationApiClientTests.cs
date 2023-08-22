@@ -1,5 +1,4 @@
-﻿using OhMyWord.Integrations.Services.RapidApi.IpGeoLocation;
-using OhMyWord.Integrations.Tests.Fixtures;
+﻿using OhMyWord.Integrations.Tests.Fixtures;
 using System.Net;
 
 namespace OhMyWord.Integrations.Tests.Services.RapidApi.IpGeoLocation;

@@ -1,8 +1,11 @@
 ﻿using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.FeatureManagement;
 using OhMyWord.Api.Services;
+using OhMyWord.Data.Tables.DependencyInjection;
 using OhMyWord.Domain.DependencyInjection;
 using OhMyWord.Integrations.DependencyInjection;
+using OhMyWord.Integrations.GraphApi.DependencyInjection;
+using OhMyWord.Integrations.RapidApi.DependencyInjection;
 using Serilog;
 
 namespace OhMyWord.Api.Startup;
@@ -47,7 +50,7 @@ public static class HostConfiguration
             .AddHostedService<GameBackgroundService>()
             .AddDomainServices(context.Configuration)
             .AddCosmosDbRepositories(context.Configuration)
-            .AddTableRepositories(context.Configuration)
+            .AddDataTableServices(context.Configuration)
             .AddMessagingServices(context.Configuration)
             .AddRapidApiServices()
             .AddGraphApiClient(context.Configuration);

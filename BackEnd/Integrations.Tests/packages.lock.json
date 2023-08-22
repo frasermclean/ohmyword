@@ -174,12 +174,12 @@
       },
       "Azure.Messaging.ServiceBus": {
         "type": "Transitive",
-        "resolved": "7.15.0",
-        "contentHash": "K2SONtHZSQL3bAbhSBLkNzvh6XsTPK1wXfNjUiZQaJciqX6827kfmJ4DkA3ZZjW+zNaPfGMWVI9zL9berJ4ibg==",
+        "resolved": "7.14.0",
+        "contentHash": "pEzzY4/TyE4/CdEPRhLmVM6f2MdZBHWeDvvd8K92j9wkc7P9wjoXNxuoo1jVUakXndZj5ba87oUgjF9QM2+mww==",
         "dependencies": {
           "Azure.Core": "1.32.0",
           "Azure.Core.Amqp": "1.3.0",
-          "Microsoft.Azure.Amqp": "2.6.2",
+          "Microsoft.Azure.Amqp": "2.6.1",
           "Microsoft.Bcl.AsyncInterfaces": "1.1.1",
           "System.Memory.Data": "1.0.2"
         }
@@ -229,8 +229,8 @@
       },
       "Microsoft.Azure.Amqp": {
         "type": "Transitive",
-        "resolved": "2.6.2",
-        "contentHash": "6hQqWRiHRd9J6pGBlzQM9LBOWaO8xIsRVYs3olrDGqOkK7v9mgwz9rmrv+49FIbLEOGgkP9IKLnXdsA4Y8IIYw=="
+        "resolved": "2.6.1",
+        "contentHash": "yWnawf7MD/PUNzvLcVkWN0s4kQT3+CUy4sP19CmBnyFX5Uy/CCRC0M6Amkl1p8bn9yht1oSLu+m8d6nc9DLJoA=="
       },
       "Microsoft.Azure.Cosmos": {
         "type": "Transitive",
@@ -1177,7 +1177,7 @@
       "OhMyWord.Integrations": {
         "type": "Project",
         "dependencies": {
-          "Azure.Messaging.ServiceBus": "[7.15.0, )",
+          "Azure.Messaging.ServiceBus": "[7.14.0, )",
           "FluentResults": "[3.15.2, )",
           "Microsoft.Azure.Cosmos": "[3.35.2, )",
           "Microsoft.Extensions.Azure": "[1.6.3, )",

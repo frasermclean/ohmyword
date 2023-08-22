@@ -1,8 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using OhMyWord.Integrations.DependencyInjection;
-using OhMyWord.Integrations.Services.RapidApi.IpGeoLocation;
-using OhMyWord.Integrations.Services.RapidApi.WordsApi;
 
 namespace OhMyWord.Integrations.Tests.Fixtures;
 
