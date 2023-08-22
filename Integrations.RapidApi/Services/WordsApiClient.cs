@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
-using OhMyWord.Integrations.Models.WordsApi;
+using OhMyWord.Integrations.RapidApi.Models.WordsApi;
 using System.Net;
 using System.Net.Http.Json;
 
-namespace OhMyWord.Integrations.Services.RapidApi.WordsApi;
+namespace OhMyWord.Integrations.RapidApi.Services;
 
 public interface IWordsApiClient
 {

@@ -1,8 +1,8 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace OhMyWord.Integrations.Models.IpGeoLocation;
+namespace OhMyWord.Integrations.RapidApi.Models.IpGeoLocation;
 
-internal class Flag
+public class Flag
 {
     [JsonPropertyName("file")] public string? Url { get; set; }
 }

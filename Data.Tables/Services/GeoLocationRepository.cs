@@ -1,5 +1,4 @@
-﻿using Azure;
-using Azure.Data.Tables;
+﻿using Azure.Data.Tables;
 using Microsoft.Extensions.Logging;
 using OhMyWord.Core.Models;
 using OhMyWord.Core.Services;
@@ -20,23 +19,34 @@ public class GeoLocationRepository : IGeoLocationRepository
         tableClient = tableServiceClient.GetTableClient("geoLocations");
     }
 
+    public async Task<GeoLocation?> GetGeoLocationAsync(string address, CancellationToken cancellationToken = default)
+    {
+        // parse address string
+        if (IPAddress.TryParse(address, out var ipAddress))
+        {
+            return await GetGeoLocationAsync(ipAddress, cancellationToken);
+        }
+
+        logger.LogError("Invalid IP address: {IpAddress}", address);
+        return null;
+    }
+
     public async Task<GeoLocation?> GetGeoLocationAsync(IPAddress ipAddress, CancellationToken cancellationToken)
     {
         var partitionKey = ipAddress.AddressFamily == AddressFamily.InterNetworkV6 ? "IPv6" : "IPv4";
         var rowKey = ipAddress.ToString();
 
-        try
+        var response = await tableClient.GetEntityIfExistsAsync<GeoLocationEntity>(partitionKey, rowKey,
+            cancellationToken: cancellationToken);
+
+        if (!response.HasValue)
         {
-            var response = await tableClient.GetEntityAsync<GeoLocationEntity>(partitionKey, rowKey,
-                cancellationToken: cancellationToken);
-            logger.LogInformation("GeoLocation for IP address: {IpAddress} was found", ipAddress);
-            return MapToGeoLocation(response.Value);
-        }
-        catch (RequestFailedException exception)
-        {
-            logger.LogWarning(exception, "GeoLocation for IP address: {IpAddress} was not found", ipAddress);
+            logger.LogWarning("GeoLocation for IP address: {IpAddress} was not found", ipAddress);
             return default;
         }
+
+        logger.LogInformation("GeoLocation for IP address: {IpAddress} was found", ipAddress);
+        return MapToGeoLocation(response.Value);
     }
 
     public async Task AddGeoLocationAsync(GeoLocation geoLocation)

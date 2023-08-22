@@ -3,6 +3,7 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OhMyWord.Data.Tables.DependencyInjection;
+using OhMyWord.Integrations.RapidApi.DependencyInjection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -26,6 +27,7 @@ public static class Program
             .ConfigureServices((context, services) =>
             {
                 services.AddDataTableServices(context.Configuration);
+                services.AddRapidApiServices();
 
                 // application insights
                 services.AddApplicationInsightsTelemetryWorkerService();

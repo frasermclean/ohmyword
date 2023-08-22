@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace OhMyWord.Integrations.Options;
+namespace OhMyWord.Integrations.RapidApi.Options;
 
 public class RapidApiOptions
 {

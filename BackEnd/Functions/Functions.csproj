@@ -34,5 +34,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Data.Tables\Data.Tables.csproj"/>
+    <ProjectReference Include="..\..\Integrations.RapidApi\Integrations.RapidApi.csproj"/>
   </ItemGroup>
 </Project>
