@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>OhMyWord.Integrations.ServiceBus</RootNamespace>
+    <AssemblyName>OhMyWord.Integrations.ServiceBus</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Azure.Identity" Version="1.10.0"/>
+    <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.14.0"/>
+    <PackageReference Include="Microsoft.Extensions.Azure" Version="1.7.0"/>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1"/>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1"/>
+    <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.1"/>
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="7.0.0"/>
+    <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="7.0.0"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Core\Core.csproj"/>
+  </ItemGroup>
+
+</Project>

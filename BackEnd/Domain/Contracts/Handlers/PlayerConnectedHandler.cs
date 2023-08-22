@@ -2,9 +2,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.FeatureManagement;
+using OhMyWord.Core.Services;
 using OhMyWord.Domain.Contracts.Events;
 using OhMyWord.Domain.Options;
-using OhMyWord.Integrations.Services.Messaging;
 
 namespace OhMyWord.Domain.Contracts.Handlers;
 
@@ -33,7 +33,7 @@ public class PlayerConnectedHandler : IEventHandler<PlayerConnectedEvent>
         {
             await using var scope = serviceScopeFactory.CreateAsyncScope();
             var messageSender = scope.ServiceProvider.GetRequiredService<IMessageSender>();
-            await messageSender.SendIpLookupMessageAsync(eventModel.IpAddress.ToString());
+            await messageSender.SendIpLookupMessageAsync(eventModel.IpAddress);
         }
     }
 }

@@ -1796,6 +1796,20 @@
           "Microsoft.Extensions.Options.ConfigurationExtensions": "[7.0.0, )",
           "Microsoft.Extensions.Options.DataAnnotations": "[7.0.0, )"
         }
+      },
+      "OhMyWord.Integrations.ServiceBus": {
+        "type": "Project",
+        "dependencies": {
+          "Azure.Identity": "[1.10.0, )",
+          "Azure.Messaging.ServiceBus": "[7.14.0, )",
+          "Microsoft.Extensions.Azure": "[1.7.0, )",
+          "Microsoft.Extensions.Hosting": "[7.0.1, )",
+          "Microsoft.Extensions.Logging.Abstractions": "[7.0.1, )",
+          "Microsoft.Extensions.Options": "[7.0.1, )",
+          "Microsoft.Extensions.Options.ConfigurationExtensions": "[7.0.0, )",
+          "Microsoft.Extensions.Options.DataAnnotations": "[7.0.0, )",
+          "OhMyWord.Core": "[1.0.0, )"
+        }
       }
     }
   }

@@ -6,6 +6,7 @@ using OhMyWord.Domain.DependencyInjection;
 using OhMyWord.Integrations.DependencyInjection;
 using OhMyWord.Integrations.GraphApi.DependencyInjection;
 using OhMyWord.Integrations.RapidApi.DependencyInjection;
+using OhMyWord.Integrations.ServiceBus.DependencyInjection;
 using Serilog;
 
 namespace OhMyWord.Api.Startup;
@@ -51,7 +52,7 @@ public static class HostConfiguration
             .AddDomainServices(context.Configuration)
             .AddCosmosDbRepositories(context.Configuration)
             .AddDataTableServices(context.Configuration)
-            .AddMessagingServices(context.Configuration)
+            .AddServiceBusServices(context.Configuration)
             .AddRapidApiServices()
             .AddGraphApiClient(context.Configuration);
 

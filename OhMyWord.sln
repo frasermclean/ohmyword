@@ -29,6 +29,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Integrations.RapidApi", "Ba
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Integrations.GraphApi", "BackEnd\Integrations.GraphApi\Integrations.GraphApi.csproj", "{0CDF9E26-931E-4CBC-80D6-81BE5C78F29B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Integrations.ServiceBus", "BackEnd\Integrations.ServiceBus\Integrations.ServiceBus.csproj", "{DAC07F67-C7A1-4378-9CDE-7EEAA5E629D0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -83,6 +85,10 @@ Global
 		{0CDF9E26-931E-4CBC-80D6-81BE5C78F29B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0CDF9E26-931E-4CBC-80D6-81BE5C78F29B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0CDF9E26-931E-4CBC-80D6-81BE5C78F29B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DAC07F67-C7A1-4378-9CDE-7EEAA5E629D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DAC07F67-C7A1-4378-9CDE-7EEAA5E629D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DAC07F67-C7A1-4378-9CDE-7EEAA5E629D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DAC07F67-C7A1-4378-9CDE-7EEAA5E629D0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
