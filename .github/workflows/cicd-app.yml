@@ -299,10 +299,14 @@ jobs:
       - name: Build and deploy Container App
         uses: azure/container-apps-deploy-action@v1
         env:
+          IMAGE_NAME: ohmyword-api
           IMAGE_TAG: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
+          CONTAINER_REGISTRY: snakebyte
+          CONTAINER_APP_NAME: ohmyword-${{ github.ref_name == 'main' && 'prod' || 'test' }}-ca
+          RESOURCE_GROUP: ohmyword-${{ github.ref_name == 'main' && 'prod' || 'test' }}
         with:
           appSourcePath: ${{ env.APP_PATH }}
-          acrName: ${{ vars.AZURE_CONTAINER_REGISTRY }}
-          imageToBuild: ${{ vars.AZURE_CONTAINER_REGISTRY }}.azurecr.io/ohmyword-api:${{ env.IMAGE_TAG }}
-          containerAppName: ${{ vars.CONTAINER_APP_NAME }}
-          resourceGroup: ${{ vars.APP_RESOURCE_GROUP }}
+          acrName: ${{ env.CONTAINER_REGISTRY }}
+          imageToBuild: ${{ env.CONTAINER_REGISTRY }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+          containerAppName: ${{ env.CONTAINER_APP_NAME }}
+          resourceGroup: ${{ env.RESOURCE_GROUP }}
