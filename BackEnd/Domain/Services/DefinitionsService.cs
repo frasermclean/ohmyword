@@ -1,8 +1,6 @@
 ﻿using FluentResults;
 using OhMyWord.Core.Models;
 using OhMyWord.Integrations.Models.Entities;
-using OhMyWord.Integrations.RapidApi.Models.WordsApi;
-using OhMyWord.Integrations.RapidApi.Services;
 using OhMyWord.Integrations.Services.Repositories;
 
 namespace OhMyWord.Domain.Services;
@@ -21,27 +19,15 @@ public interface IDefinitionsService
         CancellationToken cancellationToken = default);
 
     Task<Result> DeleteDefinitionsAsync(string wordId, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Generates definitions for a word from a dictionary lookup.
-    /// </summary>
-    /// <param name="wordId">The word to search for</param>
-    /// <param name="partOfSpeech">Optional part of speech to restrict results to</param>
-    /// <param name="cancellationToken">Task cancellation token</param>
-    /// <returns>A collection of definitions that match the parameters</returns>
-    Task<IEnumerable<Definition>> GenerateDefinitionsAsync(string wordId, PartOfSpeech? partOfSpeech = default,
-        CancellationToken cancellationToken = default);
 }
 
 public class DefinitionsService : IDefinitionsService
 {
     private readonly IDefinitionsRepository definitionsRepository;
-    private readonly IWordsApiClient wordsApiClient;
 
-    public DefinitionsService(IDefinitionsRepository definitionsRepository, IWordsApiClient wordsApiClient)
+    public DefinitionsService(IDefinitionsRepository definitionsRepository)
     {
         this.definitionsRepository = definitionsRepository;
-        this.wordsApiClient = wordsApiClient;
     }
 
     public IAsyncEnumerable<Definition> GetDefinitions(string wordId, CancellationToken cancellationToken)
@@ -84,17 +70,6 @@ public class DefinitionsService : IDefinitionsService
         return results.Merge();
     }
 
-    public async Task<IEnumerable<Definition>> GenerateDefinitionsAsync(string wordId,
-        PartOfSpeech? partOfSpeech = default, CancellationToken cancellationToken = default)
-    {
-        var details = await wordsApiClient.GetWordDetailsAsync(wordId, cancellationToken);
-
-        return details is null
-            ? Enumerable.Empty<Definition>()
-            : details.DefinitionResults.Select(MapToDefinition)
-                .Where(definition => definition.PartOfSpeech == partOfSpeech || partOfSpeech is null);
-    }
-
     private static DefinitionEntity MapToEntity(string wordId, Definition definition) => new()
     {
         Id = definition.Id.ToString(),
@@ -107,12 +82,5 @@ public class DefinitionsService : IDefinitionsService
     private static Definition MapToDefinition(DefinitionEntity entity) => new()
     {
         Id = Guid.Parse(entity.Id), PartOfSpeech = entity.PartOfSpeech, Value = entity.Value, Example = entity.Example,
-    };
-
-    private static Definition MapToDefinition(DefinitionResult result) => new()
-    {
-        Value = result.Definition,
-        PartOfSpeech = Enum.Parse<PartOfSpeech>(result.PartOfSpeech),
-        Example = result.Examples.FirstOrDefault()
     };
 }

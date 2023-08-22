@@ -27,7 +27,7 @@ public class Word
     /// <summary>
     /// User ID of the user who last modified the word.
     /// </summary>
-    public required Guid? LastModifiedBy { get; init; }
+    public Guid? LastModifiedBy { get; init; }
 
     public DateTime LastModifiedTime { get; init; } = DateTime.UtcNow;
 

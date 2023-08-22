@@ -1,24 +1,20 @@
 ﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
-using OhMyWord.Core.Models;
 using OhMyWord.Core.Services;
-using OhMyWord.Integrations.RapidApi.Models.IpGeoLocation;
-using OhMyWord.Integrations.RapidApi.Services;
-using System.Net;
 
 namespace OhMyWord.Functions.Functions;
 
 public class IpAddressFunctions
 {
     private readonly ILogger<IpAddressFunctions> logger;
-    private readonly IGeoLocationApiClient apiClient;
+    private readonly IGeoLocationClient client;
     private readonly IGeoLocationRepository repository;
 
-    public IpAddressFunctions(ILogger<IpAddressFunctions> logger, IGeoLocationApiClient apiClient,
+    public IpAddressFunctions(ILogger<IpAddressFunctions> logger, IGeoLocationClient client,
         IGeoLocationRepository repository)
     {
         this.logger = logger;
-        this.apiClient = apiClient;
+        this.client = client;
         this.repository = repository;
     }
 
@@ -38,17 +34,7 @@ public class IpAddressFunctions
         }
 
         // lookup in API and store in table storage
-        var apiResponse = await apiClient.GetGeoLocationAsync(address, cancellationToken);
-        geoLocation = MapToGeoLocation(apiResponse);
+        geoLocation = await client.GetGeoLocationAsync(address, cancellationToken);
         await repository.AddGeoLocationAsync(geoLocation);
     }
-
-    private static GeoLocation MapToGeoLocation(ApiResponse apiResponse) => new()
-    {
-        IpAddress = IPAddress.TryParse(apiResponse.IpAddress, out var ipAddress) ? ipAddress : IPAddress.None,
-        CountryName = apiResponse.Country.Name ?? string.Empty,
-        City = apiResponse.City.Name ?? string.Empty,
-        CountryCode = apiResponse.Country.Code ?? string.Empty,
-        LastUpdated = DateTime.UtcNow
-    };
 }

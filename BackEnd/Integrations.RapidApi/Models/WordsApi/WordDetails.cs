@@ -2,7 +2,7 @@
 
 namespace OhMyWord.Integrations.RapidApi.Models.WordsApi;
 
-public class WordDetails
+internal class WordDetails
 {
     public string Word { get; init; } = string.Empty;
 

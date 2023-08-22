@@ -2,8 +2,6 @@
 using OhMyWord.Core.Models;
 using OhMyWord.Core.Services;
 using OhMyWord.Integrations.Errors;
-using OhMyWord.Integrations.RapidApi.Models.IpGeoLocation;
-using OhMyWord.Integrations.RapidApi.Services;
 using System.Net;
 
 namespace OhMyWord.Domain.Services;
@@ -18,12 +16,12 @@ public interface IGeoLocationService
 public class GeoLocationService : IGeoLocationService
 {
     private readonly IGeoLocationRepository repository;
-    private readonly IGeoLocationApiClient apiClient;
+    private readonly IGeoLocationClient client;
 
-    public GeoLocationService(IGeoLocationRepository repository, IGeoLocationApiClient apiClient)
+    public GeoLocationService(IGeoLocationRepository repository, IGeoLocationClient client)
     {
         this.repository = repository;
-        this.apiClient = apiClient;
+        this.client = client;
     }
 
     public async Task<Result<GeoLocation>> GetGeoLocationAsync(string address,
@@ -40,19 +38,9 @@ public class GeoLocationService : IGeoLocationService
             return geoLocation;
 
         // lookup in API and store in table storage
-        var apiResponse = await apiClient.GetGeoLocationAsync(ipAddress, cancellationToken);
-        geoLocation = MapToGeoLocation(apiResponse);
+        geoLocation = await client.GetGeoLocationAsync(ipAddress, cancellationToken);
         await repository.AddGeoLocationAsync(geoLocation);
 
         return geoLocation;
     }
-
-    private static GeoLocation MapToGeoLocation(ApiResponse apiResponse) => new()
-    {
-        IpAddress = IPAddress.TryParse(apiResponse.IpAddress, out var ipAddress) ? ipAddress : IPAddress.None,
-        CountryName = apiResponse.Country.Name ?? string.Empty,
-        City = apiResponse.City.Name ?? string.Empty,
-        CountryCode = apiResponse.Country.Code ?? string.Empty,
-        LastUpdated = DateTime.UtcNow
-    };
 }

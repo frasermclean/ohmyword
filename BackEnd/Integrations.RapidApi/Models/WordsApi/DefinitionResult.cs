@@ -1,6 +1,6 @@
 ﻿namespace OhMyWord.Integrations.RapidApi.Models.WordsApi;
 
-public class DefinitionResult
+internal class DefinitionResult
 {
     public string Definition { get; init; } = string.Empty;
     public string PartOfSpeech { get; init; } = string.Empty;

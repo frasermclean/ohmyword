@@ -975,7 +975,8 @@
           "Microsoft.Extensions.Http.Polly": "[7.0.10, )",
           "Microsoft.Extensions.Logging.Abstractions": "[7.0.1, )",
           "Microsoft.Extensions.Options.ConfigurationExtensions": "[7.0.0, )",
-          "Microsoft.Extensions.Options.DataAnnotations": "[7.0.0, )"
+          "Microsoft.Extensions.Options.DataAnnotations": "[7.0.0, )",
+          "OhMyWord.Core": "[1.0.0, )"
         }
       }
     }

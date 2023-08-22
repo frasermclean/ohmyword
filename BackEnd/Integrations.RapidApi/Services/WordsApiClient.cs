@@ -1,25 +1,17 @@
 ﻿using Microsoft.Extensions.Logging;
+using OhMyWord.Core.Models;
+using OhMyWord.Core.Services;
 using OhMyWord.Integrations.RapidApi.Models.WordsApi;
 using System.Net;
 using System.Net.Http.Json;
 
 namespace OhMyWord.Integrations.RapidApi.Services;
 
-public interface IWordsApiClient
-{
-    /// <summary>
-    /// Reach out to the WordsApi to look up a word.
-    /// </summary>
-    /// <param name="word">The word to search for</param>
-    /// <param name="cancellationToken">Operation cancellation token</param>
-    /// <returns>A populated <see cref="HttpRequestException"/> object if the word was found, null if not found.</returns>
-    /// <exception cref="WordDetails">Any error except for not found.</exception>
-    Task<WordDetails?> GetWordDetailsAsync(string word, CancellationToken cancellationToken = default);
-
-    Task<WordDetails> GetRandomWordDetailsAsync(CancellationToken cancellationToken = default);
-}
-
-public class WordsApiClient : IWordsApiClient
+/// <summary>
+/// WordsAPI client implementation.
+/// https://rapidapi.com/dpventures/api/wordsapi/
+/// </summary>
+public class WordsApiClient : IDictionaryClient
 {
     private readonly ILogger<WordsApiClient> logger;
     private readonly HttpClient httpClient;
@@ -30,14 +22,14 @@ public class WordsApiClient : IWordsApiClient
         this.httpClient = httpClient;
     }
 
-    public Task<WordDetails?> GetWordDetailsAsync(string word, CancellationToken cancellationToken)
+    public Task<Word?> GetWordAsync(string word, CancellationToken cancellationToken)
         => SendRequestAsync(new Uri(word, UriKind.Relative), cancellationToken);
 
-    public async Task<WordDetails> GetRandomWordDetailsAsync(CancellationToken cancellationToken = default)
+    public async Task<Word> GetRandomWordAsync(CancellationToken cancellationToken = default)
         => await SendRequestAsync(new Uri("?random=true", UriKind.Relative), cancellationToken) ??
            throw new InvalidOperationException("Random word return null reference");
 
-    private async Task<WordDetails?> SendRequestAsync(Uri uri, CancellationToken cancellationToken)
+    private async Task<Word?> SendRequestAsync(Uri uri, CancellationToken cancellationToken)
     {
         var message = await httpClient.GetAsync(uri, cancellationToken);
 
@@ -49,6 +41,21 @@ public class WordsApiClient : IWordsApiClient
 
         message.EnsureSuccessStatusCode();
 
-        return await message.Content.ReadFromJsonAsync<WordDetails>(cancellationToken: cancellationToken);
+        var wordDetails = await message.Content.ReadFromJsonAsync<WordDetails>(cancellationToken: cancellationToken);
+
+        return wordDetails is null ? default : MapToWord(wordDetails);
     }
+
+    private static Word MapToWord(WordDetails details) => new()
+    {
+        Id = details.Word,
+        Definitions = details.DefinitionResults.Select(result => new Definition
+        {
+            Id = Guid.NewGuid(),
+            PartOfSpeech = Enum.Parse<PartOfSpeech>(result.PartOfSpeech, true),
+            Value = result.Definition,
+            Example = result.Examples.FirstOrDefault()
+        }),
+        Frequency = details.Frequency
+    };
 }

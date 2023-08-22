@@ -1,8 +1,7 @@
 using FluentResults;
 using OhMyWord.Core.Models;
+using OhMyWord.Core.Services;
 using OhMyWord.Integrations.Models.Entities;
-using OhMyWord.Integrations.RapidApi.Models.WordsApi;
-using OhMyWord.Integrations.RapidApi.Services;
 using OhMyWord.Integrations.Services.Repositories;
 
 namespace OhMyWord.Domain.Services;
@@ -53,15 +52,14 @@ public class WordsService : IWordsService
 {
     private readonly IWordsRepository wordsRepository;
     private readonly IDefinitionsService definitionsService;
-    private readonly IWordsApiClient wordsApiClient;
-
+    private readonly IDictionaryClient dictionaryClient;
 
     public WordsService(IWordsRepository wordsRepository, IDefinitionsService definitionsService,
-        IWordsApiClient wordsApiClient)
+        IDictionaryClient dictionaryClient)
     {
         this.wordsRepository = wordsRepository;
         this.definitionsService = definitionsService;
-        this.wordsApiClient = wordsApiClient;
+        this.dictionaryClient = dictionaryClient;
     }
 
     public IAsyncEnumerable<Word> SearchWords(int offset, int limit, string filter, string orderBy, bool isDescending,
@@ -86,9 +84,9 @@ public class WordsService : IWordsService
         // lookup up using external service if requested
         if (performExternalLookup)
         {
-            var details = await wordsApiClient.GetWordDetailsAsync(wordId, cancellationToken);
-            if (details is not null)
-                return MapToWord(details);
+            var word = await dictionaryClient.GetWordAsync(wordId, cancellationToken);
+            if (word is not null)
+                return word;
         }
 
         var wordResult = await wordsRepository.GetWordAsync(wordId, cancellationToken);
@@ -156,19 +154,5 @@ public class WordsService : IWordsService
         Frequency = entity.Frequency,
         LastModifiedBy = entity.LastModifiedBy,
         LastModifiedTime = entity.LastModifiedTime,
-    };
-
-    private static Word MapToWord(WordDetails details) => new()
-    {
-        Id = details.Word,
-        Definitions = details.DefinitionResults.Select(result => new Definition
-        {
-            Id = Guid.NewGuid(),
-            PartOfSpeech = Enum.Parse<PartOfSpeech>(result.PartOfSpeech, true),
-            Value = result.Definition,
-            Example = result.Examples.FirstOrDefault()
-        }),
-        Frequency = details.Frequency,
-        LastModifiedBy = Guid.Empty
     };
 }

@@ -2,7 +2,7 @@
 
 namespace OhMyWord.Integrations.RapidApi.Models.IpGeoLocation;
 
-public class Flag
+internal class Flag
 {
     [JsonPropertyName("file")] public string? Url { get; set; }
 }

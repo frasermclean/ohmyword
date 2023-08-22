@@ -2,7 +2,7 @@
 
 namespace OhMyWord.Integrations.RapidApi.Models.IpGeoLocation;
 
-public class ApiResponse
+internal class ApiResponse
 {
     [JsonPropertyName("ip")] public string IpAddress { get; init; } = string.Empty;
     [JsonPropertyName("type")] public string IpVersion { get; init; } = string.Empty;

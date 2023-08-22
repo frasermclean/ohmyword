@@ -1,6 +1,6 @@
 ﻿namespace OhMyWord.Integrations.RapidApi.Models.IpGeoLocation;
 
-public class City
+internal class City
 {
     public string? Name { get; set; }
 }

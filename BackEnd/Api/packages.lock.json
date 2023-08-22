@@ -1749,8 +1749,7 @@
           "FastEndpoints": "[5.15.0, )",
           "Microsoft.FeatureManagement.AspNetCore": "[2.6.1, )",
           "OhMyWord.Integrations": "[1.0.0, )",
-          "OhMyWord.Integrations.GraphApi": "[1.0.0, )",
-          "OhMyWord.Integrations.RapidApi": "[1.0.0, )"
+          "OhMyWord.Integrations.GraphApi": "[1.0.0, )"
         }
       },
       "OhMyWord.Integrations": {
@@ -1794,7 +1793,8 @@
           "Microsoft.Extensions.Http.Polly": "[7.0.10, )",
           "Microsoft.Extensions.Logging.Abstractions": "[7.0.1, )",
           "Microsoft.Extensions.Options.ConfigurationExtensions": "[7.0.0, )",
-          "Microsoft.Extensions.Options.DataAnnotations": "[7.0.0, )"
+          "Microsoft.Extensions.Options.DataAnnotations": "[7.0.0, )",
+          "OhMyWord.Core": "[1.0.0, )"
         }
       },
       "OhMyWord.Integrations.ServiceBus": {
