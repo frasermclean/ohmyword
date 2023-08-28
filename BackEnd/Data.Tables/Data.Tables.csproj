@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <RootNamespace>OhMyWord.Data.Tables</RootNamespace>
     <AssemblyName>OhMyWord.Data.Tables</AssemblyName>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
 
   <ItemGroup>

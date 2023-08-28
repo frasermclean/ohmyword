@@ -1,6 +1,6 @@
 ﻿namespace OhMyWord.Core.Models;
 
-public class Definition
+public record Definition
 {
     public Guid Id { get; init; } = Guid.NewGuid();
     public required PartOfSpeech PartOfSpeech { get; init; }
@@ -13,6 +13,6 @@ public class Definition
 
     public static readonly Definition Default = new()
     {
-        PartOfSpeech = PartOfSpeech.Noun, Value = "Default definition",
+        Id = Guid.Empty, PartOfSpeech = PartOfSpeech.Noun, Value = "Default definition",
     };
 }

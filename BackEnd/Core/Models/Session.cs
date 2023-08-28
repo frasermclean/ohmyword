@@ -1,16 +1,14 @@
 ﻿namespace OhMyWord.Core.Models;
 
-public sealed class Session : IDisposable
+public sealed record Session : Entity
 {
-    public Guid Id { get; private init; } = Guid.NewGuid();
     public int RoundCount { get; set; }
-    public DateTime StartDate { get; } = DateTime.UtcNow;
-    public DateTime EndDate { get; private set; }
+    public DateTime StartDate { get; init; } = DateTime.UtcNow;
+    public DateTime? EndDate { get; set; }
 
-    public void Dispose()
+
+    public static readonly Session Default = new()
     {
-        EndDate = DateTime.UtcNow;
-    }
-
-    public static readonly Session Default = new() { Id = Guid.Empty };
+        Id = InvalidId, StartDate = DateTime.MinValue, LastModifiedTime = DateTime.MinValue
+    };
 }

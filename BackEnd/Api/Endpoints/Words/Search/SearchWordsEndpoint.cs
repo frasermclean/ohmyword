@@ -1,5 +1,5 @@
 ﻿using OhMyWord.Api.Models;
-using OhMyWord.Domain.Services;
+using OhMyWord.Logic.Services;
 
 namespace OhMyWord.Api.Endpoints.Words.Search;
 

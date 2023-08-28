@@ -1,6 +1,5 @@
-﻿using OhMyWord.Core.Models;
-using OhMyWord.Domain.Services;
-using OhMyWord.Domain.Services.State;
+﻿using OhMyWord.Logic.Services;
+using OhMyWord.Logic.Services.State;
 
 namespace OhMyWord.Api.Services;
 
@@ -26,11 +25,9 @@ public class GameBackgroundService : BackgroundService
             }
 
             // start a new session
-            Session session;
-            using (session = rootState.SessionState.NextSession())
-            {
-                await sessionService.ExecuteSessionAsync(session, cancellationToken);
-            }
+            var session = rootState.SessionState.NextSession();
+            await sessionService.ExecuteSessionAsync(session, cancellationToken);
+            session.EndDate = DateTime.UtcNow;
 
             // save the session to the database
             await sessionService.SaveSessionAsync(session, cancellationToken);

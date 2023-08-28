@@ -16,7 +16,7 @@ public class ModelsTests
         word.Definitions.Single().Should().Be(Definition.Default);
         word.Frequency.Should().Be(0);
         word.LastModifiedTime.Should().Be(DateTime.MinValue);
-        word.LastModifiedBy.Should().BeNull();
+        word.LastModifiedBy.Should().BeEmpty();
         word.ToString().Should().Be("default");
     }
 

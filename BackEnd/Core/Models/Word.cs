@@ -1,13 +1,11 @@
 ﻿namespace OhMyWord.Core.Models;
 
-public class Word
+public sealed record Word : Entity
 {
     public const int MinLength = 4;
     public const int MaxLength = 16;
     public const double FrequencyMinValue = 1;
     public const double FrequencyMaxValue = 7;
-
-    public required string Id { get; init; } = string.Empty;
 
     /// <summary>
     /// Number of characters in the word.
@@ -27,9 +25,7 @@ public class Word
     /// <summary>
     /// User ID of the user who last modified the word.
     /// </summary>
-    public Guid? LastModifiedBy { get; init; }
-
-    public DateTime LastModifiedTime { get; init; } = DateTime.UtcNow;
+    public Guid LastModifiedBy { get; init; }
 
     public override string ToString() => Id;
 
@@ -39,6 +35,6 @@ public class Word
         Definitions = new[] { Definition.Default },
         Frequency = default,
         LastModifiedBy = default,
-        LastModifiedTime = DateTime.MinValue,
+        LastModifiedTime = default,
     };
 }

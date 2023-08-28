@@ -2,9 +2,8 @@
 
 namespace OhMyWord.Core.Models;
 
-public sealed class Round
+public sealed record Round : Entity
 {
-    public Guid Id { get; } = Guid.NewGuid();
     public required int Number { get; init; }
     public required Word Word { get; init; }
     public required WordHint WordHint { get; init; }
@@ -23,12 +22,14 @@ public sealed class Round
 
     public static readonly Round Default = new()
     {
+        Id = InvalidId,
         Number = default,
         Word = Word.Default,
         WordHint = WordHint.Default,
         GuessLimit = default,
         StartDate = default,
         EndDate = default,
-        SessionId = Guid.Empty
+        SessionId = Guid.Empty,
+        LastModifiedTime = DateTime.MinValue
     };
 }

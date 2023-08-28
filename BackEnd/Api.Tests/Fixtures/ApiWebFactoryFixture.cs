@@ -6,19 +6,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using OhMyWord.Integrations.Options;
-using OhMyWord.Integrations.Tests.Fixtures;
+using OhMyWord.Data.CosmosDb.Options;
+using OhMyWord.Data.CosmosDb.Tests.Fixtures;
 
 namespace OhMyWord.Api.Tests.Fixtures;
 
 public sealed class ApiWebFactoryFixture : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    private readonly CosmosDbEmulatorFixture cosmosDbEmulatorFixture;
-
-    public ApiWebFactoryFixture()
-    {
-        cosmosDbEmulatorFixture = new CosmosDbEmulatorFixture();
-    }
+    private readonly CosmosDbEmulatorFixture cosmosDbEmulatorFixture = new();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {

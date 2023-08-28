@@ -23,8 +23,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Data.CosmosDb\Data.CosmosDb.csproj"/>
     <ProjectReference Include="..\Data.Tables\Data.Tables.csproj"/>
-    <ProjectReference Include="..\Domain\Domain.csproj"/>
+    <ProjectReference Include="..\Logic\Logic.csproj"/>
+    <ProjectReference Include="..\Integrations.GraphApi\Integrations.GraphApi.csproj"/>
     <ProjectReference Include="..\Integrations.RapidApi\Integrations.RapidApi.csproj"/>
     <ProjectReference Include="..\Integrations.ServiceBus\Integrations.ServiceBus.csproj"/>
   </ItemGroup>

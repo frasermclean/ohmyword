@@ -1,4 +1,6 @@
-﻿namespace OhMyWord.Core.Models;
+﻿using System.Net;
+
+namespace OhMyWord.Core.Models;
 
 public record Player
 {
@@ -10,12 +12,17 @@ public record Player
     /// <summary>
     /// Public name for this player.
     /// </summary>
-    public string Name { get; init; } = string.Empty;
+    public string? Name { get; init; }
 
     /// <summary>
     /// SignalR connection ID.
     /// </summary>
-    public required string ConnectionId { get; init; }
+    public string? ConnectionId { get; init; }
+
+    /// <summary>
+    /// Fingerprint of this player's browser.
+    /// </summary>
+    public string? VisitorId { get; init; }
 
     /// <summary>
     /// User ID if this player has signed in.
@@ -33,12 +40,12 @@ public record Player
     public required int RegistrationCount { get; init; }
 
     /// <summary>
-    /// Fingerprint of this player's browser.
+    /// Player's current IP address.
     /// </summary>
-    public required string VisitorId { get; init; }
+    public IPAddress? IpAddress { get; init; }
 
     /// <summary>
     /// The player's current geo location.
     /// </summary>
-    public required GeoLocation GeoLocation { get; init; }
+    public GeoLocation? GeoLocation { get; init; }
 }

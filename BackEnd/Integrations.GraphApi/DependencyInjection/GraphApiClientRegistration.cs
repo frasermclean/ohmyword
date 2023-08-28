@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Graph;
+using OhMyWord.Core.Services;
 using OhMyWord.Integrations.GraphApi.Options;
 using OhMyWord.Integrations.GraphApi.Services;
 

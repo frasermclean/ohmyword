@@ -1,13 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
-using Microsoft.Graph.Models;
+using OhMyWord.Core.Services;
 
 namespace OhMyWord.Integrations.GraphApi.Services;
-
-public interface IGraphApiClient
-{
-    Task<User?> GetUserByIdAsync(Guid userId, CancellationToken cancellationToken = default);
-}
 
 public class GraphApiClient : IGraphApiClient
 {
@@ -20,9 +15,12 @@ public class GraphApiClient : IGraphApiClient
         this.client = client;
     }
 
-    public async Task<User?> GetUserByIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    public async Task<(string? Firstname, string? Lastname, string? DisplayName)> GetUserDetailsAsync(Guid userId,
+        CancellationToken cancellationToken)
     {
         logger.LogInformation("Attempting to get user with ID: {UserId} from Graph API", userId);
-        return await client.Users[userId.ToString()].GetAsync(cancellationToken: cancellationToken);
+
+        var user = await client.Users[userId.ToString()].GetAsync(cancellationToken: cancellationToken);
+        return (user?.GivenName, user?.Surname, user?.DisplayName);
     }
 }

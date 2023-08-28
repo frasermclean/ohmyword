@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using OhMyWord.Api.Extensions;
 using OhMyWord.Api.Models;
-using OhMyWord.Domain.Contracts.Commands;
-using OhMyWord.Domain.Contracts.Events;
-using OhMyWord.Domain.Models;
-using OhMyWord.Domain.Services.State;
+using OhMyWord.Logic.Contracts.Commands;
+using OhMyWord.Logic.Contracts.Events;
+using OhMyWord.Logic.Models;
+using OhMyWord.Logic.Services.State;
 
 namespace OhMyWord.Api.Hubs;
 

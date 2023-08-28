@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using OhMyWord.Api.Hubs;
 using OhMyWord.Api.Models;
-using OhMyWord.Domain.Contracts.Events;
+using OhMyWord.Logic.Contracts.Events;
 
 namespace OhMyWord.Api.Handlers;
 

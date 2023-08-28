@@ -2,7 +2,7 @@
 using OhMyWord.Api.Extensions;
 using OhMyWord.Api.Models;
 using OhMyWord.Core.Models;
-using OhMyWord.Domain.Services;
+using OhMyWord.Logic.Services;
 using static Microsoft.AspNetCore.Http.TypedResults;
 
 namespace OhMyWord.Api.Endpoints.Words.Update;

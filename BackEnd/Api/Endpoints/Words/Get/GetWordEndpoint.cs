@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using OhMyWord.Api.Models;
-using OhMyWord.Domain.Services;
+using OhMyWord.Logic.Services;
 using static Microsoft.AspNetCore.Http.TypedResults;
 
 namespace OhMyWord.Api.Endpoints.Words.Get;

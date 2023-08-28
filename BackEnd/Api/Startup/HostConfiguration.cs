@@ -1,12 +1,12 @@
 ﻿using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.FeatureManagement;
 using OhMyWord.Api.Services;
+using OhMyWord.Data.CosmosDb.DependencyInjection;
 using OhMyWord.Data.Tables.DependencyInjection;
-using OhMyWord.Domain.DependencyInjection;
-using OhMyWord.Integrations.DependencyInjection;
 using OhMyWord.Integrations.GraphApi.DependencyInjection;
 using OhMyWord.Integrations.RapidApi.DependencyInjection;
 using OhMyWord.Integrations.ServiceBus.DependencyInjection;
+using OhMyWord.Logic.DependencyInjection;
 using Serilog;
 
 namespace OhMyWord.Api.Startup;

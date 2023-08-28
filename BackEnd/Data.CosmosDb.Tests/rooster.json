@@ -1,0 +1,13 @@
+{
+  "id": "rooster",
+  "definitions": [
+    {
+      "id": "5daa7ef8-0c5d-41b7-9976-428155248fb0",
+      "partOfSpeech": "noun",
+      "value": "a male chicken",
+      "example": "The rooster crowed at dawn."
+    }
+  ],
+  "frequency": 3.14,
+  "_ts": 123
+}

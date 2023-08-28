@@ -1,5 +1,5 @@
 ﻿using OhMyWord.Core.Models;
-using OhMyWord.Domain.Models;
+using OhMyWord.Logic.Models;
 
 namespace OhMyWord.Api.Models;
 
