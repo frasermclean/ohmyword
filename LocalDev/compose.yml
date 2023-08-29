@@ -1,0 +1,39 @@
+name: ohmyword
+
+services:
+  azurite:
+    container_name: azurite
+    image: mcr.microsoft.com/azure-storage/azurite
+    ports:
+      - 10000:10000
+      - 10001:10001
+      - 10002:10002
+    volumes:
+      - azurite_data:/data
+
+  cosmosdb:
+    container_name: cosmosdb
+    image: mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator
+    ports:
+      - 8081:8081
+      - 10250-10255:10250-10255
+    volumes:
+      - cosmosdb_data:/tmp/cosmos
+    environment:
+      - AZURE_COSMOS_EMULATOR_PARTITION_COUNT=5
+      - AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE=true
+    tty: true
+    deploy:
+      resources:
+        limits:
+          cpus: "4"
+          memory: 8G
+        reservations:
+          cpus: "4"
+          memory: 8G
+
+volumes:
+  azurite_data:
+    driver: local
+  cosmosdb_data:
+    driver: local
