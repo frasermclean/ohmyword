@@ -85,9 +85,10 @@ jobs:
     environment:
       name: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
     env:
+      BACKEND_DIRECTORY: ${{ github.workspace }}/BackEnd
       BUILD_CONFIGURATION: Release
       PUBLISH_RUNTIME: linux-x64
-      API_PUBLISH_DIRECTORY: ${{ github.workspace }}/api
+      API_PUBLISH_DIRECTORY: ${{ runner.temp }}/api
       FUNCTIONS_PUBLISH_DIRECTORY: ${{ github.workspace }}/functions
     steps:
       # Check out the repository
@@ -108,26 +109,30 @@ jobs:
       # Restore packages
       - name: Restore packages
         run: dotnet restore --locked-mode
+        working-directory: ${{ env.BACKEND_DIRECTORY }}
 
       # Build solution
       - name: Build solution
         run: dotnet build --no-restore --configuration $BUILD_CONFIGURATION
+        working-directory: ${{ env.BACKEND_DIRECTORY }}
 
       # Run unit tests
       - name: Run unit tests
         run: dotnet test --no-build --configuration $BUILD_CONFIGURATION --filter Category=Unit
+        working-directory: ${{ env.BACKEND_DIRECTORY }}
 
       # Run integration tests
       - name: Run integration tests
         if: ${{ vars.RUN_INTEGRATION_TESTS == 'true' }}
         run: dotnet test --no-build --configuration $BUILD_CONFIGURATION --filter Category=Integration
+        working-directory: ${{ env.BACKEND_DIRECTORY }}
         env:
           OhMyWord_RapidApi__ApiKey: ${{ secrets.RAPID_API_KEY }}
           OhMyWord_GraphApiClient__ClientSecret: ${{ secrets.GRAPH_API_CLIENT_SECRET }}
 
       # Publish API
       - name: Publish API
-        working-directory: ./BackEnd/Api
+        working-directory: ${{ env.BACKEND_DIRECTORY }}/Api
         run: >-
           dotnet publish
           --configuration $BUILD_CONFIGURATION
@@ -137,7 +142,7 @@ jobs:
 
       # Copy API Dockerfile
       - name: Copy API Dockerfile
-        working-directory: ./BackEnd/Api
+        working-directory: ${{ env.BACKEND_DIRECTORY }}/Api
         run: cp Dockerfile $API_PUBLISH_DIRECTORY
 
       # Upload API artifact
@@ -149,7 +154,7 @@ jobs:
 
       # Publish Functions
       - name: Publish Functions
-        working-directory: ./BackEnd/Functions
+        working-directory: ${{ env.BACKEND_DIRECTORY }}/Functions
         run: >-
           dotnet publish
           --configuration $BUILD_CONFIGURATION
