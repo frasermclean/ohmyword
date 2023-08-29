@@ -88,8 +88,8 @@ jobs:
       BACKEND_DIRECTORY: ${{ github.workspace }}/BackEnd
       BUILD_CONFIGURATION: Release
       PUBLISH_RUNTIME: linux-x64
-      API_PUBLISH_DIRECTORY: ${{ runner.temp }}/api
-      FUNCTIONS_PUBLISH_DIRECTORY: ${{ github.workspace }}/functions
+      API_PUBLISH_DIRECTORY: ${{ github.workspace }}/publish/api
+      FUNCTIONS_PUBLISH_DIRECTORY: ${{ github.workspace }}/publish/functions
     steps:
       # Check out the repository
       - name: Checkout repository
