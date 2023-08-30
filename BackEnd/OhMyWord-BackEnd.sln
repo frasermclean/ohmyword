@@ -31,6 +31,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Integrations.ServiceBus", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Integrations.Storage", "Integrations.Storage\Integrations.Storage.csproj", "{2E5C79F1-B34A-42F3-95F0-23B4BA5634F4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Integrations.Storage.Tests", "Integrations.Storage.Tests\Integrations.Storage.Tests.csproj", "{7D590426-8EB0-4D3F-B183-886938C6385B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -89,6 +91,10 @@ Global
 		{2E5C79F1-B34A-42F3-95F0-23B4BA5634F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2E5C79F1-B34A-42F3-95F0-23B4BA5634F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2E5C79F1-B34A-42F3-95F0-23B4BA5634F4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7D590426-8EB0-4D3F-B183-886938C6385B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D590426-8EB0-4D3F-B183-886938C6385B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D590426-8EB0-4D3F-B183-886938C6385B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D590426-8EB0-4D3F-B183-886938C6385B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -99,6 +105,7 @@ Global
 		{71672041-9C24-444C-87E6-A138A3CF7FFE} = {65A9F0A0-A2B9-4DA7-82B0-3074020819D8}
 		{B36FF508-5EED-4345-8276-46C9F2401C55} = {65A9F0A0-A2B9-4DA7-82B0-3074020819D8}
 		{1F90143C-3761-4567-9FDC-8BA9D4E5618D} = {65A9F0A0-A2B9-4DA7-82B0-3074020819D8}
+		{7D590426-8EB0-4D3F-B183-886938C6385B} = {65A9F0A0-A2B9-4DA7-82B0-3074020819D8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4C8C1AAD-B236-4384-A46C-1F76A8AB9756}
