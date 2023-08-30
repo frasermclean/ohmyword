@@ -1,4 +1,5 @@
-﻿using OhMyWord.Integrations.RapidApi.Services;
+﻿using OhMyWord.Integrations.RapidApi.Models.IpGeoLocation;
+using OhMyWord.Integrations.RapidApi.Services;
 using OhMyWord.Integrations.RapidApi.Tests.Fixtures;
 using System.Net;
 
@@ -24,9 +25,8 @@ public class GeoLocationApiClientTests : IClassFixture<RapidApiFixture>
         var apiResponse = await geoLocationApiClient.GetGeoLocationAsync(ipAddress);
 
         // assert
-        apiResponse.Should().NotBeNull();
-        apiResponse.IpAddress.Should().Be(ipAddress);
-        apiResponse.IpVersion.Should().Be(expectedVersion);
+        apiResponse.Should().NotBeNull().And.Match<GeoLocationApiResponse>(response =>
+            response.IpAddress == ipAddress && response.IpVersion == expectedVersion);
     }
 
     [Theory]
@@ -40,7 +40,7 @@ public class GeoLocationApiClientTests : IClassFixture<RapidApiFixture>
 
         // assert
         apiResponse.Should().NotBeNull();
-        apiResponse.IpAddress.Should().Be(ipAddress);
-        apiResponse.IpVersion.Should().Be(expectedVersion);
+        apiResponse.Should().NotBeNull().And.Match<GeoLocationApiResponse>(response =>
+            response.IpAddress == ipAddress && response.IpVersion == expectedVersion);
     }
 }
