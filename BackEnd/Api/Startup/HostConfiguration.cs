@@ -1,4 +1,5 @@
 ﻿using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.FeatureManagement;
 using OhMyWord.Api.Services;
 using OhMyWord.Domain.DependencyInjection;
@@ -7,6 +8,8 @@ using OhMyWord.Integrations.RapidApi.DependencyInjection;
 using OhMyWord.Integrations.ServiceBus.DependencyInjection;
 using OhMyWord.Integrations.Storage.DependencyInjection;
 using Serilog;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace OhMyWord.Api.Startup;
 
@@ -54,6 +57,13 @@ public static class HostConfiguration
             .AddServiceBusServices(context.Configuration)
             .AddRapidApiServices()
             .AddGraphApiClient(context.Configuration);
+
+        // configure JSON serialization
+        collection.Configure<JsonOptions>(options =>
+        {
+            options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+            options.SerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
+        });
 
         // development services
         if (context.HostingEnvironment.IsDevelopment())

@@ -40,7 +40,6 @@ public static class MiddlewarePipelineConfiguration
                     endpoint.AllowAnonymous();
                 }
             };
-            config.Serializer.Options.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
         });
 
         app.MapHub<GameHub>("/hub");
