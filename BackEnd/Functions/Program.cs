@@ -4,9 +4,9 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using OhMyWord.Domain.DependencyInjection;
 using OhMyWord.Integrations.DependencyInjection;
+using OhMyWord.Integrations.RapidApi.DependencyInjection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 

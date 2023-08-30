@@ -1,13 +1,12 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using OhMyWord.Integrations.Options;
-using OhMyWord.Integrations.Services.RapidApi.IpGeoLocation;
-using OhMyWord.Integrations.Services.RapidApi.WordsApi;
+using OhMyWord.Integrations.RapidApi.Options;
+using OhMyWord.Integrations.RapidApi.Services;
 using Polly;
 using Polly.Extensions.Http;
 using System.Net;
 
-namespace OhMyWord.Integrations.DependencyInjection;
+namespace OhMyWord.Integrations.RapidApi.DependencyInjection;
 
 public static class RapidApiClientsRegistration
 {

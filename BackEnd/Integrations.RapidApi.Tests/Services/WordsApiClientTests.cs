@@ -1,7 +1,7 @@
-﻿using OhMyWord.Integrations.Services.RapidApi.WordsApi;
-using OhMyWord.Integrations.Tests.Fixtures;
+﻿using OhMyWord.Integrations.RapidApi.Services;
+using OhMyWord.Integrations.RapidApi.Tests.Fixtures;
 
-namespace OhMyWord.Integrations.Tests.Services.RapidApi.WordsApi;
+namespace OhMyWord.Integrations.RapidApi.Tests.Services;
 
 [Trait("Category", "Integration")]
 public class WordsApiClientTests : IClassFixture<RapidApiFixture>

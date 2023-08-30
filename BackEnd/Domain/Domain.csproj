@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Integrations.RapidApi\Integrations.RapidApi.csproj"/>
     <ProjectReference Include="..\Integrations\Integrations.csproj"/>
   </ItemGroup>
 
@@ -21,5 +22,6 @@
   <ItemGroup>
     <InternalsVisibleTo Include="$(AssemblyName).Tests"/>
   </ItemGroup>
+
 
 </Project>

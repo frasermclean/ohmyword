@@ -1,8 +1,9 @@
 ﻿using FluentResults;
 using OhMyWord.Core.Models;
-using OhMyWord.Integrations.Errors;
+using OhMyWord.Domain.Errors;
 using OhMyWord.Integrations.Models.Entities;
-using OhMyWord.Integrations.Services.RapidApi.IpGeoLocation;
+using OhMyWord.Integrations.RapidApi.Models.IpGeoLocation;
+using OhMyWord.Integrations.RapidApi.Services;
 using OhMyWord.Integrations.Services.Repositories;
 using System.Net;
 
@@ -33,12 +34,18 @@ public class GeoLocationService : IGeoLocationService
     public async Task<Result<GeoLocation>> GetGeoLocationAsync(IPAddress ipAddress,
         CancellationToken cancellationToken = default)
     {
-        // lookup in table storage
+        // lookup geo location from table storage
         var entity = await repository.GetGeoLocationAsync(ipAddress, cancellationToken);
-        if (entity is not null) return MapToGeoLocation(entity);
+        if (entity is not null)
+            return MapToGeoLocation(entity);
 
-        // lookup in API and store in table storage
-        entity = await apiClient.GetGeoLocationAsync(ipAddress, cancellationToken);
+        // lookup geo location from API
+        var apiResponse = await apiClient.GetGeoLocationAsync(ipAddress, cancellationToken);
+        if (apiResponse is null)
+            return new IpAddressNotFoundError(ipAddress.ToString());
+
+        // save to table storage
+        entity = MapToGeoLocationEntity(apiResponse);
         await repository.AddGeoLocationAsync(entity);
 
         return MapToGeoLocation(entity);
@@ -50,6 +57,14 @@ public class GeoLocationService : IGeoLocationService
         CountryCode = entity.CountryCode.ToLower(),
         CountryName = entity.CountryName,
         City = entity.City,
-        LastUpdated = entity.Timestamp?.UtcDateTime ?? default
+    };
+
+    private static GeoLocationEntity MapToGeoLocationEntity(GeoLocationApiResponse apiResponse) => new()
+    {
+        PartitionKey = apiResponse.IpVersion,
+        RowKey = apiResponse.IpAddress,
+        CountryName = apiResponse.Country.Name ?? string.Empty,
+        City = apiResponse.City.Name ?? string.Empty,
+        CountryCode = apiResponse.Country.Code ?? string.Empty
     };
 }

@@ -1,8 +1,8 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace OhMyWord.Integrations.Models.IpGeoLocation;
+namespace OhMyWord.Integrations.RapidApi.Models.IpGeoLocation;
 
-internal class IpGeoLocationApiResponse
+public class GeoLocationApiResponse
 {
     [JsonPropertyName("ip")] public string IpAddress { get; init; } = string.Empty;
     [JsonPropertyName("type")] public string IpVersion { get; init; } = string.Empty;

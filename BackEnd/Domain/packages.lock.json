@@ -267,11 +267,6 @@
         "resolved": "7.0.0",
         "contentHash": "h3j/QfmFN4S0w4C2A6X7arXij/M/OVw3uQHSOFxnND4DyAzO1F9eMX7Eti7lU/OkSthEE0WzRsfT/Dmx86jzCw=="
       },
-      "Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions": {
-        "type": "Transitive",
-        "resolved": "7.0.9",
-        "contentHash": "myuiz5s14NEWffeiRH94GM1W9PkPyU/TLWCPjEIJ+Tck6QwRV89KHNwlJ+ZebRMlMTd64hwECybjLp1vIS4gTA=="
-      },
       "Microsoft.Extensions.FileProviders.Abstractions": {
         "type": "Transitive",
         "resolved": "7.0.0",
@@ -368,8 +363,8 @@
       },
       "Microsoft.Extensions.Logging.Abstractions": {
         "type": "Transitive",
-        "resolved": "7.0.0",
-        "contentHash": "kmn78+LPVMOWeITUjIlfxUPDsI0R6G0RkeAMBmQxAJ7vBJn4q2dTva7pWi65ceN5vPGjJ9q/Uae2WKgvfktJAw=="
+        "resolved": "7.0.1",
+        "contentHash": "pkeBFx0vqMW/A3aUVHh7MPu3WkBhaVlezhSZeb1c9XD0vUReYH1TLFSy5MxJgZfmz5LZzYoErMorlYZiwpOoNA=="
       },
       "Microsoft.Extensions.Logging.Configuration": {
         "type": "Transitive",
@@ -1205,16 +1200,29 @@
           "Microsoft.Azure.Cosmos": "[3.35.2, )",
           "Microsoft.Extensions.Azure": "[1.6.3, )",
           "Microsoft.Extensions.Configuration.Abstractions": "[7.0.0, )",
-          "Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions": "[7.0.9, )",
           "Microsoft.Extensions.Hosting": "[7.0.1, )",
           "Microsoft.Extensions.Http": "[7.0.0, )",
-          "Microsoft.Extensions.Http.Polly": "[7.0.9, )",
           "Microsoft.Extensions.Options": "[7.0.1, )",
           "Microsoft.Extensions.Options.ConfigurationExtensions": "[7.0.0, )",
           "Microsoft.Extensions.Options.DataAnnotations": "[7.0.0, )",
           "Microsoft.Graph": "[5.20.0, )",
           "OhMyWord.Core": "[1.0.0, )",
           "System.Linq.Async": "[6.0.1, )"
+        }
+      },
+      "OhMyWord.Integrations.RapidApi": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.Extensions.Configuration.Abstractions": "[7.0.0, )",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "[7.0.0, )",
+          "Microsoft.Extensions.Hosting": "[7.0.1, )",
+          "Microsoft.Extensions.Http": "[7.0.0, )",
+          "Microsoft.Extensions.Http.Polly": "[7.0.9, )",
+          "Microsoft.Extensions.Logging.Abstractions": "[7.0.1, )",
+          "Microsoft.Extensions.Options": "[7.0.1, )",
+          "Microsoft.Extensions.Options.ConfigurationExtensions": "[7.0.0, )",
+          "Microsoft.Extensions.Options.DataAnnotations": "[7.0.0, )",
+          "Polly.Extensions.Http": "[3.0.0, )"
         }
       }
     }

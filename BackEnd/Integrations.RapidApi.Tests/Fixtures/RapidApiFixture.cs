@@ -1,12 +1,11 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using OhMyWord.Integrations.DependencyInjection;
-using OhMyWord.Integrations.Services.RapidApi.IpGeoLocation;
-using OhMyWord.Integrations.Services.RapidApi.WordsApi;
+using OhMyWord.Integrations.RapidApi.DependencyInjection;
+using OhMyWord.Integrations.RapidApi.Services;
 
-namespace OhMyWord.Integrations.Tests.Fixtures;
+namespace OhMyWord.Integrations.RapidApi.Tests.Fixtures;
 
-public class RapidApiFixture
+public sealed class RapidApiFixture
 {
     public IGeoLocationApiClient GeoLocationApiClient { get; }
 
@@ -15,9 +14,7 @@ public class RapidApiFixture
     public RapidApiFixture()
     {
         var configuration = new ConfigurationBuilder()
-            .AddJsonFile("appsettings.json", false)
             .AddUserSecrets<RapidApiFixture>()
-            .AddEnvironmentVariables("OhMyWord_")
             .Build();
 
         var serviceProvider = new ServiceCollection()

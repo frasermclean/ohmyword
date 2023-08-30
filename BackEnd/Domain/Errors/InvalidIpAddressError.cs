@@ -1,6 +1,6 @@
 ﻿using FluentResults;
 
-namespace OhMyWord.Integrations.Errors;
+namespace OhMyWord.Domain.Errors;
 
 public class InvalidIpAddressError : Error
 {

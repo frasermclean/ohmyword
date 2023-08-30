@@ -79,12 +79,6 @@
           "Microsoft.Extensions.Primitives": "7.0.0"
         }
       },
-      "Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions": {
-        "type": "Direct",
-        "requested": "[7.0.9, )",
-        "resolved": "7.0.9",
-        "contentHash": "myuiz5s14NEWffeiRH94GM1W9PkPyU/TLWCPjEIJ+Tck6QwRV89KHNwlJ+ZebRMlMTd64hwECybjLp1vIS4gTA=="
-      },
       "Microsoft.Extensions.Hosting": {
         "type": "Direct",
         "requested": "[7.0.1, )",
@@ -125,17 +119,6 @@
           "Microsoft.Extensions.Logging": "7.0.0",
           "Microsoft.Extensions.Logging.Abstractions": "7.0.0",
           "Microsoft.Extensions.Options": "7.0.0"
-        }
-      },
-      "Microsoft.Extensions.Http.Polly": {
-        "type": "Direct",
-        "requested": "[7.0.9, )",
-        "resolved": "7.0.9",
-        "contentHash": "Z5/e+XoWww3bEEoKM3B5X/7nDmj9RQZsdm5kdYKC0SCuuMtJ8m9aFKL6AZVo3hf1mfolhk60PSP/F+KoKN1fag==",
-        "dependencies": {
-          "Microsoft.Extensions.Http": "7.0.0",
-          "Polly": "7.2.3",
-          "Polly.Extensions.Http": "3.0.0"
         }
       },
       "Microsoft.Extensions.Options": {
@@ -617,19 +600,6 @@
           "System.Runtime.Serialization.Formatters": "4.3.0",
           "System.Runtime.Serialization.Primitives": "4.3.0",
           "System.Xml.XmlDocument": "4.3.0"
-        }
-      },
-      "Polly": {
-        "type": "Transitive",
-        "resolved": "7.2.3",
-        "contentHash": "DeCY0OFbNdNxsjntr1gTXHJ5pKUwYzp04Er2LLeN3g6pWhffsGuKVfMBLe1lw7x76HrPkLxKEFxBlpRxS2nDEQ=="
-      },
-      "Polly.Extensions.Http": {
-        "type": "Transitive",
-        "resolved": "3.0.0",
-        "contentHash": "drrG+hB3pYFY7w1c3BD+lSGYvH2oIclH8GRSehgfyP5kjnFnHKQuuBhuHLv+PWyFuaTDyk/vfRpnxOzd11+J8g==",
-        "dependencies": {
-          "Polly": "7.1.0"
         }
       },
       "System.Buffers": {

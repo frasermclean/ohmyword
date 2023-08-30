@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
-using OhMyWord.Integrations.Models.WordsApi;
+using OhMyWord.Integrations.RapidApi.Models.WordsApi;
 using System.Net;
 using System.Net.Http.Json;
 
-namespace OhMyWord.Integrations.Services.RapidApi.WordsApi;
+namespace OhMyWord.Integrations.RapidApi.Services;
 
 public interface IWordsApiClient
 {
@@ -19,7 +19,7 @@ public interface IWordsApiClient
     Task<WordDetails> GetRandomWordDetailsAsync(CancellationToken cancellationToken = default);
 }
 
-public class WordsApiClient : IWordsApiClient
+public sealed class WordsApiClient : IWordsApiClient
 {
     private readonly ILogger<WordsApiClient> logger;
     private readonly HttpClient httpClient;
