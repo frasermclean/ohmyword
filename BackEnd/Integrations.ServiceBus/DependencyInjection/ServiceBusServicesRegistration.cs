@@ -2,14 +2,14 @@
 using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using OhMyWord.Integrations.Options;
-using OhMyWord.Integrations.Services.Messaging;
+using OhMyWord.Integrations.ServiceBus.Options;
+using OhMyWord.Integrations.ServiceBus.Services;
 
-namespace OhMyWord.Integrations.DependencyInjection;
+namespace OhMyWord.Integrations.ServiceBus.DependencyInjection;
 
-public static class MessagingServicesRegistration
+public static class ServiceBusServicesRegistration
 {
-    public static IServiceCollection AddMessagingServices(this IServiceCollection services,
+    public static IServiceCollection AddServiceBusServices(this IServiceCollection services,
         IConfiguration configuration)
     {
         services.AddAzureClients(builder =>
@@ -18,12 +18,12 @@ public static class MessagingServicesRegistration
             builder.UseCredential(new DefaultAzureCredential());
         });
 
-        services.AddOptions<MessagingOptions>()
-            .Bind(configuration.GetSection(MessagingOptions.SectionName))
+        services.AddOptions<ServiceBusOptions>()
+            .Bind(configuration.GetSection(ServiceBusOptions.SectionName))
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        services.AddScoped<IMessageSender, MessageSender>();
+        services.AddScoped<IServiceBusMessageSender, ServiceBusMessageSender>();
 
         return services;
     }

@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Integrations.RapidApi\Integrations.RapidApi.csproj"/>
+    <ProjectReference Include="..\Integrations.ServiceBus\Integrations.ServiceBus.csproj" />
     <ProjectReference Include="..\Integrations\Integrations.csproj"/>
   </ItemGroup>
 

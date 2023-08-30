@@ -1,23 +1,23 @@
 ﻿using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using OhMyWord.Integrations.Options;
+using OhMyWord.Integrations.ServiceBus.Options;
 
-namespace OhMyWord.Integrations.Services.Messaging;
+namespace OhMyWord.Integrations.ServiceBus.Services;
 
-public interface IMessageSender
+public interface IServiceBusMessageSender
 {
     Task SendIpLookupMessageAsync(string ipAddress);
 }
 
-public sealed class MessageSender : IMessageSender
+public sealed class ServiceBusMessageSender : IServiceBusMessageSender
 {
     private readonly ServiceBusClient serviceBusClient;
-    private readonly ILogger<MessageSender> logger;
-    private readonly MessagingOptions options;
+    private readonly ILogger<ServiceBusMessageSender> logger;
+    private readonly ServiceBusOptions options;
 
-    public MessageSender(ServiceBusClient serviceBusClient, IOptions<MessagingOptions> options,
-        ILogger<MessageSender> logger)
+    public ServiceBusMessageSender(ServiceBusClient serviceBusClient, IOptions<ServiceBusOptions> options,
+        ILogger<ServiceBusMessageSender> logger)
     {
         this.serviceBusClient = serviceBusClient;
         this.logger = logger;
