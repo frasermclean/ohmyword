@@ -5,6 +5,7 @@ using OhMyWord.Domain.DependencyInjection;
 using OhMyWord.Integrations.DependencyInjection;
 using OhMyWord.Integrations.RapidApi.DependencyInjection;
 using OhMyWord.Integrations.ServiceBus.DependencyInjection;
+using OhMyWord.Integrations.Storage.DependencyInjection;
 using Serilog;
 
 namespace OhMyWord.Api.Startup;

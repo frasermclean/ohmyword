@@ -1,11 +1,11 @@
 ﻿using Azure;
 using Azure.Data.Tables;
 using Microsoft.Extensions.Logging;
-using OhMyWord.Integrations.Models.Entities;
+using OhMyWord.Integrations.Storage.Models;
 using System.Net;
 using System.Net.Sockets;
 
-namespace OhMyWord.Integrations.Services.Repositories;
+namespace OhMyWord.Integrations.Storage.Services;
 
 public interface IGeoLocationRepository
 {

@@ -2,7 +2,7 @@
 using Azure.Data.Tables;
 using OhMyWord.Core.Models;
 
-namespace OhMyWord.Integrations.Models.Entities;
+namespace OhMyWord.Integrations.Storage.Models;
 
 public record UserEntity : ITableEntity
 {

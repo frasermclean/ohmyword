@@ -1,10 +1,13 @@
 ﻿using OhMyWord.Core.Models;
+using OhMyWord.Core.Services;
 using OhMyWord.Domain.Errors;
 using OhMyWord.Domain.Services;
 using OhMyWord.Integrations.Models.Entities;
 using OhMyWord.Integrations.RapidApi.Models.IpGeoLocation;
 using OhMyWord.Integrations.RapidApi.Services;
 using OhMyWord.Integrations.Services.Repositories;
+using OhMyWord.Integrations.Storage.Models;
+using OhMyWord.Integrations.Storage.Services;
 using System.Net;
 
 namespace OhMyWord.Domain.Tests.Services;

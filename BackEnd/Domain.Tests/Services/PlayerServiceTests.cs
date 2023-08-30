@@ -1,4 +1,5 @@
 ﻿using OhMyWord.Core.Models;
+using OhMyWord.Core.Services;
 using OhMyWord.Domain.Services;
 using OhMyWord.Integrations.Errors;
 using OhMyWord.Integrations.Models.Entities;

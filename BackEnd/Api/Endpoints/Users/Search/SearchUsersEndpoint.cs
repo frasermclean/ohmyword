@@ -1,15 +1,16 @@
 ﻿using OhMyWord.Core.Models;
+using OhMyWord.Core.Services;
 using OhMyWord.Domain.Services;
 
 namespace OhMyWord.Api.Endpoints.Users.Search;
 
 public class SearchUsersEndpoint : Endpoint<SearchUsersRequest, IEnumerable<User>>
 {
-    private readonly IUsersService usersService;
+    private readonly IUsersRepository usersRepository;
 
-    public SearchUsersEndpoint(IUsersService usersService)
+    public SearchUsersEndpoint(IUsersRepository usersRepository)
     {
-        this.usersService = usersService;
+        this.usersRepository = usersRepository;
     }
 
     public override void Configure()
@@ -19,7 +20,7 @@ public class SearchUsersEndpoint : Endpoint<SearchUsersRequest, IEnumerable<User
 
     public override async Task HandleAsync(SearchUsersRequest request, CancellationToken cancellationToken)
     {
-        var users = await usersService
+        var users = await usersRepository
             .SearchUsers(request.Filter, cancellationToken)
             .ToListAsync(cancellationToken);
 

@@ -29,6 +29,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Integrations.RapidApi.Tests
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Integrations.ServiceBus", "Integrations.ServiceBus\Integrations.ServiceBus.csproj", "{6CE95351-78D4-4FCF-80B0-0C1C76182F6D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Integrations.Storage", "Integrations.Storage\Integrations.Storage.csproj", "{2E5C79F1-B34A-42F3-95F0-23B4BA5634F4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -83,6 +85,10 @@ Global
 		{6CE95351-78D4-4FCF-80B0-0C1C76182F6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6CE95351-78D4-4FCF-80B0-0C1C76182F6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6CE95351-78D4-4FCF-80B0-0C1C76182F6D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2E5C79F1-B34A-42F3-95F0-23B4BA5634F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2E5C79F1-B34A-42F3-95F0-23B4BA5634F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2E5C79F1-B34A-42F3-95F0-23B4BA5634F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2E5C79F1-B34A-42F3-95F0-23B4BA5634F4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

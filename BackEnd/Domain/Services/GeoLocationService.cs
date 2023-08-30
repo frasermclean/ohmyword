@@ -1,19 +1,16 @@
 ﻿using FluentResults;
 using OhMyWord.Core.Models;
+using OhMyWord.Core.Services;
 using OhMyWord.Domain.Errors;
 using OhMyWord.Integrations.Models.Entities;
 using OhMyWord.Integrations.RapidApi.Models.IpGeoLocation;
 using OhMyWord.Integrations.RapidApi.Services;
 using OhMyWord.Integrations.Services.Repositories;
+using OhMyWord.Integrations.Storage.Models;
+using OhMyWord.Integrations.Storage.Services;
 using System.Net;
 
 namespace OhMyWord.Domain.Services;
-
-public interface IGeoLocationService
-{
-    Task<Result<GeoLocation>> GetGeoLocationAsync(string ipAddress, CancellationToken cancellationToken = default);
-    Task<Result<GeoLocation>> GetGeoLocationAsync(IPAddress ipAddress, CancellationToken cancellationToken = default);
-}
 
 public class GeoLocationService : IGeoLocationService
 {

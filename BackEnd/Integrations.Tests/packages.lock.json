@@ -1153,14 +1153,16 @@
         }
       },
       "OhMyWord.Core": {
-        "type": "Project"
+        "type": "Project",
+        "dependencies": {
+          "FluentResults": "[3.15.2, )"
+        }
       },
       "OhMyWord.Integrations": {
         "type": "Project",
         "dependencies": {
           "Azure.Data.Tables": "[12.8.0, )",
           "Azure.Messaging.ServiceBus": "[7.15.0, )",
-          "FluentResults": "[3.15.2, )",
           "Microsoft.Azure.Cosmos": "[3.35.2, )",
           "Microsoft.Extensions.Azure": "[1.6.3, )",
           "Microsoft.Extensions.Configuration.Abstractions": "[7.0.0, )",

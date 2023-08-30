@@ -2,10 +2,11 @@
 using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using OhMyWord.Integrations.Options;
-using OhMyWord.Integrations.Services.Repositories;
+using OhMyWord.Core.Services;
+using OhMyWord.Integrations.Storage.Options;
+using OhMyWord.Integrations.Storage.Services;
 
-namespace OhMyWord.Integrations.DependencyInjection;
+namespace OhMyWord.Integrations.Storage.DependencyInjection;
 
 public static class TableRepositoriesRegistration
 {
