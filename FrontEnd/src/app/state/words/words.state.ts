@@ -7,7 +7,6 @@ import { SortDirection } from '@models/enums/sort-direction.enum';
 import { Word } from '@models/word.model';
 import { WordsService } from '@services/words.service';
 import { Words } from './words.actions';
-import { DefinitionsService } from '@services/definitions.service';
 import { Definition } from '@models/definition.model';
 
 interface WordsStateModel {
@@ -42,7 +41,7 @@ const WORDS_STATE_TOKEN = new StateToken<WordsStateModel>('words');
 })
 @Injectable()
 export class WordsState {
-  constructor(private wordsService: WordsService, private definitionsService: DefinitionsService) {}
+  constructor(private wordsService: WordsService) {}
 
   @Action(Words.SearchWords)
   getWords(context: StateContext<WordsStateModel>, action: Words.SearchWords) {
@@ -125,9 +124,9 @@ export class WordsState {
   @Action(Words.GetDefinitionSuggestions)
   getDefinitionSuggestions(context: StateContext<WordsStateModel>, action: Words.GetDefinitionSuggestions) {
     context.patchState({ status: 'busy' });
-    return this.definitionsService.getDefinitions(action.wordId).pipe(
-      tap((definitions) => {
-        context.patchState({ status: 'ready', definitionSuggestions: definitions });
+    return this.wordsService.getWord(action.wordId, true).pipe(
+      tap((word) => {
+        context.patchState({ status: 'ready', definitionSuggestions: word.definitions });
       }),
       catchError((error) => {
         context.patchState({ status: 'error', error });

@@ -3,9 +3,9 @@ import { NonNullableFormBuilder, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { take, tap } from 'rxjs/operators';
 import { Definition } from '@models/definition.model';
-import { DefinitionsService } from '@services/definitions.service';
 import { Word } from '@models/word.model';
 import { PartOfSpeech } from "@models/enums";
+import { WordsService } from '@services/words.service';
 
 const partOfSpeechOptions = [
   { value: PartOfSpeech.Noun, label: 'Noun' },
@@ -55,7 +55,7 @@ export class WordEditComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) private data: WordEditData,
     private formBuilder: NonNullableFormBuilder,
     private dialogRef: MatDialogRef<WordEditComponent, WordEditResult>,
-    private definitionService: DefinitionsService
+    private wordsService: WordsService
   ) {}
 
   ngOnInit(): void {
@@ -63,10 +63,10 @@ export class WordEditComponent implements OnInit {
   }
 
   getDefinitionSuggestions(wordId: string) {
-    this.definitionService
-      .getDefinitions(wordId)
+    this.wordsService
+      .getWord(wordId, true)
       .pipe(
-        tap((definitions) => definitions.forEach((definition) => this.addDefinition(definition))),
+        tap((word) => word.definitions.forEach((definition) => this.addDefinition(definition))),
         take(1)
       )
       .subscribe();

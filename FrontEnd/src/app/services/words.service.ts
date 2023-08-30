@@ -33,8 +33,9 @@ export class WordsService {
     );
   }
 
-  public getWord(id: string) {
-    return this.httpClient.get<WordResponse>(`${this.baseUrl}/${id}`).pipe(map((response) => new Word(response)));
+  public getWord(id: string, performExternalLookup = false) {
+    const url = performExternalLookup ? `${this.baseUrl}/${id}?performExternalLookup=true` : `${this.baseUrl}/${id}`;
+    return this.httpClient.get<WordResponse>(url).pipe(map((response) => new Word(response)));
   }
 
   public createWord(request: CreateWordRequest) {
