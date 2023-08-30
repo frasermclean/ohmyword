@@ -19,6 +19,27 @@ public sealed class UserFunctions
         this.usersRepository = usersRepository;
     }
 
+    [Function(nameof(GetUser))]
+    public async Task<HttpResponseData> GetUser(
+        [HttpTrigger("get", Route = "users/{userId}")]
+        HttpRequestData httpRequest,
+        string userId)
+    {
+        var result = await usersRepository.GetUserAsync(userId);
+        if (result.IsSuccess)
+        {
+            var response = httpRequest.CreateResponse();
+            await response.WriteAsJsonAsync(result.Value);
+            return response;
+        }
+        else
+        {
+            var response = httpRequest.CreateResponse(HttpStatusCode.NotFound);
+            await response.WriteStringAsync(result.Errors.FirstOrDefault()?.Message ?? string.Empty);
+            return response;
+        }
+    }
+
     [Function(nameof(ProcessUserClaims))]
     public async Task<HttpResponseData> ProcessUserClaims(
         [HttpTrigger("post", Route = "process-user-claims")]
