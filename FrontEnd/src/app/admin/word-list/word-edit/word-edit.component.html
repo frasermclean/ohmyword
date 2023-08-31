@@ -8,6 +8,19 @@
       <mat-error *ngIf="!formGroup.controls.id.valid">Word is required</mat-error>
     </mat-form-field>
 
+    <!-- frequency -->
+    <mat-form-field>
+      <mat-label>Frequency</mat-label>
+      <input
+        matInput
+        name="frequency"
+        placeholder="Enter the frequency of the word"
+        formControlName="frequency"
+        type="number"
+      />
+      <mat-error *ngIf="!formGroup.controls.frequency.valid">Frequency needs to be number between 1 and 7.</mat-error>
+    </mat-form-field>
+
     <!-- definitions array -->
     <ng-container formArrayName="definitions">
       <ng-container *ngFor="let definition of definitions.controls; index as i">
