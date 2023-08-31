@@ -10,16 +10,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Integrations.RapidApi\Integrations.RapidApi.csproj"/>
+    <ProjectReference Include="..\Integrations.ServiceBus\Integrations.ServiceBus.csproj" />
+    <ProjectReference Include="..\Integrations.Storage\Integrations.Storage.csproj" />
     <ProjectReference Include="..\Integrations\Integrations.csproj"/>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FastEndpoints" Version="5.15.0"/>
+    <PackageReference Include="FastEndpoints" Version="5.16.0" />
     <PackageReference Include="Microsoft.FeatureManagement.AspNetCore" Version="2.6.1"/>
   </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="$(AssemblyName).Tests"/>
   </ItemGroup>
+
 
 </Project>

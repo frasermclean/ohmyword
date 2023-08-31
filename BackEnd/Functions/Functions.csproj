@@ -10,13 +10,12 @@
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="AspNetCore.HealthChecks.CosmosDb" Version="6.1.0"/>
     <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.21.0"/>
     <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.19.0"/>
     <PackageReference Include="Microsoft.Azure.Functions.Worker.ApplicationInsights" Version="1.0.0"/>
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.1.0"/>
-    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.ServiceBus" Version="5.12.0"/>
-    <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="1.14.0" OutputItemType="Analyzer"/>
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.ServiceBus" Version="5.13.0" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="1.14.1" OutputItemType="Analyzer" />
   </ItemGroup>
   <ItemGroup>
     <None Update="host.json">
@@ -26,14 +25,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>Never</CopyToPublishDirectory>
     </None>
-    <None Update="appsettings.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Using Include="System.Threading.ExecutionContext" Alias="ExecutionContext"/>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Domain\Domain.csproj"/>
+    <ProjectReference Include="..\Integrations.RapidApi\Integrations.RapidApi.csproj" />
+    <ProjectReference Include="..\Integrations.Storage\Integrations.Storage.csproj" />
   </ItemGroup>
 </Project>

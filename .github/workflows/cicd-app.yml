@@ -53,19 +53,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-${{ env.cache-name }}-
 
-      # Install Angular CLI globally
-      - name: Install Angular CLI
-        run: npm install -g @angular/cli
-
       # Install dependencies
       - name: Install project dependencies
         working-directory: ${{ env.PROJECT_DIRECTORY }}
-        run: npm install
+        run: npm ci
 
       # Build the client
       - name: Build client application
         working-directory: ${{ env.PROJECT_DIRECTORY }}
-        run: ng build --configuration $BUILD_CONFIGURATION
+        run: npx ng build --configuration $BUILD_CONFIGURATION
 
       # Copy static web app config
       - name: Copy static web app config
@@ -85,10 +81,11 @@ jobs:
     environment:
       name: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
     env:
+      BACKEND_DIRECTORY: ${{ github.workspace }}/BackEnd
       BUILD_CONFIGURATION: Release
       PUBLISH_RUNTIME: linux-x64
-      API_PUBLISH_DIRECTORY: ${{ github.workspace }}/api
-      FUNCTIONS_PUBLISH_DIRECTORY: ${{ github.workspace }}/functions
+      API_PUBLISH_DIRECTORY: ${{ github.workspace }}/publish/api
+      FUNCTIONS_PUBLISH_DIRECTORY: ${{ github.workspace }}/publish/functions
     steps:
       # Check out the repository
       - name: Checkout repository
@@ -108,26 +105,30 @@ jobs:
       # Restore packages
       - name: Restore packages
         run: dotnet restore --locked-mode
+        working-directory: ${{ env.BACKEND_DIRECTORY }}
 
       # Build solution
       - name: Build solution
         run: dotnet build --no-restore --configuration $BUILD_CONFIGURATION
+        working-directory: ${{ env.BACKEND_DIRECTORY }}
 
       # Run unit tests
       - name: Run unit tests
         run: dotnet test --no-build --configuration $BUILD_CONFIGURATION --filter Category=Unit
+        working-directory: ${{ env.BACKEND_DIRECTORY }}
 
       # Run integration tests
       - name: Run integration tests
         if: ${{ vars.RUN_INTEGRATION_TESTS == 'true' }}
         run: dotnet test --no-build --configuration $BUILD_CONFIGURATION --filter Category=Integration
+        working-directory: ${{ env.BACKEND_DIRECTORY }}
         env:
           OhMyWord_RapidApi__ApiKey: ${{ secrets.RAPID_API_KEY }}
           OhMyWord_GraphApiClient__ClientSecret: ${{ secrets.GRAPH_API_CLIENT_SECRET }}
 
       # Publish API
       - name: Publish API
-        working-directory: ./BackEnd/Api
+        working-directory: ${{ env.BACKEND_DIRECTORY }}/Api
         run: >-
           dotnet publish
           --configuration $BUILD_CONFIGURATION
@@ -137,7 +138,7 @@ jobs:
 
       # Copy API Dockerfile
       - name: Copy API Dockerfile
-        working-directory: ./BackEnd/Api
+        working-directory: ${{ env.BACKEND_DIRECTORY }}/Api
         run: cp Dockerfile $API_PUBLISH_DIRECTORY
 
       # Upload API artifact
@@ -149,7 +150,7 @@ jobs:
 
       # Publish Functions
       - name: Publish Functions
-        working-directory: ./BackEnd/Functions
+        working-directory: ${{ env.BACKEND_DIRECTORY }}/Functions
         run: >-
           dotnet publish
           --configuration $BUILD_CONFIGURATION

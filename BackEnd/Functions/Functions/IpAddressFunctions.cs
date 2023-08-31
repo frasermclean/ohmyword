@@ -1,6 +1,6 @@
 ﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
-using OhMyWord.Domain.Services;
+using OhMyWord.Core.Services;
 
 namespace OhMyWord.Functions.Functions;
 

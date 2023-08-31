@@ -1,11 +1,11 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { NonNullableFormBuilder, Validators } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { take, tap } from 'rxjs/operators';
 import { Definition } from '@models/definition.model';
-import { DefinitionsService } from '@services/definitions.service';
 import { Word } from '@models/word.model';
 import { PartOfSpeech } from "@models/enums";
+import { WordsService } from '@services/words.service';
 
 const partOfSpeechOptions = [
   { value: PartOfSpeech.Noun, label: 'Noun' },
@@ -20,6 +20,7 @@ export interface WordEditData {
 
 export interface WordEditResult {
   id: string;
+  frequency: number;
   definitions: Definition[];
 }
 
@@ -35,6 +36,7 @@ export class WordEditComponent implements OnInit {
 
   formGroup = this.formBuilder.group({
     id: [this.word.id, [Validators.required]],
+    frequency: [this.word.frequency, [Validators.required, Validators.min(1), Validators.max(7)]],
     definitions: this.formBuilder.array(
       this.word.definitions.map((definition) =>
         this.formBuilder.group({
@@ -55,18 +57,22 @@ export class WordEditComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) private data: WordEditData,
     private formBuilder: NonNullableFormBuilder,
     private dialogRef: MatDialogRef<WordEditComponent, WordEditResult>,
-    private definitionService: DefinitionsService
-  ) {}
+    private wordsService: WordsService
+  ) { }
 
   ngOnInit(): void {
     if (this.isEditing) this.formGroup.controls.id.disable(); // can't edit id
   }
 
   getDefinitionSuggestions(wordId: string) {
-    this.definitionService
-      .getDefinitions(wordId)
+    this.wordsService
+      .getWord(wordId, true)
       .pipe(
-        tap((definitions) => definitions.forEach((definition) => this.addDefinition(definition))),
+        tap((word) => {
+            this.formGroup.controls.frequency.setValue(word.frequency);
+            word.definitions.forEach((definition) => this.addDefinition(definition));
+          }
+        ),
         take(1)
       )
       .subscribe();
@@ -90,6 +96,7 @@ export class WordEditComponent implements OnInit {
   submit() {
     this.dialogRef.close({
       id: this.formGroup.controls.id.value,
+      frequency: this.formGroup.controls.frequency.value,
       definitions: this.formGroup.controls.definitions.value.map((d) => new Definition(d)),
     });
   }

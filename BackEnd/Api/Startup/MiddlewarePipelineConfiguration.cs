@@ -1,6 +1,4 @@
 ﻿using OhMyWord.Api.Hubs;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace OhMyWord.Api.Startup;
 
@@ -40,7 +38,6 @@ public static class MiddlewarePipelineConfiguration
                     endpoint.AllowAnonymous();
                 }
             };
-            config.Serializer.Options.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
         });
 
         app.MapHub<GameHub>("/hub");

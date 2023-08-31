@@ -145,7 +145,7 @@ public class RoundState : IRoundState
 
         int AwardPoints()
         {
-            const int pointsToAward = 100; // TODO: Calculate points dynamically
+            var pointsToAward = round.Word.Bounty;
 
             data.PointsAwarded = pointsToAward;
             data.GuessTime = DateTime.UtcNow - round.StartDate;

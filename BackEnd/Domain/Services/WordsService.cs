@@ -1,8 +1,8 @@
 using FluentResults;
 using OhMyWord.Core.Models;
 using OhMyWord.Integrations.Models.Entities;
-using OhMyWord.Integrations.Models.WordsApi;
-using OhMyWord.Integrations.Services.RapidApi.WordsApi;
+using OhMyWord.Integrations.RapidApi.Models.WordsApi;
+using OhMyWord.Integrations.RapidApi.Services;
 using OhMyWord.Integrations.Services.Repositories;
 
 namespace OhMyWord.Domain.Services;
@@ -168,7 +168,6 @@ public class WordsService : IWordsService
             Value = result.Definition,
             Example = result.Examples.FirstOrDefault()
         }),
-        Frequency = details.Frequency,
-        LastModifiedBy = Guid.Empty
+        Frequency = details.Frequency
     };
 }

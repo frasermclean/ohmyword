@@ -7,5 +7,5 @@ param containerRegistryName = 'snakebyte'
 param containerRegistryResourceGroup = 'rg-snakebyte-core'
 param containerImageName = 'ohmyword-api'
 param bindManagedCertificate = true
-param containerAppMinReplicas = 1
+param containerAppMinReplicas = 0
 param containerAppMaxReplicas = 1

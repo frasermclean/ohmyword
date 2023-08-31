@@ -1,10 +1,12 @@
-﻿using OhMyWord.Domain.Services;
-using OhMyWord.Integrations.Errors;
-using OhMyWord.Integrations.Models.Entities;
-using OhMyWord.Integrations.Services.RapidApi.IpGeoLocation;
-using OhMyWord.Integrations.Services.Repositories;
+﻿using OhMyWord.Core.Models;
+using OhMyWord.Core.Services;
+using OhMyWord.Domain.Errors;
+using OhMyWord.Domain.Services;
+using OhMyWord.Integrations.RapidApi.Models.IpGeoLocation;
+using OhMyWord.Integrations.RapidApi.Services;
+using OhMyWord.Integrations.Storage.Models;
+using OhMyWord.Integrations.Storage.Services;
 using System.Net;
-using System.Net.Sockets;
 
 namespace OhMyWord.Domain.Tests.Services;
 
@@ -20,35 +22,75 @@ public class GeoLocationServiceTests
         geoLocationService = new GeoLocationService(geoLocationRepositoryMock.Object, geoLocationApiClientMock.Object);
     }
 
-    [Theory]
-    [InlineData("218.195.228.185")]
-    [InlineData("2d4b:b2dd:9da1:1d25:3bcf:5997:708e:1587")]
-    public async Task GetGeoLocationAsync_Should_Return_ExpectedResult(string address)
+    [Theory, AutoData]
+    public async Task GetGeoLocationAsync_WhenEntityIsInStorage_Should_Return_ExpectedResult(IPAddress ipAddress,
+        GeoLocationEntity entity)
     {
         // arrange
-        var entity = new GeoLocationEntity { CountryCode = "AU", CountryName = "Australia", City = "Melbourne" };
-
-        geoLocationRepositoryMock.Setup(repository =>
-                repository.GetGeoLocationAsync(It.IsAny<IPAddress>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((IPAddress ipAddress, CancellationToken _) =>
-                ipAddress.AddressFamily == AddressFamily.InterNetwork
-                    ? entity with { PartitionKey = "IPv4", RowKey = ipAddress.ToString() }
-                    : null);
-
-        geoLocationApiClientMock.Setup(apiClient =>
-                apiClient.GetGeoLocationAsync(It.IsAny<IPAddress>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((IPAddress ipAddress, CancellationToken _) =>
-                entity with { PartitionKey = "IPv6", RowKey = ipAddress.ToString() });
+        entity.RowKey = ipAddress.ToString();
+        SetupGeoLocationRepositoryMock(ipAddress, entity);
 
         // act
-        var result = await geoLocationService.GetGeoLocationAsync(address);
+        var result = await geoLocationService.GetGeoLocationAsync(ipAddress);
 
         // assert        
-        result.Should().BeSuccess();
-        result.Value.IpAddress.ToString().Should().Be(address);
-        result.Value.CountryCode.Should().Be("au");
-        result.Value.CountryName.Should().Be("Australia");
-        result.Value.City.Should().Be("Melbourne");
+        result.Should().BeSuccess().Which.Value.Should().BeEquivalentTo(new GeoLocation
+        {
+            IpAddress = ipAddress,
+            CountryCode = entity.CountryCode.ToLower(),
+            CountryName = entity.CountryName,
+            City = entity.City
+        });
+        geoLocationRepositoryMock.Verify(
+            repository => repository.GetGeoLocationAsync(ipAddress, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetGeoLocationAsync_WhenEntityIsNotInStorage_Should_Return_ExpectedResult()
+    {
+        // arrange
+        var fixture = new Fixture();
+        var ipAddress = fixture.Create<IPAddress>();
+        var apiResponse = fixture.Build<GeoLocationApiResponse>()
+            .With(response => response.IpAddress, ipAddress.ToString())
+            .Create();
+        SetupGeoLocationRepositoryMock(ipAddress, null);
+        SetupGeoLocationApiClientMock(ipAddress, apiResponse);
+
+        // act
+        var result = await geoLocationService.GetGeoLocationAsync(ipAddress);
+
+        // assert
+        result.Should().BeSuccess().Which.Value.Should().BeEquivalentTo(new GeoLocation
+        {
+            IpAddress = ipAddress,
+            CountryCode = apiResponse.Country.Code!.ToLower(),
+            CountryName = apiResponse.Country.Name!,
+            City = apiResponse.City.Name!
+        });
+        geoLocationRepositoryMock.Verify(
+            repository => repository.GetGeoLocationAsync(ipAddress, It.IsAny<CancellationToken>()), Times.Once);
+        geoLocationApiClientMock.Verify(client => client.GetGeoLocationAsync(ipAddress, It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Theory, AutoData]
+    public async Task GetGeoLocationAsync_WhenIpAddressCanNotBeFound_Should_Return_Error(IPAddress ipAddress)
+    {
+        // arrange
+        SetupGeoLocationRepositoryMock(ipAddress, null);
+        SetupGeoLocationApiClientMock(ipAddress, null);
+
+        // act
+        var result = await geoLocationService.GetGeoLocationAsync(ipAddress);
+
+        // assert
+        result.Should().BeFailure().Which.Should()
+            .HaveReason<IpAddressNotFoundError>($"IP address not found: {ipAddress}");
+        geoLocationRepositoryMock.Verify(
+            repository => repository.GetGeoLocationAsync(ipAddress, It.IsAny<CancellationToken>()), Times.Once);
+        geoLocationApiClientMock.Verify(client => client.GetGeoLocationAsync(ipAddress, It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 
     [Fact]
@@ -63,5 +105,19 @@ public class GeoLocationServiceTests
         // assert
         result.Should().BeFailure().Which
             .Should().HaveReason<InvalidIpAddressError>($"Invalid IP address: {address}");
+    }
+
+    private void SetupGeoLocationRepositoryMock(IPAddress ipAddress, GeoLocationEntity? entityToReturn)
+    {
+        geoLocationRepositoryMock.Setup(repository =>
+                repository.GetGeoLocationAsync(ipAddress, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(entityToReturn);
+    }
+
+    private void SetupGeoLocationApiClientMock(IPAddress ipAddress, GeoLocationApiResponse? apiResponseToReturn)
+    {
+        geoLocationApiClientMock.Setup(apiClient =>
+                apiClient.GetGeoLocationAsync(ipAddress, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(apiResponseToReturn);
     }
 }
