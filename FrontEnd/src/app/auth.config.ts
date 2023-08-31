@@ -63,23 +63,18 @@ export function msalInterceptorConfigurationFactory(): MsalInterceptorConfigurat
   }
 }
 
-function loggerCallback(logLevel: LogLevel, message: string) {
+function loggerCallback(logLevel: LogLevel, message: string): void {
   switch (logLevel) {
     case LogLevel.Error:
-      console.error(message);
-      break;
+      return console.error(message);
     case LogLevel.Warning:
-      console.warn(message);
-      break;
+      return console.warn(message);
     case LogLevel.Info:
-      console.info(message);
-      break;
+      return console.info(message);
     case LogLevel.Verbose:
-      console.debug(message);
-      break;
+      return console.debug(message);
     default:
-      console.log(message);
-      break;
+      return console.log(message);
   }
 }
 
