@@ -1,6 +1,4 @@
 ﻿using OhMyWord.Api.Hubs;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace OhMyWord.Api.Startup;
 

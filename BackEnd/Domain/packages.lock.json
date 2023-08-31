@@ -4,13 +4,13 @@
     "net7.0": {
       "FastEndpoints": {
         "type": "Direct",
-        "requested": "[5.15.0, )",
-        "resolved": "5.15.0",
-        "contentHash": "q6/XjhxpGWOeF+cs9ep4vqGZsQo0+mvXyVH7L9fgoN0HHp3GKgqA4BDP85ugn32EKPm9mVuT1Z1avSYH9Q9aQg==",
+        "requested": "[5.16.0, )",
+        "resolved": "5.16.0",
+        "contentHash": "HIxhTXNEYMC5t1daaDemwkuGOGHHDwoZJOpjDluB9tlmDHOs00LNzUgnZ+GZPpxBjhODlbTE91TZWA2grguFmQ==",
         "dependencies": {
-          "FastEndpoints.Attributes": "5.15.0",
-          "FastEndpoints.Messaging.Core": "5.15.0",
-          "FluentValidation": "11.6.0"
+          "FastEndpoints.Attributes": "5.16.0",
+          "FastEndpoints.Messaging.Core": "5.16.0",
+          "FluentValidation": "11.7.1"
         }
       },
       "Microsoft.FeatureManagement.AspNetCore": {
@@ -48,10 +48,10 @@
       },
       "Azure.Data.Tables": {
         "type": "Transitive",
-        "resolved": "12.8.0",
-        "contentHash": "jBNOUXoANEv66mIyR+rzC7toogo48pYciH4n5xsb8nHRz6lfjX9jwsOjC8sdR1Zl75Z6MZvaZjajqVwCt3JqVw==",
+        "resolved": "12.8.1",
+        "contentHash": "UsJVAV2omsi6Ws5zqV2/TMP2GQjFlmjiFXnYKV5u5+9MQ588VDkvvlh4TGzLRAG2DxVx7rdgjtQ9baTlz/+log==",
         "dependencies": {
-          "Azure.Core": "1.27.0",
+          "Azure.Core": "1.34.0",
           "System.Text.Json": "4.7.2"
         }
       },
@@ -71,10 +71,10 @@
       },
       "Azure.Messaging.ServiceBus": {
         "type": "Transitive",
-        "resolved": "7.15.0",
-        "contentHash": "K2SONtHZSQL3bAbhSBLkNzvh6XsTPK1wXfNjUiZQaJciqX6827kfmJ4DkA3ZZjW+zNaPfGMWVI9zL9berJ4ibg==",
+        "resolved": "7.16.1",
+        "contentHash": "8wlJPbfPnM6EksXeIlGiCDMpc8pD0Ps4PMa9ULI5NaCWlWJwmMPw8TxPAFkEknegvcnwGWkknbXhhTyWULYMoQ==",
         "dependencies": {
-          "Azure.Core": "1.32.0",
+          "Azure.Core": "1.34.0",
           "Azure.Core.Amqp": "1.3.0",
           "Microsoft.Azure.Amqp": "2.6.2",
           "Microsoft.Bcl.AsyncInterfaces": "1.1.1",
@@ -83,13 +83,13 @@
       },
       "FastEndpoints.Attributes": {
         "type": "Transitive",
-        "resolved": "5.15.0",
-        "contentHash": "wlCXnBUMhC33tRGwTqFdam31LXCHMJSokdwsF055D8lnZLElbko9r3azWQw13Y5ky+g9Be//GJp2IwrqrYguxg=="
+        "resolved": "5.16.0",
+        "contentHash": "//CjDEjB10RS6ICc+eREQW1qopeVfz+/k9mAaJ7N6mwkgsb/xvdeeuZUkjMlMUzzwjCHOkXqIJIOcvIIqSI4gg=="
       },
       "FastEndpoints.Messaging.Core": {
         "type": "Transitive",
-        "resolved": "5.15.0",
-        "contentHash": "hB06RVsE6dTgbHrxDyZwJCEvPDZlgeo6H+/ayq0emXYpdSv4JZBWHe999jwAD8HFj0BVnLiK9+QC/g5i5FYL7Q=="
+        "resolved": "5.16.0",
+        "contentHash": "FYXBQwY+U97EcyJPpMQ3IsegCmtTK458Vxtd86rozDyu41wdIKWXZJeMl5slPXHDnNkdl1gAxT8tviJedU2xIQ=="
       },
       "FluentResults": {
         "type": "Transitive",
@@ -102,8 +102,8 @@
       },
       "FluentValidation": {
         "type": "Transitive",
-        "resolved": "11.6.0",
-        "contentHash": "DWKd0jHA33d7BXVWytSoN5Oafj9nYuiLUyyFoaUboOZZiaN5tlXdcJpkRbmrrWBUTWdSxjTwIoyUs38KSU/7OQ=="
+        "resolved": "11.7.1",
+        "contentHash": "w9Al4gls6iVGFbTd/NPOPlwzqDTghH+ntL4c4FYUatc+LeybpIwhYArLykZJP/VjF2n3ihj3ws+1yd7KR5lQlg=="
       },
       "Microsoft.Azure.Amqp": {
         "type": "Transitive",
@@ -112,8 +112,8 @@
       },
       "Microsoft.Azure.Cosmos": {
         "type": "Transitive",
-        "resolved": "3.35.2",
-        "contentHash": "3GdyK2EwGsBstYcoNmOGQXNCIUhWrZeOMRceV7/yMySmRoiAoKyKyzLac8vgBeJagy4R/sWwynp8cNN2d+R+ZA==",
+        "resolved": "3.35.3",
+        "contentHash": "sR58hcua1jGM2/EryZhIy4TNkGTKytRqJd5E61VQerkNhpP+Aw5J7wJLCg99qtGf2UIsZYrdnmE6dXGFurWhuw==",
         "dependencies": {
           "Azure.Core": "1.19.0",
           "Microsoft.Bcl.AsyncInterfaces": "1.0.0",
@@ -342,8 +342,8 @@
       },
       "Microsoft.Extensions.Http.Polly": {
         "type": "Transitive",
-        "resolved": "7.0.9",
-        "contentHash": "Z5/e+XoWww3bEEoKM3B5X/7nDmj9RQZsdm5kdYKC0SCuuMtJ8m9aFKL6AZVo3hf1mfolhk60PSP/F+KoKN1fag==",
+        "resolved": "7.0.10",
+        "contentHash": "sc2TfeuJop2RDxGiKZ8+EWbUawE8ng2XZ9DoPVNnNZuKkFnm+C04srfL7/c1LSGZnTadpZIemzGRXegEwG34iA==",
         "dependencies": {
           "Microsoft.Extensions.Http": "7.0.0",
           "Polly": "7.2.3",
@@ -1215,10 +1215,8 @@
       "OhMyWord.Integrations": {
         "type": "Project",
         "dependencies": {
-          "Azure.Data.Tables": "[12.8.0, )",
-          "Azure.Messaging.ServiceBus": "[7.15.0, )",
-          "Microsoft.Azure.Cosmos": "[3.35.2, )",
-          "Microsoft.Extensions.Azure": "[1.6.3, )",
+          "Azure.Identity": "[1.9.0, )",
+          "Microsoft.Azure.Cosmos": "[3.35.3, )",
           "Microsoft.Extensions.Configuration.Abstractions": "[7.0.0, )",
           "Microsoft.Extensions.Hosting": "[7.0.1, )",
           "Microsoft.Extensions.Http": "[7.0.0, )",
@@ -1237,7 +1235,7 @@
           "Microsoft.Extensions.DependencyInjection.Abstractions": "[7.0.0, )",
           "Microsoft.Extensions.Hosting": "[7.0.1, )",
           "Microsoft.Extensions.Http": "[7.0.0, )",
-          "Microsoft.Extensions.Http.Polly": "[7.0.9, )",
+          "Microsoft.Extensions.Http.Polly": "[7.0.10, )",
           "Microsoft.Extensions.Logging.Abstractions": "[7.0.1, )",
           "Microsoft.Extensions.Options": "[7.0.1, )",
           "Microsoft.Extensions.Options.ConfigurationExtensions": "[7.0.0, )",
@@ -1248,7 +1246,7 @@
       "OhMyWord.Integrations.ServiceBus": {
         "type": "Project",
         "dependencies": {
-          "Azure.Messaging.ServiceBus": "[7.15.0, )",
+          "Azure.Messaging.ServiceBus": "[7.16.1, )",
           "Microsoft.Extensions.Azure": "[1.7.0, )",
           "Microsoft.Extensions.Configuration.Abstractions": "[7.0.0, )",
           "Microsoft.Extensions.Hosting": "[7.0.1, )",
@@ -1260,8 +1258,7 @@
       "OhMyWord.Integrations.Storage": {
         "type": "Project",
         "dependencies": {
-          "Azure.Data.Tables": "[12.8.0, )",
-          "Azure.Identity": "[1.9.0, )",
+          "Azure.Data.Tables": "[12.8.1, )",
           "Microsoft.Extensions.Azure": "[1.7.0, )",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "[7.0.0, )",
           "Microsoft.Extensions.Hosting": "[7.0.1, )",

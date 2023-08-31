@@ -54,24 +54,24 @@
       },
       "Microsoft.Azure.Functions.Worker.Extensions.ServiceBus": {
         "type": "Direct",
-        "requested": "[5.12.0, )",
-        "resolved": "5.12.0",
-        "contentHash": "dpEOZOlvalS6+TEg23CBIzzMF9fthlrL06dNUCVVA8//y14lH/rvccMOmHFd90DgaLdMxhJz4Akv7aeFrq3f+Q==",
+        "requested": "[5.13.0, )",
+        "resolved": "5.13.0",
+        "contentHash": "U7WQ0RH6Ig5QjTDt+hmMlPt3AnCxTuPCIsCco7JVxNHVcTHyNEt6+8+CGfTutLFxRpcalp8gGdVSDeV8JEUSQg==",
         "dependencies": {
           "Azure.Messaging.ServiceBus": "7.14.0",
-          "Microsoft.Azure.Functions.Worker.Core": "1.14.0",
+          "Microsoft.Azure.Functions.Worker.Core": "1.15.0",
           "Microsoft.Azure.Functions.Worker.Extensions.Abstractions": "1.3.0",
           "Microsoft.Extensions.Azure": "1.6.3"
         }
       },
       "Microsoft.Azure.Functions.Worker.Sdk": {
         "type": "Direct",
-        "requested": "[1.14.0, )",
-        "resolved": "1.14.0",
-        "contentHash": "m64zR68K40R2nj2vXqzYGap41wsWZPkDzCqMlnJ/re5XwQBTvWNt+O83Ncv2SgYcvx3nLa375H/pnGaCQFM65g==",
+        "requested": "[1.14.1, )",
+        "resolved": "1.14.1",
+        "contentHash": "00Ck4TNUSRDWAVGKnXh/Slbt3+4rDUBccQetWgXE1j51BAW0wB3at1k78m03XZwTILKEhvAKmV1WZWu4cbmJvA==",
         "dependencies": {
           "Microsoft.Azure.Functions.Worker.Sdk.Analyzers": "1.2.1",
-          "Microsoft.Azure.Functions.Worker.Sdk.Generators": "1.1.0"
+          "Microsoft.Azure.Functions.Worker.Sdk.Generators": "1.1.1"
         }
       },
       "Azure.Core": {
@@ -100,10 +100,10 @@
       },
       "Azure.Data.Tables": {
         "type": "Transitive",
-        "resolved": "12.8.0",
-        "contentHash": "jBNOUXoANEv66mIyR+rzC7toogo48pYciH4n5xsb8nHRz6lfjX9jwsOjC8sdR1Zl75Z6MZvaZjajqVwCt3JqVw==",
+        "resolved": "12.8.1",
+        "contentHash": "UsJVAV2omsi6Ws5zqV2/TMP2GQjFlmjiFXnYKV5u5+9MQ588VDkvvlh4TGzLRAG2DxVx7rdgjtQ9baTlz/+log==",
         "dependencies": {
-          "Azure.Core": "1.27.0",
+          "Azure.Core": "1.34.0",
           "System.Text.Json": "4.7.2"
         }
       },
@@ -281,8 +281,8 @@
       },
       "Microsoft.Azure.Functions.Worker.Sdk.Generators": {
         "type": "Transitive",
-        "resolved": "1.1.0",
-        "contentHash": "H6DTapdWMF/5eV2H6h5u0Q71MVcYAAlVHN48mNKyetzY6CxJCyZ0PZIhC7sZdtvnJRJNQTNEqJ1hz7n0FryBXw=="
+        "resolved": "1.1.1",
+        "contentHash": "InoWmAMn38ebJmaq/bszXcpK8KTC43Yv4E2WJ2SZwvk2PK8m4gamDo8nbGDPvn7goBykLpuRDvY7gpkgj6AFIg=="
       },
       "Microsoft.Bcl.AsyncInterfaces": {
         "type": "Transitive",
@@ -492,8 +492,8 @@
       },
       "Microsoft.Extensions.Http.Polly": {
         "type": "Transitive",
-        "resolved": "7.0.9",
-        "contentHash": "Z5/e+XoWww3bEEoKM3B5X/7nDmj9RQZsdm5kdYKC0SCuuMtJ8m9aFKL6AZVo3hf1mfolhk60PSP/F+KoKN1fag==",
+        "resolved": "7.0.10",
+        "contentHash": "sc2TfeuJop2RDxGiKZ8+EWbUawE8ng2XZ9DoPVNnNZuKkFnm+C04srfL7/c1LSGZnTadpZIemzGRXegEwG34iA==",
         "dependencies": {
           "Microsoft.Extensions.Http": "7.0.0",
           "Polly": "7.2.3",
@@ -969,7 +969,7 @@
           "Microsoft.Extensions.DependencyInjection.Abstractions": "[7.0.0, )",
           "Microsoft.Extensions.Hosting": "[7.0.1, )",
           "Microsoft.Extensions.Http": "[7.0.0, )",
-          "Microsoft.Extensions.Http.Polly": "[7.0.9, )",
+          "Microsoft.Extensions.Http.Polly": "[7.0.10, )",
           "Microsoft.Extensions.Logging.Abstractions": "[7.0.1, )",
           "Microsoft.Extensions.Options": "[7.0.1, )",
           "Microsoft.Extensions.Options.ConfigurationExtensions": "[7.0.0, )",
@@ -980,8 +980,7 @@
       "OhMyWord.Integrations.Storage": {
         "type": "Project",
         "dependencies": {
-          "Azure.Data.Tables": "[12.8.0, )",
-          "Azure.Identity": "[1.9.0, )",
+          "Azure.Data.Tables": "[12.8.1, )",
           "Microsoft.Extensions.Azure": "[1.7.0, )",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "[7.0.0, )",
           "Microsoft.Extensions.Hosting": "[7.0.1, )",

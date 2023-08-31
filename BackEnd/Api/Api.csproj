@@ -11,13 +11,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AspNetCore.HealthChecks.AzureStorage" Version="6.1.2"/>
-    <PackageReference Include="AspNetCore.HealthChecks.CosmosDb" Version="6.1.0"/>
-    <PackageReference Include="FastEndpoints" Version="5.15.0"/>
+    <PackageReference Include="AspNetCore.HealthChecks.AzureStorage" Version="7.0.0" />
+    <PackageReference Include="AspNetCore.HealthChecks.CosmosDb" Version="7.0.0" />
+    <PackageReference Include="FastEndpoints" Version="5.16.0" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.21.0"/>
-    <PackageReference Include="Microsoft.Azure.AppConfiguration.AspNetCore" Version="6.0.1"/>
+    <PackageReference Include="Microsoft.Azure.AppConfiguration.AspNetCore" Version="6.1.0" />
     <PackageReference Include="Microsoft.Azure.SignalR" Version="1.21.5"/>
-    <PackageReference Include="Microsoft.Identity.Web" Version="2.13.1"/>
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Identity.Web" Version="2.13.3" />
     <PackageReference Include="Serilog.AspNetCore" Version="7.0.0"/>
     <PackageReference Include="Serilog.Sinks.ApplicationInsights" Version="4.0.0"/>
   </ItemGroup>
