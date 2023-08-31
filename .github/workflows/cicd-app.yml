@@ -53,19 +53,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-${{ env.cache-name }}-
 
-      # Install Angular CLI globally
-      - name: Install Angular CLI
-        run: npm install -g @angular/cli
-
       # Install dependencies
       - name: Install project dependencies
         working-directory: ${{ env.PROJECT_DIRECTORY }}
-        run: npm install
+        run: npm ci
 
       # Build the client
       - name: Build client application
         working-directory: ${{ env.PROJECT_DIRECTORY }}
-        run: ng build --configuration $BUILD_CONFIGURATION
+        run: npx ng build --configuration $BUILD_CONFIGURATION
 
       # Copy static web app config
       - name: Copy static web app config
