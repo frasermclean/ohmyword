@@ -168,7 +168,6 @@ public class WordsService : IWordsService
             Value = result.Definition,
             Example = result.Examples.FirstOrDefault()
         }),
-        Frequency = details.Frequency,
-        LastModifiedBy = Guid.Empty
+        Frequency = details.Frequency
     };
 }

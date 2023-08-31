@@ -25,9 +25,14 @@ public class Word
     public required double Frequency { get; init; }
 
     /// <summary>
+    /// Number of points awarded for correctly guessing the word.
+    /// </summary>
+    public int Bounty => this == Default ? default : CalculateBounty(Length, Frequency);
+
+    /// <summary>
     /// User ID of the user who last modified the word.
     /// </summary>
-    public required Guid? LastModifiedBy { get; init; }
+    public Guid? LastModifiedBy { get; init; }
 
     public DateTime LastModifiedTime { get; init; } = DateTime.UtcNow;
 
@@ -41,4 +46,6 @@ public class Word
         LastModifiedBy = default,
         LastModifiedTime = DateTime.MinValue,
     };
+
+    public static int CalculateBounty(int length, double frequency) => Convert.ToInt32((length * 10 + 50) / frequency);
 }

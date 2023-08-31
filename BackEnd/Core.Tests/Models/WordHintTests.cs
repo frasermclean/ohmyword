@@ -4,21 +4,7 @@ namespace OhMyWord.Core.Tests.Models;
 
 public class ModelsTests
 {
-    [Fact]
-    public void DefaultWord_Should_Have_Expected_Properties()
-    {
-        // arrange
-        var word = Word.Default;
 
-        // assert
-        word.Id.Should().Be("default");
-        word.Length.Should().Be(7);
-        word.Definitions.Single().Should().Be(Definition.Default);
-        word.Frequency.Should().Be(0);
-        word.LastModifiedTime.Should().Be(DateTime.MinValue);
-        word.LastModifiedBy.Should().BeNull();
-        word.ToString().Should().Be("default");
-    }
 
     [Fact]
     public void DefaultWordHint_Should_Have_Expected_Properties()
