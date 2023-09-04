@@ -3,9 +3,9 @@ using OhMyWord.Core.Services;
 using OhMyWord.Domain.Services;
 using OhMyWord.Integrations.Errors;
 using OhMyWord.Integrations.Models.Entities;
-using OhMyWord.Integrations.Services.GraphApi;
 using OhMyWord.Integrations.Services.Repositories;
 using System.Net;
+using OhMyWord.Integrations.GraphApi.Services;
 using User = Microsoft.Graph.Models.User;
 
 namespace OhMyWord.Domain.Tests.Services;

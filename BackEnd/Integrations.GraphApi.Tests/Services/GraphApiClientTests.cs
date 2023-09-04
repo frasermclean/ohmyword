@@ -1,7 +1,7 @@
-﻿using OhMyWord.Integrations.Services.GraphApi;
-using OhMyWord.Integrations.Tests.Fixtures;
+﻿using OhMyWord.Integrations.GraphApi.Services;
+using OhMyWord.Integrations.GraphApi.Tests.Fixtures;
 
-namespace OhMyWord.Integrations.Tests.Services.GraphApi;
+namespace OhMyWord.Integrations.GraphApi.Tests.Services;
 
 [Trait("Category", "Integration")]
 public class GraphApiClientTests : IClassFixture<GraphApiClientFixture>
