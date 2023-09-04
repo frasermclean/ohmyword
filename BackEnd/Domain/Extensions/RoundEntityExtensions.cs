@@ -1,5 +1,5 @@
 ﻿using OhMyWord.Core.Models;
-using OhMyWord.Integrations.Models.Entities;
+using OhMyWord.Integrations.CosmosDb.Models.Entities;
 
 namespace OhMyWord.Domain.Extensions;
 

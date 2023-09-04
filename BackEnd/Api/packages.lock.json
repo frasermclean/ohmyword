@@ -1735,14 +1735,14 @@
         "dependencies": {
           "FastEndpoints": "[5.16.0, )",
           "Microsoft.FeatureManagement.AspNetCore": "[2.6.1, )",
-          "OhMyWord.Integrations": "[1.0.0, )",
+          "OhMyWord.Integrations.CosmosDb": "[1.0.0, )",
           "OhMyWord.Integrations.GraphApi": "[1.0.0, )",
           "OhMyWord.Integrations.RapidApi": "[1.0.0, )",
           "OhMyWord.Integrations.ServiceBus": "[1.0.0, )",
           "OhMyWord.Integrations.Storage": "[1.0.0, )"
         }
       },
-      "OhMyWord.Integrations": {
+      "OhMyWord.Integrations.CosmosDb": {
         "type": "Project",
         "dependencies": {
           "Azure.Identity": "[1.9.0, )",

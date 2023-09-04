@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using OhMyWord.Integrations.Services.Repositories;
+using OhMyWord.Integrations.CosmosDb.Services;
 
 namespace OhMyWord.Api.Endpoints.Words.Search;
 

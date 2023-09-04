@@ -9,9 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Api", "Api\Api.csproj", "{C
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Api.Tests", "Api.Tests\Api.Tests.csproj", "{9E2752A9-6B04-427D-A75B-6EEE9C9738D6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Integrations", "Integrations\Integrations.csproj", "{6C70E124-3AAE-4FDB-9E88-66C51C404508}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Integrations.CosmosDb", "Integrations.CosmosDb\Integrations.CosmosDb.csproj", "{6C70E124-3AAE-4FDB-9E88-66C51C404508}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Integrations.Tests", "Integrations.Tests\Integrations.Tests.csproj", "{356445A2-B36B-46EC-B30C-CD318B59B268}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Integrations.CosmosDb.Tests", "Integrations.CosmosDb.Tests\Integrations.CosmosDb.Tests.csproj", "{356445A2-B36B-46EC-B30C-CD318B59B268}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Functions", "Functions\Functions.csproj", "{B9636D52-5746-455D-BA4C-54FF08495EFA}"
 EndProject

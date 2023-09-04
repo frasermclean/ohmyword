@@ -1212,7 +1212,7 @@
           "FluentResults": "[3.15.2, )"
         }
       },
-      "OhMyWord.Integrations": {
+      "OhMyWord.Integrations.CosmosDb": {
         "type": "Project",
         "dependencies": {
           "Azure.Identity": "[1.9.0, )",

@@ -1,10 +1,10 @@
 ﻿using OhMyWord.Core.Models;
 using OhMyWord.Core.Services;
 using OhMyWord.Domain.Services;
-using OhMyWord.Integrations.Errors;
-using OhMyWord.Integrations.Models.Entities;
-using OhMyWord.Integrations.Services.Repositories;
 using System.Net;
+using OhMyWord.Integrations.CosmosDb.Errors;
+using OhMyWord.Integrations.CosmosDb.Models.Entities;
+using OhMyWord.Integrations.CosmosDb.Services;
 using OhMyWord.Integrations.GraphApi.Services;
 using User = Microsoft.Graph.Models.User;
 

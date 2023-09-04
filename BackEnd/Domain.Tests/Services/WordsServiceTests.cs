@@ -1,10 +1,10 @@
 ﻿using OhMyWord.Core.Models;
 using OhMyWord.Domain.Services;
-using OhMyWord.Integrations.Errors;
-using OhMyWord.Integrations.Models.Entities;
+using OhMyWord.Integrations.CosmosDb.Errors;
+using OhMyWord.Integrations.CosmosDb.Models.Entities;
+using OhMyWord.Integrations.CosmosDb.Services;
 using OhMyWord.Integrations.RapidApi.Models.WordsApi;
 using OhMyWord.Integrations.RapidApi.Services;
-using OhMyWord.Integrations.Services.Repositories;
 
 namespace OhMyWord.Domain.Tests.Services;
 

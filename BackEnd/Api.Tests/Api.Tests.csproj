@@ -33,7 +33,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\BackEnd\Api\Api.csproj"/>
-    <ProjectReference Include="..\Integrations.Tests\Integrations.Tests.csproj"/>
+    <ProjectReference Include="..\Integrations.CosmosDb.Tests\Integrations.CosmosDb.Tests.csproj" />
   </ItemGroup>
 
 </Project>

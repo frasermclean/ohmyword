@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http.Json;
 using Microsoft.FeatureManagement;
 using OhMyWord.Api.Services;
 using OhMyWord.Domain.DependencyInjection;
-using OhMyWord.Integrations.DependencyInjection;
+using OhMyWord.Integrations.CosmosDb.DependencyInjection;
 using OhMyWord.Integrations.GraphApi.DependencyInjection;
 using OhMyWord.Integrations.RapidApi.DependencyInjection;
 using OhMyWord.Integrations.ServiceBus.DependencyInjection;
