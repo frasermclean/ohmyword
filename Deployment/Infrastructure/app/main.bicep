@@ -44,6 +44,31 @@ param containerAppMinReplicas int
 @description('Maximum number of container app replicas')
 param containerAppMaxReplicas int
 
+@description('Number of CPU cores the container can use. Can be with a maximum of two decimals.')
+@allowed([
+  '0.25'
+  '0.5'
+  '0.75'
+  '1'
+  '1.25'
+  '1.5'
+  '1.75'
+  '2'
+])
+param containerAppCpuCores string = '0.5'
+
+@description('Amount of memory (in gibibytes, GiB) allocated to the container up to 4GiB. Can be with a maximum of two decimals. Ratio with CPU cores must be equal to 2.')
+@allowed([
+  '0.5'
+  '1'
+  '1.5'
+  '2'
+  '3'
+  '3.5'
+  '4'
+])
+param containerAppMemorySize string = '1'
+
 var tags = {
   workload: workload
   category: 'app'
@@ -184,8 +209,8 @@ resource containerApp 'Microsoft.App/containerApps@2022-10-01' = {
           name: containerImageName
           image: '${containerRegistryName}.azurecr.io/${containerImageName}:${appEnv}'
           resources: {
-            cpu: 1
-            memory: '2Gi'
+            cpu: json(containerAppCpuCores)
+            memory: '${containerAppMemorySize}Gi'
           }
           env: [
             {
