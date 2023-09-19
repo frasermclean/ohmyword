@@ -1,6 +1,8 @@
 ﻿using OhMyWord.Core.Models;
 using OhMyWord.Core.Services;
 using System.Net;
+using Microsoft.FeatureManagement;
+using OhMyWord.Domain.Options;
 using OhMyWord.Integrations.CosmosDb.Models.Entities;
 using OhMyWord.Integrations.CosmosDb.Services;
 using OhMyWord.Integrations.GraphApi.Services;
@@ -20,13 +22,15 @@ public class PlayerService : IPlayerService
     private readonly IPlayerRepository playerRepository;
     private readonly IGraphApiClient graphApiClient;
     private readonly IGeoLocationService geoLocationService;
+    private readonly IFeatureManager featureManager;
 
     public PlayerService(IPlayerRepository playerRepository, IGraphApiClient graphApiClient,
-        IGeoLocationService geoLocationService)
+        IGeoLocationService geoLocationService, IFeatureManager featureManager)
     {
         this.playerRepository = playerRepository;
         this.graphApiClient = graphApiClient;
         this.geoLocationService = geoLocationService;
+        this.featureManager = featureManager;
     }
 
     public async Task<Player> GetPlayerAsync(Guid playerId, string visitorId, string connectionId, IPAddress ipAddress,
@@ -34,11 +38,11 @@ public class PlayerService : IPlayerService
     {
         var entityTask = GetOrCreatePlayerEntityAsync(playerId, visitorId, ipAddress, userId, cancellationToken);
         var nameTask = GetPlayerNameAsync(userId, cancellationToken);
-        var geoLocationTask = geoLocationService.GetGeoLocationAsync(ipAddress, cancellationToken);
+        var geoLocationTask = GetGeoLocationAsync(ipAddress, cancellationToken);
 
         await Task.WhenAll(entityTask, nameTask, geoLocationTask);
 
-        return MapToPlayer(entityTask.Result, nameTask.Result, visitorId, connectionId, geoLocationTask.Result.Value);
+        return MapToPlayer(entityTask.Result, nameTask.Result, visitorId, connectionId, geoLocationTask.Result);
     }
 
     public Task IncrementPlayerScoreAsync(Guid playerId, int points) =>
@@ -71,6 +75,17 @@ public class PlayerService : IPlayerService
 
         var user = await graphApiClient.GetUserByIdAsync(userId.Value, cancellationToken);
         return user?.GivenName ?? "Guest";
+    }
+
+    private async Task<GeoLocation> GetGeoLocationAsync(IPAddress ipAddress, CancellationToken cancellationToken)
+    {
+        var isFeatureEnabled = await featureManager.IsEnabledAsync(FeatureFlags.PlayerGeoLocation);
+
+        if (!isFeatureEnabled)
+            return GeoLocation.Default;
+
+        var result = await geoLocationService.GetGeoLocationAsync(ipAddress, cancellationToken);
+        return result.IsSuccess ? result.Value : GeoLocation.Default;
     }
 
     private static Player MapToPlayer(PlayerEntity entity, string name, string visitorId, string connectionId,

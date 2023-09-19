@@ -8,4 +8,12 @@ public record GeoLocation
     public required string CountryCode { get; init; }
     public required string CountryName { get; init; }
     public required string City { get; init; }
+
+    public static readonly GeoLocation Default = new()
+    {
+        IpAddress = IPAddress.None,
+        CountryCode = string.Empty,
+        CountryName = string.Empty,
+        City = string.Empty
+    };
 }

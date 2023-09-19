@@ -17,7 +17,7 @@ param azureAdClientId string
 param appEnv string
 
 @description('IP lookup feature enabled')
-param ipLookupFeatureEnabled bool = true
+param playerGeoLocationFeatureEnabled bool = true
 
 @description('Azure SignalR Service hostname')
 param signalRServiceHostname string
@@ -65,11 +65,11 @@ var appConfigurationKeyValues = [
 
 var featureFlags = [
   {
-    key: 'IpLookup'
+    key: 'PlayerGeoLocation'
     value: {
-      id: 'IpLookup'
-      description: 'Send IP lookup requests to a queue for processing'
-      enabled: ipLookupFeatureEnabled
+      id: 'PlayerGeoLocation'
+      description: 'Player geo-location by IP address'
+      enabled: playerGeoLocationFeatureEnabled
     }
   }
 ]

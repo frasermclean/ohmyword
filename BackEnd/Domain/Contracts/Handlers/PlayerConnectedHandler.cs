@@ -27,7 +27,7 @@ public class PlayerConnectedHandler : IEventHandler<PlayerConnectedEvent>
         logger.LogInformation("Player connected from {IpAddress}, with connection ID: {ConnectionId}",
             eventModel.IpAddress, eventModel.ConnectionId);
 
-        var isFeatureEnabled = await featureManager.IsEnabledAsync(FeatureFlags.IpLookup);
+        var isFeatureEnabled = await featureManager.IsEnabledAsync(FeatureFlags.PlayerGeoLocation);
 
         if (isFeatureEnabled)
         {

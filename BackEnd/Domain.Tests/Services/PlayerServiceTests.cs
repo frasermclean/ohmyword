@@ -2,6 +2,8 @@
 using OhMyWord.Core.Services;
 using OhMyWord.Domain.Services;
 using System.Net;
+using Microsoft.FeatureManagement;
+using OhMyWord.Domain.Options;
 using OhMyWord.Integrations.CosmosDb.Errors;
 using OhMyWord.Integrations.CosmosDb.Models.Entities;
 using OhMyWord.Integrations.CosmosDb.Services;
@@ -17,11 +19,12 @@ public class PlayerServiceTests
     private readonly Mock<IPlayerRepository> playerRepositoryMock = new();
     private readonly Mock<IGraphApiClient> graphApiClientMock = new();
     private readonly Mock<IGeoLocationService> geoLocationServiceMock = new();
+    private readonly Mock<IFeatureManager> featureManagerMock = new();
 
     public PlayerServiceTests()
     {
         playerService = new PlayerService(playerRepositoryMock.Object, graphApiClientMock.Object,
-            geoLocationServiceMock.Object);
+            geoLocationServiceMock.Object, featureManagerMock.Object);
     }
 
     [Theory, AutoData]
@@ -43,6 +46,7 @@ public class PlayerServiceTests
         geoLocationServiceMock.Setup(service =>
                 service.GetGeoLocationAsync(It.IsAny<IPAddress>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(geoLocation);
+        SetupFeatureManagerMock(true);
 
         // act
         var player = await playerService.GetPlayerAsync(playerId, visitorId, connectionId, ipAddress, userId);
@@ -89,6 +93,8 @@ public class PlayerServiceTests
         geoLocationServiceMock.Setup(service =>
                 service.GetGeoLocationAsync(It.IsAny<IPAddress>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(geoLocation);
+        SetupFeatureManagerMock(true);
+
 
         // act
         var player = await playerService.GetPlayerAsync(playerId, visitorId, connectionId, ipAddress, userId);
@@ -103,5 +109,11 @@ public class PlayerServiceTests
         player.RegistrationCount.Should().Be(4);
         player.VisitorId.Should().Be(visitorId);
         player.GeoLocation.Should().Be(geoLocation);
+    }
+
+    private void SetupFeatureManagerMock(bool isFeatureEnabled)
+    {
+        featureManagerMock.Setup(manager => manager.IsEnabledAsync(FeatureFlags.PlayerGeoLocation))
+            .ReturnsAsync(isFeatureEnabled);
     }
 }
