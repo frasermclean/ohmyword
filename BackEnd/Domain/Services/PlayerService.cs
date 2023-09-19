@@ -1,9 +1,9 @@
 ﻿using OhMyWord.Core.Models;
 using OhMyWord.Core.Services;
-using OhMyWord.Integrations.Models.Entities;
-using OhMyWord.Integrations.Services.GraphApi;
-using OhMyWord.Integrations.Services.Repositories;
 using System.Net;
+using OhMyWord.Integrations.CosmosDb.Models.Entities;
+using OhMyWord.Integrations.CosmosDb.Services;
+using OhMyWord.Integrations.GraphApi.Services;
 
 namespace OhMyWord.Domain.Services;
 

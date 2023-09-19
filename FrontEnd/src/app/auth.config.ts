@@ -1,48 +1,81 @@
 import { MsalGuardConfiguration, MsalInterceptorConfiguration } from '@azure/msal-angular';
-import { PublicClientApplication, InteractionType, BrowserCacheLocation, LogLevel } from '@azure/msal-browser';
+import {
+  BrowserCacheLocation,
+  InteractionType,
+  IPublicClientApplication,
+  LogLevel,
+  PublicClientApplication
+} from '@azure/msal-browser';
 
 import { environment } from '@environment';
 
-const isIE = window.navigator.userAgent.indexOf('MSIE ') > -1 || window.navigator.userAgent.indexOf('Trident/') > -1;
 const tenantName = 'ohmywordauth';
-const signUpSignInPolicy = 'B2C_1A_SignUp_SignIn';
 
 /**
- * MSAL client application
+ * MSAL Instance Factory
  */
-export const msalInstance = new PublicClientApplication({
-  auth: {
-    clientId: environment.auth.clientId,
-    authority: `https://${tenantName}.b2clogin.com/${tenantName}.onmicrosoft.com/${signUpSignInPolicy}`,
-    redirectUri: environment.auth.redirectUri,
-    knownAuthorities: [`https://${tenantName}.b2clogin.com`],
-  },
-  cache: {
-    cacheLocation: BrowserCacheLocation.LocalStorage,
-    storeAuthStateInCookie: isIE,
-  },
-  system: {
-    loggerOptions: {
-      loggerCallback: (logLevel, message, containsPii) => {
-        console.log(message);
-      },
-      logLevel: environment.name !== 'development' ? LogLevel.Error : LogLevel.Warning,
-      piiLoggingEnabled: false,
+export function msalInstanceFactory(): IPublicClientApplication {
+  const logLevel = environment.name !== 'development' ? LogLevel.Error : LogLevel.Info;
+  return new PublicClientApplication({
+    auth: {
+      clientId: environment.auth.clientId,
+      authority: `https://${tenantName}.b2clogin.com/${tenantName}.onmicrosoft.com/B2C_1A_SignUp_SignIn`,
+      redirectUri: environment.auth.redirectUri,
+      knownAuthorities: [`https://${tenantName}.b2clogin.com`],
     },
-  },
-});
+    cache: {
+      cacheLocation: BrowserCacheLocation.LocalStorage
+    },
+    system: {
+      allowNativeBroker: false,
+      loggerOptions: {
+        loggerCallback,
+        logLevel: logLevel,
+        piiLoggingEnabled: false
+      }
+    }
+  })
+}
 
 /**
- * MSAL guard configuration
+ * MSAL guard configuration factory
  */
-export const guardConfig: MsalGuardConfiguration = {
-  interactionType: InteractionType.Redirect,
-};
+export function msalGuardConfigurationFactory(): MsalGuardConfiguration {
+  return {
+    interactionType: InteractionType.Redirect,
+    authRequest: {
+      scopes: [...environment.auth.scopes]
+    },
+    loginFailedRoute: 'login-failed' // TODO: Implement login failed route
+  }
+}
 
 /**
- * MSAL interceptor configuration
+ * MSAL interceptor configuration factory
  */
-export const interceptorConfig: MsalInterceptorConfiguration = {
-  interactionType: InteractionType.Redirect,
-  protectedResourceMap: new Map([[`https://${environment.apiHost}/api/*`, environment.auth.scopes]]),
-};
+export function msalInterceptorConfigurationFactory(): MsalInterceptorConfiguration {
+  const protectedResourceMap = new Map<string, Array<string>>();
+  protectedResourceMap.set(`https://${environment.apiHost}/api/*`, environment.auth.scopes);
+
+  return {
+    interactionType: InteractionType.Redirect,
+    protectedResourceMap
+  }
+}
+
+function loggerCallback(logLevel: LogLevel, message: string): void {
+  switch (logLevel) {
+    case LogLevel.Error:
+      return console.error(message);
+    case LogLevel.Warning:
+      return console.warn(message);
+    case LogLevel.Info:
+      return console.info(message);
+    case LogLevel.Verbose:
+      return console.debug(message);
+    default:
+      return console.log(message);
+  }
+}
+
+

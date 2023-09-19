@@ -6,8 +6,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using OhMyWord.Integrations.Options;
-using OhMyWord.Integrations.Tests.Fixtures;
+using OhMyWord.Integrations.CosmosDb.Options;
+using OhMyWord.Integrations.CosmosDb.Tests.Fixtures;
 
 namespace OhMyWord.Api.Tests.Fixtures;
 

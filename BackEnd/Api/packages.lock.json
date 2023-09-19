@@ -1735,13 +1735,14 @@
         "dependencies": {
           "FastEndpoints": "[5.16.0, )",
           "Microsoft.FeatureManagement.AspNetCore": "[2.6.1, )",
-          "OhMyWord.Integrations": "[1.0.0, )",
+          "OhMyWord.Integrations.CosmosDb": "[1.0.0, )",
+          "OhMyWord.Integrations.GraphApi": "[1.0.0, )",
           "OhMyWord.Integrations.RapidApi": "[1.0.0, )",
           "OhMyWord.Integrations.ServiceBus": "[1.0.0, )",
           "OhMyWord.Integrations.Storage": "[1.0.0, )"
         }
       },
-      "OhMyWord.Integrations": {
+      "OhMyWord.Integrations.CosmosDb": {
         "type": "Project",
         "dependencies": {
           "Azure.Identity": "[1.9.0, )",
@@ -1752,9 +1753,22 @@
           "Microsoft.Extensions.Options": "[7.0.1, )",
           "Microsoft.Extensions.Options.ConfigurationExtensions": "[7.0.0, )",
           "Microsoft.Extensions.Options.DataAnnotations": "[7.0.0, )",
-          "Microsoft.Graph": "[5.20.0, )",
           "OhMyWord.Core": "[1.0.0, )",
           "System.Linq.Async": "[6.0.1, )"
+        }
+      },
+      "OhMyWord.Integrations.GraphApi": {
+        "type": "Project",
+        "dependencies": {
+          "Azure.Identity": "[1.9.0, )",
+          "Microsoft.Extensions.Configuration.Abstractions": "[7.0.0, )",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "[7.0.0, )",
+          "Microsoft.Extensions.Hosting": "[7.0.1, )",
+          "Microsoft.Extensions.Options": "[7.0.1, )",
+          "Microsoft.Extensions.Options.ConfigurationExtensions": "[7.0.0, )",
+          "Microsoft.Extensions.Options.DataAnnotations": "[7.0.0, )",
+          "Microsoft.Graph": "[5.20.0, )",
+          "OhMyWord.Core": "[1.0.0, )"
         }
       },
       "OhMyWord.Integrations.RapidApi": {

@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { RouterModule, Routes } from '@angular/router';
 
 // ngxs modules
@@ -10,8 +10,18 @@ import { NgxsLoggerPluginModule } from '@ngxs/logger-plugin';
 import { NgxsReduxDevtoolsPluginModule } from '@ngxs/devtools-plugin';
 import { NgxsRouterPluginModule } from '@ngxs/router-plugin';
 
-import { MsalModule, MsalGuard, MsalInterceptor, MsalRedirectComponent } from '@azure/msal-angular';
-import { msalInstance, guardConfig, interceptorConfig } from './auth.config';
+import {
+  MSAL_GUARD_CONFIG,
+  MSAL_INSTANCE,
+  MSAL_INTERCEPTOR_CONFIG,
+  MsalBroadcastService,
+  MsalGuard,
+  MsalInterceptor,
+  MsalModule,
+  MsalRedirectComponent,
+  MsalService
+} from '@azure/msal-angular';
+import { msalGuardConfigurationFactory, msalInstanceFactory, msalInterceptorConfigurationFactory } from './auth.config';
 
 import { environment } from '@environment';
 import { CoreModule } from './core/core.module';
@@ -36,6 +46,7 @@ const routes: Routes = [
     BrowserAnimationsModule,
     HttpClientModule,
     RouterModule.forRoot(routes),
+    MsalModule,
     NgxsModule.forRoot([AuthState], {
       developmentMode: environment.name === 'development',
     }),
@@ -52,10 +63,30 @@ const routes: Routes = [
     NgxsReduxDevtoolsPluginModule.forRoot({
       disabled: environment.name !== 'development', // disable devtools in production
     }),
-    MsalModule.forRoot(msalInstance, guardConfig, interceptorConfig),
     CoreModule,
   ],
-  providers: [{ provide: HTTP_INTERCEPTORS, useClass: MsalInterceptor, multi: true }, MsalGuard],
+  providers: [
+    MsalService,
+    MsalBroadcastService,
+    MsalGuard,
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: MsalInterceptor,
+      multi: true
+    },
+    {
+      provide: MSAL_INSTANCE,
+      useFactory: msalInstanceFactory
+    },
+    {
+      provide: MSAL_GUARD_CONFIG,
+      useFactory: msalGuardConfigurationFactory
+    },
+    {
+      provide: MSAL_INTERCEPTOR_CONFIG,
+      useFactory: msalInterceptorConfigurationFactory
+    }
+  ],
   bootstrap: [AppComponent, MsalRedirectComponent],
 })
 export class AppModule {}

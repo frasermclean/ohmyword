@@ -10,10 +10,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Integrations.GraphApi\Integrations.GraphApi.csproj" />
     <ProjectReference Include="..\Integrations.RapidApi\Integrations.RapidApi.csproj"/>
     <ProjectReference Include="..\Integrations.ServiceBus\Integrations.ServiceBus.csproj" />
     <ProjectReference Include="..\Integrations.Storage\Integrations.Storage.csproj" />
-    <ProjectReference Include="..\Integrations\Integrations.csproj"/>
+    <ProjectReference Include="..\Integrations.CosmosDb\Integrations.CosmosDb.csproj" />
   </ItemGroup>
 
   <ItemGroup>

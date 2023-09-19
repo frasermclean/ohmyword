@@ -1,5 +1,6 @@
 targetScope = 'resourceGroup'
 
+@minLength(6)
 @description('Name of the application / workload')
 param workload string
 
@@ -152,12 +153,23 @@ resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2023-05-01'
   tags: tags
   properties: {
     appLogsConfiguration: {
-      destination: 'log-analytics'
-      logAnalyticsConfiguration: {
-        customerId: logAnalyticsWorkspace.properties.customerId
-        sharedKey: logAnalyticsWorkspace.listKeys().primarySharedKey
-      }
+      destination: 'azure-monitor'
     }
+  }
+}
+
+// container apps diagnostic settings
+resource containerAppsEnvironmentLogging 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'log-analytics'
+  scope: containerAppsEnvironment
+  properties: {
+    workspaceId: logAnalyticsWorkspace.id
+    logs: [
+      {
+        category: 'ContainerAppSystemLogs'
+        enabled: true
+      }
+    ]
   }
 }
 

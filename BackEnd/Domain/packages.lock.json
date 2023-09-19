@@ -1212,7 +1212,7 @@
           "FluentResults": "[3.15.2, )"
         }
       },
-      "OhMyWord.Integrations": {
+      "OhMyWord.Integrations.CosmosDb": {
         "type": "Project",
         "dependencies": {
           "Azure.Identity": "[1.9.0, )",
@@ -1223,9 +1223,22 @@
           "Microsoft.Extensions.Options": "[7.0.1, )",
           "Microsoft.Extensions.Options.ConfigurationExtensions": "[7.0.0, )",
           "Microsoft.Extensions.Options.DataAnnotations": "[7.0.0, )",
-          "Microsoft.Graph": "[5.20.0, )",
           "OhMyWord.Core": "[1.0.0, )",
           "System.Linq.Async": "[6.0.1, )"
+        }
+      },
+      "OhMyWord.Integrations.GraphApi": {
+        "type": "Project",
+        "dependencies": {
+          "Azure.Identity": "[1.9.0, )",
+          "Microsoft.Extensions.Configuration.Abstractions": "[7.0.0, )",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "[7.0.0, )",
+          "Microsoft.Extensions.Hosting": "[7.0.1, )",
+          "Microsoft.Extensions.Options": "[7.0.1, )",
+          "Microsoft.Extensions.Options.ConfigurationExtensions": "[7.0.0, )",
+          "Microsoft.Extensions.Options.DataAnnotations": "[7.0.0, )",
+          "Microsoft.Graph": "[5.20.0, )",
+          "OhMyWord.Core": "[1.0.0, )"
         }
       },
       "OhMyWord.Integrations.RapidApi": {

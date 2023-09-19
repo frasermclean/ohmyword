@@ -1,9 +1,9 @@
 ﻿using FluentResults;
 using OhMyWord.Core.Models;
-using OhMyWord.Integrations.Models.Entities;
+using OhMyWord.Integrations.CosmosDb.Models.Entities;
+using OhMyWord.Integrations.CosmosDb.Services;
 using OhMyWord.Integrations.RapidApi.Models.WordsApi;
 using OhMyWord.Integrations.RapidApi.Services;
-using OhMyWord.Integrations.Services.Repositories;
 
 namespace OhMyWord.Domain.Services;
 

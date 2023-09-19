@@ -5,7 +5,7 @@ using OhMyWord.Domain.Contracts.Events;
 using OhMyWord.Domain.Extensions;
 using OhMyWord.Domain.Models;
 using OhMyWord.Domain.Services.State;
-using OhMyWord.Integrations.Services.Repositories;
+using OhMyWord.Integrations.CosmosDb.Services;
 
 namespace OhMyWord.Domain.Services;
 

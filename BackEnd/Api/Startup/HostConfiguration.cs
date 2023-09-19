@@ -1,23 +1,24 @@
-﻿using Microsoft.ApplicationInsights.Extensibility;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.FeatureManagement;
 using OhMyWord.Api.Services;
 using OhMyWord.Domain.DependencyInjection;
-using OhMyWord.Integrations.DependencyInjection;
+using OhMyWord.Integrations.CosmosDb.DependencyInjection;
+using OhMyWord.Integrations.GraphApi.DependencyInjection;
 using OhMyWord.Integrations.RapidApi.DependencyInjection;
 using OhMyWord.Integrations.ServiceBus.DependencyInjection;
 using OhMyWord.Integrations.Storage.DependencyInjection;
 using Serilog;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace OhMyWord.Api.Startup;
 
 public static class HostConfiguration
 {
     /// <summary>
-    /// Adds all application services to the <see cref="WebApplicationBuilder"/>
-    /// </summary>    
+    ///     Adds all application services to the <see cref="WebApplicationBuilder" />
+    /// </summary>
     public static WebApplication ConfigureAndBuildHost(this WebApplicationBuilder builder)
     {
         builder.Host
@@ -32,9 +33,7 @@ public static class HostConfiguration
     {
         var telemetryConfiguration = serviceProvider.GetRequiredService<TelemetryConfiguration>();
         configuration
-            .MinimumLevel.Information()
-            .Enrich.FromLogContext()
-            .WriteTo.Console()
+            .ReadFrom.Configuration(context.Configuration)
             .WriteTo.ApplicationInsights(telemetryConfiguration, TelemetryConverter.Traces);
     }
 
@@ -66,9 +65,6 @@ public static class HostConfiguration
         });
 
         // development services
-        if (context.HostingEnvironment.IsDevelopment())
-        {
-            collection.AddCors();
-        }
+        if (context.HostingEnvironment.IsDevelopment()) collection.AddCors();
     }
 }
