@@ -33,9 +33,7 @@ public static class HostConfiguration
     {
         var telemetryConfiguration = serviceProvider.GetRequiredService<TelemetryConfiguration>();
         configuration
-            .MinimumLevel.Information()
-            .Enrich.FromLogContext()
-            .WriteTo.Console()
+            .ReadFrom.Configuration(context.Configuration)
             .WriteTo.ApplicationInsights(telemetryConfiguration, TelemetryConverter.Traces);
     }
 
