@@ -347,6 +347,7 @@ module auth 'auth.bicep' = {
     location: location
     sharedResourceGroup: resourceGroup().name
     logAnalyticsWorkspaceName: logAnalyticsWorkspace.name
+    b2cTenantLocation: 'Australia'
   }
 }
 
