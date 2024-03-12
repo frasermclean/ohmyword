@@ -12,14 +12,11 @@ param category string
 @description('DNS domain name')
 param domainName string
 
-@description('Name of the shared log analytics workspace')
-param logAnalyticsWorkspaceName string
+@description('Shared resource group name')
+param sharedResourceGroupName string
 
 @description('Name of the shared storage account')
-param sharedStorageAccountName string
-
-@description('Shared resource group name')
-param sharedResourceGroup string
+param storageAccountName string
 
 @description('Name of the service bus namespace')
 param serviceBusNamespaceName string
@@ -38,31 +35,29 @@ var tags = {
   category: category
 }
 
-resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' existing = {
-  name: logAnalyticsWorkspaceName
-  scope: resourceGroup(sharedResourceGroup)
-}
-
-// shared storage account
+// shared storage account (existing)
 resource sharedStorageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' existing = {
-  name: sharedStorageAccountName
-  scope: resourceGroup(sharedResourceGroup)
+  name: storageAccountName
+  scope: resourceGroup(sharedResourceGroupName)
 }
 
+// shared key vault (existing)
 resource keyVault 'Microsoft.KeyVault/vaults@2023-02-01' existing = {
   name: keyVaultName
-  scope: resourceGroup(sharedResourceGroup)
+  scope: resourceGroup(sharedResourceGroupName)
 }
 
+// service bus namespace (existing)
 resource serviceBusNamespace 'Microsoft.ServiceBus/namespaces@2022-10-01-preview' existing = {
   name: serviceBusNamespaceName
-  scope: resourceGroup(sharedResourceGroup)
+  scope: resourceGroup(sharedResourceGroupName)
 }
 
 // storage account for function app
 resource functionAppStorageAccount 'Microsoft.Storage/storageAccounts@2022-05-01' = {
   name: '${workload}${category}'
   location: location
+  tags: tags
   sku: {
     name: 'Standard_LRS'
   }
@@ -73,63 +68,13 @@ resource functionAppStorageAccount 'Microsoft.Storage/storageAccounts@2022-05-01
   }
 }
 
-// application insights
-resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
-  name: toLower('${workload}-${category}-appi')
-  location: location
-  tags: tags
-  kind: 'web'
-  properties: {
-    Application_Type: 'web'
-    Request_Source: 'rest'
-    WorkspaceResourceId: logAnalyticsWorkspace.id
-  }
-}
-
-// action group
-resource actionGroup 'Microsoft.Insights/actionGroups@2023-01-01' = {
-  name: toLower('${workload}-${category}-ag')
-  location: 'global'
-  tags: tags
-  properties: {
-    enabled: true
-    groupShortName: 'SmartDetect'
-    armRoleReceivers: [
-      {
-        name: 'Monitoring Contributor'
-        roleId: '749f88d5-cbae-40b8-bcfc-e573ddc772fa'
-        useCommonAlertSchema: true
-      }
-      {
-        name: 'Monitoring Reader'
-        roleId: '43d0d8ad-25c7-4714-9337-8ba259a9fe05'
-        useCommonAlertSchema: true
-      }
-    ]
-  }
-}
-
-// smart detector alert rule
-resource smartDetectorAlertRule 'Microsoft.AlertsManagement/smartDetectorAlertRules@2021-04-01' = {
-  name: toLower('${workload}-${category}-fa-sdar')
-  location: 'global'
-  tags: tags
-  properties: {
-    description: 'Failure Anomalies notifies you of an unusual rise in the rate of failed HTTP requests or dependency calls.'
-    severity: 'Sev3'
-    state: 'Enabled'
-    frequency: 'PT1M'
-    detector: {
-      id: 'FailureAnomaliesDetector'
-    }
-    scope: [
-      appInsights.id
-    ]
-    actionGroups: {
-      groupIds: [
-        actionGroup.id
-      ]
-    }
+module appInsightsModule '../modules/appInsights.bicep' = {
+  name: 'appInsights'
+  params: {
+    workload: workload
+    category: category
+    location: location
+    actionGroupShortName: 'OMW-Func'
   }
 }
 
@@ -137,10 +82,9 @@ resource smartDetectorAlertRule 'Microsoft.AlertsManagement/smartDetectorAlertRu
 resource appServicePlan 'Microsoft.Web/serverfarms@2022-09-01' = {
   name: '${workload}-${category}-asp'
   location: location
-  kind: 'linux'
+  tags: tags
   sku: {
     name: 'Y1'
-    capacity: 1
   }
   properties: {
     reserved: true
@@ -178,7 +122,7 @@ resource functionApp 'Microsoft.Web/sites@2022-09-01' = {
         }
         {
           name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-          value: appInsights.properties.ConnectionString
+          value: appInsightsModule.outputs.connectionString
         }
         {
           name: 'ApplicationInsightsAgent_EXTENSION_VERSION'
@@ -224,7 +168,7 @@ resource functionApp 'Microsoft.Web/sites@2022-09-01' = {
 // custom domain DNS records
 module customDomain '../modules/customDomain.bicep' = {
   name: 'customDomain-${functionApp.name}'
-  scope: resourceGroup(sharedResourceGroup)
+  scope: resourceGroup(sharedResourceGroupName)
   params: {
     domainName: domainName
     subDomain: category
@@ -249,7 +193,7 @@ resource diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-pr
   name: functionApp.name
   scope: functionApp
   properties: {
-    workspaceId: logAnalyticsWorkspace.id
+    workspaceId: appInsightsModule.outputs.logAnalyticsWorkspaceId
     logs: [
       {
         category: 'FunctionAppLogs'
@@ -271,7 +215,7 @@ module sniEnable '../modules/sniEnable.bicep' = {
 
 module roleAssignments '../modules/roleAssignments.bicep' = if (attemptRoleAssignments) {
   name: 'roleAssignments-functions'
-  scope: resourceGroup(sharedResourceGroup)
+  scope: resourceGroup(sharedResourceGroupName)
   params: {
     principalId: functionApp.identity.principalId
     keyVaultName: keyVault.name

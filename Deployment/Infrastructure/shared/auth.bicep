@@ -1,31 +1,32 @@
+@description('Name of the application / workload')
 param workload string
+
+@description('The category of the workload')
 param category string
-param logAnalyticsWorkspaceName string
-param sharedResourceGroup string
+
+@description('The default Azure location to deploy the resources to')
+param location string = resourceGroup().location
 
 @allowed([
   'United States'
   'Europe'
-  'Australia'
   'Asia Pacific'
+  'Australia'
 ])
+@description('Location of the B2C Tenant')
 param b2cTenantLocation string
 
-param location string = resourceGroup().location
+@description('Should the B2C Tenant be deployed?')
+param deployB2CTenant bool = false
 
 var tags = {
   workload: workload
   category: category
 }
 
-resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' existing = {
-  name: logAnalyticsWorkspaceName
-  scope: resourceGroup(sharedResourceGroup)
-}
-
 // b2c tenant (existing)
-resource b2cTenant 'Microsoft.AzureActiveDirectory/b2cDirectories@2021-04-01' = {
-  name: 'ohmywordauth.onmicrosoft.com'
+resource b2cTenant 'Microsoft.AzureActiveDirectory/b2cDirectories@2021-04-01' = if (deployB2CTenant) {
+  name: '${workload}auth.onmicrosoft.com'
   location: b2cTenantLocation
   tags: tags
   sku: {
@@ -34,22 +35,20 @@ resource b2cTenant 'Microsoft.AzureActiveDirectory/b2cDirectories@2021-04-01' = 
   }
   properties: {
     createTenantProperties: {
-      displayName: 'OhMyWord B2C'
       countryCode: 'AU'
+      displayName: 'OhMyWord B2C'
     }
   }
 }
 
 // application insights for b2c logging
-resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
-  name: toLower('${workload}-${category}-appi')
-  location: location
-  tags: tags
-  kind: 'web'
-  properties: {
-    Application_Type: 'web'
-    Request_Source: 'rest'
-    WorkspaceResourceId: logAnalyticsWorkspace.id
+module appInsights '../modules/appInsights.bicep' = {
+  name: 'appInsights'
+  params: {
+    workload: workload
+    category: category
+    location: location
+    actionGroupShortName: 'OMW-Auth'
   }
 }
 
