@@ -2,22 +2,26 @@
 param principalId string
 
 @description('The name of the key vault.')
-param keyVaultName string = 'ohmyword-kv'
+param keyVaultName string = 'ohmyword-shared-kv'
+
 @allowed([ 'Administrator', 'SecretsUser' ])
 param keyVaultRoles array = []
 
 @description('The name of the app configuration service')
-param appConfigurationName string = 'ohmyword-ac'
+param appConfigurationName string = 'ohmyword-shared-ac'
+
 @allowed([ 'DataOwner', 'DataReader' ])
 param appConfigurationRoles array = []
 
 @description('The name of the storage account.')
 param storageAccountName string = 'ohmywordshared'
+
 @allowed([ 'TableDataReader', 'TableDataContributor' ])
 param storageAccountRoles array = []
 
 @description('The name of the service bus namespace.')
-param serviceBusNamespaceName string = 'ohmyword-sbns'
+param serviceBusNamespaceName string = 'ohmyword-shared-sbns'
+
 @allowed([ 'DataOwner', 'DataReceiver', 'DataSender' ])
 param serviceBusNamespaceRoles array = []
 

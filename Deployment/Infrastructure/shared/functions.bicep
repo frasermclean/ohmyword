@@ -213,7 +213,7 @@ module sniEnable '../modules/sniEnable.bicep' = {
   }
 }
 
-module roleAssignments '../modules/roleAssignments.bicep' = if (attemptRoleAssignments) {
+module roleAssignments 'roleAssignments.bicep' = if (attemptRoleAssignments) {
   name: 'roleAssignments-functions'
   scope: resourceGroup(sharedResourceGroupName)
   params: {

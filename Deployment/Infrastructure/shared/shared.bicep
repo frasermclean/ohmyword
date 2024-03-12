@@ -17,6 +17,9 @@ param domainName string
 @description('Total throughput of the Cosmos DB account')
 param databaseThroughput int
 
+@description('Adminstrators Entra ID group')
+param administratorsGroupId string = '9ea1ba97-5129-4176-a336-20af21b04b1f'
+
 param b2cTenantId string
 
 var tags = {
@@ -324,6 +327,21 @@ resource serviceBusNamespace 'Microsoft.ServiceBus/namespaces@2022-10-01-preview
 
   resource sharedIpLookupQueue 'queues' = {
     name: 'shared-ip-lookup'
+  }
+}
+
+module roleAssignments 'roleAssignments.bicep' = {
+  name: 'roleAssignments-shared'
+  params: {
+    principalId: administratorsGroupId
+    keyVaultName: keyVault.name
+    keyVaultRoles: [ 'Administrator' ]
+    appConfigurationName: appConfiguration.name
+    appConfigurationRoles: [ 'DataOwner' ]
+    storageAccountName: storageAccount.name
+    storageAccountRoles: [ 'TableDataContributor' ]
+    serviceBusNamespaceName: serviceBusNamespace.name
+    serviceBusNamespaceRoles: [ 'DataOwner' ]
   }
 }
 
