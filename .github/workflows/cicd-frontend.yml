@@ -6,7 +6,7 @@ on:
       - main
       - develop
     paths:
-      - .github/workflows/deploy-infra.yml
+      - .github/workflows/cicd-frontend.yml
       - frontend/**
 
 env:
