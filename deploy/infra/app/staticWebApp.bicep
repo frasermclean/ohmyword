@@ -36,7 +36,7 @@ resource staticWebApp 'Microsoft.Web/staticSites@2022-03-01' = {
   }
 
   // custom domain
-  resource customDomain 'customDomains' = if (appEnv == 'prod') {
+  resource customDomain 'customDomains' = {
     name: appEnv == 'prod' ? domainName : 'test.${domainName}'
     dependsOn: [ dnsRecords ]
     properties: {
