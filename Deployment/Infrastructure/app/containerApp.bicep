@@ -85,6 +85,11 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10
   scope: resourceGroup(sharedResourceGroup)
 }
 
+resource actionGroup 'Microsoft.Insights/actionGroups@2023-01-01' existing = {
+  name: '${workload}-shared-ag'
+  scope: resourceGroup(sharedResourceGroup)
+}
+
 // dns records for custom domain validation
 module dnsRecords 'dnsRecords.bicep' = {
   name: 'dnsRecords-containerApp-${appEnv}'
@@ -98,15 +103,15 @@ module dnsRecords 'dnsRecords.bicep' = {
 }
 
 // application insights
-resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
-  name: toLower('${workload}-${appEnv}-appi')
-  location: location
-  tags: tags
-  kind: 'web'
-  properties: {
-    Application_Type: 'web'
-    Request_Source: 'rest'
-    WorkspaceResourceId: logAnalyticsWorkspace.id
+module appInsightsModule '../modules/appInsights.bicep' = {
+  name: 'appInsights'
+  params: {
+    workload: workload
+    category: appEnv
+    location: location
+    tags: tags
+    logAnalyticsWorkspaceId: logAnalyticsWorkspace.id
+    actionGroupId: actionGroup.id
   }
 }
 
@@ -169,7 +174,7 @@ resource containerApp 'Microsoft.App/containerApps@2022-10-01' = {
             }
             {
               name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-              value: appInsights.properties.ConnectionString
+              value: appInsightsModule.outputs.connectionString
             }
             {
               name: 'APP_CONFIG_ENDPOINT'
