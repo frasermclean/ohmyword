@@ -23,7 +23,7 @@ param sharedResourceGroupName string = '${workload}-shared-rg'
 
 // static web app
 resource staticWebApp 'Microsoft.Web/staticSites@2022-03-01' = {
-  name: '${workload}-${appEnv}-swa'
+  name: '${workload}-${appEnv}-frontend-swa'
   location: location
   tags: tags
   sku: {

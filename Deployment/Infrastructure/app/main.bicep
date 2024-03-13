@@ -117,7 +117,8 @@ module signalRServiceModule 'signalRService.bicep' = {
   }
 }
 
-module appConfig 'appConfig.bicep' = {
+// app configuration settings
+module appConfigModule 'appConfig.bicep' = {
   name: 'appConfig-${appEnv}'
   scope: resourceGroup(sharedResourceGroup)
   params: {

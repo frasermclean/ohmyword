@@ -28,8 +28,11 @@ param containerImageTag string
 @description('Shared resource group')
 param sharedResourceGroup string
 
-@description('Attempt to bind to a previously created managed certificate. This should be set to false on the first deployment of a new environment.')
-param bindManagedCertificate bool = true
+@description('Name of the Azure App Configuration instance')
+param appConfigName string = '${workload}-shared-ac'
+
+@description('If true, will attempt to create a managed certificate for the container app. Can be set to false if a managed certificate already exists.')
+param createManagedCertficate bool = false
 
 @description('Minimum number of container app replicas')
 param containerAppMinReplicas int
@@ -66,9 +69,7 @@ param containerAppCpuCores string = '0.5'
 param containerAppMemorySize string = '1'
 
 var backendHostname = appEnv == 'prod' ? 'api.${domainName}' : 'test.api.${domainName}'
-var appConfigName = '${workload}-shared-ac'
-
-var containerAppName = '${workload}-${appEnv}-ca'
+var containerAppName = '${workload}-${appEnv}-api-ca'
 var certificateName = '${containerAppName}-cert'
 
 resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2023-05-01' existing = {
@@ -148,8 +149,8 @@ resource containerApp 'Microsoft.App/containerApps@2022-10-01' = {
         customDomains: [
           {
             name: backendHostname
-            certificateId: bindManagedCertificate ? containerAppsEnvironment::managedCertificate.id : null
-            bindingType: bindManagedCertificate ? 'SniEnabled' : 'Disabled'
+            certificateId: createManagedCertficate ? null : containerAppsEnvironment::managedCertificate.id
+            bindingType: createManagedCertficate ? 'Disabled' : 'SniEnabled'
           }
         ]
         corsPolicy: {
@@ -211,7 +212,7 @@ resource containerApp 'Microsoft.App/containerApps@2022-10-01' = {
 }
 
 // container apps environment managed certificate
-module managedCertificate 'managedCertificate.bicep' = if (!bindManagedCertificate) {
+module managedCertificate 'managedCertificate.bicep' = if (createManagedCertficate) {
   name: 'managedCertificate-${appEnv}'
   scope: resourceGroup(sharedResourceGroup)
   dependsOn: [ containerApp ]
