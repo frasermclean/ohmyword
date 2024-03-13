@@ -44,7 +44,7 @@ jobs:
           region: ${{ vars.AZURE_REGION }}
           template: ${{ env.TEMPLATE_ROOT }}/shared/main.bicep
           parameters: ${{ env.TEMPLATE_ROOT }}/shared/main.bicepparam
-          deploymentName: shared-infra-${{ github.run_id }}
+          deploymentName: shared-infra-${{ github.run_number }}
 
       # Deploy app infrastructure
       - uses: azure/arm-deploy@v2
@@ -57,6 +57,5 @@ jobs:
           region: ${{ vars.AZURE_REGION }}
           template: ${{ env.TEMPLATE_ROOT }}/app/main.bicep
           parameters: ${{ env.TEMPLATE_ROOT }}/app/main.${{ env.APPLICATION_ENVIRONMENT }}.bicepparam
-          deploymentName: app-infra-${{ github.run_id }}
-
+          deploymentName: app-infra-${{ github.run_number }}
       

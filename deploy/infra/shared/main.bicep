@@ -15,6 +15,8 @@ param databaseThroughput int = 400
 
 param attemptRoleAssignments bool = true
 
+var deploymentSuffix = deployment().name
+
 resource authResourceGroup 'Microsoft.Resources/resourceGroups@2023-07-01' = {
   name: '${workload}-auth-rg'
   location: location
@@ -42,8 +44,8 @@ resource jobsResourceGroup 'Microsoft.Resources/resourceGroups@2023-07-01' = {
   }
 }
 
-module sharedDeployment 'shared.bicep' = {
-  name: 'shared'
+module sharedResourcesDeployment 'sharedResources.bicep' = {
+  name: 'sharedResources-${deploymentSuffix}'
   scope: sharedResourceGroup
   params: {
     workload: workload
@@ -56,7 +58,7 @@ module sharedDeployment 'shared.bicep' = {
 }
 
 module authDeployment 'auth.bicep' = {
-  name: 'auth'
+  name: 'auth-${deploymentSuffix}'
   scope: authResourceGroup
   params: {
     workload: workload
@@ -67,7 +69,7 @@ module authDeployment 'auth.bicep' = {
 }
 
 module jobsDeployment 'functionsApp.bicep' = {
-  name: 'functionsApp'
+  name: 'functionsApp-${deploymentSuffix}'
   scope: jobsResourceGroup
   params: {
     workload: workload
@@ -75,12 +77,12 @@ module jobsDeployment 'functionsApp.bicep' = {
     location: location
     domainName: domainName
     sharedResourceGroup: sharedResourceGroup.name
-    storageAccountName: sharedDeployment.outputs.storageAccountName
-    keyVaultName: sharedDeployment.outputs.keyVaultName
-    serviceBusNamespaceName: sharedDeployment.outputs.serviceBusNamespaceName
-    ipLookupQueueName: sharedDeployment.outputs.ipLookupQueueName
-    logAnalyticsWorkspaceId: sharedDeployment.outputs.logAnalyticsWorkspaceId
-    actionGroupId: sharedDeployment.outputs.actionGroupId
+    storageAccountName: sharedResourcesDeployment.outputs.storageAccountName
+    keyVaultName: sharedResourcesDeployment.outputs.keyVaultName
+    serviceBusNamespaceName: sharedResourcesDeployment.outputs.serviceBusNamespaceName
+    ipLookupQueueName: sharedResourcesDeployment.outputs.ipLookupQueueName
+    logAnalyticsWorkspaceId: sharedResourcesDeployment.outputs.logAnalyticsWorkspaceId
+    actionGroupId: sharedResourcesDeployment.outputs.actionGroupId
     attemptRoleAssignments: attemptRoleAssignments
   }
 }
