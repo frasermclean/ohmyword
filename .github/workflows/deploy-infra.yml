@@ -57,5 +57,5 @@ jobs:
           region: ${{ vars.AZURE_REGION }}
           template: ${{ env.TEMPLATE_ROOT }}/app/main.bicep
           parameters: ${{ env.TEMPLATE_ROOT }}/app/main.${{ env.APPLICATION_ENVIRONMENT }}.bicepparam
-          deploymentName: app-infra-${{ github.run_number }}
+          deploymentName: app-infra-${{ env.APPLICATION_ENVIRONMENT }}-${{ github.run_number }}
       
