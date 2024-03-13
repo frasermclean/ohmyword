@@ -15,7 +15,7 @@ env:
 jobs:
   # Build application
   build-app:
-    name: Build frontend application
+    name: Build application
     runs-on: ubuntu-latest
     env:
       PROJECT_DIRECTORY: ${{ github.workspace }}/frontend
@@ -57,7 +57,7 @@ jobs:
 
       # Copy static web app config
       - name: Copy static web app config
-        run: cp ${{ env.PROJECT_DIRECTORY }}/staticwebapp.config.json ${{ env.BUILD_DIRECTORY }}
+        run: cp ${{ env.PROJECT_DIRECTORY }}/staticwebapp.config.json
 
       # Upload build artifact
       - name: Upload artifact
@@ -68,7 +68,7 @@ jobs:
 
   # Deploy application
   deploy-app:
-    name: Deploy frontend application
+    name: Deploy application
     runs-on: ubuntu-latest
     needs:
       - build-app
