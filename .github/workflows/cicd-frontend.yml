@@ -28,8 +28,6 @@ jobs:
         with:
           submodules: true
 
-      - run: ls -l
-
       # Setup Node environment
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -48,18 +46,14 @@ jobs:
             ${{ runner.os }}-${{ env.cache-name }}-
 
       # Install dependencies
-      - name: Install project dependencies
+      - name: Install dependencies
         working-directory: ${{ env.PROJECT_DIRECTORY }}
         run: npm ci
 
       # Build the client
-      - name: Build client application
+      - name: Build application
         working-directory: ${{ env.PROJECT_DIRECTORY }}
         run: npx ng build --configuration ${{ env.BUILD_CONFIGURATION }}
-
-      # Copy static web app config
-      - name: Copy static web app config
-        run: cp ${{ env.PROJECT_DIRECTORY }}/staticwebapp.config.json
 
       # Upload build artifact
       - name: Upload artifact
