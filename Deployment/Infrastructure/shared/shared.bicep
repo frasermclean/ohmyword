@@ -191,6 +191,10 @@ resource containerAppsEnvironmentLogging 'Microsoft.Insights/diagnosticSettings@
         category: 'ContainerAppSystemLogs'
         enabled: true
       }
+      {
+        category: 'ContainerAppConsoleLogs'
+        enabled: true
+      }
     ]
   }
 }
