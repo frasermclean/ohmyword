@@ -90,6 +90,11 @@ resource actionGroup 'Microsoft.Insights/actionGroups@2023-01-01' existing = {
   scope: resourceGroup(sharedResourceGroup)
 }
 
+resource sharedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' existing = {
+  name: '${workload}-shared-id'
+  scope: resourceGroup(sharedResourceGroup)
+}
+
 // dns records for custom domain validation
 module dnsRecords 'dnsRecords.bicep' = {
   name: 'dnsRecords-containerApp-${appEnv}'
@@ -122,7 +127,10 @@ resource containerApp 'Microsoft.App/containerApps@2022-10-01' = {
   tags: tags
   dependsOn: [ dnsRecords ]
   identity: {
-    type: 'SystemAssigned'
+    type: 'SystemAssigned,UserAssigned'
+    userAssignedIdentities: {
+      '${sharedIdentity.id}': {}
+    }
   }
   properties: {
     managedEnvironmentId: containerAppsEnvironment.id
@@ -154,7 +162,7 @@ resource containerApp 'Microsoft.App/containerApps@2022-10-01' = {
       registries: [
         {
           server: '${containerRegistryName}.azurecr.io'
-          identity: 'system'
+          identity: sharedIdentity.id
         }
       ]
     }

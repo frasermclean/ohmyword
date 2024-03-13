@@ -58,6 +58,13 @@ resource dnsZone 'Microsoft.Network/dnsZones@2018-05-01' = {
   }
 }
 
+// user assigned identity
+resource sharedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
+  name: '${workload}-${category}-id'
+  location: location
+  tags: tags
+}
+
 // cosmos db account
 resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2023-04-15' = {
   name: '${workload}-${category}-cosmos'
