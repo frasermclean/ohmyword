@@ -1,10 +1,10 @@
 targetScope = 'resourceGroup'
 
 @description('Name of the the Cosmos DB account.')
-param cosmosDbAccountName string
+param cosmosDbAccountName string = 'ohmyword-shared-cosmos'
 
-@description('ID of the database')
-param databaseId string
+@description('Name / ID of the database')
+param databaseName string
 
 @description('Database request units per second.')
 @minValue(400)
@@ -40,10 +40,10 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-11-15' exis
   name: cosmosDbAccountName
 
   resource database 'sqlDatabases' = {
-    name: databaseId
+    name: databaseName
     properties: {
       resource: {
-        id: databaseId
+        id: databaseName
       }
       options: {
         throughput: databaseThroughput
@@ -67,12 +67,12 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-11-15' exis
 
   // custom role definition for the database
   resource roleDefinition 'sqlRoleDefinitions' = {
-    name: guid(cosmosDbAccount.name, databaseId)
+    name: guid(cosmosDbAccount.name, databaseName)
     properties: {
-      roleName: '${databaseId} Contributor'
+      roleName: '${databaseName} Contributor'
       type: 'CustomRole'
       assignableScopes: [
-        '${cosmosDbAccount.id}/dbs/${databaseId}' // limit scope to the database
+        '${cosmosDbAccount.id}/dbs/${databaseName}' // limit scope to the database
       ]
       permissions: [
         {
@@ -88,11 +88,11 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-11-15' exis
 
   // custom role assignment for the database
   resource roleAssignment 'sqlRoleAssignments' = {
-    name: guid(cosmosDbAccount.name, databaseId, principalId)
+    name: guid(cosmosDbAccount.name, databaseName, principalId)
     properties: {
       roleDefinitionId: roleDefinition.id
       principalId: principalId
-      scope: '${cosmosDbAccount.id}/dbs/${databaseId}'
+      scope: '${cosmosDbAccount.id}/dbs/${databaseName}'
     }
   }
 }

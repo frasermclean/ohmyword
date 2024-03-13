@@ -1,7 +1,10 @@
 targetScope = 'resourceGroup'
 
-@description('The name of the App Configuration instance.')
-param appConfigName string
+@description('The name of the App Configuration instance')
+param appConfigName string = 'ohmyword-shared-ac'
+
+@description('The name of the Key Vault instance')
+param keyVaultName string = 'ohmyword-shared-kv'
 
 @description('Cosmos DB database ID')
 param cosmosDbDatabaseId string
@@ -23,7 +26,7 @@ param playerGeoLocationFeatureEnabled bool = true
 param signalRServiceHostname string
 
 resource keyVault 'Microsoft.KeyVault/vaults@2022-11-01' existing = {
-  name: 'ohmyword-kv'
+  name: keyVaultName
 
   resource rapidApiKeySecret 'secrets' existing = {
     name: 'rapidApi-key-${appEnv}'

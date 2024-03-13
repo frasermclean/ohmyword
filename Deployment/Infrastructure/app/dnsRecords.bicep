@@ -8,35 +8,33 @@ param appEnv string
 param domainName string
 
 @description('Container app ingress address')
-param containerAppIngressAddress string
+param containerAppIngressAddress string = ''
 
 @description('Custom domain verification ID')
-param customDomainVerificationId string
+param containerAppCustomDomainVerificationId string = ''
 
 @description('Resource ID of the static web app')
-param staticWebAppResourceId string
+param staticWebAppResourceId string = ''
 
 @description('Default hostname of the static web app')
-param staticWebAppDefaultHostname string
+param staticWebAppDefaultHostname string = ''
 
 @description('Custom domain verification token for the static web app')
 param staticWebAppCustomDomainVerification string = ''
-
-var isApex = appEnv == 'prod'
 
 // dns zone for the application
 resource dnsZone 'Microsoft.Network/dnsZones@2018-05-01' existing = {
   name: domainName
 
   // custom domain verification record
-  resource apiCustomDomainVerification 'TXT' = {
+  resource apiCustomDomainVerification 'TXT' = if (!empty(containerAppCustomDomainVerificationId)) {
     name: appEnv == 'prod' ? 'asuid.api' : 'asuid.test.api'
     properties: {
       TTL: 3600
       TXTRecords: [
         {
           value: [
-            customDomainVerificationId
+            containerAppCustomDomainVerificationId
           ]
         }
       ]
@@ -44,7 +42,7 @@ resource dnsZone 'Microsoft.Network/dnsZones@2018-05-01' existing = {
   }
 
   // CNAME record for the app service API
-  resource apiCnameRecord 'CNAME' = {
+  resource apiCnameRecord 'CNAME' = if(!empty(containerAppIngressAddress)) {
     name: appEnv == 'prod' ? 'api' : 'test.api'
     properties: {
       TTL: 3600
@@ -55,7 +53,7 @@ resource dnsZone 'Microsoft.Network/dnsZones@2018-05-01' existing = {
   }
 
   // TXT record for static web app custom domain validation
-  resource staticWebAppTxtRecord 'TXT' = if (isApex && !empty(staticWebAppCustomDomainVerification)) {
+  resource staticWebAppTxtRecord 'TXT' = if (appEnv == 'prod' && !empty(staticWebAppCustomDomainVerification)) {
     name: '@'
     properties: {
       TTL: 3600
@@ -70,7 +68,7 @@ resource dnsZone 'Microsoft.Network/dnsZones@2018-05-01' existing = {
   }
 
   // A record for static web app (apex only)
-  resource staticWebAppARecord 'A' = if (isApex) {
+  resource staticWebAppARecord 'A' = if (appEnv == 'prod' && !empty(staticWebAppResourceId)) {
     name: '@'
     properties: {
       TTL: 3600
@@ -81,7 +79,7 @@ resource dnsZone 'Microsoft.Network/dnsZones@2018-05-01' existing = {
   }
 
   // CNAME record for the static web app (subdomain only)
-  resource staticWebAppCnameRecord 'CNAME' = if (!isApex) {
+  resource staticWebAppCnameRecord 'CNAME' = if (appEnv == 'test' && !empty(staticWebAppDefaultHostname)) {
     name: 'test'
     properties: {
       TTL: 3600
