@@ -6,8 +6,8 @@ on:
       - main
       - develop
     paths:
-      - .github/workflows/deploy-shared-infra.yml
-      - deploy/infra/shared/**
+      - .github/workflows/deploy-infra.yml
+      - deploy/infra/**
 
 concurrency:
   group: infra
