@@ -3,17 +3,19 @@ targetScope = 'resourceGroup'
 param workload string
 param category string
 param location string = resourceGroup().location
+param tags object
+
+@description('ID of an existing log analytics workspace to use. If not provided, a new log analytics workspace will be created.')
+param logAnalyticsWorkspaceId string = ''
+
+@description('ID of an existing action group to use. If not provided, a new action group will be created.')
+param actionGroupId string = ''
 
 @maxLength(12)
-param actionGroupShortName string
-
-var tags = {
-  workload: workload
-  category: category
-}
+param actionGroupShortName string = 'ActionGroup'
 
 // log analytics workspace
-resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
+resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = if (empty(logAnalyticsWorkspaceId)) {
   name: toLower('${workload}-${category}-law')
   location: location
   tags: tags
@@ -29,7 +31,7 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10
 }
 
 // action group
-resource actionGroup 'Microsoft.Insights/actionGroups@2023-01-01' = {
+resource actionGroup 'Microsoft.Insights/actionGroups@2023-01-01' = if (empty(actionGroupId)) {
   name: toLower('${workload}-${category}-ag')
   location: 'global'
   tags: tags
@@ -60,7 +62,7 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   properties: {
     Application_Type: 'web'
     Request_Source: 'rest'
-    WorkspaceResourceId: logAnalyticsWorkspace.id
+    WorkspaceResourceId: empty(logAnalyticsWorkspaceId) ? logAnalyticsWorkspace.id : logAnalyticsWorkspaceId
   }
 }
 
@@ -82,11 +84,11 @@ resource smartDetectorAlertRule 'Microsoft.AlertsManagement/smartDetectorAlertRu
     ]
     actionGroups: {
       groupIds: [
-        actionGroup.id
+        empty(actionGroupId) ? actionGroup.id : actionGroupId
       ]
     }
   }
 }
 
-output logAnalyticsWorkspaceId string = logAnalyticsWorkspace.id
+@description('Connection string to use to connect to the application insights instance.')
 output connectionString string = appInsights.properties.ConnectionString

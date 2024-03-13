@@ -106,6 +106,29 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10
   }]
 }
 
+// action group
+resource actionGroup 'Microsoft.Insights/actionGroups@2023-01-01' = {
+  name: toLower('${workload}-${category}-ag')
+  location: 'global'
+  tags: tags
+  properties: {
+    enabled: true
+    groupShortName: 'OMW Alerts'
+    armRoleReceivers: [
+      {
+        name: 'Monitoring Contributor'
+        roleId: '749f88d5-cbae-40b8-bcfc-e573ddc772fa'
+        useCommonAlertSchema: true
+      }
+      {
+        name: 'Monitoring Reader'
+        roleId: '43d0d8ad-25c7-4714-9337-8ba259a9fe05'
+        useCommonAlertSchema: true
+      }
+    ]
+  }
+}
+
 // storage account
 resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
   name: '${workload}${category}'
@@ -349,3 +372,5 @@ output storageAccountName string = storageAccount.name
 output keyVaultName string = keyVault.name
 output serviceBusNamespaceName string = serviceBusNamespace.name
 output ipLookupQueueName string = serviceBusNamespace::devIpLookupQueue.name
+output logAnalyticsWorkspaceId string = logAnalyticsWorkspace.id
+output actionGroupId string = actionGroup.id

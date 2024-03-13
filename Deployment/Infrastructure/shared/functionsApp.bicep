@@ -3,17 +3,17 @@ targetScope = 'resourceGroup'
 @description('Name of the application / workload')
 param workload string
 
-@description('The default Azure location to deploy the resources to')
-param location string
-
 @description('Category of the workload')
 param category string
+
+@description('The default Azure location to deploy the resources to')
+param location string
 
 @description('DNS domain name')
 param domainName string
 
 @description('Shared resource group name')
-param sharedResourceGroupName string
+param sharedResourceGroup string
 
 @description('Name of the shared storage account')
 param storageAccountName string
@@ -27,6 +27,12 @@ param ipLookupQueueName string
 @description('Name of the key vault')
 param keyVaultName string
 
+@description('Resource ID of the log analytics workspace')
+param logAnalyticsWorkspaceId string
+
+@description('Resource ID of the action group')
+param actionGroupId string
+
 @description('Whether to attempt to assign roles to resources')
 param attemptRoleAssignments bool
 
@@ -38,19 +44,13 @@ var tags = {
 // shared storage account (existing)
 resource sharedStorageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' existing = {
   name: storageAccountName
-  scope: resourceGroup(sharedResourceGroupName)
-}
-
-// shared key vault (existing)
-resource keyVault 'Microsoft.KeyVault/vaults@2023-02-01' existing = {
-  name: keyVaultName
-  scope: resourceGroup(sharedResourceGroupName)
+  scope: resourceGroup(sharedResourceGroup)
 }
 
 // service bus namespace (existing)
 resource serviceBusNamespace 'Microsoft.ServiceBus/namespaces@2022-10-01-preview' existing = {
   name: serviceBusNamespaceName
-  scope: resourceGroup(sharedResourceGroupName)
+  scope: resourceGroup(sharedResourceGroup)
 }
 
 // storage account for function app
@@ -74,7 +74,9 @@ module appInsightsModule '../modules/appInsights.bicep' = {
     workload: workload
     category: category
     location: location
-    actionGroupShortName: 'OMW-Func'
+    tags: tags
+    logAnalyticsWorkspaceId: logAnalyticsWorkspaceId
+    actionGroupId: actionGroupId
   }
 }
 
@@ -93,7 +95,7 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-09-01' = {
 
 // function app
 resource functionApp 'Microsoft.Web/sites@2022-09-01' = {
-  name: toLower('${workload}-${category}')
+  name: toLower('${workload}-${category}-func')
   location: location
   tags: tags
   kind: 'functionapp,linux'
@@ -146,7 +148,7 @@ resource functionApp 'Microsoft.Web/sites@2022-09-01' = {
         }
         {
           name: 'RapidApi__ApiKey'
-          value: '@Microsoft.KeyVault(VaultName=${keyVault.name};SecretName=RapidApiKey-prod)'
+          value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=rapidApi-key-prod)'
         }
       ]
     }
@@ -168,7 +170,7 @@ resource functionApp 'Microsoft.Web/sites@2022-09-01' = {
 // custom domain DNS records
 module customDomain '../modules/customDomain.bicep' = {
   name: 'customDomain-${functionApp.name}'
-  scope: resourceGroup(sharedResourceGroupName)
+  scope: resourceGroup(sharedResourceGroup)
   params: {
     domainName: domainName
     subDomain: category
@@ -193,7 +195,7 @@ resource diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-pr
   name: functionApp.name
   scope: functionApp
   properties: {
-    workspaceId: appInsightsModule.outputs.logAnalyticsWorkspaceId
+    workspaceId: logAnalyticsWorkspaceId
     logs: [
       {
         category: 'FunctionAppLogs'
@@ -214,11 +216,11 @@ module sniEnable '../modules/sniEnable.bicep' = {
 }
 
 module roleAssignments 'roleAssignments.bicep' = if (attemptRoleAssignments) {
-  name: 'roleAssignments-functions'
-  scope: resourceGroup(sharedResourceGroupName)
+  name: 'roleAssignments-${category}'
+  scope: resourceGroup(sharedResourceGroup)
   params: {
     principalId: functionApp.identity.principalId
-    keyVaultName: keyVault.name
+    keyVaultName: keyVaultName
     keyVaultRoles: [ 'SecretsUser' ]
     storageAccountName: sharedStorageAccount.name
     storageAccountRoles: [ 'TableDataContributor' ]

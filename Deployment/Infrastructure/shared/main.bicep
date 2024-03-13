@@ -33,12 +33,12 @@ resource sharedResourceGroup 'Microsoft.Resources/resourceGroups@2023-07-01' = {
   }
 }
 
-resource functionsResourceGroup 'Microsoft.Resources/resourceGroups@2023-07-01' = {
-  name: '${workload}-functions-rg'
+resource jobsResourceGroup 'Microsoft.Resources/resourceGroups@2023-07-01' = {
+  name: '${workload}-jobs-rg'
   location: location
   tags: {
     workload: workload
-    category: 'functions'
+    category: 'jobs'
   }
 }
 
@@ -62,23 +62,25 @@ module authDeployment 'auth.bicep' = {
     workload: workload
     category: 'auth'
     location: location
-    b2cTenantLocation: 'Australia'
+    b2cTenantLocation: 'Australia'    
   }
 }
 
-module functions 'functions.bicep' = {
-  name: 'functions'
-  scope: functionsResourceGroup
+module jobsDeployment 'functionsApp.bicep' = {
+  name: 'functionsApp'
+  scope: jobsResourceGroup
   params: {
     workload: workload
-    category: 'functions'
+    category: 'jobs'
     location: location
     domainName: domainName
-    sharedResourceGroupName: sharedResourceGroup.name
+    sharedResourceGroup: sharedResourceGroup.name
     storageAccountName: sharedDeployment.outputs.storageAccountName
     keyVaultName: sharedDeployment.outputs.keyVaultName
     serviceBusNamespaceName: sharedDeployment.outputs.serviceBusNamespaceName
     ipLookupQueueName: sharedDeployment.outputs.ipLookupQueueName
+    logAnalyticsWorkspaceId: sharedDeployment.outputs.logAnalyticsWorkspaceId
+    actionGroupId: sharedDeployment.outputs.actionGroupId
     attemptRoleAssignments: attemptRoleAssignments
   }
 }

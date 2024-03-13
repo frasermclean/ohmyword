@@ -48,7 +48,7 @@ module appInsights '../modules/appInsights.bicep' = {
     workload: workload
     category: category
     location: location
-    actionGroupShortName: 'OMW-Auth'
+    tags: tags    
   }
 }
 
