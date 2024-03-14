@@ -1,7 +1,7 @@
 {
   "version": 1,
   "dependencies": {
-    "net7.0": {
+    "net8.0": {
       "FastEndpoints": {
         "type": "Direct",
         "requested": "[5.16.0, )",

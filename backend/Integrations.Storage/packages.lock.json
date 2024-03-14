@@ -1,7 +1,7 @@
 {
   "version": 1,
   "dependencies": {
-    "net7.0": {
+    "net8.0": {
       "Azure.Data.Tables": {
         "type": "Direct",
         "requested": "[12.8.1, )",
