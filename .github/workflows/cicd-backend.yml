@@ -21,8 +21,6 @@ jobs:
   build:
     name: Build applications
     runs-on: ubuntu-latest
-    environment:
-      name: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
     env:
       BACKEND_DIRECTORY: ${{ github.workspace }}/backend
       BUILD_CONFIGURATION: Release
@@ -123,7 +121,7 @@ jobs:
 
   # Deploy API application
   deploy-api:
-    name: Deploy backend application
+    name: Deploy API application
     runs-on: ubuntu-latest
     if: github.event_name != 'pull_request'
     needs: build
