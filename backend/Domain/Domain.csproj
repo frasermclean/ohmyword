@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>OhMyWord.Domain</RootNamespace>
+    <AssemblyName>OhMyWord.Domain</AssemblyName>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Integrations.GraphApi\Integrations.GraphApi.csproj" />
+    <ProjectReference Include="..\Integrations.RapidApi\Integrations.RapidApi.csproj"/>
+    <ProjectReference Include="..\Integrations.ServiceBus\Integrations.ServiceBus.csproj" />
+    <ProjectReference Include="..\Integrations.Storage\Integrations.Storage.csproj" />
+    <ProjectReference Include="..\Integrations.CosmosDb\Integrations.CosmosDb.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FastEndpoints" Version="5.23.0" />
+    <PackageReference Include="Microsoft.FeatureManagement.AspNetCore" Version="3.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="$(AssemblyName).Tests"/>
+  </ItemGroup>
+
+
+</Project>

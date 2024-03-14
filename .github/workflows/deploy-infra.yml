@@ -1,0 +1,61 @@
+name: Deploy infrastructure
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - .github/workflows/deploy-infra.yml
+      - deploy/infra/**
+
+concurrency:
+  group: infra
+  cancel-in-progress: false
+
+jobs:
+  deploy-infra:
+    name: Deploy infrastructure
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    environment:
+      name: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
+    env:
+      TEMPLATE_ROOT: ${{ github.workspace }}/deploy/infra
+    steps:
+      # Login to Azure
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      # Check out the repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Deploy shared infrastructure
+      - uses: azure/arm-deploy@v2
+        name: Deploy shared infrastructure
+        with:
+          scope: subscription
+          region: ${{ vars.AZURE_REGION }}
+          template: ${{ env.TEMPLATE_ROOT }}/shared/main.bicep
+          parameters: ${{ env.TEMPLATE_ROOT }}/shared/main.bicepparam
+          deploymentName: shared-infra-${{ github.run_number }}
+
+      # Deploy app infrastructure
+      - uses: azure/arm-deploy@v2
+        name: Deploy app infrastructure
+        env:          
+          APPLICATION_ENVIRONMENT: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
+          ATTEMPT_ROLE_ASSIGNMENTS: true
+        with:
+          scope: subscription
+          region: ${{ vars.AZURE_REGION }}
+          template: ${{ env.TEMPLATE_ROOT }}/app/main.bicep
+          parameters: ${{ env.TEMPLATE_ROOT }}/app/main.${{ env.APPLICATION_ENVIRONMENT }}.bicepparam
+          deploymentName: app-infra-${{ env.APPLICATION_ENVIRONMENT }}-${{ github.run_number }}
+      

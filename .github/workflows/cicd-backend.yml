@@ -1,0 +1,161 @@
+name: CI/CD Backend
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - .github/workflows/cicd-backend.yml
+      - backend/**
+
+  pull_request:
+    branches:
+      - main
+    paths:
+      - .github/workflows/cicd-backend.yml
+      - backend/**
+
+jobs:
+  # Build applications
+  build:
+    name: Build applications
+    runs-on: ubuntu-latest
+    env:
+      BACKEND_DIRECTORY: ${{ github.workspace }}/backend
+      BUILD_CONFIGURATION: Release
+      PUBLISH_RUNTIME: linux-x64
+      API_PUBLISH_DIRECTORY: ${{ github.workspace }}/publish/api
+      FUNCTIONS_PUBLISH_DIRECTORY: ${{ github.workspace }}/publish/functions
+    steps:
+      # Check out the repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Cache packages
+      - name: Cache packages
+        uses: actions/cache@v4
+        env:
+          cache-name: nuget
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('**/packages.lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ env.cache-name }}-
+
+      # Restore packages
+      - name: Restore packages
+        run: dotnet restore --locked-mode
+        working-directory: ${{ env.BACKEND_DIRECTORY }}
+
+      # Build solution
+      - name: Build solution
+        run: dotnet build --no-restore --configuration ${{ env.BUILD_CONFIGURATION }}
+        working-directory: ${{ env.BACKEND_DIRECTORY }}
+
+      # Run unit tests
+      - name: Run unit tests
+        run: dotnet test --no-build --configuration ${{ env.BUILD_CONFIGURATION }} --filter Category=Unit
+        working-directory: ${{ env.BACKEND_DIRECTORY }}
+
+      # Publish API
+      - name: Publish API
+        working-directory: ${{ env.BACKEND_DIRECTORY }}/Api
+        run: >-
+          dotnet publish
+          --configuration ${{ env.BUILD_CONFIGURATION }} 
+          --runtime ${{ env.PUBLISH_RUNTIME }}
+          --self-contained false
+          --output ${{ env.API_PUBLISH_DIRECTORY }}/publish
+
+      # Copy API Dockerfile
+      - name: Copy API Dockerfile
+        working-directory: ${{ env.BACKEND_DIRECTORY }}/Api
+        run: cp Dockerfile ${{ env.API_PUBLISH_DIRECTORY }}
+
+      # Upload API artifact
+      - name: Upload API artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-app
+          path: ${{ env.API_PUBLISH_DIRECTORY }}
+
+      # Publish Functions
+      - name: Publish Functions
+        working-directory: ${{ env.BACKEND_DIRECTORY }}/Functions
+        run: >-
+          dotnet publish
+          --configuration ${{ env.BUILD_CONFIGURATION }}
+          --runtime ${{ env.PUBLISH_RUNTIME }}
+          --self-contained false
+          --output ${{ env.FUNCTIONS_PUBLISH_DIRECTORY }}
+
+      # Upload Functions artifact
+      - name: Upload Functions artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: functions-app
+          path: ${{ env.FUNCTIONS_PUBLISH_DIRECTORY }}
+
+  # Deploy Functions application
+  deploy-functions:
+    name: Deploy Functions application
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    needs: build
+    steps:
+      # Download application artifact
+      - name: Download artifact
+        id: download-artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: functions-app
+
+      # Publish functions application
+      - name: Publish functions application
+        uses: Azure/functions-action@v1
+        with:
+          app-name: ohmyword-functions
+          package: ${{ steps.download-artifact.outputs.download-path }}
+          publish-profile: ${{ secrets.AZURE_FUNCTIONS_PUBLISH_PROFILE }}
+
+  # Deploy API application
+  deploy-api:
+    name: Deploy API application
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    needs: build
+    environment: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
+    permissions:
+      id-token: write    
+    steps:
+      # Download application artifact
+      - name: Download artifact
+        id: download-artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-app
+
+      # Login to Azure
+      - uses: azure/login@v2
+        name: Login to Azure
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      # Build and deploy Container App
+      - name: Build and deploy Container App
+        uses: azure/container-apps-deploy-action@v1
+        env:
+          IMAGE_NAME: ohmyword-api
+          IMAGE_TAG: ${{ github.sha}}
+          CONTAINER_REGISTRY: snakebytecorecr
+          CONTAINER_APP_NAME: ohmyword-${{ github.ref_name == 'main' && 'prod' || 'test' }}-api-ca
+          RESOURCE_GROUP: ohmyword-app-${{ github.ref_name == 'main' && 'prod' || 'test' }}-rg
+        with:
+          appSourcePath: ${{ steps.download-artifact.outputs.download-path }}
+          acrName: ${{ env.CONTAINER_REGISTRY }}
+          imageToBuild: ${{ env.CONTAINER_REGISTRY }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+          containerAppName: ${{ env.CONTAINER_APP_NAME }}
+          resourceGroup: ${{ env.RESOURCE_GROUP }}
