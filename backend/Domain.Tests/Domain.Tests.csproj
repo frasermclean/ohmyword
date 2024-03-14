@@ -34,7 +34,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\BackEnd\Domain\Domain.csproj"/>
+    <ProjectReference Include="..\Domain\Domain.csproj"/>
     <ProjectReference Include="..\Integrations.CosmosDb\Integrations.CosmosDb.csproj" />
   </ItemGroup>
 
