@@ -10,14 +10,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.Data.Tables" Version="12.8.1"/>
-    <PackageReference Include="Microsoft.Extensions.Azure" Version="1.7.0"/>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0"/>
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1"/>
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1"/>
-    <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.1"/>
-    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="7.0.0"/>
-    <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="7.0.0"/>
+    <PackageReference Include="Azure.Data.Tables" Version="12.8.3" />
+    <PackageReference Include="Microsoft.Extensions.Azure" Version="1.7.2" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="8.0.0" />
     <PackageReference Include="System.Linq.Async" Version="6.0.1"/>
   </ItemGroup>
 
